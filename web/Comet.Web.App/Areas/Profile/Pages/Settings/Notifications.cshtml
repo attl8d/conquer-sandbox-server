@@ -1,0 +1,47 @@
+﻿@page
+@using Comet.Web.App.Services
+@inject LanguageService Language
+@model Comet.Web.App.Areas.Profile.Pages.Settings.NotificationsModel
+@{
+}
+
+@await Html.PartialAsync("_ProfileHeader", Model.Profile)
+
+<div class="container youplay-content">
+    <div class="row">
+        <div class="col-md-9">
+            <ul class="pagination pagination-sm mt-0">
+                <li>
+                    <a asp-area="Profile" asp-page="/Settings/Index">@Language.GetString("Profile")</a>
+                </li>
+                <li>
+                    <a asp-area="Profile" asp-page="/Settings/Security">@Language.GetString("Security")</a>
+                </li>
+                <li>
+                    <a asp-area="Profile" asp-page="/Settings/Regional">@Language.GetString("Regional")</a>
+                </li>
+                <li>
+                    <a asp-area="Profile" asp-page="/Settings/Privacy">@Language.GetString("Privacy")</a>
+                </li>
+                <li class="active">
+                    <a asp-area="Profile" asp-page="/Settings/Notifications">@Language.GetString("Notifications")</a>
+                </li>
+            </ul>
+            <h3>@Language.GetString("ChangePassword"):</h3>
+            <div class="form-horizontal mt-30 mb-40">
+                
+            </div>
+        </div>
+        <!-- Right Side -->
+        <div class="col-md-3">
+            @if (!string.IsNullOrEmpty(Model.Profile.AboutMe))
+            {
+                <div class="side-block">
+                    <h4 class="block-title">@Language.GetString("AboutMe")</h4>
+                    <div class="block-content"> @Model.Profile.AboutMe </div>
+                </div>
+            }
+        </div>
+        <!-- Right Side -->
+    </div>
+</div>

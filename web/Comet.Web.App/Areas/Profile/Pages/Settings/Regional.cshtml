@@ -1,0 +1,73 @@
+﻿@page
+@using Comet.Web.App.Areas.Profile.Models
+@using Comet.Web.App.Services
+@inject LanguageService Language
+@model Comet.Web.App.Areas.Profile.Pages.Settings.RegionalModel
+@{
+}
+
+@await Html.PartialAsync("_ProfileHeader", Model.Profile)
+
+<div class="container youplay-content">
+    <div class="row">
+        <div class="col-md-9">
+            <ul class="pagination pagination-sm mt-0">
+                <li>
+                    <a asp-area="Profile" asp-page="/Settings/Index">@Language.GetString("Profile")</a>
+                </li>
+                <li>
+                    <a asp-area="Profile" asp-page="/Settings/Security">@Language.GetString("Security")</a>
+                </li>
+                <li class="active">
+                    <a asp-area="Profile" asp-page="/Settings/Regional">@Language.GetString("Regional")</a>
+                </li>
+                <li>
+                    <a asp-area="Profile" asp-page="/Settings/Privacy">@Language.GetString("Privacy")</a>
+                </li>
+                <li>
+                    <a asp-area="Profile" asp-page="/Settings/Notifications">@Language.GetString("Notifications")</a>
+                </li>
+            </ul>
+            <h3>@Language.GetString("RegionalSettings"):</h3>
+            <div class="form-horizontal mt-30 mb-40">
+                <div class="form-group">
+                    <label class="control-label col-sm-3">@Language.GetString("Language"):</label>
+                    <div class="col-sm-9">
+                        <div class="youplay-select">
+                            <select>
+                                @foreach (var lang in LanguageService.AvailableLanguages)
+                                {
+                                    if (Model.Profile.PersonalInfo.ContainsKey(PersonalInfoType.Language)
+                                        && Model.Profile.PersonalInfo[PersonalInfoType.Language].Equals(lang.LanguageCultureName))
+                                    {
+                                        <option value="@lang.LanguageCultureName" selected>@lang.LanguageFullName</option>
+                                    }
+                                    else
+                                    {
+                                        <option value="@lang.LanguageCultureName">@lang.LanguageFullName</option>
+                                    }
+                                }
+                            </select>
+                        </div>
+                    </div>
+                </div>
+                <div class="form-group">
+                    <div class="col-sm-offset-3 col-sm-9">
+                        <button type="submit" class="btn btn-default">@Language.GetString("SaveRegionalSettings")</button>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <!-- Right Side -->
+        <div class="col-md-3">
+            @if (!string.IsNullOrEmpty(Model.Profile.AboutMe))
+            {
+                <div class="side-block">
+                    <h4 class="block-title">@Language.GetString("AboutMe")</h4>
+                    <div class="block-content"> @Model.Profile.AboutMe </div>
+                </div>
+            }
+        </div>
+        <!-- Right Side -->
+    </div>
+</div>

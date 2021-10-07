@@ -1,0 +1,87 @@
+﻿@page
+@using Comet.Web.App.Areas.Profile.Models
+@using Comet.Web.App.Services
+@inject LanguageService Language
+@model Comet.Web.App.Areas.Profile.Pages.Settings.IndexModel
+@{
+    ViewData["title"] = Language.GetString("ProfileSettings");
+}
+
+@await Html.PartialAsync("_ProfileHeader", Model.Profile)
+
+<div class="container youplay-content">
+    <div class="row">
+        <div class="col-md-9">
+            <ul class="pagination pagination-sm mt-0">
+                <li class="active">
+                    <a asp-area="Profile" asp-page="/Settings/Index">@Language.GetString("Profile")</a>
+                </li>
+                <li>
+                    <a asp-area="Profile" asp-page="/Settings/Security">@Language.GetString("Security")</a>
+                </li>
+                <li>
+                    <a asp-area="Profile" asp-page="/Settings/Regional">@Language.GetString("Regional")</a>
+                </li>
+                <li>
+                    <a asp-area="Profile" asp-page="/Settings/Privacy">@Language.GetString("Privacy")</a>
+                </li>
+                <li>
+                    <a asp-area="Profile" asp-page="/Settings/Notifications">@Language.GetString("Notifications")</a>
+                </li>
+            </ul>
+            
+            <h3>@Language.GetString("PhoneNumber"):</h3>
+            <div class="form-horizontal mt-30 mb-40">
+                <table class="table table-bordered" aria-hidden="true">
+                    <tbody>
+                        @foreach (var phone in Model.Profile.ContactInfo.Where(x => x.Key == ContactInfoType.Phone || x.Key == ContactInfoType.MobilePhone))
+                        {
+                            <tr>
+                                <td>@Language.GetString(phone.Key.ToString())</td>
+                                <td>@phone.Value</td>
+                            </tr>
+                        }
+                    </tbody>
+                </table>
+                <div class="form-group">
+                    <label class="control-label col-sm-3" for="new_email">@Language.GetString("NewPhoneNumber"):</label>
+                    <div class="col-sm-9">
+                        <div class="youplay-input">
+                            <input type="text" id="new_phone" placeholder="@Language.GetString("NewPhoneNumber")">
+                        </div>
+                    </div>
+                </div>
+                <div class="form-group">
+                    <div class="col-sm-offset-3 col-sm-9">
+                        <button type="submit" class="btn btn-default">@Language.GetString("AddPhone")</button>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <!-- Right Side -->
+        <div class="col-md-3">
+            @if (!string.IsNullOrEmpty(Model.Profile.AboutMe))
+            {
+                <div class="side-block">
+                    <h4 class="block-title">@Language.GetString("AboutMe")</h4>
+                    <div class="block-content"> @Model.Profile.AboutMe </div>
+                </div>
+            }
+        </div>
+        <!-- Right Side -->
+    </div>
+</div>
+
+@section Scripts
+{
+    <script>
+        const phoneOpt = {
+            onKeyPress: function(phone, e, field, options) {
+                let masks = ['(00) 0000-00009', '(00) 00000-0000'];
+                let mask = (phone.replace(/\D/g, '').length === 11) ? masks[1] : masks[0];
+                $('#new_phone').mask(mask, phoneOpt);
+            }
+        };
+        $('#new_phone').mask('(00) 0000-0000', phoneOpt);
+    </script>
+}

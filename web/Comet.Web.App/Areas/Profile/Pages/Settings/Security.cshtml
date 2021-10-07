@@ -1,0 +1,111 @@
+﻿@page
+@using Comet.Web.App.Services
+@inject LanguageService Language
+@model Comet.Web.App.Areas.Profile.Pages.Settings.SecurityModel
+@{
+}
+
+@await Html.PartialAsync("_ProfileHeader", Model.Profile)
+
+<div class="container youplay-content">
+    <div class="row">
+        <div class="col-md-9">
+            <ul class="pagination pagination-sm mt-0">
+                <li>
+                    <a asp-area="Profile" asp-page="/Settings/Index">@Language.GetString("Profile")</a>
+                </li>
+                <li class="active">
+                    <a asp-area="Profile" asp-page="/Settings/Security">@Language.GetString("Security")</a>
+                </li>
+                <li>
+                    <a asp-area="Profile" asp-page="/Settings/Regional">@Language.GetString("Regional")</a>
+                </li>
+                <li>
+                    <a asp-area="Profile" asp-page="/Settings/Privacy">@Language.GetString("Privacy")</a>
+                </li>
+                <li>
+                    <a asp-area="Profile" asp-page="/Settings/Notifications">@Language.GetString("Notifications")</a>
+                </li>
+            </ul>
+
+            <h3>@Language.GetString("ChangePassword"):</h3>
+            <div class="form-horizontal mt-30 mb-40">
+                <div class="form-group">
+                    <label class="control-label col-sm-3" for="cur_password">@Language.GetString("CurrentPassword"):</label>
+                    <div class="col-sm-9">
+                        <div class="youplay-input">
+                            <input type="password" id="cur_password" placeholder="@Language.GetString("CurrentPassword")">
+                        </div>
+                    </div>
+                </div>
+                <div class="form-group">
+                    <label class="control-label col-sm-3" for="new_password">@Language.GetString("NewPassword"):</label>
+                    <div class="col-sm-9">
+                        <div class="youplay-input">
+                            <input type="password" id="new_password" placeholder="@Language.GetString("NewPassword")">
+                        </div>
+                    </div>
+                </div>
+                <div class="form-group">
+                    <label class="control-label col-sm-3" for="new_password_confirm">@Language.GetString("ConfirmNewPassword"):</label>
+                    <div class="col-sm-9">
+                        <div class="youplay-input">
+                            <input type="password" id="new_password_confirm" placeholder="@Language.GetString("ConfirmNewPassword")">
+                        </div>
+                    </div>
+                </div>
+                <div class="form-group">
+                    <div class="col-sm-offset-3 col-sm-9">
+                        <button type="submit" class="btn btn-default">@Language.GetString("ChangePassword")</button>
+                    </div>
+                </div>
+            </div>
+            <h3>@Language.GetString("ChangeEmail"):</h3>
+            <div class="form-horizontal mt-30 mb-40">
+                <div class="form-group">
+                    <label class="control-label col-sm-3">@Language.GetString("CurrentEmail"):</label>
+                    <div class="col-sm-9">
+                        @Model.Profile.Email
+                        @if (Model.Profile.EmailConfirmed)
+                        {
+                            <span class="glyphicon glyphicon-ok text-success"></span>
+                        }
+                        else
+                        {
+                            <button id="email-verification" type="submit" asp-page-handler="SendVerificationEmail" class="btn btn-link">Send verification email</button>
+                        }
+                    </div>
+                </div>
+                <div class="form-group">
+                    <label class="control-label col-sm-3" for="new_email">@Language.GetString("NewEmail"):</label>
+                    <div class="col-sm-9">
+                        <div class="youplay-input">
+                            <input type="email" id="new_email" placeholder="@Language.GetString("NewEmail")">
+                        </div>
+                    </div>
+                </div>
+                <div class="form-group">
+                    <div class="col-sm-offset-3 col-sm-9">
+                        <button type="submit" class="btn btn-default">@Language.GetString("ChangeEmail")</button>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <!-- Right Side -->
+        <div class="col-md-3">
+            @if (!string.IsNullOrEmpty(Model.Profile.AboutMe))
+            {
+                <div class="side-block">
+                    <h4 class="block-title">@Language.GetString("AboutMe")</h4>
+                    <div class="block-content"> @Model.Profile.AboutMe </div>
+                </div>
+            }
+        </div>
+        <!-- Right Side -->
+    </div>
+</div>
+
+@section Scripts
+{
+
+}

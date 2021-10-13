@@ -31,15 +31,18 @@ using Microsoft.EntityFrameworkCore;
 
 namespace Comet.Game.Database.Models
 {
-    [Table("cq_monster_magic")]
+    [Table("cq_monster_type_magic")]
     public class DbMonsterMagic
     {
         [Key] [Column("id")] public virtual uint Identity { get; set; }
 
-        [Column("monster_id")] public virtual uint OwnerIdentity { get; set; }
-        [Column("magic_id")] public virtual ushort MagicIdentity { get; set; }
-        [Column("magic_level")] public virtual byte MagicLevel { get; set; }
-        [Column("chance")] public virtual uint Chance { get; set; }
+        [Column("monstertype")] public virtual uint OwnerIdentity { get; set; }
+        [Column("magic_type")] public virtual uint MagicType { get; set; }
+        [Column("magic_lev")] public virtual uint MagicLevel { get; set; }
+        [Column("cold_time")] public virtual uint ColdTime { get; set; }
+        [Column("warning_time")] public virtual ushort WarningTime { get; set; }
+        [Column("status_magic_type")] public virtual uint StatusMagicType { get; set; }
+        [Column("status_magic_lev")] public virtual uint StatusMagicLev { get; set; }
 
         public static async Task<List<DbMonsterMagic>> GetAsync()
         {

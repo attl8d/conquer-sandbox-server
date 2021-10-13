@@ -29,9 +29,11 @@ using Comet.Game.Database;
 using Comet.Game.Packets;
 using Comet.Game.States;
 using Comet.Network.Packets;
-using Comet.Network.Security;
 using Comet.Network.Sockets;
 using Comet.Shared;
+using System.Security.Cryptography;
+using System.Linq;
+using System.Text;
 
 #endregion
 
@@ -106,14 +108,13 @@ namespace Comet.Game
                 msg.Decode(buffer.ToArray());
 
                 actor.DiffieHellman.ComputePrivateKey(msg.ClientKey);
-
+                
                 actor.Cipher.GenerateKeys(new object[]
                 {
-                    actor.DiffieHellman.PrivateKey.ToByteArrayUnsigned()
+                    actor.DiffieHellman.ProcessDHSecret(),
+                    actor.DiffieHellman.EncryptionIV,
+                    actor.DiffieHellman.DecryptionIV
                 });
-                (actor.Cipher as BlowfishCipher).SetIVs(
-                    actor.DiffieHellman.DecryptionIV,
-                    actor.DiffieHellman.EncryptionIV);
 
                 actor.DiffieHellman = null;
                 return true;

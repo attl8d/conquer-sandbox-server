@@ -97,7 +97,7 @@ namespace Comet.Game.Database.Models
         ///     The item effect.
         /// </summary>
         [Column("magic1")]
-        public virtual byte Magic1 { get; set; }
+        public virtual uint Magic1 { get; set; }
 
         /// <summary>
         ///     Not sure yet.
@@ -177,7 +177,7 @@ namespace Comet.Game.Database.Models
 
         [Column("del_time")] public virtual int DeleteTime { get; set; }
 
-        [Column("save_time")] public virtual DateTime? SaveTime { get; set; }
+        [Column("save_time")] public virtual int SaveTime { get; set; }
 
         [Column("accumulate_num")] public virtual uint AccumulateNum { get; set; }
 

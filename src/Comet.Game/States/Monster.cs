@@ -69,6 +69,7 @@ namespace Comet.Game.States
         private uint m_idRole = 0;
 
         private uint m_idUseMagic = 0;
+        private uint m_idWarningMagic = 0;
         private List<DbMonsterMagic> m_monsterMagics = new List<DbMonsterMagic>();
 
         public Monster(DbMonstertype type, uint identity, Generator generator)
@@ -129,8 +130,15 @@ namespace Comet.Game.States
             foreach (var dbMagic in m_monsterMagics)
             {
                 Magic magic = new Magic(this);
-                if (await magic.CreateAsync(dbMagic.MagicIdentity, dbMagic.MagicLevel))
+                if (await magic.CreateAsync(dbMagic.MagicType, (ushort)dbMagic.MagicLevel))
+                {
+                    //magic.SetDelay((int)dbMagic.ColdTime);
+
+                    magic.ColdTime = dbMagic.ColdTime;
+                    magic.WarningTime = dbMagic.WarningTime;
+
                     MagicData.Magics.TryAdd(magic.Type, magic);
+                }
             }
 
             return true;
@@ -204,14 +212,43 @@ namespace Comet.Game.States
             if (m_actTarget == null)
                 return false;
 
-            foreach (var magic in m_monsterMagics.OrderBy(x => x.Chance))
-            {
-                if (MagicData.CheckType(magic.MagicIdentity) && await Kernel.ChanceCalcAsync((int) magic.Chance, 10000))
-                {
-                    m_idUseMagic = magic.MagicIdentity;
-                    return true;
-                }
-            }
+            //if (m_idWarningMagic != 0)
+            //{
+            //    if (MagicData.CheckType((ushort)m_idWarningMagic))
+            //    {
+            //        var magic = MagicData[(ushort)m_idWarningMagic];
+            //        if (!magic.IsCold() && magic.IsWarned() && magic.WarningTimeOut())
+            //        {
+            //            m_idUseMagic = m_idWarningMagic;
+            //            m_idWarningMagic = 0;
+            //            return true;
+            //        }
+            //        return false;
+            //    }
+            //    else
+            //    {
+            //        m_idWarningMagic = 0;
+            //    }
+            //}
+
+            //foreach (var magic in m_monsterMagics.OrderByDescending(x => x.ColdTime))
+            //{
+            //    //if (MagicData.CheckType((ushort)magic.MagicType)
+            //    //    && !MagicData[(ushort)magic.MagicType].IsCold())
+            //    //{
+            //    //    m_idUseMagic = magic.MagicType;
+            //    //    return true;
+            //    //}
+
+            //    if (!MagicData.CheckType((ushort)magic.MagicType))
+            //        continue;
+
+            //    var mstMagic = MagicData[(ushort)magic.MagicType];
+            //    if (mstMagic == null || mstMagic.IsCold())
+            //        continue;
+
+
+            //}
 
             if (m_idUseMagic == 0 && m_dbMonster.MagicType != 0 &&
                 await Kernel.ChanceCalcAsync(m_dbMonster.MagicHitrate))

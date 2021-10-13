@@ -125,7 +125,7 @@ namespace Comet.Network.Packets
                     }
                     catch (Exception ex)
                     {
-                        _ = Log.WriteLogAsync(LogLevel.Socket, ex.ToString()).ConfigureAwait(false);
+                        await Log.WriteLogAsync(LogLevel.Socket, ex.ToString()).ConfigureAwait(false);
                     }
                 }
             }

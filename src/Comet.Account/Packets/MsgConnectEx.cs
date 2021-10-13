@@ -87,9 +87,10 @@ namespace Comet.Account.Packets
             else
             {
                 // Successful login
-                writer.Write(Token);
-                writer.Write(IPAddress, 16);
-                writer.Write(Port);
+                writer.Write(Token); // 4
+                writer.Write(Port); // 12
+                writer.Write(0); // 16
+                writer.Write(IPAddress, 16); // 20
                 writer.Write((ushort) 0);
             }
 
@@ -105,16 +106,24 @@ namespace Comet.Account.Packets
         {
             Clear = 0,
             InvalidPassword = 1,
-            ServerDown = 10,
+            PointCardExpired = 6,
+            MonthlyCardExpired = 7,
+            ServerMaintenance = 10,
+            PleaseTryAgainLater = 11,
             AccountBanned = 12,
-            ServerBusy = 20,
+            ServerFull = 20,
+            ServerBusy = 21,
             AccountLocked = 22,
             AccountNotActivated = 30,
-            AccountActivationFailed = 31,
-            ServerTimedOut = 42,
-            AccountMaxLoginAttempts = 51,
+            FailedToActivateAccount = 31,
+            NonCooperatorAccount = 50,
+            MaximumLoginAttempts = 51,
+            InvalidAccount = 57,
+            ValidationTimeout = 58,
+            ServersNotConfigured = 59,
+            DatabaseError = 64,
             ServerLocked = 70,
-            ServerOldProtocol = 73
+            InvalidAuthenticationProtocol = 73
         }
     }
 }

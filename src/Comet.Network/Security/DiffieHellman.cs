@@ -21,8 +21,12 @@
 
 #region References
 
+using System.Linq;
+using System.Security.Cryptography;
+using System.Text;
 using System.Threading.Tasks;
 using Comet.Network.Services;
+using Comet.Shared;
 using Org.BouncyCastle.Math;
 
 #endregion
@@ -38,6 +42,8 @@ namespace Comet.Network.Security
     {
         private const string DefaultGenerator = "05";
         private const string DefaultPrimativeRoot = "E7A69EBDF105F2A6BBDEAD7E798F76A209AD73FB466431E2E7352ED262F8C558F10BEFEA977DE9E21DCEE9B04D245F300ECCBBA03E72630556D011023F9E857F";
+
+        private readonly MD5CryptoServiceProvider mMd5;
 
         // Constants and static properties
         public static readonly PrimeGeneratorService ProbablePrimes;
@@ -68,6 +74,8 @@ namespace Comet.Network.Security
             Generator = new BigInteger(g, 16);
             DecryptionIV = new byte[8];
             EncryptionIV = new byte[8];
+
+            mMd5 = new MD5CryptoServiceProvider();
         }
 
         // Key exchange Properties
@@ -96,6 +104,14 @@ namespace Comet.Network.Security
         {
             BigInteger clientKey = new BigInteger(clientKeyString, 16);
             PrivateKey = clientKey.ModPow(Modulus, PrimeRoot);
+        }
+
+        public byte[] ProcessDHSecret()
+        {
+            byte[] key = PrivateKey.ToByteArrayUnsigned();
+            string sz1 = mMd5.ComputeHash(key, 0, key.Count(x => x != 0)).ToHexString();
+            string sz2 = mMd5.ComputeHash(Encoding.ASCII.GetBytes(string.Concat(sz1, sz1))).ToHexString();
+            return Encoding.ASCII.GetBytes(string.Concat(sz1, sz2));
         }
     }
 }

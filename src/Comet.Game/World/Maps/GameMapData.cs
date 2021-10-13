@@ -112,13 +112,8 @@ namespace Comet.Game.World.Maps
                 }
 
                 Stream stream = File.OpenRead(realPath);
-                //if (Path.GetExtension(realPath).Equals(".7z"))
-                //{
-                //    stream = ReadFrom7Zip(realPath);
-                //}
-                //else
 
-                BinaryReader reader = new BinaryReader(stream, Encoding.ASCII);
+                BinaryReader reader = new (stream, Encoding.ASCII);
 
                 LoadData(reader);
                 LoadPassageData(reader);

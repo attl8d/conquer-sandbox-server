@@ -35,6 +35,5 @@ namespace Comet.Game.Database.Models
         [Column("ownerid")] public virtual uint OwnerIdentity { get; set; }
         [Column("itemtype")] public virtual uint Itemtype { get; set; }
         [Column("moneytype")] public virtual uint Moneytype { get; set; }
-        [Column("monopoly")] public virtual uint Monopoly { get; set; }
     }
 }

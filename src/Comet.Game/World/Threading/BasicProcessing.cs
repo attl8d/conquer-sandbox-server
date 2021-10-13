@@ -66,7 +66,7 @@ namespace Comet.Game.World.Threading
                 await DoAnalyticsAsync();
             }
 
-            if (Kernel.AccountClient == null && m_accountPing.ToNextTime())
+            if ((Kernel.AccountClient == null || Kernel.AccountServer?.Socket.Connected != true) && m_accountPing.ToNextTime())
             {
                 await Log.WriteLogAsync(LogLevel.Info, "Attempting connection with the account server...");
 

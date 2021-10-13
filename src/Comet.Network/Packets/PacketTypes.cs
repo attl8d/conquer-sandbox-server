@@ -59,8 +59,9 @@ namespace Comet.Network.Packets
         MsgConnectEx = 1055,
         MsgSynpOffer = 1058,
         MsgEncryptCode = 1059,
+        //MsgAccount = 1060,
         MsgDutyMinContri = 1061,
-        MsgAccount = 1086,
+        //MsgAccount = 1086,
         MsgPCNum = 1100,
         MsgMapItem = 1101,
         MsgPackage = 1102,
@@ -89,6 +90,8 @@ namespace Comet.Network.Packets
 
         MsgFamily = 1312,
         MsgFamilyOccupy = 1313,
+
+        MsgAccount = 1542,
 
         MsgNpcInfo = 2030,
         MsgNpc = 2031,

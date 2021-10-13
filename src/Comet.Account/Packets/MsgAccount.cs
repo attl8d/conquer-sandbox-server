@@ -107,7 +107,7 @@ namespace Comet.Account.Packets
             {
                 await Log.WriteLogAsync("login_fail", LogLevel.Info,
                     $"[{Username}] tried to login on a not connected [{Realm}] server.");
-                await client.SendAsync(new MsgConnectEx(RejectionCode.ServerDown));
+                await client.SendAsync(new MsgConnectEx(RejectionCode.ServerMaintenance));
                 client.Socket.Disconnect(false);
                 return;
             }
@@ -137,11 +137,17 @@ namespace Comet.Account.Packets
             var reader = new PacketReader(bytes);
             Length = reader.ReadUInt16();
             Type = (PacketType) reader.ReadUInt16();
+            reader.BaseStream.Seek(8, SeekOrigin.Begin);
             Username = reader.ReadString(16);
-            reader.BaseStream.Seek(132, SeekOrigin.Begin);
+            reader.BaseStream.Seek(60, SeekOrigin.Begin);
             Password = reader.ReadBytes(16);
-            reader.BaseStream.Seek(260, SeekOrigin.Begin);
+            reader.BaseStream.Seek(136, SeekOrigin.Begin);
             Realm = reader.ReadString(16);
+            //Username = reader.ReadString(16);
+            //reader.BaseStream.Seek(132, SeekOrigin.Begin);
+            //Password = reader.ReadBytes(16);
+            //reader.BaseStream.Seek(260, SeekOrigin.Begin);
+            //Realm = reader.ReadString(16);
         }
 
         /// <summary>
@@ -153,12 +159,31 @@ namespace Comet.Account.Packets
         /// <returns>Returns the decrypted password string.</returns>
         private string DecryptPassword(byte[] buffer, uint seed)
         {
-            var rc5 = new RC5(seed);
-            var scanCodes = new ScanCodeCipher(Username);
-            var password = new byte[16];
-            rc5.Decrypt(buffer, password);
-            scanCodes.Decrypt(password, password);
-            return Encoding.ASCII.GetString(password).Trim('\0');
+            //var rc5 = new RC5(seed);
+            //var scanCodes = new ScanCodeCipher(Username);
+            //var password = new byte[16];
+            //rc5.Decrypt(buffer, password);
+            //scanCodes.Decrypt(password, password);
+            //return Encoding.ASCII.GetString(password).Trim('\0');
+
+            // debug purposes
+            byte[] pSeed =
+            {
+                46, 22, 32, 87, 95, 48, 8, 2, 4, 34, 59, 83, 21, 2, 243, 1, 1, 2, 80, 37, 202, 31, 99, 75, 7, 4, 6, 23, 100, 221, 82, 134
+            };
+            int length = pSeed.Length;
+            for (int x = 0; x < buffer.Length; x++)
+            {
+                if (buffer[x] != 0)
+                {
+                    buffer[x] ^= pSeed[(x * 48 % 32) % length];
+                    buffer[x] ^= pSeed[(x * 24 % 16) % length];
+                    buffer[x] ^= pSeed[(x * 12 % 8) % length];
+                    buffer[x] ^= pSeed[(x * 6 % 4) % length];
+                }
+            }
+
+            return Encoding.ASCII.GetString(buffer).Trim('\0');
         }
     }
 }

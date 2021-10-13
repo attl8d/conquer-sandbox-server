@@ -1961,7 +1961,7 @@ namespace Comet.Game.States.Items
                     db.Add(m_dbItem);
                 else
                     db.Update(m_dbItem);
-                m_dbItem.SaveTime = DateTime.Now;
+                m_dbItem.SaveTime = UnixTimestamp.Now();
                 return await db.SaveChangesAsync() != 0;
             }
             catch (Exception ex)

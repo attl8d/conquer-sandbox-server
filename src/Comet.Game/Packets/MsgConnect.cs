@@ -67,13 +67,13 @@ namespace Comet.Game.Packets
         public override void Decode(byte[] bytes)
         {
             var reader = new PacketReader(bytes);
-            this.Length = reader.ReadUInt16();
-            this.Type = (PacketType)reader.ReadUInt16();
-            this.Token = reader.ReadUInt64();
-            this.Patch = reader.ReadUInt16();
-            this.Language = reader.ReadString(2);
-            this.MacAddress = Hex.ToHexString(reader.ReadBytes(8));
-            this.Version = Convert.ToInt32(reader.ReadInt32().ToString(), 2);
+            Length = reader.ReadUInt16();
+            Type = (PacketType)reader.ReadUInt16();
+            Token = reader.ReadUInt64();
+            Patch = reader.ReadUInt16();
+            Language = reader.ReadString(2);
+            MacAddress = Hex.ToHexString(reader.ReadBytes(8));
+            Version = Convert.ToInt32(reader.ReadInt32().ToString(), 2);
         }
 
         /// <summary>

@@ -82,6 +82,7 @@ namespace Comet.Network.Sockets
             {
                 try
                 {
+#if !DEBUG
                     using var cancellation = CancellationTokenSource.CreateLinkedTokenSource(
                         timeout.Token, ShutdownToken.Token);
                     // Receive data from the client socket
@@ -91,6 +92,11 @@ namespace Comet.Network.Sockets
                         cancellation.Token);
 
                     timeout.CancelAfter(TimeSpan.FromSeconds(ReceiveTimeoutSeconds));
+#else
+                    var receiveOperation = actor.Socket.ReceiveAsync(
+                        actor.Buffer[remaining..],
+                        SocketFlags.None);
+#endif
                     examined = await receiveOperation;
                     if (examined == 0) break;
                 }

@@ -92,8 +92,10 @@ namespace Comet.Game.Packets
             var reader = new PacketReader(bytes);
             reader.BaseStream.Seek(7, SeekOrigin.Begin);
             Length = (ushort) reader.ReadUInt32();
-            reader.BaseStream.Seek(reader.ReadUInt32(), SeekOrigin.Current);
-            ClientKey = Encoding.ASCII.GetString(reader.ReadBytes(reader.ReadInt32()));
+            int junkLength = reader.ReadInt32();
+            string junk = reader.ReadString(junkLength);
+            int keyLength = reader.ReadInt32();
+            ClientKey = Encoding.ASCII.GetString(reader.ReadBytes(keyLength));
         }
 
         /// <summary>

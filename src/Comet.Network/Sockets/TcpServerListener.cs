@@ -21,6 +21,7 @@
 
 #region References
 
+using Comet.Network.Packets;
 using System;
 using System.Collections.Concurrent;
 using System.Net;
@@ -284,6 +285,7 @@ namespace Comet.Network.Sockets
             {
                 try
                 {
+#if !DEBUG
                     using var cancellation = CancellationTokenSource.CreateLinkedTokenSource(
                         timeout.Token, ShutdownToken.Token);
                     // Receive data from the client socket
@@ -293,6 +295,11 @@ namespace Comet.Network.Sockets
                         cancellation.Token);
 
                     timeout.CancelAfter(TimeSpan.FromSeconds(ReceiveTimeoutSeconds));
+#else
+                    var receiveOperation = actor.Socket.ReceiveAsync(
+                        actor.Buffer[remaining..],
+                        SocketFlags.None);
+#endif
                     examined = await receiveOperation;
                     if (examined == 0) break;
                 }
@@ -312,6 +319,8 @@ namespace Comet.Network.Sockets
                 actor.Cipher?.Decrypt(
                     actor.Buffer.Slice(remaining, examined).Span,
                     actor.Buffer.Slice(remaining, examined).Span);
+
+                Console.WriteLine(PacketDump.Hex(actor.Buffer.Slice(remaining, examined).Span));
 
                 // Handle splitting and processing of data
                 consumed = 0;

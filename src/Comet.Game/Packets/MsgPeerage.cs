@@ -89,9 +89,11 @@ namespace Comet.Game.Packets
         public uint Data2 { get; set; }
         public uint Data3 { get; set; }
         public uint Data4 { get; set; }
+        public int DonationMode { get; set; }
         
         public List<string> Strings = new List<string>();
         public List<NobilityStruct> Rank = new List<NobilityStruct>();
+        public List<RankingStruct> RemainingDonation = new List<RankingStruct>();
 
         /// <summary>
         ///     Decodes a byte packet into the packet structure defined by this message class.
@@ -109,7 +111,7 @@ namespace Comet.Game.Packets
             Data1 = reader.ReadUInt32();
             Data2 = reader.ReadUInt32();
             Data3 = reader.ReadUInt32();
-             Data4 = reader.ReadUInt32();
+            Data4 = reader.ReadUInt32();
             Strings = reader.ReadStrings();
         }
 
@@ -124,11 +126,28 @@ namespace Comet.Game.Packets
             var writer = new PacketWriter();
             writer.Write((ushort)Type);
             writer.Write((uint) Action); // 4
-            writer.Write(Data); // 8
-            writer.Write(Data1); // 16
-            writer.Write(Data2); // 20
-            writer.Write(Data3); // 24
-            writer.Write(Data4); // 28
+            if (Action == NobilityAction.QueryRemainingSilver)
+            {
+                foreach (var pos in RemainingDonation)
+                {
+                    writer.Write(pos.Donation);
+                    writer.Write(uint.MaxValue);
+                    writer.Write((int)pos.Position);
+                }
+            }
+            else
+            {
+                writer.Write(Data); // 8
+                writer.Write(Data1); // 16
+                writer.Write(Data2); // 20
+                writer.Write(Data3); // 24
+                writer.Write(Data4); // 28
+                writer.Write(new byte[72]); // 32-104?            
+                writer.Write(DonationMode); // 104
+                writer.Write(0); // 108
+                writer.Write(0); // 112
+                writer.Write(0); // 116
+            }
 
             if (Action == NobilityAction.List)
             {
@@ -196,6 +215,12 @@ namespace Comet.Game.Packets
                     break;
             }
 #endif
+        }
+
+        public struct RankingStruct
+        {
+            public NobilityRank Position;
+            public ulong Donation;
         }
 
         public struct NobilityStruct

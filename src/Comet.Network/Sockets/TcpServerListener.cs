@@ -204,6 +204,8 @@ namespace Comet.Network.Sockets
                     return;
                 }
 
+                //Console.WriteLine(PacketDump.Hex(actor.Buffer.Slice(0, 9).Span));
+
                 // Decrypt traffic by first discarding the first 7 bytes, as per TQ Digital's
                 // exchange protocol, then decrypting only what is necessary for the exchange.
                 // This is to prevent the next packet from being decrypted with the wrong key.
@@ -211,6 +213,7 @@ namespace Comet.Network.Sockets
                     actor.Buffer.Slice(0, 9).Span,
                     actor.Buffer.Slice(0, 9).Span);
                 consumed = BitConverter.ToUInt16(actor.Buffer.Span.Slice(7, 2)) + 7;
+
                 if (consumed > examined)
                 {
                     actor.Disconnect();
@@ -221,6 +224,8 @@ namespace Comet.Network.Sockets
                 actor.Cipher?.Decrypt(
                     actor.Buffer[9..consumed].Span,
                     actor.Buffer[9..consumed].Span);
+
+                //Console.WriteLine(PacketDump.Hex(actor.Buffer.Slice(0, consumed).Span));
 
                 // Process the exchange now that bytes are decrypted
                 if (!Exchanged(actor, actor.Buffer.Slice(0, consumed).Span))
@@ -250,6 +255,7 @@ namespace Comet.Network.Sockets
                 }
             }
 
+            //Console.WriteLine($"Exchange Size: {examined}, Consumed: {consumed}, Remaining: {remaining}\n");
             // Start receiving packets
             await ReceivingAsync(state, remaining);
         }
@@ -315,12 +321,15 @@ namespace Comet.Network.Sockets
                     break;
                 }
 
+                //Console.WriteLine($"Message Length: {examined} (From: {remaining})");
+                //Console.WriteLine(PacketDump.Hex(actor.Buffer.Slice(remaining, examined).Span));
+
                 // Decrypt traffic
                 actor.Cipher?.Decrypt(
                     actor.Buffer.Slice(remaining, examined).Span,
                     actor.Buffer.Slice(remaining, examined).Span);
 
-                Console.WriteLine(PacketDump.Hex(actor.Buffer.Slice(remaining, examined).Span));
+                //Console.WriteLine(PacketDump.Hex(actor.Buffer.Slice(remaining, examined).Span));
 
                 // Handle splitting and processing of data
                 consumed = 0;

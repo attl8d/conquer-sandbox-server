@@ -132,9 +132,17 @@ namespace Comet.Game.Packets
                 {
                     client.Character.MateName = (await CharactersRepository.FindByIdentityAsync(client.Character.MateIdentity))?.Name ?? Game.Language.StrNone;
                     await client.SendAsync(LoginOk);
+                    
+                    await client.SendAsync(new MsgUserIpInfo 
+                    {
+                        LoginTime = UnixTimestamp.Timestamp(client.Character.LastLogin),
+                        DifferentAddress = true,
+                        Action = MsgUserIpInfo.LastLoginAction.LastLogin
+                    });
+                    await client.SendAsync(new MsgServerInfo());
                     await client.SendAsync(new MsgUserInfo(client.Character));
                     await client.SendAsync(new MsgData(DateTime.Now));
-
+                    await client.SendAsync(new MsgVipFunctionValidNotify());
 #if DEBUG
                     await client.Character.SendAsync($"Server is running in DEBUG mode. Version: [{Kernel.SERVER_VERSION}]{Kernel.Version}", TalkChannel.Talk);
 #endif

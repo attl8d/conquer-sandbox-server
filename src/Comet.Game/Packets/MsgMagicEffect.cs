@@ -63,34 +63,6 @@ namespace Comet.Game.Packets
         }
 
         /// <summary>
-        ///     Decodes a byte packet into the packet structure defined by this message class.
-        ///     Should be invoked to structure data from the client for processing. Decoding
-        ///     follows TQ Digital's byte ordering rules for an all-binary protocol.
-        /// </summary>
-        /// <param name="bytes">Bytes from the packet processor or client socket</param>
-        public override void Decode(byte[] bytes)
-        {
-            var reader = new PacketReader(bytes);
-            Length = reader.ReadUInt16();
-            Type = (PacketType)reader.ReadUInt16();
-            AttackerIdentity = reader.ReadUInt32();
-            MapX = reader.ReadUInt16();
-            MapY = reader.ReadUInt16();
-            MagicIdentity = reader.ReadUInt16();
-            MagicLevel = reader.ReadUInt16();
-            Count = reader.ReadUInt16();
-            for (int i = 0; i < Count; i++)
-            {
-                Targets.Add(new MagicTarget
-                {
-                    Identity = reader.ReadUInt32(),
-                    Damage = reader.ReadInt32(),
-                    Show = reader.ReadInt32()
-                });
-            }
-        }
-
-        /// <summary>
         ///     Encodes the packet structure defined by this message class into a byte packet
         ///     that can be sent to the client. Invoked automatically by the client's send
         ///     method. Encodes using byte ordering rules interoperable with the game client.
@@ -111,6 +83,8 @@ namespace Comet.Game.Packets
                 writer.Write(target.Identity);
                 writer.Write(target.Damage);
                 writer.Write(target.Show);
+                writer.Write((int) target.EffectType);
+                writer.Write(target.EffectValue);
             }
             return writer.ToArray();
         }
@@ -120,6 +94,8 @@ namespace Comet.Game.Packets
             public uint Identity;
             public int Damage;
             public int Show;
+            public InteractionEffect EffectType;
+            public int EffectValue;
         }
     }
 }

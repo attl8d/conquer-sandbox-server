@@ -48,6 +48,7 @@ namespace Comet.Game.Packets
         }
 
         public int Timestamp { get; set; }
+        public int Padding { get; set; }
         public uint SenderIdentity { get; set; }
         public uint TargetIdentity { get; set; }
         public ushort PosX { get; set; }
@@ -55,6 +56,8 @@ namespace Comet.Game.Packets
         public MsgInteractType Action { get; set; }
         public int Data { get; set; }
         public int Command { get; set; }
+        public InteractionEffect Effect { get; set; }
+        public int EffectValue { get; set; }
 
         /// <summary>
         ///     Decodes a byte packet into the packet structure defined by this message class.
@@ -68,6 +71,7 @@ namespace Comet.Game.Packets
             Length = reader.ReadUInt16();
             Type = (PacketType) reader.ReadUInt16();
             Timestamp = reader.ReadInt32(); // 4
+            Padding = reader.ReadInt32();
             SenderIdentity = reader.ReadUInt32(); // 8
             TargetIdentity = reader.ReadUInt32(); // 12
             PosX = reader.ReadUInt16(); // 16
@@ -87,14 +91,15 @@ namespace Comet.Game.Packets
         {
             var writer = new PacketWriter();
             writer.Write((ushort) Type);
-            writer.Write(Timestamp);
-            writer.Write(SenderIdentity);
-            writer.Write(TargetIdentity);
-            writer.Write(PosX);
-            writer.Write(PosY);
-            writer.Write((uint) Action);
-            writer.Write(Data);
-            writer.Write(Command);
+            writer.Write(Timestamp); // 4
+            writer.Write(Padding); // 8
+            writer.Write(SenderIdentity); // 12
+            writer.Write(TargetIdentity); // 16
+            writer.Write(PosX); // 20
+            writer.Write(PosY); // 22 
+            writer.Write((uint) Action); // 24
+            writer.Write(Data); // 28
+            writer.Write(Command); // 32
             return writer.ToArray();
         }
 

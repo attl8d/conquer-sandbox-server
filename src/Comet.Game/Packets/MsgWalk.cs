@@ -21,6 +21,7 @@
 
 #region References
 
+using System;
 using System.Threading.Tasks;
 using Comet.Game.States;
 using Comet.Network.Packets;
@@ -34,12 +35,15 @@ namespace Comet.Game.Packets
         public MsgWalk()
         {
             Type = PacketType.MsgWalk;
+            Timestamp = Environment.TickCount;
         }
 
         public uint Identity { get; set; }
         public byte Direction { get; set; }
         public byte Mode { get; set; }
-        public ushort Padding { get; set; }
+        public int Timestamp { get; set; }
+        public uint Map { get; set; }
+        // public ushort Padding { get; set; }
 
         /// <summary>
         ///     Decodes a byte packet into the packet structure defined by this message class.
@@ -55,7 +59,9 @@ namespace Comet.Game.Packets
             Direction = (byte) reader.ReadUInt32();
             Identity = reader.ReadUInt32();
             Mode = reader.ReadByte();
-            Padding = reader.ReadUInt16();
+            Timestamp = reader.ReadInt32();
+            Map = reader.ReadUInt32();
+            // Padding = reader.ReadUInt16();
         }
 
         /// <summary>
@@ -68,10 +74,12 @@ namespace Comet.Game.Packets
         {
             var writer = new PacketWriter();
             writer.Write((ushort) Type);
-            writer.Write((int) Direction);
-            writer.Write(Identity);
-            writer.Write(Mode);
-            writer.Write(Padding);
+            writer.Write((int) Direction); // 4
+            writer.Write(Identity); // 8
+            writer.Write(Mode); // 12
+            writer.Write(Timestamp);
+            writer.Write(Map);
+            //writer.Write(Padding); // 16
             return writer.ToArray();
         }
 

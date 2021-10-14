@@ -23,6 +23,7 @@ using System;
 using System.Threading.Tasks;
 using Comet.Game.Database;
 using Comet.Game.Database.Models;
+using Comet.Game.Database.Repositories;
 using Comet.Game.Packets;
 using Comet.Shared;
 
@@ -33,13 +34,15 @@ namespace Comet.Game.States.Relationship
         private DbEnemy m_DbEnemy;
         private Character m_owner;
 
+        private string m_TargetName;
+
         public Enemy(Character owner)
         {
             m_owner = owner;
         }
 
         public uint Identity => m_DbEnemy.TargetIdentity;
-        public string Name => m_DbEnemy.TargetName;
+        public string Name => m_TargetName;
         public bool Online => User != null;
         public Character User => Kernel.RoleManager.GetUser(Identity);
 
@@ -49,17 +52,22 @@ namespace Comet.Game.States.Relationship
             {
                 UserIdentity = m_owner.Identity,
                 TargetIdentity = user.Identity,
-                TargetName = user.Name,
                 Time = DateTime.Now
             };
             await SendAsync();
             return await SaveAsync();
         }
 
-        public Task CreateAsync(DbEnemy enemy)
+        public async Task<bool> CreateAsync(DbEnemy enemy)
         {
             m_DbEnemy = enemy;
-            return Task.CompletedTask;
+
+            var target = await CharactersRepository.FindByIdentityAsync(enemy.TargetIdentity);
+            if (target == null)
+                return false;
+
+            m_TargetName = target.Name;
+            return true;
         }
 
         public async Task SendAsync()

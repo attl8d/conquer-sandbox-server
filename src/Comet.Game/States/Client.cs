@@ -65,7 +65,7 @@ namespace Comet.Game.States
         public uint AccountIdentity { get; set; }
         public ushort AuthorityLevel { get; set; }
         public string MacAddress { get; set; } = "Unknown";
-
+        public int LastLogin { get; set; }
         public string GUID { get; }
 
         public override Task<int> SendAsync(byte[] packet)

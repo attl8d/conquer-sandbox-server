@@ -40,7 +40,7 @@ using SColor = System.Drawing.Color;
 
 namespace Comet.Game.Packets
 {
-    /// <remarks>Packet Type 1010</remarks>
+    /// <remarks>Packet Type 10010</remarks>
     /// <summary>
     ///     Message containing a general action being performed by the client. Commonly used
     ///     as a request-response protocol for question and answer like exchanges. For example,
@@ -54,6 +54,7 @@ namespace Comet.Game.Packets
         }
 
         // Packet Properties
+        public int Unknown { get; set; }
         public uint Timestamp { get; set; }
         public uint Identity { get; set; }
         public uint Data { get; set; }
@@ -102,6 +103,7 @@ namespace Comet.Game.Packets
             var reader = new PacketReader(bytes);
             Length = reader.ReadUInt16();
             Type = (PacketType) reader.ReadUInt16();
+            Unknown = reader.ReadInt32();
             Identity = reader.ReadUInt32();
             Command = reader.ReadUInt32();
             Argument = reader.ReadUInt32();
@@ -124,16 +126,19 @@ namespace Comet.Game.Packets
         {
             var writer = new PacketWriter();
             writer.Write((ushort)PacketType.MsgAction);
-            writer.Write(Identity);
-            writer.Write(Command);
-            writer.Write(Argument);
-            writer.Write(Timestamp);
-            writer.Write((ushort)Action);
-            writer.Write(Direction);
-            writer.Write(X);
-            writer.Write(Y);
-            writer.Write(Map);
-            writer.Write(Color);
+            writer.Write(0); // 4
+            writer.Write(Identity); // 8
+            writer.Write(Command); // 12
+            writer.Write(Argument); // 16
+            writer.Write(Timestamp); // 20
+            writer.Write((ushort)Action); // 24
+            writer.Write(Direction); // 26
+            writer.Write(X); // 28
+            writer.Write(Y); // 30
+            writer.Write(Map); // 32
+            writer.Write(Color); // 36
+            writer.Write(false); // 40
+            writer.Write(false); // 41
             return writer.ToArray();
         }
 
@@ -217,8 +222,8 @@ namespace Comet.Game.Packets
                     foreach (var dbFriend in await FriendRepository.GetAsync(user.Identity))
                     {
                         Friend friend = new Friend(user);
-                        await friend.CreateAsync(dbFriend);
-                        user.AddFriend(friend);
+                        if (await friend.CreateAsync(dbFriend))
+                            user.AddFriend(friend);
                     }
                     await user.SendAllFriendAsync();
 
@@ -230,8 +235,8 @@ namespace Comet.Game.Packets
                             continue;
                         }
                         Enemy enemy = new Enemy(user);
-                        await enemy.CreateAsync(dbEnemy);
-                        user.AddEnemy(enemy);
+                        if (await enemy.CreateAsync(dbEnemy))
+                            user.AddEnemy(enemy);
                     }
                     await user.SendAllEnemiesAsync();
 
@@ -579,6 +584,10 @@ namespace Comet.Game.Packets
                     await targetUser.SendWindowToAsync(user);
                     break;
 
+                case ActionType.UserAttribInfo:
+                    await client.SendAsync(new MsgPlayerAttribInfo(client.Character));
+                    break;
+
                 default:
                     await client.SendAsync(this);
                     if (client.Character.IsPm())
@@ -636,7 +645,7 @@ namespace Comet.Game.Packets
             MapGold,
             RelationshipsEnemy = 123,
             ClientDialog = 126,
-            LoginComplete = 132,
+            //LoginComplete = 132,
             MapEffect = 134,
             RemoveEntity = 135,
             MapJump = 137,
@@ -649,7 +658,9 @@ namespace Comet.Game.Packets
             NinjaStep = 156,
             Away = 161,
             //SetGhost = 145,
+            LoginComplete = 251,
             FriendObservation = 310,
+            UserAttribInfo = 408
         }
     }
 }

@@ -91,7 +91,6 @@ namespace Comet.Account.Packets
                 writer.Write(Port); // 12
                 writer.Write(0); // 16
                 writer.Write(IPAddress, 16); // 20
-                writer.Write((ushort) 0);
             }
 
             return writer.ToArray();

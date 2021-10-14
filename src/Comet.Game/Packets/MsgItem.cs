@@ -33,7 +33,7 @@ using Comet.Game.States.NPCs;
 using Comet.Game.World.Maps;
 using Comet.Network.Packets;
 using Comet.Shared;
-using Org.BouncyCastle.Crypto.Tls;
+using static Comet.Game.States.Items.Item;
 
 #endregion
 
@@ -74,12 +74,28 @@ namespace Comet.Game.Packets
         }
 
         // Packet Properties
+        public int Padding { get; set; }
         public uint Identity { get; set; }
         public uint Command { get; set; }
         public uint Timestamp { get; set; }
         public uint Argument { get; set; }
         public ItemActionType Action { get; set; }
         public uint Argument2 { get; set; }
+        public uint Argument3 { get; set; }
+
+        public uint Headgear { get; set; }
+        public uint Necklace { get; set; }
+        public uint Armor { get; set; }
+        public uint RightHand { get; set; }
+        public uint LeftHand { get; set; }
+        public uint Ring { get; set; }
+        public uint Talisman { get; set; }
+        public uint Boots { get; set; }
+        public uint Garment { get; set; }
+        public uint RightAccessory { get; set; }
+        public uint LeftAccessory { get; set; }
+        public uint MountArmor { get; set; }
+        public uint Crop { get; set; }
 
         /// <summary>
         ///     Decodes a byte packet into the packet structure defined by this message class.
@@ -92,12 +108,14 @@ namespace Comet.Game.Packets
             var reader = new PacketReader(bytes);
             Length = reader.ReadUInt16();
             Type = (PacketType)reader.ReadUInt16();
+            Padding = reader.ReadInt32();
             Identity = reader.ReadUInt32();
             Command = reader.ReadUInt32();
             Action = (ItemActionType)reader.ReadUInt32();
             Timestamp = reader.ReadUInt32();
             Argument = reader.ReadUInt32();
             Argument2 = reader.ReadUInt32();
+            Argument3 = reader.ReadUInt32();
         }
 
         /// <summary>
@@ -110,12 +128,27 @@ namespace Comet.Game.Packets
         {
             var writer = new PacketWriter();
             writer.Write((ushort)Type);
-            writer.Write(Identity);
-            writer.Write(Command);
-            writer.Write((uint)Action);
-            writer.Write(Timestamp);
-            writer.Write(Argument);
-            writer.Write(Argument2);
+            writer.Write(Environment.TickCount);
+            writer.Write(Identity); // 8
+            writer.Write(Command); // 12
+            writer.Write((uint)Action); // 16
+            writer.Write(Timestamp); // 20
+            writer.Write(Argument); // 24
+            writer.Write(Argument2); // 28
+            writer.Write(Argument3); // 32
+            writer.Write(Headgear); // 36
+            writer.Write(Necklace); // 40
+            writer.Write(Armor); // 44
+            writer.Write(RightHand); // 48
+            writer.Write(LeftHand); // 52
+            writer.Write(Ring); // 56
+            writer.Write(Talisman); // 60
+            writer.Write(Boots); // 64
+            writer.Write(Garment); // 68
+            writer.Write(RightAccessory); // 72
+            writer.Write(LeftAccessory); // 76
+            writer.Write(MountArmor); // 80
+            writer.Write(Crop); // 84
             return writer.ToArray();
         }
 
@@ -758,6 +791,52 @@ namespace Comet.Game.Packets
             }
         }
 
+        public void Append(ItemPosition pos, uint id)
+        {
+            switch (pos)
+            {
+                case ItemPosition.Headwear:
+                    Headgear = id;
+                    break;
+                case ItemPosition.Necklace:
+                    Necklace = id;
+                    break;
+                case ItemPosition.Ring:
+                    Ring = id;
+                    break;
+                case ItemPosition.RightHand:
+                    RightHand = id;
+                    break;
+                case ItemPosition.LeftHand:
+                    LeftHand = id;
+                    break;
+                case ItemPosition.Armor:
+                    Armor = id;
+                    break;
+                case ItemPosition.Boots:
+                    Boots = id;
+                    break;
+                case ItemPosition.SteedArmor:
+                    MountArmor = id;
+                    break;
+                case ItemPosition.Crop:
+                    Crop = id;
+                    break;
+                case ItemPosition.Gourd:
+                    Talisman = id;
+                    break;
+                case ItemPosition.RightHandAccessory:
+                    RightAccessory = id;
+                    break;
+                case ItemPosition.LeftHandAccessory:
+                    LeftAccessory = id;
+                    break;
+                case ItemPosition.Garment:
+                    Garment = id;
+                    break;
+            }
+        }
+
         /// <summary>
         ///     Enumeration type for defining item actions that may be requested by the user,
         ///     or given to by the server. Allows for action handling as a packet subtype.
@@ -796,7 +875,18 @@ namespace Comet.Game.Packets
             TalismanProgress = 35,
             TalismanProgressEmoney = 36,
             InventoryDropItem = 37,
-            InventoryDropSilver = 38
+            InventoryDropSilver = 38,
+            GemCompose = 39,
+            TortoiseCompose = 40,
+            ActivateAccessory = 41,
+            SocketEquipment = 43,
+            AlternativeEquipment = 45,
+            DisplayGears = 46,
+            MergeItems = 48,
+            SplitItems = 49,
+            RequestItemTooltip = 52,
+            DegradeEquipment = 54,
+            ForgingBuy = 55
         }
     }
 }

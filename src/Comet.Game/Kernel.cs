@@ -51,7 +51,7 @@ namespace Comet.Game
     /// </summary>
     public static class Kernel
     {
-        public const int SERVER_VERSION = 5180;
+        public const int SERVER_VERSION = 5838;
         public static readonly string Version;
 
         /// <summary>

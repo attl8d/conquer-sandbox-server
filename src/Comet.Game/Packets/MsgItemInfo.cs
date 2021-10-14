@@ -94,6 +94,9 @@ namespace Comet.Game.Packets
         public bool IsBound { get; set; }
         public uint CompositionProgress { get; set; }
         public bool Inscribed { get; set; }
+        public int RemainingTime { get; set; }
+        public int ActivationTime { get; set; }
+        public ushort PackageAmount { get; set; }
 
         /// <summary>
         ///     Encodes the packet structure defined by this message class into a byte packet
@@ -114,21 +117,24 @@ namespace Comet.Game.Packets
             writer.Write(SocketProgress); // 20
             writer.Write((byte) SocketOne); // 24
             writer.Write((byte) SocketTwo); // 25
-            writer.Write((byte) Effect); // 26
-            writer.Write((byte) 0); // 27
-            writer.Write(Plus); // 28
-            writer.Write(Bless); // 29
-            writer.Write(IsBound); // 30
-            writer.Write(Enchantment); // 31
-            writer.Write(AntiMonster); // 32
-            writer.Write(IsSuspicious); // 36
-            writer.Write((byte) 0); // 37
-            writer.Write(IsLocked); // 38
-            writer.Write((byte) 0); // 39
-            writer.Write((int) Color); // 40
-            writer.Write(CompositionProgress); // 44
-            writer.BaseStream.Seek(2, SeekOrigin.Current);
-            writer.Write(Inscribed ? 1 : 0);
+            writer.Write((ushort)0); // 26
+            writer.Write((byte) Effect); // 28
+            writer.Write(0); // 29
+            writer.Write(Plus); // 33
+            writer.Write(Bless); // 34
+            writer.Write(IsBound); // 35
+            writer.Write((int) Enchantment); // 36
+            writer.Write(AntiMonster); // 40
+            writer.Write(IsSuspicious); // 44
+            writer.Write((byte) 0); // 45
+            writer.Write(IsLocked); // 46
+            writer.Write((byte) 0); // 47
+            writer.Write((int) Color); // 48
+            writer.Write(CompositionProgress); // 52
+            writer.Write(Inscribed ? 1 : 0); // 56
+            writer.Write(RemainingTime);
+            writer.Write(ActivationTime);
+            writer.Write(PackageAmount);
             return writer.ToArray();
         }
 

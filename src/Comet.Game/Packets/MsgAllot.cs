@@ -36,10 +36,11 @@ namespace Comet.Game.Packets
             Type = PacketType.MsgAllot;
         }
 
-        public ushort Force { get; set; }
-        public ushort Speed { get; set; }
-        public ushort Health { get; set; }
-        public ushort Soul { get; set; }
+        public int Identity { get; set; } // ??
+        public int Force { get; set; }
+        public int Speed { get; set; }
+        public int Health { get; set; }
+        public int Soul { get; set; }
 
         /// <summary>
         ///     Decodes a byte packet into the packet structure defined by this message class.
@@ -52,10 +53,11 @@ namespace Comet.Game.Packets
             var reader = new PacketReader(bytes);
             Length = reader.ReadUInt16();
             Type = (PacketType)reader.ReadUInt16();
-            Force = reader.ReadByte();
-            Speed = reader.ReadByte();
-            Health = reader.ReadByte();
-            Soul = reader.ReadByte();
+            Identity = reader.ReadInt32();
+            Force = reader.ReadInt32();
+            Speed = reader.ReadInt32();
+            Health = reader.ReadInt32();
+            Soul = reader.ReadInt32();
         }
 
         /// <summary>
@@ -68,10 +70,10 @@ namespace Comet.Game.Packets
         {
             var writer = new PacketWriter();
             writer.Write((ushort)Type);
-            writer.Write((byte)Force);
-            writer.Write((byte)Speed);
-            writer.Write((byte)Health);
-            writer.Write((byte)Soul);
+            writer.Write(Force);
+            writer.Write(Speed);
+            writer.Write(Health);
+            writer.Write(Soul);
             return writer.ToArray();
         }
 
@@ -86,32 +88,28 @@ namespace Comet.Game.Packets
         {
             Character user = client.Character;
 
-            if (Force > 0 && Force <= user.AttributePoints)
-            {
-                user.Strength += 1;
-                user.AttributePoints -= 1;
-            }
-            if (Speed > 0 && Speed <= user.AttributePoints)
-            {
-                user.Agility += 1;
-                user.AttributePoints -= 1;
-            }
-            if (Health > 0 && Health <= user.AttributePoints)
-            {
-                user.Vitality += 1;
-                user.AttributePoints -= 1;
-            }
-            if (Soul > 0 && Soul <= user.AttributePoints)
-            {
-                user.Spirit += 1;
-                user.AttributePoints -= 1;
-            }
+            if (Force < 0 || Speed < 0 || Health < 0 || Soul < 0)
+                return;
 
-            await user.SendAsync(new MsgUserAttrib(client.Identity, ClientUpdateType.Strength, client.Character.Strength));
-            await user.SendAsync(new MsgUserAttrib(client.Identity, ClientUpdateType.Agility, client.Character.Agility));
-            await user.SendAsync(new MsgUserAttrib(client.Identity, ClientUpdateType.Vitality, client.Character.Vitality));
-            await user.SendAsync(new MsgUserAttrib(client.Identity, ClientUpdateType.Spirit, client.Character.Spirit));
-            await user.SendAsync(new MsgUserAttrib(client.Identity, ClientUpdateType.Atributes, client.Character.AttributePoints));
+            if (Force > short.MaxValue || Speed > short.MaxValue || Health > short.MaxValue || Soul > short.MaxValue)
+                return;
+
+            int total = Force + Speed + Health + Soul;
+            if (total < client.Character.AttributePoints)
+                return;
+
+            await client.Character.AddAttributesAsync(ClientUpdateType.Strength, Force);
+            await client.Character.AddAttributesAsync(ClientUpdateType.Agility, Speed);
+            await client.Character.AddAttributesAsync(ClientUpdateType.Vitality, Health);
+            await client.Character.AddAttributesAsync(ClientUpdateType.Spirit, Soul);
+
+            await client.Character.AddAttributesAsync(ClientUpdateType.Atributes, total * -1);
+
+            //await user.SendAsync(new MsgUserAttrib(client.Identity, ClientUpdateType.Strength, client.Character.Strength));
+            //await user.SendAsync(new MsgUserAttrib(client.Identity, ClientUpdateType.Agility, client.Character.Agility));
+            //await user.SendAsync(new MsgUserAttrib(client.Identity, ClientUpdateType.Vitality, client.Character.Vitality));
+            //await user.SendAsync(new MsgUserAttrib(client.Identity, ClientUpdateType.Spirit, client.Character.Spirit));
+            //await user.SendAsync(new MsgUserAttrib(client.Identity, ClientUpdateType.Atributes, client.Character.AttributePoints));
 
             await user.SaveAsync();
         }

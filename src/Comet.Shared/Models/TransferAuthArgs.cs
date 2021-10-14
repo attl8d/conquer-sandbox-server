@@ -33,5 +33,6 @@ namespace Comet.Shared.Models
         public ushort AuthorityID { get; set; }
         public string AuthorityName { get; set; }
         public byte VipLevel { get; set; }
+        public int LastLogin { get; set; }
     }
 }

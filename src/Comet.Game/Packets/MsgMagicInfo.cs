@@ -21,6 +21,7 @@
 
 #region References
 
+using System;
 using System.Threading.Tasks;
 using Comet.Game.States;
 using Comet.Network.Packets;
@@ -34,8 +35,10 @@ namespace Comet.Game.Packets
         public MsgMagicInfo()
         {
             Type = PacketType.MsgMagicInfo;
+            Timestamp = Environment.TickCount;
         }
 
+        public int Timestamp { get; set; }
         public uint Experience { get; set; }
         public ushort Magictype { get; set; }
         public ushort Level { get; set; }
@@ -51,6 +54,7 @@ namespace Comet.Game.Packets
             var reader = new PacketReader(bytes);
             Length = reader.ReadUInt16();
             Type = (PacketType)reader.ReadUInt16();
+            Timestamp = reader.ReadInt32();
             Experience = reader.ReadUInt32();
             Magictype = reader.ReadUInt16();
             Level = reader.ReadUInt16();
@@ -66,6 +70,7 @@ namespace Comet.Game.Packets
         {
             var writer = new PacketWriter();
             writer.Write((ushort)Type);
+            writer.Write(Timestamp);
             writer.Write(Experience);
             writer.Write(Magictype);
             writer.Write(Level);

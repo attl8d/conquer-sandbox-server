@@ -332,6 +332,8 @@ namespace Comet.Game.States.Items
 
             await item.SaveAsync();
 
+            await SyncEquipmentAsync();
+
             switch (position)
             {
                 case Item.ItemPosition.Headwear:
@@ -339,6 +341,11 @@ namespace Comet.Game.States.Items
                 case Item.ItemPosition.LeftHand:
                 case Item.ItemPosition.Armor:
                 case Item.ItemPosition.Garment:
+
+                case Item.ItemPosition.RightHandAccessory:
+                case Item.ItemPosition.LeftHandAccessory:
+                case Item.ItemPosition.Steed:
+                case Item.ItemPosition.SteedArmor:
                     await m_user.Screen.BroadcastRoomMsgAsync(new MsgPlayer(m_user), false);
                     break;
             }
@@ -400,6 +407,8 @@ namespace Comet.Game.States.Items
                 await item.SaveAsync();
             }
 
+            await SyncEquipmentAsync();
+
             switch (position)
             {
                 case Item.ItemPosition.Headwear:
@@ -407,6 +416,11 @@ namespace Comet.Game.States.Items
                 case Item.ItemPosition.LeftHand:
                 case Item.ItemPosition.Armor:
                 case Item.ItemPosition.Garment:
+
+                case Item.ItemPosition.RightHandAccessory:
+                case Item.ItemPosition.LeftHandAccessory:
+                case Item.ItemPosition.Steed:
+                case Item.ItemPosition.SteedArmor:
                     await m_user.Screen.BroadcastRoomMsgAsync(new MsgPlayer(m_user), false);
                     break;
             }
@@ -446,7 +460,7 @@ namespace Comet.Game.States.Items
 
             if (item.RequiredProfession > 0)
             {
-                int nRequireProfSort = item.RequiredProfession % 1000 / 10;
+                int nRequireProfSort = item.RequiredProfession / 1000;
                 int nRequireProfLevel = item.RequiredProfession % 10;
                 int nProfSort = m_user.ProfessionSort;
                 int nProfLevel = m_user.ProfessionLevel;
@@ -1206,15 +1220,34 @@ namespace Comet.Game.States.Items
         /// </summary>
         public async Task SendAsync()
         {
+            MsgItem msg = new()
+            {
+                Action = MsgItem.ItemActionType.DisplayGears
+            };
             foreach (var item in m_dicEquipment.Values)
             {
                 await m_user.SendAsync(new MsgItemInfo(item));
+                msg.Append(item.Position, item.Identity);
             }
+            await m_user.SendAsync(msg);
 
             foreach (var item in m_dicInventory.Values)
             {
                 await m_user.SendAsync(new MsgItemInfo(item));
             }
+        }
+
+        public Task SyncEquipmentAsync()
+        {
+            MsgItem msg = new()
+            {
+                Action = MsgItem.ItemActionType.DisplayGears
+            };
+            foreach (var item in m_dicEquipment.Values)
+            {
+                msg.Append(item.Position, item.Identity);
+            }
+            return m_user.SendAsync(msg);
         }
 
         public Item GetItemByType(uint type)

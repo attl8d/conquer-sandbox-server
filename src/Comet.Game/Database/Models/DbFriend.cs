@@ -38,8 +38,6 @@ namespace Comet.Game.Database.Models
 
         [Column("friend")] public virtual uint TargetIdentity { get; set; }
 
-        [Column("friendname")] public virtual string TargetName { get; set; }
-
         [Column("time")] public virtual DateTime Time { get; set; }
     }
 }

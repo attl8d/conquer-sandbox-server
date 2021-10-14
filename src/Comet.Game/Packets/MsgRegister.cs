@@ -22,6 +22,8 @@
 #region References
 
 using System;
+using System.IO;
+using System.Runtime.Caching;
 using System.Threading.Tasks;
 using Comet.Game.Database;
 using Comet.Game.Database.Models;
@@ -30,6 +32,7 @@ using Comet.Game.States;
 using Comet.Game.States.Items;
 using Comet.Network.Packets;
 using Comet.Shared;
+using Comet.Shared.Models;
 
 #endregion
 
@@ -59,11 +62,14 @@ namespace Comet.Game.Packets
         private static readonly ushort[] m_startY = {378, 394, 384, 365, 365, 378, 396};
 
         // Packet Properties
+        public int Cancel { get; set; }
         public string Username { get; set; }
         public string CharacterName { get; set; }
         public string MaskedPassword { get; set; }
+        public string UnknownString { get; set; }
         public ushort Mesh { get; set; }
         public ushort Class { get; set; }
+        public uint UnknownInt { get; set; }
         public uint Token { get; set; }
 
         /// <summary>
@@ -77,12 +83,15 @@ namespace Comet.Game.Packets
             var reader = new PacketReader(bytes);
             Length = reader.ReadUInt16();
             Type = (PacketType) reader.ReadUInt16();
-            Username = reader.ReadString(16);
-            CharacterName = reader.ReadString(16);
-            MaskedPassword = reader.ReadString(16);
-            Mesh = reader.ReadUInt16();
-            Class = reader.ReadUInt16();
-            Token = reader.ReadUInt32();
+            Cancel = reader.ReadInt32(); // 4
+            Username = reader.ReadString(16); // 8
+            CharacterName = reader.ReadString(16); // 24
+            MaskedPassword = reader.ReadString(16); // 40
+            UnknownString = reader.ReadString(16); // 56
+            Mesh = reader.ReadUInt16(); // 72
+            Class = reader.ReadUInt16(); // 74
+            Token = reader.ReadUInt32(); // 76
+            UnknownInt = reader.ReadUInt32(); // 80
         }
 
         /// <summary>
@@ -94,6 +103,12 @@ namespace Comet.Game.Packets
         /// <param name="client">Client requesting packet processing</param>
         public override async Task ProcessAsync(Client client)
         {
+            if (Cancel != 0)
+            {
+                client.Disconnect();
+                return;
+            }
+
             // Validate that the player has access to character creation
             if (client.Creation == null || Token != client.Creation.Token ||
                 !Kernel.Registration.Contains(Token))
@@ -142,12 +157,9 @@ namespace Comet.Game.Packets
                 Mesh = Mesh,
                 Silver = 1000,
                 Level = 1,
-                //MapID = 1002,
-                //X = m_startX[await Kernel.NextAsync(m_startX.Length) % m_startX.Length],
-                //Y = m_startY[await Kernel.NextAsync(m_startY.Length) % m_startY.Length],
-                MapID = 1010,
-                X = 61,
-                Y = 109,
+                MapID = 1002,
+                X = m_startX[await Kernel.NextAsync(m_startX.Length) % m_startX.Length],
+                Y = m_startY[await Kernel.NextAsync(m_startY.Length) % m_startY.Length],
                 Strength = allot.Strength,
                 Agility = allot.Agility,
                 Vitality = allot.Vitality,
@@ -202,7 +214,20 @@ namespace Comet.Game.Packets
             {
                 await Log.WriteLogAsync(LogLevel.Exception, $"Exception thrown when generating initial status for user. Msg: {e.Message}");
             }
-            await client.SendAsync(RegisterOk);
+
+            // Store in the login cache with an absolute timeout
+            TransferAuthArgs args = new ()
+            {
+                AccountID = client.AccountIdentity,
+                AuthorityID = client.AuthorityLevel,
+                AuthorityName = "",
+                IPAddress = client.IPAddress
+            };
+
+            var timeoutPolicy = new CacheItemPolicy { AbsoluteExpiration = DateTimeOffset.Now.AddSeconds(10) }; // :] don't be late
+            Kernel.Logins.Set(Token.ToString(), args, timeoutPolicy);
+
+            await client.SendAsync(LoginOk);
         }
 
         private async Task GenerateInitialEquipmentAsync(DbCharacter user)

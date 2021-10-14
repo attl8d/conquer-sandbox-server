@@ -2107,7 +2107,7 @@ namespace Comet.Game.States.Items
             LeftHandAccessory = 16,
             SteedArmor = 17,
             Crop = 18,
-            EquipmentEnd = Steed,
+            EquipmentEnd = Crop,
 
             AltHead = 21,
             AltNecklace = 22,

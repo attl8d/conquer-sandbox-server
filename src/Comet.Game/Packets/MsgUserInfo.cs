@@ -21,6 +21,7 @@
 
 #region References
 
+using System;
 using System.Collections.Generic;
 using System.IO;
 using Comet.Game.Database.Models;
@@ -51,7 +52,7 @@ namespace Comet.Game.Packets
             Mesh = character.Mesh;
             Hairstyle = character.Hairstyle;
             Silver = character.Silvers;
-            Jewels = character.ConquerPoints;
+            ConquerPoints = character.ConquerPoints;
             Experience = character.Experience;
             Strength = character.Strength;
             Agility = character.Agility;
@@ -80,7 +81,7 @@ namespace Comet.Game.Packets
         public uint Mesh { get; set; }
         public ushort Hairstyle { get; set; }
         public uint Silver { get; set; }
-        public uint Jewels { get; set; }
+        public uint ConquerPoints { get; set; }
         public ulong Experience { get; set; }
         public ushort Strength { get; set; }
         public ushort Agility { get; set; }
@@ -100,6 +101,10 @@ namespace Comet.Game.Packets
         public uint EnlightenExp { get; set; }
         public uint VipLevel { get; set; }
         public ushort UserTitle { get; set; }
+        public uint ConquerPointsBound { get; set; }
+        public byte CurrentAstProf { get; set; }
+        public int RidePetPoints { get; set; }
+        public ushort Country { get; set; }
         public string CharacterName { get; set; }
         public string SpouseName { get; set; }
 
@@ -113,37 +118,50 @@ namespace Comet.Game.Packets
         {
             var writer = new PacketWriter();
             writer.Write((ushort) Type); // 2
-            writer.Write(Identity); // 4
-            writer.Write(Mesh); // 8
-            writer.Write(Hairstyle); // 12
-            writer.Write(Silver); // 14
-            writer.Write(Jewels); // 18
-            writer.Write(Experience); // 22
-            writer.Write((ulong) 0); // 30
-            writer.Write((ulong) 0); // 38
-            writer.Write((uint) 0); // 46
-            writer.Write(Strength); // 50
-            writer.Write(Agility); // 52
-            writer.Write(Vitality); // 54
-            writer.Write(Spirit); // 56
-            writer.Write(AttributePoints); // 58
-            writer.Write(HealthPoints); // 60 
-            writer.Write(ManaPoints); // 62
-            writer.Write(KillPoints); // 64 
-            writer.Write(Level); // 66
-            writer.Write(CurrentClass); // 67
-            writer.Write(PreviousClass); // 68
-            writer.Write(Rebirths); // 69 
-            writer.Write(FirstClass); // 70
-            writer.Write(QuizPoints); // 71
-            writer.Write(EnlightenPoints); // 75
-            writer.Write(EnlightenExp); // 77
-            writer.Write((ushort) 0); // 81
-            writer.Write(VipLevel); // 83
-            writer.Write(UserTitle); // 87
+            writer.Write(Environment.TickCount); // 4
+            writer.Write(Identity); // 8
+            writer.Write((ushort)0); // 12
+            writer.Write(Mesh); // 14
+            writer.Write(Hairstyle); // 18
+            writer.Write(Silver); // 20
+            writer.Write(ConquerPoints); // 24
+            writer.Write(Experience); // 28
+            writer.Write((ulong) 0); // 36
+            writer.Write((ulong) 0); // 44
+            writer.Write((uint) 0); // 52
+            writer.Write(Strength); // 56
+            writer.Write(Agility); // 58
+            writer.Write(Vitality); // 60
+            writer.Write(Spirit); // 62
+            writer.Write(AttributePoints); // 64
+            writer.Write(HealthPoints); // 66
+            writer.Write(ManaPoints); // 68
+            writer.Write(KillPoints); // 70 
+            writer.Write((ushort)0); // 72
+            writer.Write(Level); // 74
+            writer.Write(CurrentClass); // 75
+            writer.Write(FirstClass); // 76
+            writer.Write(PreviousClass); // 77
+            writer.Write((byte)0); // 78
+            writer.Write(Rebirths); // 79
+            writer.Write(true); // 80 Name Displayed
+            writer.Write(QuizPoints); // 81
+            writer.Write(0);
+            writer.Write(EnlightenPoints); // 89
+            writer.Write(EnlightenExp); // 91
+            writer.Write((ushort) 0); // 95
+            writer.Write(VipLevel); // 97
+            writer.Write(UserTitle); // 101
+            writer.Write(ConquerPointsBound); // 103
+            writer.Write(CurrentAstProf); // 107
+            writer.Write(0); // 108
+            writer.Write(0); // 112
+            writer.Write(RidePetPoints); // 116
+            writer.Write(Country); // 120
             writer.Write(new List<string>
             {
                 CharacterName,
+                "None", // nop
                 SpouseName
             });
             return writer.ToArray();

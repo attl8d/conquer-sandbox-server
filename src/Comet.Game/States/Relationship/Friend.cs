@@ -25,6 +25,7 @@ using System;
 using System.Threading.Tasks;
 using Comet.Game.Database;
 using Comet.Game.Database.Models;
+using Comet.Game.Database.Repositories;
 using Comet.Game.Packets;
 using Comet.Game.States.Syndicates;
 using Comet.Shared;
@@ -38,13 +39,15 @@ namespace Comet.Game.States.Relationship
         private DbFriend m_dbFriend;
         private Character m_owner;
 
+        private string m_TargetName;
+
         public Friend(Character owner)
         {
             m_owner = owner;
         }
 
         public uint Identity => m_dbFriend.TargetIdentity;
-        public string Name => m_dbFriend.TargetName;
+        public string Name => m_TargetName;
         public bool Online => User != null;
         public Character User => Kernel.RoleManager.GetUser(Identity);
         
@@ -54,16 +57,21 @@ namespace Comet.Game.States.Relationship
             {
                 UserIdentity = m_owner.Identity,
                 TargetIdentity = user.Identity,
-                TargetName = user.Name,
                 Time = DateTime.Now
             };
             return true;
         }
 
-        public Task CreateAsync(DbFriend friend)
+        public async Task<bool> CreateAsync(DbFriend friend)
         {
             m_dbFriend = friend;
-            return Task.CompletedTask;
+
+            var target = await CharactersRepository.FindByIdentityAsync(friend.TargetIdentity);
+            if (target == null)
+                return false;
+
+            m_TargetName = target.Name;
+            return true;
         }
 
         public async Task SendAsync()

@@ -21,6 +21,7 @@
 
 #region References
 
+using System;
 using System.Collections.Generic;
 using System.Threading.Tasks;
 using Comet.Game.States;
@@ -67,6 +68,7 @@ namespace Comet.Game.Packets
         {
             var writer = new PacketWriter();
             writer.Write((ushort) Type);
+            writer.Write(Environment.TickCount);
             writer.Write(Identity);
             Amount = Attributes.Count;
             writer.Write(Amount);

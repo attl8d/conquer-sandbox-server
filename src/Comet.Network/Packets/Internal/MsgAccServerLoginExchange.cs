@@ -7,6 +7,7 @@
         public ushort AuthorityID { get; set; }
         public string AuthorityName { get; set; }
         public byte VipLevel { get; set; }
+        public int LastLogin { get; set; }
 
         public override void Decode(byte[] bytes)
         {
@@ -18,6 +19,7 @@
             AuthorityID = reader.ReadUInt16();
             AuthorityName = reader.ReadString(32);
             VipLevel = reader.ReadByte();
+            LastLogin = reader.ReadInt32();
         }
 
         public override byte[] Encode()
@@ -30,6 +32,7 @@
             writer.Write(AuthorityID);
             writer.Write(AuthorityName, 32);
             writer.Write(VipLevel);
+            writer.Write(LastLogin);
             return writer.ToArray();
         }
     }

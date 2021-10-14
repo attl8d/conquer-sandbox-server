@@ -15,7 +15,17 @@ namespace Comet.Account.Packets
             switch (Result)
             {
                 case ExchangeResult.AlreadySignedIn:
+                    {
+                        await player.SendAsync(new MsgConnectEx(MsgConnectEx.RejectionCode.PleaseTryAgainLater));
+                        await Log.WriteLogAsync("login", LogLevel.Info, $"[{player.Account.Username}] failed was not authorized to login on [{player.Realm.Name}].");
+                        break;
+                    }
                 case ExchangeResult.ServerFull:
+                    {
+                        await player.SendAsync(new MsgConnectEx(MsgConnectEx.RejectionCode.ServerFull));
+                        await Log.WriteLogAsync("login", LogLevel.Info, $"[{player.Account.Username}] failed was not authorized to login on [{player.Realm.Name}].");
+                        break;
+                    }
                 case ExchangeResult.Success:
                     {
                         // continue login sequence

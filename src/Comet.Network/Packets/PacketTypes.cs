@@ -49,6 +49,7 @@ namespace Comet.Network.Packets
         MsgDetainItemInfo = 1034,
         MsgGodExp = 1036,
         MsgPing = 1037,
+        MsgPlayerAttribInfo = 1040,
         MsgEnemyList = 1041,
         MsgMonsterTransform = 1042,
         MsgTeamRoll = 1043,
@@ -79,7 +80,7 @@ namespace Comet.Network.Packets
         MsgSyncAction = 1114,
 
         MsgInviteTrans = 1126,
-
+        MsgVipFunctionValidNotify = 1129,
         MsgTitle = 1130,
 
         MsgTaskStatus = 1134,
@@ -111,6 +112,9 @@ namespace Comet.Network.Packets
         MsgGuideContribute = 2067,
         MsgQuiz = 2068,
         MsgRelation = 2071,
+
+        MsgUserIpInfo = 2078,
+        MsgServerInfo = 2079,
 
         MsgFactionRankInfo = 2101,
         MsgSynMemberList = 2102,

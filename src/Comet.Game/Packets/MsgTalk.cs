@@ -140,6 +140,7 @@ namespace Comet.Game.Packets
         }
 
         // Packet Properties
+        public int Unknown4 { get; set; }
         public Color Color { get; set; }
         public TalkChannel Channel { get; set; }
         public TalkStyle Style { get; set; }
@@ -162,6 +163,7 @@ namespace Comet.Game.Packets
             var reader = new PacketReader(bytes);
             Length = reader.ReadUInt16();
             Type = (PacketType)reader.ReadUInt16();
+            Unknown4 = reader.ReadInt32();
             Color = Color.FromArgb(reader.ReadInt32());
             Channel = (TalkChannel)reader.ReadUInt16();
             Style = (TalkStyle)reader.ReadUInt16();
@@ -189,6 +191,7 @@ namespace Comet.Game.Packets
         {
             var writer = new PacketWriter();
             writer.Write((ushort)Type);
+            writer.Write(Unknown4);
             writer.Write(Color.FromArgb(0, Color).ToArgb());
             writer.Write((ushort)Channel);
             writer.Write((ushort)Style);

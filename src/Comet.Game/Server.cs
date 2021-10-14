@@ -34,6 +34,7 @@ using Comet.Shared;
 using System.Security.Cryptography;
 using System.Linq;
 using System.Text;
+using Comet.Network.Security;
 
 #endregion
 
@@ -212,6 +213,10 @@ namespace Comet.Game
 
                     case PacketType.MsgPing:
                         msg = new MsgPing();
+                        break;
+
+                    case PacketType.MsgPlayerAttribInfo:
+                        msg = new MsgPlayerAttribInfo();
                         break;
 
                     case PacketType.MsgConnect:

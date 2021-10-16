@@ -930,6 +930,12 @@ namespace Comet.Game.States
             set => m_dbObject.ConquerPoints = value;
         }
 
+        public uint ConquerPointsBound
+        {
+            get => m_dbObject?.ConquerPointsBound ?? 0;
+            set => m_dbObject.ConquerPointsBound = value;
+        }
+
         public uint StorageMoney
         {
             get => m_dbObject?.StorageMoney ?? 0;
@@ -1005,6 +1011,42 @@ namespace Comet.Game.States
             ConquerPoints = (uint)(ConquerPoints - amount);
             await SaveAsync();
             await SynchroAttributesAsync(ClientUpdateType.ConquerPoints, ConquerPoints);
+            return true;
+        }
+
+        public async Task<bool> ChangeBoundConquerPointsAsync(int amount, bool notify = false)
+        {
+            if (amount > 0)
+            {
+                await AwardBoundConquerPointsAsync(amount);
+                return true;
+            }
+            if (amount < 0)
+            {
+                return await SpendBoundConquerPointsAsync(amount * -1, notify);
+            }
+            return false;
+        }
+
+        public async Task AwardBoundConquerPointsAsync(int amount)
+        {
+            ConquerPointsBound = (uint)(ConquerPointsBound + amount);
+            await SaveAsync();
+            await SynchroAttributesAsync(ClientUpdateType.BoundConquerPoints, ConquerPointsBound);
+        }
+
+        public async Task<bool> SpendBoundConquerPointsAsync(int amount, bool notify = false)
+        {
+            if (amount > ConquerPoints)
+            {
+                if (notify)
+                    await SendAsync(Language.StrNotEnoughEmoney, MsgTalk.TalkChannel.TopLeft, Color.Red);
+                return false;
+            }
+
+            ConquerPointsBound = (uint)(ConquerPointsBound - amount);
+            await SaveAsync();
+            await SynchroAttributesAsync(ClientUpdateType.BoundConquerPoints, ConquerPointsBound);
             return true;
         }
 
@@ -5577,6 +5619,12 @@ namespace Comet.Game.States
 
         #endregion
 
+        #region Flag
+
+        public UserFlagType Flag { get; set; }
+
+        #endregion
+
         #region Timer
 
         public uint DayResetDate
@@ -6161,6 +6209,15 @@ namespace Comet.Game.States
         TradePartner,
         Guide,
         Family
+    }
+
+    public enum UserFlagType : uint
+    {
+        None = 0,
+        CanClaim = 1 << 0,
+        ShowSpecialItems = 1 << 1,
+        ClaimGift = 1 << 2,
+        OnMeleeAttack = 1 << 3,
     }
 
     public enum PlayerCountry

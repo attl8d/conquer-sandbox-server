@@ -183,9 +183,6 @@ namespace Comet.Game.Packets
                         return;
                     }
 
-                    if (Item.IsShield(Command) || Item.IsHelmet(Command) || Item.IsArmor(Command))
-                        Command = Command - (Command % 1000 - Command % 100);
-
                     DbItemtype itemtype = Kernel.ItemManager.GetItemtype(Command);
                     if (itemtype == null)
                     {
@@ -224,6 +221,16 @@ namespace Comet.Game.Packets
                                 return;
 
                             if (!await user.SpendConquerPointsAsync((int)(itemtype.EmoneyPrice * amount), true))
+                                return;
+                            break;
+                        case Moneytype.ConquerPointsMono:
+                            if ((Moneytype)goods.Moneytype != Moneytype.ConquerPoints)
+                                return;
+
+                            if (itemtype.BoundEmoneyPrice == 0)
+                                return;
+
+                            if (!await user.SpendBoundConquerPointsAsync((int)(itemtype.BoundEmoneyPrice * amount), true))
                                 return;
                             break;
                         default:

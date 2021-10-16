@@ -1719,8 +1719,8 @@ namespace Comet.Game.States
             {
                 Identity = 0,
                 Action = StringAction.MapEffect,
-                PositionX = posX,
-                PositionY = posY,
+                X = posX,
+                Y = posY,
                 Strings = new List<string>
                 {
                     szEffect

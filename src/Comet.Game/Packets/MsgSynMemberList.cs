@@ -58,14 +58,16 @@ namespace Comet.Game.Packets
             foreach (var member in Members)
             {
                 writer.Write(member.Name, 16);
-                writer.Write(0);
+                //writer.Write(0);
                 writer.Write((int)((int)member.Nobility * 10 + member.LookFace % 10000 / 1000));
+                writer.Write(member.LookFace % 10000 / 1000);
                 writer.Write(member.Level);
                 writer.Write((uint) member.Rank);
                 writer.Write(member.PositionExpire);
                 writer.Write(member.TotalDonation);
                 writer.Write(member.IsOnline ? 1 : 0);
-                writer.Write(0); // test
+                writer.Write(65); // test
+                writer.Write(60); // last login
             }
             return writer.ToArray();
         }

@@ -74,6 +74,7 @@ namespace Comet.Game.Packets
             Length = reader.ReadUInt16();
             Type = (PacketType)reader.ReadUInt16();
             Identity = reader.ReadUInt32();
+            reader.ReadUInt32();
             MaxLife = reader.ReadUInt32();
             Life = reader.ReadUInt32();
             PosX = reader.ReadUInt16();
@@ -96,6 +97,7 @@ namespace Comet.Game.Packets
             var writer = new PacketWriter();
             writer.Write((ushort)Type); // 2
             writer.Write(Identity); // 4
+            writer.Write(0);
             writer.Write(MaxLife); // 8
             writer.Write(Life); // 12
             writer.Write(PosX); // 16

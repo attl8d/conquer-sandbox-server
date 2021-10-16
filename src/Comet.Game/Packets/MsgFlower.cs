@@ -41,7 +41,8 @@ namespace Comet.Game.Packets
         {
             SendFlower,
             QueryIcon,
-            QueryData
+            QueryFlower,
+            QueryGift
         }
 
         public enum FlowerType
@@ -61,10 +62,10 @@ namespace Comet.Game.Packets
             Orchid,
             Tulip,
 
-            Kiss = 1,
-            Love = 2,
-            Tins = 3,
-            Jade = 4,
+            Kiss = RedRose,
+            Love = WhiteRose,
+            Tins = Orchid,
+            Jade = Tulip,
         }
 
         public RequestMode Mode { get; set; }
@@ -111,21 +112,29 @@ namespace Comet.Game.Packets
             writer.Write((uint)Mode);
             writer.Write(Identity);
             writer.Write(ItemIdentity);
-            if (Mode == RequestMode.QueryIcon)
+
+            switch (Mode)
             {
-                writer.Write(RedRoses);
-                writer.Write(RedRosesToday);
-                writer.Write(WhiteRoses);
-                writer.Write(WhiteRosesToday);
-                writer.Write(Orchids);
-                writer.Write(OrchidsToday);
-                writer.Write(Tulips);
-                writer.Write(TulipsToday);
-            }
-            else
-            {
-                writer.Write(SenderName, 16);
-                writer.Write(ReceiverName, 16);
+                case RequestMode.QueryGift:
+                case RequestMode.QueryFlower:
+                case RequestMode.QueryIcon:
+                    {
+                        writer.Write(RedRoses);
+                        writer.Write(RedRosesToday);
+                        writer.Write(WhiteRoses);
+                        writer.Write(WhiteRosesToday);
+                        writer.Write(Orchids);
+                        writer.Write(OrchidsToday);
+                        writer.Write(Tulips);
+                        writer.Write(TulipsToday);
+                        break;
+                    }
+                default:
+                    {
+                        writer.Write(SenderName, 16);
+                        writer.Write(ReceiverName, 16);
+                        break;
+                    }
             }
             writer.Write(SendAmount);
             writer.Write((uint)SendFlowerType);

@@ -39,7 +39,7 @@ namespace Comet.Game.Packets
 
         public MsgSynpOffer(SyndicateMember member)
         {
-            Identity = 0;
+            Identity = member.UserIdentity;
             Silver = member.Silvers / 10000;
             ConquerPoints = member.ConquerPointsDonation * 20;
             GuideDonation = member.GuideDonation;

@@ -465,9 +465,15 @@ namespace Comet.Game.Packets
                     {
                         await user.SendAsync(new MsgFlower
                         {
-                            Mode = MsgFlower.RequestMode.QueryIcon
+                            Mode = user.Gender == 1 ? MsgFlower.RequestMode.QueryFlower : MsgFlower.RequestMode.QueryGift,
+                            RedRoses = 1
                         });
                     }
+
+                    await user.SendAsync(new MsgFlower
+                    {
+                        Mode = user.Gender == 2 ? MsgFlower.RequestMode.QueryFlower : MsgFlower.RequestMode.QueryGift,
+                    });
 
                     await user.CheckPkStatusAsync();
                     await user.LoadStatusAsync();
@@ -478,6 +484,10 @@ namespace Comet.Game.Packets
                     await user.Screen.SynchroScreenAsync();
                     await Kernel.PigeonManager.SendToUserAsync(user);
                     await user.SendMerchantAsync();
+                    await user.SendAsync(new MsgHangUp
+                    {
+                        Param = 341
+                    });
 
                     if (user.VipLevel > 0)
                     {

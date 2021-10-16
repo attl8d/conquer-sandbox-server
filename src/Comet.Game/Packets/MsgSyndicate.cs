@@ -78,12 +78,12 @@ namespace Comet.Game.Packets
         {
             var writer = new PacketWriter();
             writer.Write((ushort)Type);
-            writer.Write((uint) Mode);
-            writer.Write(Identity);
-            writer.Write(ConditionLevel);
-            writer.Write(ConditionMetempsychosis);
-            writer.Write(ConditionProfession);
-            writer.Write(Strings);
+            writer.Write((uint) Mode); // 4
+            writer.Write(Identity); // 8
+            writer.Write(ConditionLevel); // 12
+            writer.Write(ConditionMetempsychosis); // 16
+            writer.Write(ConditionProfession); // 20
+            writer.Write(Strings); // 24
             return writer.ToArray();
         }
 

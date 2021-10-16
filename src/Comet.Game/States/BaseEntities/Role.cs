@@ -911,7 +911,7 @@ namespace Comet.Game.States.BaseEntities
         {
             MsgName msg = new MsgName
             {
-                Identity = Identity, Action = StringAction.RoleEffect, PositionX = MapX, PositionY = MapY
+                Identity = Identity, Action = StringAction.RoleEffect, X = MapX, Y = MapY
             };
             msg.Strings.Add(effect);
             await Map.BroadcastRoomMsgAsync(MapX, MapY, msg, self ? 0 : Identity);

@@ -68,6 +68,8 @@ namespace Comet.Game.Packets
             FirstClass = character.PreviousProfession;
             Rebirths = character.Metempsychosis;
             QuizPoints = character.QuizPoints;
+            Flag = (int)character.Flag;
+            ConquerPointsBound = character.ConquerPointsBound;
             //EnlightenPoints = 200;
             //EnlightenExp = 2;
             VipLevel = character.BaseVipLevel;
@@ -78,6 +80,7 @@ namespace Comet.Game.Packets
 
         // Packet Properties
         public uint Identity { get; set; }
+        public ushort AppearenceType { get; set; }
         public uint Mesh { get; set; }
         public ushort Hairstyle { get; set; }
         public uint Silver { get; set; }
@@ -96,7 +99,9 @@ namespace Comet.Game.Packets
         public byte PreviousClass { get; set; }
         public byte Rebirths { get; set; }
         public byte FirstClass { get; set; }
+        public byte Nobility { get; set; }
         public uint QuizPoints { get; set; }
+        public int Flag { get; set; }
         public ushort EnlightenPoints { get; set; }
         public uint EnlightenExp { get; set; }
         public uint VipLevel { get; set; }
@@ -120,7 +125,7 @@ namespace Comet.Game.Packets
             writer.Write((ushort) Type); // 2
             writer.Write(Environment.TickCount); // 4
             writer.Write(Identity); // 8
-            writer.Write((ushort)0); // 12
+            writer.Write(AppearenceType); // 12 Appearence Type
             writer.Write(Mesh); // 14
             writer.Write(Hairstyle); // 18
             writer.Write(Silver); // 20
@@ -142,11 +147,11 @@ namespace Comet.Game.Packets
             writer.Write(CurrentClass); // 75
             writer.Write(FirstClass); // 76
             writer.Write(PreviousClass); // 77
-            writer.Write((byte)0); // 78
+            writer.Write(Nobility); // 78
             writer.Write(Rebirths); // 79
             writer.Write(true); // 80 Name Displayed
             writer.Write(QuizPoints); // 81
-            writer.Write(0);
+            writer.Write(Flag); // 85
             writer.Write(EnlightenPoints); // 89
             writer.Write(EnlightenExp); // 91
             writer.Write((ushort) 0); // 95
@@ -154,8 +159,8 @@ namespace Comet.Game.Packets
             writer.Write(UserTitle); // 101
             writer.Write(ConquerPointsBound); // 103
             writer.Write(CurrentAstProf); // 107
-            writer.Write(0); // 108
-            writer.Write(0); // 112
+            writer.Write(0); // 108 AstProfInfo (level + idk)
+            writer.Write(0); // 112 
             writer.Write(RidePetPoints); // 116
             writer.Write(Country); // 120
             writer.Write(new List<string>

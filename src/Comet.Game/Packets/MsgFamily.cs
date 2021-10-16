@@ -76,6 +76,7 @@ namespace Comet.Game.Packets
                         writer.Write(member.Rank);
                         writer.Write((ushort) (member.Online ? 1 : 0));
                         writer.Write((int) member.Profession);
+                        writer.Write(0);
                         writer.Write(member.Donation);
                     }
                     else if (obj is RelationListStruct relation)

@@ -41,9 +41,21 @@ namespace Comet.Game.Packets
             Type = PacketType.MsgName;
         }
 
+        public int Timestamp { get; set; }
         public uint Identity { get; set; }
-        public ushort PositionX { get; set; }
-        public ushort PositionY { get; set; }
+
+        public ushort X
+        {
+            get => (ushort)(Identity - (Y << 16));
+            set => Identity = (uint)(Y << 16 | value);
+        }
+
+        public ushort Y
+        {
+            get => (ushort)(Identity >> 16);
+            set => Identity = (uint)(value << 16) | Identity;
+        }
+
         public StringAction Action { get; set; }
         public List<string> Strings = new List<string>();
 
@@ -58,9 +70,8 @@ namespace Comet.Game.Packets
             var reader = new PacketReader(bytes);
             Length = reader.ReadUInt16();
             Type = (PacketType)reader.ReadUInt16();
+            Timestamp = reader.ReadInt32();
             Identity = reader.ReadUInt32();
-            //PositionX = reader.ReadUInt16();
-            //PositionY = reader.ReadUInt16();
             Action = (StringAction) reader.ReadByte();
             Strings = reader.ReadStrings();
         }
@@ -75,11 +86,10 @@ namespace Comet.Game.Packets
         {
             var writer = new PacketWriter();
             writer.Write((ushort)Type);
-            writer.Write(Identity);
-            //writer.Write(PositionX);
-            //writer.Write(PositionY);
-            writer.Write((byte) Action);
-            writer.Write(Strings);
+            writer.Write(Timestamp); // 4
+            writer.Write(Identity); // 8
+            writer.Write((byte) Action); // 12
+            writer.Write(Strings); // 13
             return writer.ToArray();
         }
 

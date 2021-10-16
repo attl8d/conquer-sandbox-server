@@ -140,6 +140,9 @@ namespace Comet.Game.Packets
         EnlightenPoints = 41,
         FamilySharedBattlePower = 42,
         TotemPoleBattlePower = 44,
+        BoundConquerPoints = 45,
+        AzureShield = 49,
+        SoulShackleTimer = 54,
 
         Vigor = 10000
     }

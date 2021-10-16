@@ -21,6 +21,7 @@
 
 #region References
 
+using System;
 using System.Collections.Generic;
 using System.Threading.Tasks;
 using Comet.Game.States;
@@ -35,8 +36,10 @@ namespace Comet.Game.Packets
         public MsgNpcInfo()
         {
             Type = PacketType.MsgNpcInfo;
+            Timestamp = Environment.TickCount;
         }
 
+        public int Timestamp { get; set; }
         public uint Identity { get; set; }
         public ushort PosX { get; set; }
         public ushort PosY { get; set; }
@@ -58,13 +61,13 @@ namespace Comet.Game.Packets
             var reader = new PacketReader(bytes);
             Length = reader.ReadUInt16();
             Type = (PacketType)reader.ReadUInt16();
+            Timestamp = reader.ReadInt32();
             Identity = reader.ReadUInt32();
+            reader.ReadUInt32();
             PosX = reader.ReadUInt16();
             PosY = reader.ReadUInt16();
             Lookface = reader.ReadUInt16();
             NpcType = reader.ReadUInt16();
-            Unknown0 = reader.ReadByte();
-            Unknown1 = reader.ReadByte();
             List<string> names = reader.ReadStrings();
             if (names.Count > 0)
                 Name = names[0];
@@ -80,15 +83,15 @@ namespace Comet.Game.Packets
         {
             var writer = new PacketWriter();
             writer.Write((ushort)Type);
-            writer.Write(Identity);
-            writer.Write(PosX);
-            writer.Write(PosY);
-            writer.Write(Lookface);
-            writer.Write(NpcType);
-            writer.Write(Sort);
-            writer.Write(Unknown0);
-            writer.Write(Unknown1);
-            writer.Write(new List<string> { Name });
+            writer.Write(Timestamp); // 4
+            writer.Write(Identity); // 8
+            writer.Write(0); // 12
+            writer.Write(PosX); // 16
+            writer.Write(PosY); // 18
+            writer.Write(Lookface); // 20            
+            writer.Write(NpcType); // 22
+            writer.Write(Sort); // 24
+            writer.Write(new List<string> { Name }); // 26
             return writer.ToArray();
         }
 

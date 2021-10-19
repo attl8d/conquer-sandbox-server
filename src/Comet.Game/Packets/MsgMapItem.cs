@@ -38,6 +38,7 @@ namespace Comet.Game.Packets
             Type = PacketType.MsgMapItem;
         }
 
+        public int Timestamp;
         public uint Identity;
         public uint Itemtype;
         public ushort MapX;
@@ -56,6 +57,7 @@ namespace Comet.Game.Packets
             var reader = new PacketReader(bytes);
             Length = reader.ReadUInt16();
             Type = (PacketType)reader.ReadUInt16();
+            Timestamp = reader.ReadInt32();
             Identity = reader.ReadUInt32();
             Itemtype = reader.ReadUInt32();
             MapX = reader.ReadUInt16();
@@ -74,12 +76,17 @@ namespace Comet.Game.Packets
         {
             var writer = new PacketWriter();
             writer.Write((ushort)Type);
-            writer.Write(Identity);
-            writer.Write(Itemtype);
-            writer.Write(MapX);
-            writer.Write(MapY);
-            writer.Write((ushort) Color);
-            writer.Write((ushort) Mode);
+            writer.Write(Timestamp); // 4
+            writer.Write(Identity); // 8
+            writer.Write(Itemtype); // 12
+            writer.Write(MapX); // 16
+            writer.Write(MapY); // 18
+            writer.Write((ushort) Color); // 20
+            writer.Write((ushort) Mode); // 22
+            writer.Write((byte) 0); // 24
+            writer.Write((byte) 0); // 25
+            writer.Write((byte) 0); // 26
+            writer.Write((byte) 0); // 27
             return writer.ToArray();
         }
 

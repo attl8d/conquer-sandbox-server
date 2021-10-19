@@ -54,31 +54,30 @@ namespace Comet.Game.Packets
         {
             PacketWriter writer = new PacketWriter();
             writer.Write((ushort) PacketType.MsgFactionRankInfo);
-            writer.Write((ushort) DonationType);
-            writer.Write(Count = (ushort) Members.Count);
-            writer.Write((int) MAX_COUNT);
-            writer.Write(0);
+            writer.Write((ushort) DonationType); // 4
+            writer.Write(Count = (ushort) Members.Count); // 6
+            writer.Write((int) MAX_COUNT); // 8
+            writer.Write(0); // 12
             foreach (var member in Members)
             {
-                //writer.Write(member.PlayerIdentity); // 0
-                writer.Write((uint)member.Rank); // 4
-                writer.Write(member.Position); // 8
-                writer.Write(member.Silvers); // 12
-                writer.Write(member.ConquerPoints); // 16
+                writer.Write((uint)member.Rank); // 0
+                writer.Write(member.Position); // 4
+                writer.Write(member.Silvers); // 8
+                writer.Write(member.ConquerPoints); // 12
+                writer.Write(member.GuideDonation); // 16
                 writer.Write(member.PkDonation); // 20
-                writer.Write(member.GuideDonation); // 24
-                writer.Write(member.ArsenalDonation); // 28
-                writer.Write(member.RedRose); // 32
-                writer.Write(member.WhiteRose); // 36
-                writer.Write(member.Orchid); // 40
-                writer.Write(member.Tulip); // 44
-                writer.Write(member.TotalDonation); // 48
-                writer.Write(member.UsableDonation);
-                writer.Write(0);
-                writer.Write(0);
-                writer.Write(0);
-                writer.Write(0);
-                writer.Write(member.PlayerName, 16); // 52
+                writer.Write(member.ArsenalDonation); // 24
+                writer.Write(member.RedRose); // 28
+                writer.Write(member.WhiteRose); // 32
+                writer.Write(member.Orchid); // 36
+                writer.Write(member.Tulip); // 40
+                writer.Write(member.TotalDonation); // 44
+                //writer.Write(member.UsableDonation);
+                //writer.Write(0);
+                //writer.Write(0);
+                //writer.Write(0);
+                writer.Write(member.PlayerName, 16); // 48
+                //writer.Write(0);
                 writer.Write(0);
             }
             return writer.ToArray();

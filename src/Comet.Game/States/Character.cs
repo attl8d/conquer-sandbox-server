@@ -1568,6 +1568,9 @@ namespace Comet.Game.States
                 return false;
             }
 
+            if (mapItem.Bound && mapItem.OwnerIdentity != Identity)
+                return false;
+
             if (mapItem.OwnerIdentity != Identity && mapItem.IsPrivate())
             {
                 Character owner = Kernel.RoleManager.GetUser(mapItem.OwnerIdentity);
@@ -1600,7 +1603,6 @@ namespace Comet.Game.States
                     });
                 }
                 await SendAsync(string.Format(Language.StrPickupSilvers, mapItem.Money));
-
                 await Log.GmLogAsync("pickup_money", $"User[{Identity},{Name}] picked up {mapItem.Money} at {MapIdentity}({Map.Name}) {MapX}, {MapY}");
             }
             else
@@ -1613,23 +1615,6 @@ namespace Comet.Game.States
                     await SendAsync(string.Format(Language.StrPickupItem, item.Name));
 
                     await Log.GmLogAsync("pickup_item", $"User[{Identity},{Name}] picked up (id:{mapItem.ItemIdentity}) {mapItem.Itemtype} at {MapIdentity}({Map.Name}) {MapX}, {MapY}");
-
-                    if (VipLevel > 0 && mapItem.IsConquerPointsPack())
-                    {
-                        await UserPackage.UseItemAsync(item.Identity, Item.ItemPosition.Inventory);
-                    }
-
-                    if (VipLevel > 1 && UserPackage.MultiCheckItem(Item.TYPE_METEOR, Item.TYPE_METEOR, 10, true))
-                    {
-                        await UserPackage.MultiSpendItemAsync(Item.TYPE_METEOR, Item.TYPE_METEOR, 10, true);
-                        await UserPackage.AwardItemAsync(Item.TYPE_METEOR_SCROLL);
-                    }
-
-                    if (VipLevel > 3 && UserPackage.MultiCheckItem(Item.TYPE_DRAGONBALL, Item.TYPE_DRAGONBALL, 10, true))
-                    {
-                        await UserPackage.MultiSpendItemAsync(Item.TYPE_DRAGONBALL, Item.TYPE_DRAGONBALL, 10, true);
-                        await UserPackage.AwardItemAsync(Item.TYPE_DRAGONBALL_SCROLL);
-                    }
                 }
             }
             
@@ -1687,14 +1672,15 @@ namespace Comet.Game.States
 
         #region Battle Attributes
 
+        public int TotemBattlePower => Syndicate?.GetSharedBattlePower(SyndicateRank) ?? 0;
+
         public override int BattlePower
         {
             get
             {
 #if BATTLE_POWER
                 int result = Level + Metempsychosis * 5 + (int) NobilityRank;
-                if (SyndicateIdentity > 0)
-                    result += Syndicate.GetSharedBattlePower(SyndicateRank);
+                result += TotemBattlePower;
                 result += Math.Max(FamilyBattlePower, Guide?.SharedBattlePower ?? 0);
                 for (Item.ItemPosition pos = Item.ItemPosition.EquipmentBegin; pos <= Item.ItemPosition.EquipmentEnd; pos++)
                 {
@@ -4884,6 +4870,24 @@ namespace Comet.Game.States
             set => m_dbObject.VipExpiration = value;
         }
 
+        public int UserVipFlag
+        {
+            get
+            {
+                switch (BaseVipLevel)
+                {
+                    case 1:
+                    case 2:
+                    case 3:
+                    case 4:
+                    case 5:
+                    case 6:
+                        return (int)VipFlags.FullVip;
+                }
+                return 0;
+            }
+        }
+
         #endregion
 
         #region User Title
@@ -5625,6 +5629,12 @@ namespace Comet.Game.States
 
         #endregion
 
+        #region Mail Box
+
+        public MailBox MailBox = null;
+
+        #endregion
+
         #region Timer
 
         public uint DayResetDate
@@ -5781,6 +5791,9 @@ namespace Comet.Game.States
                 {
                     await AddAttributesAsync(ClientUpdateType.Vigor, (long) Math.Max(10, Math.Min(200, MaxVigor * 0.005)));
                 }
+
+                if (MailBox != null)
+                    await MailBox.OnTimerAsync().ConfigureAwait(false);
 
                 if (!IsAlive)
                     return;
@@ -6218,6 +6231,38 @@ namespace Comet.Game.States
         ShowSpecialItems = 1 << 1,
         ClaimGift = 1 << 2,
         OnMeleeAttack = 1 << 3,
+    }
+
+    [Flags]
+    public enum VipFlags
+    {
+        VipOne,
+        VipTwo,
+        VipThree,
+        VipFour,
+        VipFive,
+        VipSix,
+
+        PortalTeleport = 0x1,
+        Avatar = 0x2,
+        MoreForVip = 0x4,
+        FrozenGrot = 0x8,
+        TeleportTeam = 0x10,
+        CityTeleport = 0x20,
+        CityTeleportTeam = 0x40,
+        BlessTime = 0x80,
+        OflineTG = 0x100,
+        RefinaryAndArtefacts = 0x200,
+        Friends = 0x400,
+        VipHaire = 0x800,
+        Labirint = 0x1000,
+        DailyQuests = 0x2000,
+        VipFurniture = 0x4000,
+        BonusLotery = 0x8000,
+        FullVip = PortalTeleport | Avatar | MoreForVip | FrozenGrot | TeleportTeam
+            | CityTeleport | CityTeleportTeam | BlessTime | OflineTG | RefinaryAndArtefacts
+            | Friends | VipHaire | Labirint | DailyQuests | VipFurniture | BonusLotery,
+        None = 0
     }
 
     public enum PlayerCountry

@@ -156,6 +156,8 @@ namespace Comet.Game.States
             set => m_dbMonster.Lookface = (ushort) value;
         }
 
+        public byte SpeciesType => m_dbMonster.SpeciesType;
+
         #endregion
 
         #region Battle Attributes
@@ -345,8 +347,6 @@ namespace Comet.Game.States
             if (IsPkKiller() || IsGuard() || IsEvilKiller() || IsDynaNpc() || attacker == null)
                 return;
 
-            uint idDropOwner = user?.Identity ?? 0;
-
             if (user?.Team != null)
             {
                 foreach (var member in user.Team.Members)
@@ -377,18 +377,11 @@ namespace Comet.Game.States
                 for (int i = 0; i < heapNum; i++)
                 {
                     uint moneyTmp = (uint)Calculations.MulDiv((int)moneyAve, 90 + await Kernel.NextAsync(3, 21), 100);
-
                     await DropMoneyAsync(moneyTmp, 0);
                 }
             }
-
-            if (await Kernel.ChanceCalcAsync(50, 16500))
-            {
-                uint cpsBagType = (uint)await Kernel.NextAsync(729910, 729912);
-                await DropItemAsync(cpsBagType, null);
-                await Log.GmLogAsync("emoney_bag", $"{idDropOwner},{cpsBagType},{attacker?.MapIdentity},{attacker?.MapX},{attacker?.MapY},{MapX},{MapY},{Identity}");
-            } 
-            else if (await Kernel.ChanceCalcAsync(625, 54_000_000))
+            
+            if (await Kernel.ChanceCalcAsync(625, 54_000_000))
             {
                 await DropItemAsync(Item.TYPE_DRAGONBALL, user);
                 await Kernel.RoleManager.BroadcastMsgAsync(
@@ -398,26 +391,22 @@ namespace Comet.Game.States
                 if (user != null)
                     await user.AddActivityPointsAsync(1);
             }
-            else if (await Kernel.ChanceCalcAsync(50, 42500))
+            else if (await Kernel.ChanceCalcAsync(25, 42_500))
             {
                 await DropItemAsync(Item.TYPE_METEOR, user);
             }
-            else if (await Kernel.ChanceCalcAsync(100, 45500))
+            else if (await Kernel.ChanceCalcAsync(100, 45_500))
             {
                 uint[] normalGem = {700001, 700011, 700021, 700031, 700041, 700051, 700061, 700071, 700101, 700121};
                 uint dGem = normalGem[await Kernel.NextAsync(normalGem.Length) % normalGem.Length];
                 if (dGem > 0)
                     await DropItemAsync(dGem, user); // normal gems
             }
-            else if (m_dbMonster.StcType == 17 && await Kernel.ChanceCalcAsync(2f))
-            {
-                await DropItemAsync(1080001, user); // emerald
-            }
-            else if (await Kernel.ChanceCalcAsync(43, 7500000)) // Fire Of Hell
+            else if (await Kernel.ChanceCalcAsync(43, 7_500_000)) // Fire Of Hell
             {
                 await DropItemAsync(1060101, user);
             }
-            else if (await Kernel.ChanceCalcAsync(43, 3500000)) // Bomb Scroll
+            else if (await Kernel.ChanceCalcAsync(43, 3_500_000)) // Bomb Scroll
             {
                 await DropItemAsync(1060100, user);
             }

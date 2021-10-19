@@ -198,6 +198,8 @@ namespace Comet.Game.States.Items
 
         public uint OwnerIdentity => m_idOwner;
 
+        public bool Bound { get; set; }
+
         public uint Money => m_moneyAmount;
 
         public bool IsPrivate()
@@ -218,11 +220,6 @@ namespace Comet.Game.States.Items
         public bool IsItem()
         {
             return !IsMoney() && !IsJewel();
-        }
-
-        public bool IsConquerPointsPack()
-        {
-            return Itemtype == 729910 || Itemtype == 729911 || Itemtype == 729912;
         }
 
         public MapItemInfo Info => m_info;
@@ -396,15 +393,18 @@ namespace Comet.Game.States.Items
 
         public override async Task SendSpawnToAsync(Character player)
         {
-            await player.SendAsync(new MsgMapItem
+            if (!Bound || OwnerIdentity == player.Identity)
             {
-                Identity = Identity,
-                MapX = MapX,
-                MapY = MapY,
-                Itemtype = Itemtype,
-                Mode = DropType.LayItem,
-                Color = m_info.Color
-            });
+                await player.SendAsync(new MsgMapItem
+                {
+                    Identity = Identity,
+                    MapX = MapX,
+                    MapY = MapY,
+                    Itemtype = Itemtype,
+                    Mode = DropType.LayItem,
+                    Color = m_info.Color
+                });
+            }
         }
 
         #endregion

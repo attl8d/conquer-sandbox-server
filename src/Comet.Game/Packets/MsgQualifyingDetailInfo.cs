@@ -55,10 +55,10 @@ namespace Comet.Game.Packets
             Ranking = reader.ReadInt32();
             Unknown = reader.ReadInt32();
             Status = (ArenaStatus) reader.ReadInt32();
-            Activity = reader.ReadUInt32();
-            TriumphToday20 = reader.ReadByte();
-            TriumphToday9 = reader.ReadByte();
-            Fill = reader.ReadUInt16();
+            //Activity = reader.ReadUInt32();
+            //TriumphToday20 = reader.ReadByte();
+            //TriumphToday9 = reader.ReadByte();
+            //Fill = reader.ReadUInt16();
             TotalWins = reader.ReadUInt32();
             TotalLoses = reader.ReadUInt32();
             TodayWins = reader.ReadUInt32();
@@ -75,17 +75,17 @@ namespace Comet.Game.Packets
             writer.Write(Ranking); // 4
             writer.Write(0); // 8
             writer.Write((int) Status); // 12
-            writer.Write(Activity); // Activity
-            writer.Write(TriumphToday20); // 20 Triumph Today 20
-            writer.Write(TriumphToday9); // 21 Triumph Today 9
-            writer.Write(Fill); // 22
-            writer.Write(TotalWins); // 24
-            writer.Write(TotalLoses); // 28
-            writer.Write(TodayWins); // Season Wins
-            writer.Write(TodayLoses); // Season Loss
-            writer.Write(HistoryHonor); // History Honor
-            writer.Write(CurrentHonor); // 44
-            writer.Write(Points); // 48
+            //writer.Write(Activity); // Activity
+            //writer.Write(TriumphToday20); // 16 Triumph Today 20
+            //writer.Write(TriumphToday9); // 17 Triumph Today 9
+            //writer.Write(Fill); // 18
+            writer.Write(TotalWins); // 20
+            writer.Write(TotalLoses); // 24
+            writer.Write(TodayWins); // 28
+            writer.Write(TodayLoses); // 32
+            writer.Write(HistoryHonor); // 36
+            writer.Write(CurrentHonor); // 40
+            writer.Write(Points); // 44
             return writer.ToArray();
         }
 

@@ -39,6 +39,7 @@ namespace Comet.Game.Packets
             Type = PacketType.MsgTeam;
         }
 
+        public int Timestamp { get; set; }
         public TeamAction Action { get; set; }
         public uint Identity { get; set; }
 
@@ -53,6 +54,7 @@ namespace Comet.Game.Packets
             var reader = new PacketReader(bytes);
             Length = reader.ReadUInt16();
             Type = (PacketType)reader.ReadUInt16();
+            Timestamp = reader.ReadInt32();
             Action = (TeamAction)reader.ReadUInt32();
             Identity = reader.ReadUInt32();
         }
@@ -67,6 +69,7 @@ namespace Comet.Game.Packets
         {
             var writer = new PacketWriter();
             writer.Write((ushort)Type);
+            writer.Write(Timestamp);
             writer.Write((uint)Action);
             writer.Write(Identity);
             return writer.ToArray();

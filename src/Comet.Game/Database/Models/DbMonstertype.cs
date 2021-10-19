@@ -87,6 +87,6 @@ namespace Comet.Game.Database.Models
         //[Column("")] public virtual byte EarthDef { get; set; }
         //[Column("")] public virtual byte WoodDef { get; set; }
         //[Column("")] public virtual byte MetalDef { get; set; }
-        //[Column("")] public virtual byte Boss { get; set; }
+        [Column("species_type")] public virtual byte SpeciesType { get; set; }
     }
 }

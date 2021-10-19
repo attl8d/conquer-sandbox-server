@@ -488,6 +488,7 @@ namespace Comet.Game.Packets
                     {
                         Param = 341
                     });
+                    user.MailBox = await MailBox.LoadAsync(user);
 
                     if (user.VipLevel > 0)
                     {

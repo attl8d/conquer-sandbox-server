@@ -54,7 +54,7 @@ namespace Comet.Game.Packets
             Name = reader.ReadString(16);
             Rank = reader.ReadInt32();
             Profession = reader.ReadInt32();
-            // Unknown40 = reader.ReadInt32();
+            Unknown40 = reader.ReadInt32();
             Points = reader.ReadInt32();
             Level = reader.ReadInt32();
         }
@@ -69,7 +69,7 @@ namespace Comet.Game.Packets
             writer.Write(Name, 16);
             writer.Write(Rank);
             writer.Write(Profession);
-            // writer.Write(Unknown40);
+            writer.Write(Unknown40);
             writer.Write(Points);
             writer.Write(Level);
             return writer.ToArray();

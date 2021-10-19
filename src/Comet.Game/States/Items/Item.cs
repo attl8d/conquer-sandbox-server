@@ -1192,18 +1192,18 @@ namespace Comet.Game.States.Items
             return Kernel.ItemManager.GetItemtype(firstId)?.Type ?? Type;
         }
 
-        public uint GetUpQualityGemAmount()
+        public int GetUpQualityGemAmount()
         {
             if (!GetUpEpQualityInfo(out var nChance, out _))
                 return 0;
-            return (uint)(100 / nChance + 1) * 12 / 10;
+            return (int)((100 / nChance + 1) * 12 / 10);
         }
 
-        public uint GetUpgradeGemAmount()
+        public int GetUpgradeGemAmount()
         {
             if (!GetUpLevelChance(out var nChance, out _))
                 return 0;
-            return (uint)(100 / nChance + 1) * 12 / 10;
+            return (int)(100 / nChance + 1) * 12 / 10;
         }
 
         public async Task<bool> DegradeItemAsync(bool bCheckDura = true)
@@ -1871,6 +1871,26 @@ namespace Comet.Game.States.Items
         public bool IsShield()
         {
             return IsShield(Type);
+        }
+
+        public bool IsRapier()
+        {
+            return IsRapier(Type);
+        }
+
+        public static bool IsRapier(uint type)
+        {
+            return GetItemSubType(type) == 611;
+        }
+
+        public bool IsPistol()
+        {
+            return IsPistol(Type);
+        }
+
+        public static bool IsPistol(uint type)
+        {
+            return GetItemSubType(type) == 612;
         }
 
         public bool IsExpend()

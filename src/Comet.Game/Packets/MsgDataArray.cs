@@ -25,6 +25,7 @@
 
 using System;
 using System.Collections.Generic;
+using System.Linq;
 using System.Threading.Tasks;
 using Comet.Game.Database.Models;
 using Comet.Game.States;
@@ -304,6 +305,163 @@ namespace Comet.Game.Packets
                     break;
                 }
 
+                case DataArrayMode.QuickCompose:
+                case DataArrayMode.QuickComposeMount:
+                    {
+                        double percent = (double)(target.CompositionProgress / (double)GetAddLevelExp(target.Plus, Action == DataArrayMode.QuickComposeMount) * 100);
+                        if (await Kernel.ChanceCalcAsync(percent))
+                        {
+                            target.ChangeAddition();
+                        }
+                        target.CompositionProgress = 0;
+                        break;
+                    }
+
+                case DataArrayMode.UpgradeItemLevel:
+                    {
+                        if (!IsItemUpgradable(target))
+                            return;
+
+                        var nextItemType = target.NextItemLevel();
+                        if (nextItemType == null)
+                        {
+                            await user.SendAsync(new MsgItem
+                            {
+                                Identity = target.Identity,                                
+                                Action = MsgItem.ItemActionType.EquipmentLevelUp
+                            });
+                            return;
+                        }
+
+                        List<Item> usable = new List<Item>();
+                        int totalGems = 0;
+                        if (IsMeteorLevelUpgrade(target))
+                        {
+                            for (int i = 1; i < Items.Count; i++)
+                            {
+                                if (Items[i] == 0)
+                                    break;
+
+                                Item minor = user.UserPackage.FindByIdentity(Items[i]);
+                                if (minor == null || minor.Position != Item.ItemPosition.Inventory)
+                                    continue;
+
+                                switch (minor.Type)
+                                {
+                                    case Item.TYPE_METEOR:
+                                    case Item.TYPE_METEORTEAR:
+                                        totalGems += 1;
+                                        break;
+                                    case Item.TYPE_METEOR_SCROLL:
+                                        totalGems += 10;
+                                        break;
+                                }
+
+                                usable.Add(minor);
+                            }
+
+                            int reqGems = target.GetUpgradeGemAmount();
+                            if (reqGems > totalGems)
+                            {
+                                foreach (var usage in usable)
+                                {
+                                    await user.UserPackage.RemoveFromInventoryAsync(usage, UserPackage.RemovalType.Delete);
+                                }
+
+                                double chance = totalGems / (double)reqGems * 100;
+                                if (!await Kernel.ChanceCalcAsync(chance))
+                                {
+                                    await user.SendAsync(new MsgItem
+                                    {
+                                        Identity = target.Identity,
+                                        Action = MsgItem.ItemActionType.EquipmentLevelUp
+                                    });
+                                    return;
+                                }
+                            }
+                            else
+                            {
+                                int usage = 0;
+                                foreach (var item in usable.OrderByDescending(x => x.Type))
+                                {
+                                    switch (item.Type)
+                                    {
+                                        case Item.TYPE_METEOR:
+                                        case Item.TYPE_METEORTEAR:
+                                            usage++;
+                                            break;
+                                        case Item.TYPE_METEOR_SCROLL:
+                                            usage += 10;
+                                            break;
+                                        default:
+                                            continue;
+                                    }
+
+                                    await user.UserPackage.RemoveFromInventoryAsync(item, UserPackage.RemovalType.Delete);
+                                    if (usage >= reqGems)
+                                        break;
+                                }
+
+                                int rebate = usage - reqGems;
+                                if (rebate > 0)
+                                {
+                                    for (int i = 0; i < rebate; i++)
+                                    {
+                                        await user.UserPackage.AwardItemAsync(Item.TYPE_METEOR);
+                                    }
+                                }
+                            }
+                        }
+                        else
+                        {
+                            if (Items.Count <= 1)
+                            {
+                                await user.SendAsync(new MsgItem
+                                {
+                                    Identity = target.Identity,
+                                    Action = MsgItem.ItemActionType.EquipmentLevelUp
+                                });
+                                return;
+                            }
+
+                            Item minor = user.UserPackage.FindByIdentity(Items[1]);
+                            if (minor == null)
+                            {
+                                await user.SendAsync(new MsgItem
+                                {
+                                    Identity = target.Identity,
+                                    Action = MsgItem.ItemActionType.EquipmentLevelUp
+                                });
+                                return;
+                            }
+
+                            if (!await user.UserPackage.SpendItemAsync(minor))
+                            {
+                                await user.SendAsync(new MsgItem
+                                {
+                                    Identity = target.Identity,
+                                    Action = MsgItem.ItemActionType.EquipmentLevelUp
+                                });
+                                return;
+                            }
+                        }
+
+                        await target.ChangeTypeAsync(nextItemType.Type);
+
+                        await user.SendAsync(new MsgItem
+                        {
+                            Identity = target.Identity,
+                            Argument = 1,
+                            Action = MsgItem.ItemActionType.EquipmentLevelUp
+                        });
+                        break;
+                    }
+
+                case DataArrayMode.UpgradeItemQuality:
+                    {
+                        break;
+                    }
+
                 default:
                     await Log.WriteLogAsync(LogLevel.Error, $"Invalid MsgDataArray Action: {Action}." +
                                                        $"{user.Identity},{user.Name},{user.Level},{user.MapIdentity}[{user.Map.Name}],{user.MapX},{user.MapY}");
@@ -367,6 +525,68 @@ namespace Comet.Game.Packets
                 case 11: return 9000;
                 default: return 0;
             }
+        }
+
+        private static bool IsMeteorLevelUpgrade(Item item)
+        {
+            switch (item.GetPosition())
+            {
+                case Item.ItemPosition.Headwear:
+                    return item.GetLevel() < 9;
+                case Item.ItemPosition.Necklace:
+                    return item.GetLevel() < 22;
+                case Item.ItemPosition.Ring:
+                    if (item.IsBangle())
+                        return item.GetLevel() < 22;
+                    return item.GetLevel() < 23;
+                case Item.ItemPosition.RightHand:
+                    if (item.IsBow())
+                        return item.GetLevel() < 21;
+                    return item.GetLevel() < 22;
+                case Item.ItemPosition.LeftHand:
+                    if (item.IsShield())
+                        return item.GetLevel() < 10;
+                    if (item.IsPistol())
+                        return item.GetLevel() < 22;
+                    return false;
+                case Item.ItemPosition.Armor:
+                    return item.GetLevel() < 9;
+                case Item.ItemPosition.Boots:
+                    return item.GetLevel() < 22;
+            }
+
+            return false;
+        }
+
+        private static bool IsItemUpgradable(Item item)
+        {
+            switch (item.GetPosition())
+            {
+                case Item.ItemPosition.Headwear:
+                    return item.GetLevel() < 30;
+                case Item.ItemPosition.Necklace:
+                    return item.GetLevel() < 26;
+                case Item.ItemPosition.Ring:
+                    if (item.IsBangle())
+                        return item.GetLevel() < 27;
+                    return item.GetLevel() < 26;
+                case Item.ItemPosition.RightHand:
+                    if (item.IsBow())
+                        return item.GetLevel() < 42;
+                    return item.GetLevel() < 43;
+                case Item.ItemPosition.LeftHand:
+                    if (item.IsShield())
+                        return item.GetLevel() < 30;
+                    if (item.IsPistol())
+                        return item.GetLevel() < 42;
+                    return false;
+                case Item.ItemPosition.Armor:
+                    return item.GetLevel() < 30;
+                case Item.ItemPosition.Boots:
+                    return item.GetLevel() < 24;
+            }
+
+            return false;
         }
     }
 }

@@ -219,6 +219,14 @@ namespace Comet.Game
                         msg = new MsgPlayerAttribInfo();
                         break;
 
+                    case PacketType.MsgMailOperation:
+                        msg = new MsgMailOperation();
+                        break;
+
+                    case PacketType.MsgMailList:
+                        msg = new MsgMailList();
+                        break;
+
                     case PacketType.MsgConnect:
                         msg = new MsgConnect();
                         break;

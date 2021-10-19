@@ -170,11 +170,6 @@ namespace Comet.Game.Packets
                             TulipsToday = flowerToday?.Tulips ?? 0
                         });
 
-                        await user.SendAsync(new MsgRank
-                        {
-                            Mode = RequestType.QueryIcon
-                        }); 
-
                         if (user.CanRefreshFlowerRank)
                         {
                             var roseRank = await FlowerManager.GetFlowerRankingAsync(MsgFlower.FlowerType.RedRose, 0, 100);
@@ -335,6 +330,11 @@ namespace Comet.Game.Packets
                             });
                             await user.SendAsync(msg);
                         }
+
+                        await user.SendAsync(new MsgRank
+                        {
+                            Mode = RequestType.QueryIcon
+                        });
 
                         break;
                     }

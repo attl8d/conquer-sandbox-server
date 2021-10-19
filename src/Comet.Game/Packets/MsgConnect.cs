@@ -142,7 +142,7 @@ namespace Comet.Game.Packets
                     await client.SendAsync(new MsgServerInfo());
                     await client.SendAsync(new MsgUserInfo(client.Character));
                     await client.SendAsync(new MsgData(DateTime.Now));
-                    await client.SendAsync(new MsgVipFunctionValidNotify());
+                    await client.SendAsync(new MsgVipFunctionValidNotify() { Flags = client.Character.UserVipFlag });
 #if DEBUG
                     await client.Character.SendAsync($"Server is running in DEBUG mode. Version: [{Kernel.SERVER_VERSION}]{Kernel.Version}", TalkChannel.Talk);
 #endif

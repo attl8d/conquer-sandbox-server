@@ -115,6 +115,7 @@ namespace Comet.Game.Database
         public virtual DbSet<DbFamilyBattleEffectShareLimit> FamilyBattleEffectShareLimits { get; set; }
         public virtual DbSet<DbCard> Cards { get; set; }
         public virtual DbSet<DbDetainedItem> DetainedItems { get; set; }
+        public virtual DbSet<DbMail> Mails { get; set; }
 
         public static void Initialize()
         {

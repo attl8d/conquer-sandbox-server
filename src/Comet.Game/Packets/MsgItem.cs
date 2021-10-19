@@ -33,7 +33,6 @@ using Comet.Game.States.NPCs;
 using Comet.Game.World.Maps;
 using Comet.Network.Packets;
 using Comet.Shared;
-using static Comet.Game.States.Items.Item;
 
 #endregion
 
@@ -199,9 +198,9 @@ namespace Comet.Game.Packets
                     }
 
                     const byte MONOPOLY_NONE_B = 0;
-                    const byte MONOPOLY_BOUND_B = (byte)Item.ITEM_MONOPOLY_MASK;
+                    const byte MONOPOLY_BOUND_B = Item.ITEM_MONOPOLY_MASK;
                     byte monopoly = MONOPOLY_NONE_B;
-                    switch ((Moneytype)goods.Moneytype)
+                    switch ((Moneytype)Argument3)
                     {
                         case Moneytype.Silver:
                             if ((Moneytype)goods.Moneytype != Moneytype.Silver)
@@ -232,6 +231,8 @@ namespace Comet.Game.Packets
 
                             if (!await user.SpendBoundConquerPointsAsync((int)(itemtype.BoundEmoneyPrice * amount), true))
                                 return;
+
+                            monopoly = MONOPOLY_BOUND_B;
                             break;
                         default:
                             await Log.WriteLogAsync(LogLevel.Cheat,
@@ -798,47 +799,47 @@ namespace Comet.Game.Packets
             }
         }
 
-        public void Append(ItemPosition pos, uint id)
+        public void Append(Item.ItemPosition pos, uint id)
         {
             switch (pos)
             {
-                case ItemPosition.Headwear:
+                case Item.ItemPosition.Headwear:
                     Headgear = id;
                     break;
-                case ItemPosition.Necklace:
+                case Item.ItemPosition.Necklace:
                     Necklace = id;
                     break;
-                case ItemPosition.Ring:
+                case Item.ItemPosition.Ring:
                     Ring = id;
                     break;
-                case ItemPosition.RightHand:
+                case Item.ItemPosition.RightHand:
                     RightHand = id;
                     break;
-                case ItemPosition.LeftHand:
+                case Item.ItemPosition.LeftHand:
                     LeftHand = id;
                     break;
-                case ItemPosition.Armor:
+                case Item.ItemPosition.Armor:
                     Armor = id;
                     break;
-                case ItemPosition.Boots:
+                case Item.ItemPosition.Boots:
                     Boots = id;
                     break;
-                case ItemPosition.SteedArmor:
+                case Item.ItemPosition.SteedArmor:
                     MountArmor = id;
                     break;
-                case ItemPosition.Crop:
+                case Item.ItemPosition.Crop:
                     Crop = id;
                     break;
-                case ItemPosition.Gourd:
+                case Item.ItemPosition.Gourd:
                     Talisman = id;
                     break;
-                case ItemPosition.RightHandAccessory:
+                case Item.ItemPosition.RightHandAccessory:
                     RightAccessory = id;
                     break;
-                case ItemPosition.LeftHandAccessory:
+                case Item.ItemPosition.LeftHandAccessory:
                     LeftAccessory = id;
                     break;
-                case ItemPosition.Garment:
+                case Item.ItemPosition.Garment:
                     Garment = id;
                     break;
             }

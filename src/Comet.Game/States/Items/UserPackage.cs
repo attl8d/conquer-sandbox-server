@@ -1059,8 +1059,24 @@ namespace Comet.Game.States.Items
 
         public int InventoryCount => m_dicInventory.Count;
 
-        public bool IsPackSpare(int size)
+        public bool IsPackSpare(int size, uint type = 0)
         {
+            if (type != 0)
+            {
+                var itemType = Kernel.ItemManager.GetItemtype(type);
+                int free = 0;
+                if (itemType != null)
+                {
+                    foreach (var item in m_dicInventory.Values
+                        .Where(x => x.Type == type && x.AccumulateNum < x.MaxAccumulateNum))
+                    {
+                        free += (int) (item.MaxAccumulateNum - item.AccumulateNum);
+                        if (free >= size)
+                            return true;
+                    }
+                    return free + (MAX_INVENTORY_CAPACITY - m_dicInventory.Count) * Math.Max(1u, itemType.AccumulateLimit) < size;
+                }    
+            }
             return m_dicInventory.Count + size <= MAX_INVENTORY_CAPACITY;
         }
 

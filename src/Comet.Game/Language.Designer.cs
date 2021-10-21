@@ -79,6 +79,15 @@ namespace Comet.Game {
         }
         
         /// <summary>
+        ///   Looks up a localized string similar to {0} achieved [Achievement {1}]!.
+        /// </summary>
+        public static string StrAchievementReceive {
+            get {
+                return ResourceManager.GetString("StrAchievementReceive", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Looks up a localized string similar to Atention! Your account may have been hacked! Someone outside of your network is trying to login..
         /// </summary>
         public static string StrAnotherLoginOtherIp {

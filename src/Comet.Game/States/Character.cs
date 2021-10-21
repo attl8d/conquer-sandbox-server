@@ -3485,6 +3485,14 @@ namespace Comet.Game.States
                 await friend.User.SendAsync(msg);
         }
 
+        public async Task BroadcastToFriendsAsync(string message, Color? color = null)
+        {
+            foreach (var friend in m_dicFriends.Values.Where(x => x.Online))
+            {
+                await friend.User.SendAsync(new MsgTalk(Identity, MsgTalk.TalkChannel.Friend, color ?? Color.Red, message));
+            }
+        }
+
         #endregion
 
         #region Enemy
@@ -3564,6 +3572,8 @@ namespace Comet.Game.States
         #region Trade Partner
 
         private ConcurrentDictionary<uint, TradePartner> m_tradePartners = new ConcurrentDictionary<uint, TradePartner>();
+
+        public int TradePartnerAmount => m_tradePartners.Count;
 
         public void AddTradePartner(TradePartner partner)
         {
@@ -5632,6 +5642,22 @@ namespace Comet.Game.States
         #region Mail Box
 
         public MailBox MailBox = null;
+
+        #endregion
+
+        #region Achievements
+
+        public Achievements Achievements = null;
+
+        #endregion
+
+        #region Nationality
+
+        public PlayerCountry PlayerCountry
+        {
+            get => (PlayerCountry)m_dbObject.Nationality;
+            set => m_dbObject.Nationality = (ushort)value;
+        }
 
         #endregion
 

@@ -92,10 +92,10 @@ namespace Comet.Game.Packets
 {
             Character user = client.Character;
 
-            if (Items.Count < 2)
+            if (Items.Count < 2 && Action != DataArrayMode.QuickCompose && Action != DataArrayMode.QuickComposeMount)
                 return;
 
-            Item target = user.UserPackage[Items[0]];
+            Item target = user.UserPackage.FindByIdentity(Items[0]);
 
             if (target == null)
                 return;
@@ -412,7 +412,7 @@ namespace Comet.Game.Packets
                                 }
                             }
                         }
-                        else
+                        else // Dragon Balls
                         {
                             if (Items.Count <= 1)
                             {
@@ -435,6 +435,22 @@ namespace Comet.Game.Packets
                                 return;
                             }
 
+                            int backDb = 0;
+                            if (minor.Type == Item.TYPE_DRAGONBALL_SCROLL)
+                            {
+                                if (!user.UserPackage.IsPackSpare(9))
+                                {
+                                    await user.SendAsync(new MsgItem
+                                    {
+                                        Identity = target.Identity,
+                                        Action = MsgItem.ItemActionType.EquipmentLevelUp
+                                    });
+                                    return;
+                                }
+
+                                backDb = 9;
+                            }
+
                             if (!await user.UserPackage.SpendItemAsync(minor))
                             {
                                 await user.SendAsync(new MsgItem
@@ -443,6 +459,11 @@ namespace Comet.Game.Packets
                                     Action = MsgItem.ItemActionType.EquipmentLevelUp
                                 });
                                 return;
+                            }
+
+                            for (int i = 0; i < backDb; i++)
+                            {
+                                await user.UserPackage.AwardItemAsync(Item.TYPE_DRAGONBALL);
                             }
                         }
 

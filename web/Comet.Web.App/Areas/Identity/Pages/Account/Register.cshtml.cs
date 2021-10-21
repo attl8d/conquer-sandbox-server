@@ -13,12 +13,12 @@ using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.RazorPages;
 using Microsoft.AspNetCore.WebUtilities;
 using Microsoft.Extensions.Logging;
-using static Comet.Web.App.Areas.Identity.Pages.Account.LoginModel;
 using Comet.Web.App.Services.Password;
 using Comet.Web.App.Services;
 using Comet.Web.App.Data;
 using Microsoft.EntityFrameworkCore;
 using System.Security.Claims;
+using static Comet.Web.App.Areas.Identity.Pages.Account.LoginModel;
 
 namespace Comet.Web.App.Areas.Identity.Pages.Account
 {

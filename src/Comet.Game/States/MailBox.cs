@@ -95,11 +95,11 @@ namespace Comet.Game.States
                     EmailIdentity = mail.Identity,
                     SenderName = mail.SenderName,
                     Header = mail.Title,
-                    Money = (uint)mail.Money,
-                    ConquerPoints = mail.ConquerPoints,
-                    ItemType = mail.Action != 0 || mail.Item != 0 ? 1u : 0u,
+                    Money = (uint) (mail.HasClaimedMoney ? 0 : mail.Money),
+                    ConquerPoints = mail.HasClaimedConquerPoints ? 0 : mail.ConquerPoints,
+                    ItemType = mail.HasClaimedItem ? 0 : mail.Item,
                     Timestamp = (int) mail.Expiration,
-                    HasAttachment = mail.Action != 0 ? 1 : 0
+                    HasAttachment = mail.HasClaimedItem && mail.HasClaimedAction ? 1 : 0
                 });
 
                 if (!mail.IsNotified)
@@ -188,6 +188,8 @@ namespace Comet.Game.States
 
             await mUser.UserPackage.AddItemAsync(item);
             await mail.SetFlagAsync(MailMessage.MessageFlag.ItemClaimed);
+
+            await ClaimActionAsync(idMail);
         }
 
         public Task NotifyAsync()
@@ -236,10 +238,10 @@ namespace Comet.Game.States
 
         public bool IsRead => (Flag & MessageFlag.Read) != 0;
         public bool IsDeleted => (Flag & MessageFlag.Deleted) != 0;
-        public bool HasClaimedMoney => (Flag & MessageFlag.MoneyClaimed) != 0;
-        public bool HasClaimedConquerPoints => (Flag & MessageFlag.EmoneyClaimed) != 0;
-        public bool HasClaimedItem => (Flag & MessageFlag.ItemClaimed) != 0;
-        public bool HasClaimedAction => (Flag & MessageFlag.ActionClaimed) != 0;
+        public bool HasClaimedMoney => (Flag & MessageFlag.MoneyClaimed) != 0 && Money != 0;
+        public bool HasClaimedConquerPoints => (Flag & MessageFlag.EmoneyClaimed) != 0 && ConquerPoints != 0;
+        public bool HasClaimedItem => (Flag & MessageFlag.ItemClaimed) != 0 && Item != 0;
+        public bool HasClaimedAction => (Flag & MessageFlag.ActionClaimed) != 0 && Action != 0;
         public bool IsNotified => (Flag & MessageFlag.Notified) != 0;
         public bool HasExpired => UnixTimestamp.Now() > Expiration;
 

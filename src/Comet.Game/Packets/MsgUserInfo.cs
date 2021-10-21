@@ -74,6 +74,7 @@ namespace Comet.Game.Packets
             //EnlightenExp = 2;
             VipLevel = character.BaseVipLevel;
             UserTitle = character.UserTitle;
+            Country = (ushort)character.PlayerCountry;
             CharacterName = character.Name;
             SpouseName = character.MateName;
         }

@@ -90,6 +90,7 @@ namespace Comet.Network.Packets
 
         MsgTaskStatus = 1134,
         MsgTaskDetailInfo = 1135,
+        MsgAchievement = 1136,
 
         MsgFlower = 1150,
         MsgRank = 1151,
@@ -134,6 +135,8 @@ namespace Comet.Network.Packets
         MsgQualifyingSeasonRankList = 2208,
         MsgQualifyingDetailInfo = 2209,
         MsgArenicScore = 2210,
+
+        MsgNationality = 2430,
 
         MsgWalk = 10005,
         MsgAction = 10010,

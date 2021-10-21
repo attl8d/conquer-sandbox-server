@@ -275,6 +275,10 @@ namespace Comet.Game
                         msg = new MsgTaskDetailInfo();
                         break;
 
+                    case PacketType.MsgAchievement:
+                        msg = new MsgAchievement();
+                        break;
+
                     case PacketType.MsgRank:
                         msg = new MsgRank();
                         break;
@@ -381,6 +385,10 @@ namespace Comet.Game
 
                     case PacketType.MsgQualifyingDetailInfo:
                         msg = new MsgQualifyingDetailInfo();
+                        break;
+
+                    case PacketType.MsgNationality:
+                        msg = new MsgNationality();
                         break;
 
                     default:

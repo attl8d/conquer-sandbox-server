@@ -1,5 +1,4 @@
-﻿using System.ComponentModel;
-using System.Security.Claims;
+﻿using System.Security.Claims;
 
 namespace Comet.Web.App.Services
 {

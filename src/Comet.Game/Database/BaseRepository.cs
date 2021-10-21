@@ -34,6 +34,22 @@ namespace Comet.Game.Database
 {
     public static class BaseRepository
     {
+        public static async Task<bool> CreateAsync<T>(T entity) where T : class
+        {
+            try
+            {
+                await using var db = new ServerDbContext();
+                db.Add(entity);
+                await db.SaveChangesAsync();
+                return true;
+            }
+            catch (Exception ex)
+            {
+                await Log.WriteLogAsync(LogLevel.Exception, ex.ToString());
+                return false;
+            }
+        }
+
         public static async Task<bool> SaveAsync<T>(T entity) where T : class
         {
             try

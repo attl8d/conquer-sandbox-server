@@ -90,6 +90,8 @@ namespace Comet.Game.Packets
 
             BattlePower = user.BattlePower;
 
+            NationalityFlag = (int) user.PlayerCountry;
+
             Name = user.Name;
             FamilyName = user.FamilyName;
         }

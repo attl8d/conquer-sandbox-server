@@ -58,6 +58,7 @@ namespace Comet.Game.World.Managers
         private readonly Dictionary<uint, DbMonstertype> m_dicMonstertype = new Dictionary<uint, DbMonstertype>();
         private readonly Dictionary<uint, List<DbMonsterMagic>> m_dicMonsterMagics = new Dictionary<uint, List<DbMonsterMagic>>();
         private Dictionary<uint, DbSuperman> m_superman = new Dictionary<uint, DbSuperman>();
+        private readonly Dictionary<uint, DbAchievementType> m_achievements = new Dictionary<uint, DbAchievementType>();
 
         private readonly List<DbRebirth> m_dicRebirths = new List<DbRebirth>();
         private readonly List<MagicTypeOp> m_magicOps = new List<MagicTypeOp>();
@@ -118,6 +119,12 @@ namespace Comet.Game.World.Managers
             m_tutorType.AddRange(await DbTutorType.GetAsync());
 
             m_tutorBattleLimitTypes.AddRange(await DbTutorBattleLimitType.GetAsync());
+
+            foreach (var achievement in await DbAchievementType.GetAllAsync())
+            {
+                if (!m_achievements.ContainsKey(achievement.Identity))
+                    m_achievements.TryAdd(achievement.Identity, achievement);
+            }
 
             m_userUpdate.Update();
         }
@@ -472,6 +479,11 @@ namespace Comet.Game.World.Managers
         public DbTutorType GetTutorType(int level)
         {
             return m_tutorType.FirstOrDefault(x => level >= x.UserMinLevel && level <= x.UserMaxLevel);
+        }
+
+        public DbAchievementType GetAchievementType(int type)
+        {
+            return m_achievements.Values.FirstOrDefault(x => x.Position == type);
         }
     }
 }

@@ -123,6 +123,9 @@
   <data name="StrAccuracyActiveT" xml:space="preserve">
     <value>Accuracy for {0} seconds, your hit rate will be increased by {1} times.</value>
   </data>
+  <data name="StrAchievementReceive" xml:space="preserve">
+    <value>{0} achieved [Achievement {1}]!</value>
+  </data>
   <data name="StrAnotherLoginOtherIp" xml:space="preserve">
     <value>Atention! Your account may have been hacked! Someone outside of your network is trying to login.</value>
   </data>

@@ -387,6 +387,10 @@ namespace Comet.Game
                         msg = new MsgQualifyingDetailInfo();
                         break;
 
+                    case PacketType.Msg2ndPsw:
+                        msg = new Msg2ndPsw();
+                        break;
+
                     case PacketType.MsgNationality:
                         msg = new MsgNationality();
                         break;

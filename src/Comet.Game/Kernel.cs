@@ -82,6 +82,7 @@ namespace Comet.Game
         public static PigeonManager PigeonManager = new PigeonManager();
         public static FlowerManager FlowerManager = new FlowerManager();
         public static FamilyManager FamilyManager = new FamilyManager();
+        public static AstProfManager SubClassManager = new AstProfManager();
 
         public static NetworkMonitor NetworkMonitor = new NetworkMonitor();
 
@@ -137,6 +138,7 @@ namespace Comet.Game
             await MineManager.InitializeAsync();
             await PigeonManager.InitializeAsync();
             await FlowerManager.InitializeAsync();
+            await SubClassManager.InitializeAsync();
             await QuestInfo.InitializeAsync();
 
             await GeneratorManager.InitializeAsync();
@@ -148,7 +150,6 @@ namespace Comet.Game
             await AutomaticActions.DailyResetAsync();
             await EventThread.StartAsync();
             await GeneratorThread.StartAsync();
-
             return true;
         }
 

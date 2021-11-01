@@ -3,6 +3,7 @@
 @inject LanguageService Language
 @model Comet.Web.App.Areas.Profile.Pages.Settings.NotificationsModel
 @{
+    ViewData["Title"] = Language.GetString("NotificationSettings");
 }
 
 @await Html.PartialAsync("_ProfileHeader", Model.Profile)
@@ -27,7 +28,7 @@
                     <a asp-area="Profile" asp-page="/Settings/Notifications">@Language.GetString("Notifications")</a>
                 </li>
             </ul>
-            <h3>@Language.GetString("ChangePassword"):</h3>
+            <h3>@Language.GetString("Notifications"):</h3>
             <div class="form-horizontal mt-30 mb-40">
                 
             </div>

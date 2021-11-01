@@ -27,7 +27,7 @@ namespace Comet.Web.App.Services
         public async Task SendEmailAsync(string email, string subject, string htmlMessage)
         {
             var message = new MimeMessage();
-            message.From.Add(new MailboxAddress(mSettings.FromEmail, mSettings.FromEmail));
+            message.From.Add(new MailboxAddress(mSettings.FromName, mSettings.FromEmail));
             message.To.Add(new MailboxAddress(email, email));
             message.Subject = subject;
             message.Body = new TextPart(TextFormat.Html)
@@ -60,6 +60,7 @@ namespace Comet.Web.App.Services
             public int PrimaryPort { get; set; }
             public string UsernameEmail { get; set; }
             public string UsernamePassword { get; set; }
+            public string FromName { get; set; }
             public string FromEmail { get; set; }
             public bool EnableSsl { get; set; }
         }

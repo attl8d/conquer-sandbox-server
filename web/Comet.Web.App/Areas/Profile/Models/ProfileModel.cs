@@ -1,4 +1,5 @@
 ﻿using System.Collections.Generic;
+using System.Security.Claims;
 
 namespace Comet.Web.App.Areas.Profile.Models
 {
@@ -40,7 +41,8 @@ namespace Comet.Web.App.Areas.Profile.Models
         CurrentCity,
         RelationshipStatus,
         StudiedAt,
-        Language
+        Language,
+        Pronoun
     }
 
     public enum ContactInfoType
@@ -56,6 +58,16 @@ namespace Comet.Web.App.Areas.Profile.Models
 
     public static class ContactInfoHelper
     {
+        public static Claim FindFirst(this ClaimsPrincipal principal, PersonalInfoType e)
+        {
+            return principal.FindFirst(e.ToClaimString());
+        }
+
+        public static Claim FindFirst(this ClaimsPrincipal principal, ContactInfoType e)
+        {
+            return principal.FindFirst(e.ToClaimString());
+        }
+
         public static string ToClaimString(this PersonalInfoType e)
         {
             return $"Profile.{e}";

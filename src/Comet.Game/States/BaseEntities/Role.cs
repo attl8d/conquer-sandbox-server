@@ -229,6 +229,13 @@ namespace Comet.Game.States.BaseEntities
                 }
             }
 
+//#if DEBUG
+//            if (user != null)
+//            {
+//                await user.SendAsync($"Walk:From[{MapX:000},{MapY:000}],To[{newX:000},{newY:000}]", MsgTalk.TalkChannel.Talk);
+//            }
+//#endif
+
             int vigor = 0;
             if (user != null && QueryStatus(StatusSet.RIDING) != null)
             {

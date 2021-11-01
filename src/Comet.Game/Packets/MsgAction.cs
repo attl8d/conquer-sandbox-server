@@ -25,11 +25,13 @@ using System;
 using System.Drawing;
 using System.Threading.Tasks;
 using Comet.Game.Database;
+using Comet.Game.Database.Models;
 using Comet.Game.Database.Repositories;
 using Comet.Game.States;
 using Comet.Game.States.BaseEntities;
 using Comet.Game.States.Events;
 using Comet.Game.States.Items;
+using Comet.Game.States.Magics;
 using Comet.Game.States.Relationship;
 using Comet.Game.World.Maps;
 using Comet.Network.Packets;
@@ -286,7 +288,7 @@ namespace Comet.Game.Packets
                         {
                             Item item = user.UserPackage[pos];
                             if (item != null && 
-                                (item.IsHelmet() || item.IsNeck() || item.IsRing() || item.IsWeapon() || item.IsArmor() || item.IsShield() || item.IsShoes()))
+                                (item.IsEquipment()))
                             {
                                 effect += item.GetQuality()%5;
                                 if (item.IsBackswordType() || item.GetItemSort() == Item.ItemSort.ItemsortWeaponDoubleHand)
@@ -294,7 +296,7 @@ namespace Comet.Game.Packets
                             }
                         }
 
-                        if (effect == 7*4)
+                        if (effect == 10*4)
                         {
                             Command |= ((uint)user.Profession * 0x10000 + 0x01000000);
                         }
@@ -452,55 +454,66 @@ namespace Comet.Game.Packets
                     break;
 
                 case ActionType.LoginComplete: // 130
-                    int bonusCount = await user.BonusCountAsync();
-                    if (bonusCount > 0)
-                        await user.SendAsync(string.Format(Language.StrBonus, bonusCount), MsgTalk.TalkChannel.Center, SColor.Red);
-
-                    if (await user.CardsCountAsync() > 0)
-                        await user.SendAsync(new MsgAction { Action = ActionType.ClientCommand, Command = 1197u, Identity = user.Identity });
-
-                    if (user.Gender == 1 && 
-                        (user.SendFlowerTime == null 
-                         || int.Parse(DateTime.Now.ToString("yyyyMMdd")) > int.Parse(user.SendFlowerTime.Value.ToString("yyyyMMdd"))))
                     {
+                        if (!user.IsUnlocked())
+                        {
+                            await user.SendAsync(new Msg2ndPsw
+                            {
+                                Password = 0x1,
+                                Action = Msg2ndPsw.PasswordRequestType.CorrectPassword
+                            });
+                        }
+
+                        int bonusCount = await user.BonusCountAsync();
+                        if (bonusCount > 0)
+                            await user.SendAsync(string.Format(Language.StrBonus, bonusCount), MsgTalk.TalkChannel.Center, SColor.Red);
+
+                        if (await user.CardsCountAsync() > 0)
+                            await user.SendAsync(new MsgAction { Action = ActionType.ClientCommand, Command = 1197u, Identity = user.Identity });
+
+                        if (user.Gender == 1 &&
+                            (user.SendFlowerTime == null
+                             || int.Parse(DateTime.Now.ToString("yyyyMMdd")) > int.Parse(user.SendFlowerTime.Value.ToString("yyyyMMdd"))))
+                        {
+                            await user.SendAsync(new MsgFlower
+                            {
+                                Mode = user.Gender == 1 ? MsgFlower.RequestMode.QueryFlower : MsgFlower.RequestMode.QueryGift,
+                                RedRoses = 1
+                            });
+                        }
+
                         await user.SendAsync(new MsgFlower
                         {
-                            Mode = user.Gender == 1 ? MsgFlower.RequestMode.QueryFlower : MsgFlower.RequestMode.QueryGift,
-                            RedRoses = 1
+                            Mode = user.Gender == 2 ? MsgFlower.RequestMode.QueryFlower : MsgFlower.RequestMode.QueryGift,
                         });
+
+                        await user.CheckPkStatusAsync();
+                        await user.LoadStatusAsync();
+                        await client.Character.SendNobilityInfoAsync();
+                        await client.Character.SendMultipleExpAsync();
+                        await client.Character.SendBlessAsync();
+                        await client.Character.SendLuckAsync();
+                        await user.Screen.SynchroScreenAsync();
+                        await Kernel.PigeonManager.SendToUserAsync(user);
+                        await user.SendMerchantAsync();
+                        await user.SendAsync(new MsgHangUp
+                        {
+                            Param = 341
+                        });
+                        user.MailBox = await MailBox.LoadAsync(user);
+                        user.Achievements = await Achievements.LoadAsync(user);
+
+                        if (user.VipLevel > 0)
+                        {
+                            if (!user.HasTitle(Character.UserTitles.Vip))
+                                await user.AddTitleAsync(Character.UserTitles.Vip, user.VipExpiration);
+                        }
+
+                        Kernel.EventThread.GetEvent<QuizShow>()?.Enter(user);
+
+                        await client.SendAsync(this);
+                        break;
                     }
-
-                    await user.SendAsync(new MsgFlower
-                    {
-                        Mode = user.Gender == 2 ? MsgFlower.RequestMode.QueryFlower : MsgFlower.RequestMode.QueryGift,
-                    });
-
-                    await user.CheckPkStatusAsync();
-                    await user.LoadStatusAsync();
-                    await client.Character.SendNobilityInfoAsync();
-                    await client.Character.SendMultipleExpAsync();
-                    await client.Character.SendBlessAsync();
-                    await client.Character.SendLuckAsync();
-                    await user.Screen.SynchroScreenAsync();
-                    await Kernel.PigeonManager.SendToUserAsync(user);
-                    await user.SendMerchantAsync();
-                    await user.SendAsync(new MsgHangUp
-                    {
-                        Param = 341
-                    });
-                    user.MailBox = await MailBox.LoadAsync(user);
-                    user.Achievements = await Achievements.LoadAsync(user);
-
-                    if (user.VipLevel > 0)
-                    {
-                        if (!user.HasTitle(Character.UserTitles.Vip))
-                            await user.AddTitleAsync(Character.UserTitles.Vip, user.VipExpiration);
-                    }
-
-                    Kernel.EventThread.GetEvent<QuizShow>()?.Enter(user);
-
-                    await client.SendAsync(this);
-                    break;
 
                 case ActionType.MapJump: // 137
                     if (user != null) // todo handle ai 
@@ -520,6 +533,13 @@ namespace Comet.Game.Packets
                             await Kernel.RoleManager.KickOutAsync(user.Identity, "big jump");
                             return;
                         }
+
+//#if DEBUG
+//                        if (user != null)
+//                        {
+//                            await user.SendAsync($"Jump:From[{user.MapX:000},{user.MapY:000}],To[{newX:000},{newY:000}]", MsgTalk.TalkChannel.Talk);
+//                        }
+//#endif
 
                         await user.ProcessOnMoveAsync();
                         await user.JumpPosAsync(newX, newY);
@@ -596,6 +616,51 @@ namespace Comet.Game.Packets
                     await targetUser.SendWindowToAsync(user);
                     break;
 
+                case ActionType.UpgradeMagicSkill:
+                    {
+                        Magic magic = user.MagicData[(ushort)Command];
+                        if (magic == null)
+                            return;
+
+                        if (magic.Level >= magic.MaxLevel)
+                            return;
+
+                        int cost = Math.Max(1, (int)((1 - magic.Experience / (double)magic.NeedExp) * magic.CpsCost));
+                        if (!await user.SpendConquerPointsAsync(cost, true, true))
+                            return;
+
+                        magic.Level += 1;
+                        magic.Experience = 0;
+                        await magic.SendAsync();
+                        await magic.SaveAsync();
+                        await user.SendAsync(this);
+                        break;
+                    }
+                case ActionType.UpgradeWeaponSkill:
+                    {
+                        DbWeaponSkill ws = user.WeaponSkill[(ushort) Command];
+                        if (ws == null)
+                            return;
+
+                        if (ws.Level >= Role.MASTER_WEAPONSKILLLEVEL)
+                            return;
+
+                        int cost = (int)Math.Ceiling(MsgWeaponSkill.UpgradeCost[ws.Level] *
+                                                     (1 - ws.Experience /
+                                                      (double)MsgWeaponSkill.RequiredExperience[ws.Level]));
+
+                        if (!await user.SpendConquerPointsAsync(cost, true, true))
+                            return;
+
+                        ws.Level += 1;
+                        ws.Experience = 0;
+
+                        await user.WeaponSkill.SendAsync(ws);
+                        await user.WeaponSkill.SaveAsync(ws);
+                        await user.SendAsync(this);
+                        break;
+                    }
+
                 case ActionType.UserAttribInfo:
                     await client.SendAsync(new MsgPlayerAttribInfo(client.Character));
                     break;
@@ -671,6 +736,8 @@ namespace Comet.Game.Packets
             Away = 161,
             //SetGhost = 145,
             LoginComplete = 251,
+            UpgradeMagicSkill = 252,
+            UpgradeWeaponSkill = 253,
             FriendObservation = 310,
             UserAttribInfo = 408
         }

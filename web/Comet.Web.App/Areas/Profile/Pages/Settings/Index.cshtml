@@ -1,6 +1,7 @@
 ﻿@page
 @using Comet.Web.App.Areas.Profile.Models
 @using Comet.Web.App.Services
+@using System.Security.Claims
 @inject LanguageService Language
 @model Comet.Web.App.Areas.Profile.Pages.Settings.IndexModel
 @{
@@ -29,8 +30,91 @@
                     <a asp-area="Profile" asp-page="/Settings/Notifications">@Language.GetString("Notifications")</a>
                 </li>
             </ul>
-            
-            <h3>@Language.GetString("PhoneNumber"):</h3>
+
+            <h3>@Language.GetString("Profile")</h3>
+            <p>@Language.GetString("ProfileDisclaimer")</p>
+            <form method="post">
+                <div class="form-horizontal mt-30 mb-40">
+                    <div class="form-group">
+                        <label class="control-label col-sm-3">@Language.GetString("UserName"):</label>
+                        <div class="col-sm-9">
+                            @Model.User.FindFirst(ClaimTypes.Name)?.Value
+                        </div>
+                    </div>
+
+                    <div class="form-group">
+                            <label class="control-label col-sm-3">@Language.GetString("Email"):</label>
+                            <div class="col-sm-9">
+                                @Model.User.FindFirst(ClaimTypes.Email)?.Value
+                                <a class="btn btn-sm btn-success" asp-area="Profile" asp-page="/Settings/Security">@Language.GetString("ChangeEmail")</a>
+                            </div>
+                        </div>
+
+                    <div class="form-group">
+                            <label class="control-label col-sm-3">@Language.GetString("Password"):</label>
+                            <div class="col-sm-9">
+                                ******
+                                <a class="btn btn-sm btn-success" asp-area="Profile" asp-page="/Settings/Security">@Language.GetString("ChangePassword")</a>
+                            </div>
+                        </div>
+
+                    <div class="form-group">
+                        <label class="control-label col-sm-3">@Language.GetString("AccountType"):</label>
+                        <div class="col-sm-9">
+                            @Language.GetString(User.FindFirst(ClaimTypes.Role)?.Value)
+                        </div>
+                    </div>
+
+                    <div class="form-group">
+                            <label class="control-label col-sm-3">@Language.GetString("BirthDate"):</label>
+                            <div class="col-sm-9">
+                                <div class="youplay-input">
+                                    <input asp-for="Input.DateOfBirth" />
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="form-group">
+                            <label class="control-label col-sm-3">@Language.GetString("Gender"):</label>
+                            <div class="col-sm-9">
+                                <div class="youplay-select">
+                                    <select asp-for="Input.Gender">
+                                        <option value=""></option>
+                                        <option value="M">Masculino</option>
+                                        <option value="F">Feminino</option>
+                                        <option value="O">Outro</option>
+                                    </select>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="form-group">
+                            <label class="control-label col-sm-3">@Language.GetString("Pronoun"):</label>
+                            <div class="col-sm-9">
+                                <div class="youplay-input">
+                                    <input asp-for="Input.Pronoun" class="youplay-input" />
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="form-group">
+                            <label class="control-label col-sm-3">@Language.GetString("Location"):</label>
+                            <div class="col-sm-9">
+                                <div class="youplay-input">
+                                    <input asp-for="Input.Locality" class="youplay-input" />
+                                </div>
+                            </div>
+                        </div>
+
+                    <div class="form-group">
+                        <div class="col-sm-offset-3 col-sm-9">
+                            <button type="submit" class="btn btn-default">@Language.GetString("SaveSettings")</button>
+                        </div>
+                    </div>
+                </div>
+            </form>
+
+            @*<h3>@Language.GetString("PhoneNumber"):</h3>
             <div class="form-horizontal mt-30 mb-40">
                 <table class="table table-bordered" aria-hidden="true">
                     <tbody>
@@ -44,7 +128,7 @@
                     </tbody>
                 </table>
                 <div class="form-group">
-                    <label class="control-label col-sm-3" for="new_email">@Language.GetString("NewPhoneNumber"):</label>
+                    <label class="control-label col-sm-3">@Language.GetString("NewPhoneNumber"):</label>
                     <div class="col-sm-9">
                         <div class="youplay-input">
                             <input type="text" id="new_phone" placeholder="@Language.GetString("NewPhoneNumber")">
@@ -56,7 +140,7 @@
                         <button type="submit" class="btn btn-default">@Language.GetString("AddPhone")</button>
                     </div>
                 </div>
-            </div>
+            </div>*@
         </div>
         <!-- Right Side -->
         <div class="col-md-3">
@@ -74,14 +158,14 @@
 
 @section Scripts
 {
-    <script>
-        const phoneOpt = {
-            onKeyPress: function(phone, e, field, options) {
-                let masks = ['(00) 0000-00009', '(00) 00000-0000'];
-                let mask = (phone.replace(/\D/g, '').length === 11) ? masks[1] : masks[0];
-                $('#new_phone').mask(mask, phoneOpt);
-            }
-        };
-        $('#new_phone').mask('(00) 0000-0000', phoneOpt);
-    </script>
+<script>
+    const phoneOpt = {
+        onKeyPress: function(phone, e, field, options) {
+            let masks = ['(00) 0000-00009', '(00) 00000-0000'];
+            let mask = (phone.replace(/\D/g, '').length === 11) ? masks[1] : masks[0];
+            $('#new_phone').mask(mask, phoneOpt);
+        }
+    };
+    $('#new_phone').mask('(00) 0000-0000', phoneOpt);
+</script>
 }

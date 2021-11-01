@@ -1159,7 +1159,17 @@ namespace Comet.Game.States.Items
                             Magic3 = item.Plus,
                             Color = item.Color,
                             Locked = item.IsLocked(),
-                            Bound = item.IsBound
+                            Bound = item.IsBound,
+                            Accumulate = (int)item.AccumulateNum,
+                            ActivationTime = 0,
+                            AntiMonster = 0,
+                            CompositionProgress = item.CompositionProgress,
+                            Ident = 0,
+                            Inscribed = item.SyndicateIdentity != 0 ? 1 : 0,
+                            Magic2 = 0,
+                            RemainingTime = 0,
+                            SocketProgress = item.SocketProgress,
+                            Suspicious = item.IsSuspicious()
                         }
                     }
                 });

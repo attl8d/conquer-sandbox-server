@@ -942,6 +942,18 @@ namespace Comet.Game.States
             set => m_dbObject.StorageMoney = value;
         }
 
+        public uint StudyPoints 
+        {
+            get => m_dbObject?.Cultivation ?? 0;
+            set => m_dbObject.Cultivation = value;
+        }
+
+        public uint ChiPoints 
+        {
+            get => m_dbObject?.StrengthValue ?? 0;
+            set => m_dbObject.StrengthValue = value;
+        }
+
         public async Task<bool> ChangeMoneyAsync(int amount, bool notify = false)
         {
             if (amount > 0)
@@ -1014,6 +1026,27 @@ namespace Comet.Game.States
             return true;
         }
 
+        public async Task<bool> SpendConquerPointsAsync(int amount, bool bound, bool notify)
+        {
+            if (!bound || ConquerPointsBound == 0)
+                return await SpendConquerPointsAsync(amount, notify);
+
+            if (amount > ConquerPoints + ConquerPointsBound)
+            {
+                if (notify)
+                    await SendAsync(Language.StrNotEnoughEmoney, MsgTalk.TalkChannel.TopLeft, Color.Red);
+                return false;
+            }
+
+            if (ConquerPointsBound > amount)
+                return await SpendBoundConquerPointsAsync(amount, notify);
+
+            int remain = (int) (amount - ConquerPointsBound);
+            await SpendBoundConquerPointsAsync((int)ConquerPointsBound);
+            await SpendConquerPointsAsync(remain);
+            return true;
+        }
+
         public async Task<bool> ChangeBoundConquerPointsAsync(int amount, bool notify = false)
         {
             if (amount > 0)
@@ -1043,6 +1076,36 @@ namespace Comet.Game.States
                     await SendAsync(Language.StrNotEnoughEmoney, MsgTalk.TalkChannel.TopLeft, Color.Red);
                 return false;
             }
+
+            ConquerPointsBound = (uint)(ConquerPointsBound - amount);
+            await SaveAsync();
+            await SynchroAttributesAsync(ClientUpdateType.BoundConquerPoints, ConquerPointsBound);
+            return true;
+        }
+
+        public async Task<bool> ChangeCultivationAsync(int amount)
+        {
+            if (amount > 0)
+            {
+                await AwardCultivationAsync(amount);
+                return true;
+            }
+            if (amount < 0)
+            {
+                return await SpendCultivationAsync(amount * -1);
+            }
+            return false;
+        }
+
+        public async Task AwardCultivationAsync(int amount)
+        {
+            StudyPoints = (uint)(StudyPoints + amount);
+            await SaveAsync();
+            
+        }
+
+        public async Task<bool> SpendCultivationAsync(int amount)
+        {
 
             ConquerPointsBound = (uint)(ConquerPointsBound - amount);
             await SaveAsync();
@@ -3826,7 +3889,7 @@ namespace Comet.Game.States
 
         public async Task SendSecondaryPasswordInterfaceAsync()
         {
-            await GameAction.ExecuteActionAsync(100, this, null, null, string.Empty);
+            await GameAction.ExecuteActionAsync(8003020, this, null, null, string.Empty);
         }
 
         #endregion

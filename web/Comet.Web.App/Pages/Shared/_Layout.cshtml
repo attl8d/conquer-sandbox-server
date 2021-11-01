@@ -45,6 +45,8 @@
     
     <!-- Custom Styles -->
     <link rel="stylesheet" href="~/assets/css/custom.css">
+
+    @await RenderSectionAsync("Styles", false)
     <!-- END: Styles -->
     <!-- jQuery -->
     <script src="~/assets/vendor/jquery/dist/jquery.min.js"></script>
@@ -98,7 +100,7 @@
                         </div>
                     </li>
                     <li class=" dropdown dropdown-hover">
-                        <a href="blog-1.html" class="dropdown-toggle" data-toggle="dropdown" role="button" aria-expanded="false">
+                        <a href="#" class="dropdown-toggle" data-toggle="dropdown" role="button" aria-expanded="false">
                             @LanguageManager.GetString("MenuShopSales") <span class="caret"></span>
                             <span class="label">@LanguageManager.GetString("MenuShopSalesDesc")</span>
                         </a>
@@ -122,7 +124,7 @@
                         </div>
                     </li>
                     <li class=" dropdown dropdown-hover">
-                        <a href="blog-1.html" class="dropdown-toggle" data-toggle="dropdown" role="button" aria-expanded="false">
+                        <a href="#" class="dropdown-toggle" data-toggle="dropdown" role="button" aria-expanded="false">
                             @LanguageManager.GetString("MenuStatistics") <span class="caret"></span>
                             <span class="label">@LanguageManager.GetString("MenuStatisticsDesc")</span>
                         </a>
@@ -166,7 +168,7 @@
                             </ul>
                         </div>
                     </li>
-                    <li class=" dropdown dropdown-hover">
+                    <li class="dropdown dropdown-hover">
                         <a href="#" class="dropdown-toggle" data-toggle="dropdown" role="button" aria-expanded="false">
                             @LanguageManager.GetString("MenuHelp") <span class="caret"></span>
                             <span class="label">@LanguageManager.GetString("MenuHelpDesc")</span>
@@ -242,7 +244,7 @@
                                         </a>
                                     </li>
                                     <li>
-                                        <a href="#"> @LanguageManager.GetString("Settings") </a>
+                                        <a asp-area="Profile" asp-page="/Settings/Index"> @LanguageManager.GetString("Settings") </a>
                                     </li>
                                     <li>
                                         <a href="#" onclick="doLogout();"> @LanguageManager.GetString("Logout") </a>

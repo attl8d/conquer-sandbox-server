@@ -125,7 +125,8 @@ namespace Comet.Game.Database.Models
         [Column("quiz_point")] public uint QuizPoints { get; set; }
 
         [Column("nationality")] public ushort Nationality { get; set; }
-
+        [Column("cultivation")] public uint Cultivation { get; set; } // Study Points
+        [Column("strength_value")] public uint StrengthValue { get; set; } // ChiPoints
         [Column("day_reset_date")] public uint DayResetDate { get; set; }
 
         public static async Task<List<DbCharacter>> GetAthletePointRankAsync(int from, int limit)

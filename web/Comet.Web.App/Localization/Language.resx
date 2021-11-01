@@ -129,8 +129,17 @@
   <data name="AccountActivatedSuccessfully" xml:space="preserve">
     <value>Sua conta foi ativada com sucesso.</value>
   </data>
+  <data name="AccountType" xml:space="preserve">
+    <value>Tipo de Conta</value>
+  </data>
   <data name="Activity" xml:space="preserve">
     <value>Atividade</value>
+  </data>
+  <data name="AddAnotherLoginService" xml:space="preserve">
+    <value>Adicione um novo serviço de entrada</value>
+  </data>
+  <data name="AddAuthenticatorApp" xml:space="preserve">
+    <value>Adicionar Aplicativo de Dois Fatores</value>
   </data>
   <data name="AddFriend" xml:space="preserve">
     <value>&lt;i class="fa fa-user-plus"&gt;&lt;/i&gt; Amigo</value>
@@ -147,6 +156,9 @@
   <data name="AdminPanel" xml:space="preserve">
     <value>Administração</value>
   </data>
+  <data name="AuthenticationApp" xml:space="preserve">
+    <value>Aplicação de Autenticação</value>
+  </data>
   <data name="BestChildMemory" xml:space="preserve">
     <value>Melhor lembrança de quando criança</value>
   </data>
@@ -155,6 +167,9 @@
   </data>
   <data name="BindVip" xml:space="preserve">
     <value>Vincular VIP</value>
+  </data>
+  <data name="BirthDate" xml:space="preserve">
+    <value>Data de Nascimento</value>
   </data>
   <data name="Birthday" xml:space="preserve">
     <value>Data de Nascimento</value>
@@ -171,11 +186,18 @@
   <data name="ChangePassword" xml:space="preserve">
     <value>Mudar Senha</value>
   </data>
+  <data name="ConfigureAuthenticatorApp" xml:space="preserve">
+    <value>Configurar Autenticação de Dois Fatores</value>
+  </data>
   <data name="ConfirmNewPassword" xml:space="preserve">
     <value>Confirme a Nova Senha</value>
   </data>
   <data name="ConfirmPassword" xml:space="preserve">
     <value>Confirmação de Senha</value>
+  </data>
+  <data name="ConfirmQrCode" xml:space="preserve">
+    <value>Assim que você escanear o QR Code ou inserir a chave acima, seu aplicativo de autenticação de dois fatores
+                    lhe proverá um código único. Entre o código na caixa de confirmação abaixo.</value>
   </data>
   <data name="ContactInformation" xml:space="preserve">
     <value>Informações de Contato</value>
@@ -198,8 +220,34 @@
   <data name="Days" xml:space="preserve">
     <value>dias</value>
   </data>
+  <data name="Disable2fa" xml:space="preserve">
+    <value>Desabilitar Autenticação de Dois Fatores</value>
+  </data>
+  <data name="Disable2faAlert" xml:space="preserve">
+    <value>&lt;p&gt;
+        &lt;span class="glyphicon glyphicon-warning-sign"&gt;&lt;/span&gt;
+        &lt;strong&gt;Esta ação apenas desabilita a autenticação de dois fatores.&lt;/strong&gt;
+    &lt;/p&gt;
+    &lt;p&gt;
+        Desabilitar a autenticação de dois fatores não muda as chaves usadas na aplicação de autenticação. Se você quer mudar as chaves você deve &lt;a asp-page="./ResetAuthenticator"&gt;Resetar suas chaves de autenticação.&lt;/a&gt;
+    &lt;/p&gt;</value>
+  </data>
+  <data name="DisableAuthenticator" xml:space="preserve">
+    <value>Desabilitar Autenticação de Dois Fatores</value>
+  </data>
+  <data name="Download2faApplication" xml:space="preserve">
+    <value>Baixe uma aplicação de autenticação de dois fatores como o Microsoft Authenticator para
+                    &lt;a href="https://go.microsoft.com/fwlink/?Linkid=825072"&gt;Android&lt;/a&gt; e
+                    &lt;a href="https://go.microsoft.com/fwlink/?Linkid=825073"&gt;iOS&lt;/a&gt; ou
+                    Google Authenticator para
+                    &lt;a href="https://play.google.com/store/apps/details?id=com.google.android.apps.authenticator2&amp;amp;hl=en"&gt;Android&lt;/a&gt; e
+                    &lt;a href="https://itunes.apple.com/us/app/google-authenticator/id388497605?mt=8"&gt;iOS&lt;/a&gt;.</value>
+  </data>
   <data name="Email" xml:space="preserve">
     <value>Endereço de E-mail</value>
+  </data>
+  <data name="EnableAuthenticator" xml:space="preserve">
+    <value>Habilitar Autenticação de Dois Fatores</value>
   </data>
   <data name="ExclusiveWindowsRelease" xml:space="preserve">
     <value>Lançamento exclusivo para Windows</value>
@@ -219,6 +267,9 @@
   </data>
   <data name="FooterSomeRightsReserved" xml:space="preserve">
     <value>Alguns direitos reservados</value>
+  </data>
+  <data name="ForgetThisBrowser" xml:space="preserve">
+    <value>Esqueça esse Navegador</value>
   </data>
   <data name="ForgotPasswordConfirmation" xml:space="preserve">
     <value>&lt;p&gt;Foi enviado um e-mail para o seu endereço registrado. Não se esqueça de verificar a caixa de spam.&lt;/p&gt;</value>
@@ -244,6 +295,27 @@
   <data name="GameNameVersion" xml:space="preserve">
     <value>World Conquer Online - Versão 5187</value>
   </data>
+  <data name="Gender" xml:space="preserve">
+    <value>Gênero</value>
+  </data>
+  <data name="GenerateRecoveryCodes" xml:space="preserve">
+    <value>Gerar Códigos de Recuperação</value>
+  </data>
+  <data name="GenerateRecoveryCodesAlert" xml:space="preserve">
+    <value>&lt;p&gt;
+            &lt;span class="glyphicon glyphicon-warning-sign"&gt;&lt;/span&gt;
+            &lt;strong&gt;Armazene estes códigos em um lugar seguro!&lt;/strong&gt;
+        &lt;/p&gt;
+        &lt;p&gt;
+            Se você perder o seu dispositivo e não estiver com os códigos de recuperação, você perderá o acesso a sua conta.
+        &lt;/p&gt;
+&lt;p&gt;
+        Gerar novos códigos de recuperação para a autenticação de dois fatores não muda as chaves usadas na aplicação de autenticação. Se você quer mudar as chaves você deve &lt;a asp-page="./ResetAuthenticator"&gt;Resetar suas chaves de autenticação.&lt;/a&gt;
+    &lt;/p&gt;</value>
+  </data>
+  <data name="GenerateRecoveryCodeSteps" xml:space="preserve">
+    <value>Para utilizar um aplicativo de autenticação de dois fatores siga os seguintes passos:</value>
+  </data>
   <data name="GoBack" xml:space="preserve">
     <value>Voltar</value>
   </data>
@@ -268,6 +340,9 @@
   <data name="LatestNews" xml:space="preserve">
     <value>Últimas Notícias</value>
   </data>
+  <data name="Location" xml:space="preserve">
+    <value>Localização</value>
+  </data>
   <data name="LockedOut" xml:space="preserve">
     <value>Conta Bloqueada</value>
   </data>
@@ -276,6 +351,14 @@
   </data>
   <data name="Login" xml:space="preserve">
     <value>Conectar</value>
+  </data>
+  <data name="LogInWithRecoveryCode" xml:space="preserve">
+    <value>Não tem acesso ao seu dispositivo de autenticação? Você pode
+                            &lt;a href="{0}?returnUrl=@Model.ReturnUrl"&gt;entrar com um código de recuperação&lt;/a&gt;.</value>
+  </data>
+  <data name="LoginWithRecoveryCodeAlert" xml:space="preserve">
+    <value>Você solicitou a entrada com um código de recuperação. Este login não será lembrado até que você 
+                            faça login utilizando o aplicativo do autenticator ou desabilite a autenticação de dois fatores e se conecte novamente.</value>
   </data>
   <data name="Logout" xml:space="preserve">
     <value>Desconectar</value>
@@ -327,6 +410,9 @@
   </data>
   <data name="MenuPurchases" xml:space="preserve">
     <value>Minhas Compras</value>
+  </data>
+  <data name="MenuRegister" xml:space="preserve">
+    <value>Cadastre-se</value>
   </data>
   <data name="MenuRewards" xml:space="preserve">
     <value>Recompensas</value>
@@ -391,14 +477,26 @@
   <data name="NewPhoneNumber" xml:space="preserve">
     <value>Novo número de telefone</value>
   </data>
+  <data name="NewVerificationEmailSent" xml:space="preserve">
+    <value>Um e-mail foi enviado para confirmar a alteração. O endereço de e-mail será alterado apenas após a confirmação.</value>
+  </data>
   <data name="NormalizedName" xml:space="preserve">
     <value>Nome Padronizado</value>
   </data>
   <data name="NothingToShare" xml:space="preserve">
     <value>Nada para compartilhar</value>
   </data>
+  <data name="Notifications" xml:space="preserve">
+    <value>Notificações</value>
+  </data>
+  <data name="NotificationSettings" xml:space="preserve">
+    <value>Configurações de Notificação</value>
+  </data>
   <data name="Password" xml:space="preserve">
     <value>Senha</value>
+  </data>
+  <data name="PasswordChangeSuccess" xml:space="preserve">
+    <value>Sua senha foi alterada com sucesso.</value>
   </data>
   <data name="PasswordReseted" xml:space="preserve">
     <value>Sua senha foi resetada. Por favor, &lt;a asp-page="./Login"&gt;clique aqui para entrar&lt;/a&gt;.</value>
@@ -451,17 +549,54 @@
   <data name="PreferedCar" xml:space="preserve">
     <value>Carro preferido</value>
   </data>
+  <data name="Privacy" xml:space="preserve">
+    <value>Privacidade</value>
+  </data>
+  <data name="PrivacySettings" xml:space="preserve">
+    <value>Configurações de Privacidade</value>
+  </data>
   <data name="PrivateMessage" xml:space="preserve">
     <value>&lt;i class="fa fa-envelope"&gt;&lt;/i&gt; Enviar Mensagem</value>
   </data>
   <data name="Profile" xml:space="preserve">
     <value>Perfil</value>
   </data>
+  <data name="ProfileDisclaimer" xml:space="preserve">
+    <value>As informações de perfil definidas aqui são públicas (Exceto pelo seu endereço de e-mail), portanto caso não deseje deixá-las visíveis apenas não preencha. A FTW! Masters compromete-se a não vender os seus dados, no entanto, não se resposabiliza se motores de busca os coletarem pela sua página de perfil.</value>
+  </data>
+  <data name="ProfileSettings" xml:space="preserve">
+    <value>Configurações do Usuário</value>
+  </data>
   <data name="ProfileTitle" xml:space="preserve">
     <value>Perfil de {0}</value>
   </data>
+  <data name="Pronoun" xml:space="preserve">
+    <value>Como deseja ser chamado</value>
+  </data>
   <data name="RealName" xml:space="preserve">
     <value>Nome Completo</value>
+  </data>
+  <data name="RecoveryCodesLeft0Alert" xml:space="preserve">
+    <value>&lt;div class="alert alert-danger"&gt;
+                &lt;strong&gt;Você não tem códigos de recuperação disponíveis.&lt;/strong&gt;
+                &lt;p&gt;Você DEVE &lt;a asp-page="./GenerateRecoveryCodes"&gt;gerar um novo conjunto de códigos de recuperação&lt;/a&gt; antes de se logar novamente com um
+                    código de recuperação.&lt;/p&gt;
+            &lt;/div&gt;</value>
+  </data>
+  <data name="RecoveryCodesLeft1Alert" xml:space="preserve">
+    <value>&lt;div class="alert alert-danger"&gt;
+                &lt;strong&gt;Você tem 1 código de recuperação restante.&lt;/strong&gt;
+                &lt;p&gt;Você pode &lt;a href="{0}"&gt;gerar um novo conjunto de códigos de recuperação&lt;/a&gt;.&lt;/p&gt;
+            &lt;/div&gt;</value>
+  </data>
+  <data name="RecoveryCodesLeft3Alert" xml:space="preserve">
+    <value>&lt;div class="alert alert-warning"&gt;
+                &lt;strong&gt;Você tem {0} códigos de recuperação restantes.&lt;/strong&gt;
+                &lt;p&gt;Você pode &lt;a href="{1}"&gt;gerar um novo conjunto de códigos de recuperação&lt;/a&gt;.&lt;/p&gt;
+            &lt;/div&gt;</value>
+  </data>
+  <data name="RecoveryCodeVerification" xml:space="preserve">
+    <value>Entrada com Código de Recuperação</value>
   </data>
   <data name="RefundPolicy" xml:space="preserve">
     <value>Política de Reembolso</value>
@@ -474,6 +609,9 @@
   </data>
   <data name="RegisterAsNewUser" xml:space="preserve">
     <value>Registrar como um novo usuário</value>
+  </data>
+  <data name="RegisteredLogins" xml:space="preserve">
+    <value>Logins Cadastrados</value>
   </data>
   <data name="RegisterPage" xml:space="preserve">
     <value>Cadastre-se</value>
@@ -505,8 +643,30 @@
   <data name="ResendEmailConfirmation" xml:space="preserve">
     <value>Reenviar e-mail de confirmação</value>
   </data>
+  <data name="ResendEmailConfirmationDescription" xml:space="preserve">
+    <value>Preencha o email em que a conta está cadastrada para receber o e-mail de confirmação, se uma conta estiver cadastrada nesse e-mail você receberá uma mensagem com as instruções. Lembre-se o e-mail pode levar até 15 minutos para chegar.</value>
+  </data>
+  <data name="ResetAuthentication2faAlert" xml:space="preserve">
+    <value>&lt;p&gt;
+            &lt;span class="glyphicon glyphicon-warning-sign"&gt;&lt;/span&gt;
+            &lt;strong&gt;Se você resetar sua chave do autenticador, seu aplicativo não funcionará até que você o reconfigure com a nova chave.&lt;/strong&gt;
+        &lt;/p&gt;
+        &lt;p&gt;
+            Este processo desabilita a autenticação de dois fatores até que você a verifique no seu aplicativo de autenticação.
+            Se você não completar a configuração você pode acabar perdendo acesso a sua conta.
+        &lt;/p&gt;</value>
+  </data>
+  <data name="ResetAuthenticatorApp" xml:space="preserve">
+    <value>Resetar Aplicativo de Dois Fatores</value>
+  </data>
+  <data name="ResetAuthenticatorKey" xml:space="preserve">
+    <value>Resetar Chave de Autenticação</value>
+  </data>
   <data name="ResetPasswordConfirmation" xml:space="preserve">
     <value>Confirmação de Alteração de Senha</value>
+  </data>
+  <data name="ResetRecoveryCodes" xml:space="preserve">
+    <value>Resetar Códigos de Recuperação</value>
   </data>
   <data name="RestoreCharacters" xml:space="preserve">
     <value>Restaurar Personagens Deletados</value>
@@ -529,6 +689,13 @@
   <data name="SaveRegionalSettings" xml:space="preserve">
     <value>Gravar Opções Regionais</value>
   </data>
+  <data name="SaveSettings" xml:space="preserve">
+    <value>Salvar</value>
+  </data>
+  <data name="ScanQrCode" xml:space="preserve">
+    <value>&lt;p&gt;Escaneie o QR Code abaixo ou entre esta chave &lt;kbd&gt;{0}&lt;/kbd&gt; no seu aplicativo de autenticação de dois fatores. 
+                    Espaços e letras maíusculas ou minúsculas não importam.&lt;/p&gt;</value>
+  </data>
   <data name="Security" xml:space="preserve">
     <value>Segurança</value>
   </data>
@@ -544,8 +711,29 @@
   <data name="SecurityRecoveryAccount" xml:space="preserve">
     <value>Segurança e Recuperação de Conta</value>
   </data>
+  <data name="SendVerificationEmail" xml:space="preserve">
+    <value>Enviar e-mail de verificação</value>
+  </data>
+  <data name="SetPassword" xml:space="preserve">
+    <value>Definir Senha</value>
+  </data>
+  <data name="SetPasswordSuccess" xml:space="preserve">
+    <value>Sua nova senha foi definida com sucesso.</value>
+  </data>
   <data name="Settings" xml:space="preserve">
     <value>Configurações</value>
+  </data>
+  <data name="SetupAuthenticatorApp" xml:space="preserve">
+    <value>Configurar Aplicativo de Dois Fatores</value>
+  </data>
+  <data name="ShowRecoveryCodesAlert" xml:space="preserve">
+    <value>&lt;p&gt;
+            &lt;span class="glyphicon glyphicon-warning-sign"&gt;&lt;/span&gt;
+            &lt;strong&gt;Armazene estes códigos em um lugar seguro!&lt;/strong&gt;
+        &lt;/p&gt;
+        &lt;p&gt;
+            Se você perder o seu dispositivo e não estiver com os códigos de recuperação, você perderá o acesso a sua conta.
+        &lt;/p&gt;</value>
   </data>
   <data name="Sigin3rdPartyAccount" xml:space="preserve">
     <value>Conecte-se usando sua conta no {0}.</value>
@@ -607,14 +795,32 @@
   <data name="TopWaterTaoist" xml:space="preserve">
     <value>Maiores Taoístas da Água</value>
   </data>
+  <data name="TwoFactorAuthentication" xml:space="preserve">
+    <value>Autenticação de dois fatores</value>
+  </data>
+  <data name="TwoFactorCode" xml:space="preserve">
+    <value>Código de Dois Fatores</value>
+  </data>
+  <data name="UseAnotherRegistrationProvider" xml:space="preserve">
+    <value>Use outro provedor para se conectar.</value>
+  </data>
   <data name="UserIdentity" xml:space="preserve">
     <value>Identidade</value>
   </data>
   <data name="UserName" xml:space="preserve">
     <value>Nome de Usuário</value>
   </data>
+  <data name="VerificationCode" xml:space="preserve">
+    <value>Código de Verificação</value>
+  </data>
+  <data name="VerificationEmailFail" xml:space="preserve">
+    <value>Seu e-mail não foi alterado.</value>
+  </data>
   <data name="VerificationEmailSent" xml:space="preserve">
     <value>Se o e-mail informado estiver cadastrado em nosso banco de dados, uma mensagem com instruções de ativação foi enviada.</value>
+  </data>
+  <data name="Verify" xml:space="preserve">
+    <value>Verificar</value>
   </data>
   <data name="WatchTrailer" xml:space="preserve">
     <value>Assista ao trailer</value>

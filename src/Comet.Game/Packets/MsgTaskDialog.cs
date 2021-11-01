@@ -43,6 +43,7 @@ namespace Comet.Game.Packets
             Text = string.Empty;
         }
 
+        public int Timestamp { get; set; }
         public uint TaskIdentity { get; set; }
         public ushort Data { get; set; }
         public byte OptionIndex { get; set; }
@@ -60,6 +61,7 @@ namespace Comet.Game.Packets
             var reader = new PacketReader(bytes);
             Length = reader.ReadUInt16();
             Type = (PacketType)reader.ReadUInt16();
+            Timestamp = reader.ReadInt32();
             TaskIdentity = reader.ReadUInt32();
             Data = reader.ReadUInt16();
             OptionIndex = reader.ReadByte();
@@ -78,6 +80,7 @@ namespace Comet.Game.Packets
         {
             var writer = new PacketWriter();
             writer.Write((ushort)Type);
+            writer.Write(Timestamp);
             writer.Write(TaskIdentity);
             writer.Write(Data);
             writer.Write(OptionIndex);

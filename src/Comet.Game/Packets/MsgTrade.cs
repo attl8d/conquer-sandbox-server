@@ -86,6 +86,12 @@ namespace Comet.Game.Packets
                     if (Data == 0)
                         return;
 
+                    if (!user.IsUnlocked())
+                    {
+                        //await user.SendAsync(new);
+                        return;
+                    }
+
                     target = Kernel.RoleManager.GetUser(Data);
                     if (target == null || target.MapIdentity != user.MapIdentity ||
                         target.GetDistance(user) > Screen.VIEW_SIZE)

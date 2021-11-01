@@ -56,6 +56,11 @@ namespace Comet.Game.Packets
             0
         };
 
+        public static readonly int[] UpgradeCost =
+        {
+            0, 27, 27, 27, 27, 27, 54, 81, 135, 162, 270, 324, 324, 324, 324, 375, 548, 799, 1154, 1420
+        };
+
         public MsgWeaponSkill(DbWeaponSkill ws)
         {
             Type = PacketType.MsgWeaponSkill;
@@ -78,7 +83,7 @@ namespace Comet.Game.Packets
         public override byte[] Encode()
         {
             var writer = new PacketWriter();
-            writer.Write((ushort) Type);
+            writer.Write((ushort)Type);
             writer.Write(Identity);
             writer.Write(Level);
             writer.Write(Experience);

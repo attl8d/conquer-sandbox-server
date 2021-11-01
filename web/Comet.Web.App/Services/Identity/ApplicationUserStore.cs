@@ -1,6 +1,5 @@
 ﻿using Comet.Web.App.Data;
 using Comet.Web.App.Data.Entities;
-using Comet.Web.App.Services.Password;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Identity.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore;

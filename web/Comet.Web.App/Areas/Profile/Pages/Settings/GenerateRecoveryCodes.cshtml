@@ -1,0 +1,21 @@
+﻿@page
+@using Comet.Web.App.Services
+@inject LanguageService Language
+@model Comet.Web.App.Areas.Profile.Pages.Settings.GenerateRecoveryCodesModel
+@{
+    ViewData["Title"] = Language.GetString("GenerateRecoveryCodes");
+}
+
+@await Html.PartialAsync("../../../Pages/Shared/_ViewTitleContainer")
+
+<div class="container youplay-content">
+    <h4>@ViewData["Title"]</h4>
+    <div class="alert alert-warning" role="alert">
+        @Html.Raw(Language.GetString("GenerateRecoveryCodesAlert"))
+    </div>
+    <div>
+        <form method="post" class="form-group">
+            <button class="btn btn-danger" type="submit">@Language.GetString("GenerateRecoveryCodes")</button>
+        </form>
+    </div>
+</div>

@@ -13,6 +13,6 @@ namespace Comet.Web.App.Data.Entities
         [Key]
         public override string LoginProvider { get => base.LoginProvider; set => base.LoginProvider = value; }
         [Key]
-        public override string Name { get => base.Value; set => base.Value = value; }
+        public override string Name { get => base.Name; set => base.Name = value; }
     }
 }

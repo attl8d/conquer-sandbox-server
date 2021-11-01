@@ -1,0 +1,85 @@
+﻿@page
+@using Comet.Web.App.Services
+@inject LanguageService Language
+@model Comet.Web.App.Areas.Profile.Pages.Settings.EnableAuthenticatorModel
+@{
+    ViewData["Title"] = Language.GetString("ConfigureAuthenticatorApp");
+}
+
+@await Html.PartialAsync("../../../Pages/Shared/_ViewTitleContainer")
+
+<div class="container youplay-content">
+    <h4>@ViewData["Title"]</h4>
+    <div>
+        <p>@Language.GetString("GenerateRecoveryCodeSteps")</p>
+        <ol class="list">
+            <li>
+                <p>
+                    @Html.Raw(Language.GetString("Download2faApplication"))
+                </p>
+            </li>
+            <li>
+                @Html.Raw(Language.GetString("ScanQrCode", Model.SharedKey))
+                <div style="height: 300px; background-color: #FFF;">
+                    <div id="qrCode"></div>
+                </div>
+            </li>
+            <li>
+                <p>
+                    @Html.Raw(Language.GetString("ConfirmQrCode"))
+                </p>
+                <div class="row">
+                    <div class="col-md-6">
+                        <form method="post">
+                            <div class="form-group">
+                                <label asp-for="Input.Code" class="control-label">@Language.GetString("VerificationCode")</label>
+                                <input asp-for="Input.Code" class="form-control" autocomplete="off" />
+                                <span asp-validation-for="Input.Code" class="text-danger"></span>
+                            </div>
+                            <button type="submit" class="btn btn-default">@Language.GetString("Verify")</button>
+                            <div asp-validation-summary="ModelOnly" class="text-danger"></div>
+                        </form>
+                    </div>
+                </div>
+            </li>
+        </ol>
+    </div>
+</div>
+
+@section Styles
+{
+<style>
+    #qrCode {
+        padding-top: 70px;
+        margin: auto auto;
+        width: 160px;
+        height: 160px;
+    }
+</style>
+}
+
+@section Scripts {
+<partial name="_ValidationScriptsPartial" />
+
+<script src="~/assets/vendor/qrcode/dist/qrcode.min.js"></script>
+
+<script>
+    var qrcode = new QRCode("qrCode");
+
+    function makeCode () {
+      qrcode.makeCode('@Html.Raw(Model.AuthenticatorUri)');
+    }
+
+    makeCode();
+
+    $("#text").
+      on("blur", function () {
+        makeCode();
+      }).
+      on("keydown", function (e) {
+        if (e.keyCode == 13) {
+          makeCode();
+        }
+      });
+</script>
+}

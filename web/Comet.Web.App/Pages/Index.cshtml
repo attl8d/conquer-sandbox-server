@@ -74,14 +74,15 @@ Additional classes:
 @section Scripts
 {
     <script>
-        $(".countdown").each(function() {
-            let tz = $(this).attr('data-timezone');
-            let end = $(this).attr('data-end');
+        $(".countdown").each(function()
+        {
+            var tz = $(this).attr('data-timezone');
+            var end = $(this).attr('data-end');
             end = moment.tz(end, tz).toDate();
-            $(this).countdown(end,
-                function(event) {
-                    $(this).text(event.strftime('%D @LanguageManager.GetString("Days") %H:%M:%S'));
-                });
+            $(this).countdown(end, function(event)
+            {
+                $(this).html(event.strftime(['<div class="countdown-item">', '<span>Dias</span>', '<span><span>%D</span></span>', '</div>', '<div class="countdown-item">', '<span>Horas</span>', '<span><span>%H</span></span>', '</div>', '<div class="countdown-item">', '<span>Minutos</span>', '<span><span>%M</span></span>', '</div>', '<div class="countdown-item">', '<span>Segundos</span>', '<span><span>%S</span></span>', '</div>'].join('')));
+            });
         });
     </script>
 }

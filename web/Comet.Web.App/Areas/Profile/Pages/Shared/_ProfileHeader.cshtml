@@ -1,5 +1,6 @@
 ﻿@using Comet.Web.App.Areas.Profile.Models
 @using Comet.Web.App.Services
+@using System.Security.Claims
 @inject LanguageService Language
 @model ProfileModel
 
@@ -11,25 +12,25 @@
     <div class="youplay-user-navigation">
         <div class="container">
             <ul>
-                <li@(Model.CurrentPage.Equals("ACTIVITY") ? "  class=\"active\"" : "")>
+                <li @Html.Raw(Model.CurrentPage.Equals("ACTIVITY") ? " class=\"active\"" : "")>
                     <a href="#">@Language.GetString("Activity")</a>
                 </li>
-                <li@(Model.CurrentPage.Equals("INDEX") ? "  class=\"active\"" : "")>
-                    <a asp-area="Profile" asp-page="/Index">@Language.GetString("Profile")</a>
+                <li @Html.Raw(Model.CurrentPage.Equals("INDEX") ? " class=\"active\"" : "")>
+                    <a asp-area="Profile" asp-page="/Index" asp-route-UserName="@Model.UserName">@Language.GetString("Profile")</a>
                 </li>
                 @if (Model.LoadedByOwner)
                 {
-                    <li@(Model.CurrentPage.Equals("MESSAGES") ? "  class=\"active\"" : "")>
+                    <li @Html.Raw(Model.CurrentPage.Equals("MESSAGES") ? " class=\"active\"" : "")>
                         <a href="#">@Language.GetString("Messages") <span class="badge">0</span></a>
                     </li>
-                    <li@(Model.CurrentPage.Equals("SETTINGS") ? "  class=\"active\"" : "")>
+                    <li @Html.Raw(Model.CurrentPage.Equals("SETTINGS") ? " class=\"active\"" : "")>
                         <a asp-area="Profile" asp-page="/Settings/Index">@Language.GetString("Settings")</a>
                     </li>
                 }
-                <li@(Model.CurrentPage.Equals("GROUPS") ? "  class=\"active\"" : "")>
+                <li @Html.Raw(Model.CurrentPage.Equals("GROUPS") ? " class=\"active\"" : "")>
                     <a href="#">@Language.GetString("Groups")</a>
                 </li>
-                <li@(Model.CurrentPage.Equals("FORUMS") ? "  class=\"active\"" : "")>
+                <li @Html.Raw(Model.CurrentPage.Equals("FORUMS") ? " class=\"active\"" : "")>
                     <a href="#">@Language.GetString("Forums")</a>
                 </li>
             </ul>

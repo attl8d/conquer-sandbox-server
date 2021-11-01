@@ -70,6 +70,9 @@ namespace Comet.Game.Packets
             public uint SocketProgress;
             public uint CompositionProgress;
             public int Inscribed;
+            public int RemainingTime;
+            public int ActivationTime;
+            public int Accumulate;
         }
 
         public MsgPackage()
@@ -81,6 +84,7 @@ namespace Comet.Game.Packets
         public WarehouseMode Action { get; set; }
         public StorageType Mode { get; set; }
         public ushort Unknown { get; set; }
+        public int Data { get; set; }
         public uint Param { get; set; }
         public List<WarehouseItem> Items = new List<WarehouseItem>();
 
@@ -89,45 +93,51 @@ namespace Comet.Game.Packets
             var reader = new PacketReader(bytes);
             Length = reader.ReadUInt16();
             Type = (PacketType)reader.ReadUInt16();
-            Identity = reader.ReadUInt32();
-            Action = (WarehouseMode) reader.ReadByte();
-            Mode = (StorageType) reader.ReadByte();
-            Unknown = reader.ReadUInt16();
-            Param = reader.ReadUInt32();
+            Identity = reader.ReadUInt32(); // 4
+            Action = (WarehouseMode) reader.ReadByte(); // 8
+            Mode = (StorageType) reader.ReadByte(); // 9
+            Unknown = reader.ReadUInt16(); // 10
+            Data = reader.ReadInt32(); // 12
+            Param = reader.ReadUInt32(); // 16
         }
 
         public override byte[] Encode()
         {
             var writer = new PacketWriter();
             writer.Write((ushort)Type);
-            writer.Write(Identity);
-            writer.Write((byte) Action);
-            writer.Write((byte) Mode);
-            writer.Write((ushort) 0);
+            writer.Write(Identity); // 4
+            writer.Write((byte) Action); // 8
+            writer.Write((byte) Mode); // 9
+            writer.Write((ushort) 0); // 10
+            writer.Write(Data); // 12
+            writer.Write(Param); // 16
             if (Items.Count > 0)
             {
-                writer.Write(Items.Count);
+                writer.Write(Items.Count); // 20
                 foreach (var item in Items)
                 {
-                    writer.Write(item.Identity); // 0
-                    writer.Write(item.Type); // 4
-                    writer.Write(item.Ident); // 8
-                    writer.Write((byte) item.SocketOne); // 9
-                    writer.Write((byte) item.SocketTwo); // 10
-                    writer.Write((byte) item.Magic1); // 11
-                    writer.Write(item.Magic2); // 12
-                    writer.Write(item.Magic3); // 13
-                    writer.Write((byte) item.Blessing); // 14
-                    writer.Write(item.Bound); // 15
-                    writer.Write(item.Enchantment); // 16
-                    writer.Write(item.AntiMonster); // 18
-                    writer.Write(item.Suspicious); // 20
-                    writer.Write((byte)0); // 21
-                    writer.Write(item.Locked); // 22
-                    writer.Write((byte)item.Color); // 23
-                    writer.Write(item.SocketProgress); // 24
-                    writer.Write(item.CompositionProgress); // 28
-                    writer.Write(item.Inscribed);
+                    writer.Write(item.Identity); // 0 24
+                    writer.Write(item.Type); // 4 28
+                    writer.Write(item.Ident); // 8 32
+                    writer.Write((byte) item.SocketOne); // 9 33
+                    writer.Write((byte) item.SocketTwo); // 10 34
+                    writer.Write((int) item.Magic1); // 11 35
+                    writer.Write((ushort) item.Magic2); // 15 39
+                    writer.Write(item.Magic3); // 17 41
+                    writer.Write((byte) item.Blessing); // 18 42
+                    writer.Write(item.Bound); // 19 43
+                    writer.Write(item.Enchantment); // 20 44
+                    writer.Write(item.AntiMonster); // 22 46
+                    writer.Write(item.Suspicious); // 24 48
+                    writer.Write((byte)0); // 25 49
+                    writer.Write(item.Locked); // 26 50
+                    writer.Write((byte)item.Color); // 27 51
+                    writer.Write(item.SocketProgress); // 28 52
+                    writer.Write(item.CompositionProgress); // 32 56
+                    writer.Write(item.Inscribed); // 36 60 
+                    writer.Write(item.RemainingTime); // 40 64 
+                    writer.Write(item.ActivationTime); // 44 68
+                    writer.Write(item.Accumulate); // 48 72
                 }
             }
             else
@@ -212,6 +222,10 @@ namespace Comet.Game.Packets
 
             if (Action == WarehouseMode.Query)
             {
+                if (npc != null)
+                {
+                    Data = npc.Data0;
+                }
                 foreach (var item in user.UserPackage.GetStorageItems(Identity, Mode))
                 {
                     Items.Add(new WarehouseItem
@@ -230,7 +244,13 @@ namespace Comet.Game.Packets
                         CompositionProgress = item.CompositionProgress,
                         SocketProgress = item.SocketProgress,
                         Bound = item.IsBound,
-                        Inscribed = item.SyndicateIdentity != 0 ? 1 : 0
+                        Inscribed = item.SyndicateIdentity != 0 ? 1 : 0,
+                        RemainingTime = 0,
+                        Magic2 = 0,
+                        Ident = 0,
+                        Accumulate = 0,
+                        ActivationTime = 0,
+                        AntiMonster = 0
                     });
 
                     if (Items.Count >= 20)

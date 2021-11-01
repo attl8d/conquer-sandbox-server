@@ -58,8 +58,10 @@ namespace Comet.Game.Packets
             10, 11, 13, 14, 15, 24, 30, 35, 37, 38, 39, 40
         };
 
-        private static readonly ushort[] m_startX = {430, 423, 439, 428, 452, 464, 439};
-        private static readonly ushort[] m_startY = {378, 394, 384, 365, 365, 378, 396};
+        //private static readonly ushort[] m_startX = {430, 423, 439, 428, 452, 464, 439};
+        //private static readonly ushort[] m_startY = {378, 394, 384, 365, 365, 378, 396};
+        private static readonly byte[] mStartX = { };
+        private static readonly byte[] mStartY = { };
 
         // Packet Properties
         public int Cancel { get; set; }
@@ -157,9 +159,12 @@ namespace Comet.Game.Packets
                 Mesh = Mesh,
                 Silver = 1000,
                 Level = 1,
-                MapID = 1002,
-                X = m_startX[await Kernel.NextAsync(m_startX.Length) % m_startX.Length],
-                Y = m_startY[await Kernel.NextAsync(m_startY.Length) % m_startY.Length],
+                //MapID = 1002,
+                //X = m_startX[await Kernel.NextAsync(m_startX.Length) % m_startX.Length],
+                //Y = m_startY[await Kernel.NextAsync(m_startY.Length) % m_startY.Length],
+                MapID = 1010,
+                X = 154,
+                Y = 218,
                 Strength = allot.Strength,
                 Agility = allot.Agility,
                 Vitality = allot.Vitality,

@@ -1,0 +1,23 @@
+﻿@page
+@using Comet.Web.App.Services
+@inject LanguageService Language
+@model Comet.Web.App.Areas.Profile.Pages.Settings.Disable2faModel
+@{
+    ViewData["Title"] = Language.GetString("Disable2fa");//"Disable two-factor authentication (2FA)";
+}
+
+@await Html.PartialAsync("../../../Pages/Shared/_ViewTitleContainer")
+
+<div class="container youplay-content">
+    <h2>@ViewData["Title"]</h2>
+
+    <div class="alert alert-warning" role="alert">
+        @Html.Raw(Language.GetString("Disable2faAlert"))
+    </div>
+
+    <div>
+        <form method="post" class="form-group">
+            <button class="btn btn-danger" type="submit">@Language.GetString("Disable2fa")</button>
+        </form>
+    </div>
+</div>

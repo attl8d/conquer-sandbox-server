@@ -4828,12 +4828,12 @@ namespace Comet.Game.States
 
             await user.SendAsync(new MsgAction
             {
-                Identity = role?.Identity ?? user.Identity,
+                Identity = user.Identity,
                 Command = action.Data,
                 Action = MsgAction.ActionType.ClientDialog,
-                Map = role?.MapIdentity ?? user.MapIdentity,
-                ArgumentX = role?.MapX ?? user.MapX,
-                ArgumentY = role?.MapY ?? user.MapY
+                Map = user.MapIdentity,
+                ArgumentX = user.MapX,
+                ArgumentY = user.MapY
             });
             return true;
         }
@@ -4910,20 +4910,20 @@ namespace Comet.Game.States
             if (user == null)
                 return false;
 
-            bool parsed = ulong.TryParse(input, out var password);
-            if (string.IsNullOrEmpty(input) || (parsed && password == 0))
-            {
-                user.SecondaryPassword = 0;
-                await user.SaveAsync();
-                return true;
-            }
+            //bool parsed = ulong.TryParse(input, out var password);
+            //if (string.IsNullOrEmpty(input) || (parsed && password == 0))
+            //{
+            //    user.SecondaryPassword = 0;
+            //    await user.SaveAsync();
+            //    return true;
+            //}
 
-            if (input.Length < 1 || !parsed)
-                return false;
+            //if (input.Length < 1 || !parsed)
+            //    return false;
 
-            user.SecondaryPassword = password;
-            await user.SaveAsync();
-            return true;
+            //user.SecondaryPassword = password;
+            //await user.SaveAsync();
+            return user.IsUnlocked();
         }
 
         private static async Task<bool> ExecuteActionUserOpeninterface(DbAction action, string param, Character user,

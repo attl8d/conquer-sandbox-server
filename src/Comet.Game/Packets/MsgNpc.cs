@@ -38,6 +38,7 @@ namespace Comet.Game.Packets
             Type = PacketType.MsgNpc;
         }
 
+        public int Timestamp { get; set; }
         public uint Identity { get; set; }
         public uint Data { get; set; }
         public NpcActionType RequestType { get; set; }
@@ -54,6 +55,7 @@ namespace Comet.Game.Packets
             var reader = new PacketReader(bytes);
             Length = reader.ReadUInt16();
             Type = (PacketType)reader.ReadUInt16();
+            Timestamp = reader.ReadInt32();
             Identity = reader.ReadUInt32();
             Data = reader.ReadUInt32();
             RequestType = (NpcActionType) reader.ReadUInt16();
@@ -70,6 +72,7 @@ namespace Comet.Game.Packets
         {
             var writer = new PacketWriter();
             writer.Write((ushort)Type);
+            writer.Write(Timestamp);
             writer.Write(Identity);
             writer.Write(Data);
             writer.Write((ushort) RequestType);

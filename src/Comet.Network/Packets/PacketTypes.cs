@@ -136,6 +136,8 @@ namespace Comet.Network.Packets
         MsgQualifyingDetailInfo = 2209,
         MsgArenicScore = 2210,
 
+        Msg2ndPsw = 2261,
+        MsgSubPro = 2320,
         MsgNationality = 2430,
 
         MsgWalk = 10005,

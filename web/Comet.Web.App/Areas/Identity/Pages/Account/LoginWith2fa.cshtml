@@ -3,9 +3,8 @@
 @inject LanguageService Language
 @model LoginWith2faModel
 @{
-    ViewData["Title"] = "Two-factor authentication";
+    ViewData["Title"] = Language.GetString("TwoFactorAuthentication");
 }
-
 
 <section class="youplay-banner banner-top youplay-banner-parallax full">
     <div class="image" data-speed="0.4">
@@ -22,7 +21,7 @@
                             <input asp-for="RememberMe" type="hidden" />
                             <div asp-validation-summary="All" class="text-danger"></div>
                             <div class="form-group">
-                                <label asp-for="Input.TwoFactorCode"></label>
+                                <label asp-for="Input.TwoFactorCode">@Language.GetString("TwoFactorCode")</label>
                                 <input asp-for="Input.TwoFactorCode" class="form-control" autocomplete="off" />
                                 <span asp-validation-for="Input.TwoFactorCode" class="text-danger"></span>
                             </div>
@@ -39,8 +38,7 @@
                             </div>
                         </form>
                         <p>
-                            Don't have access to your authenticator device? You can
-                            <a asp-page="./LoginWithRecoveryCode" asp-route-returnUrl="@Model.ReturnUrl">log in with a recovery code</a>.
+                            @Html.Raw(Language.GetString("LogInWithRecoveryCode", Url.Page("LoginWithRecoveryCode")))
                         </p>
                     </div>
                 </div>

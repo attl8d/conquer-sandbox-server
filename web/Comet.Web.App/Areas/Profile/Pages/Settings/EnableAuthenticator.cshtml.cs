@@ -1,18 +1,15 @@
-﻿using System;
-using System.ComponentModel;
-using System.ComponentModel.DataAnnotations;
-using System.Collections.Generic;
-using System.Text;
-using System.Text.Encodings.Web;
-using System.Linq;
-using System.Threading.Tasks;
 using Comet.Web.App.Data.Entities;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.RazorPages;
 using Microsoft.Extensions.Logging;
+using System.ComponentModel.DataAnnotations;
+using System.Linq;
+using System.Text;
+using System.Text.Encodings.Web;
+using System.Threading.Tasks;
 
-namespace Comet.Web.App.Areas.Identity.Pages.Account.Manage
+namespace Comet.Web.App.Areas.Profile.Pages.Settings
 {
     public class EnableAuthenticatorModel : PageModel
     {
@@ -149,7 +146,7 @@ namespace Comet.Web.App.Areas.Identity.Pages.Account.Manage
         {
             return string.Format(
                 AuthenticatorUriFormat,
-                _urlEncoder.Encode("Comet.Web.App"),
+                _urlEncoder.Encode("World Conquer Online"),
                 _urlEncoder.Encode(email),
                 unformattedKey);
         }

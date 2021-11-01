@@ -90,6 +90,7 @@ namespace Comet.Web.App
                 opt.UsernamePassword = Configuration["DontReplyMail:UsernamePassword"];
                 opt.FromEmail = Configuration["DontReplyMail:FromEmail"];
                 opt.EnableSsl = bool.Parse(Configuration["DontReplyMail:EnableSsl"]);
+                opt.FromName = Configuration["DontReplyMail:FromName"];
             });
             services.AddTransient<IEmailSender, EmailService>();
             services.AddTransient<LanguageService>();

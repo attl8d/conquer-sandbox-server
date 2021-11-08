@@ -48,10 +48,10 @@ namespace Comet.Web.App.Areas.Profile.Pages.Settings
             Profile.CurrentPage = "SETTINGS";
 
             Input ??= new InputModel();
-            Input.Locality = User.FindFirst(ClaimTypes.Locality)?.Value;
-            Input.Gender = User.FindFirst(ClaimTypes.Gender)?.Value;
+            Input.Locality = User.FindFirst(PersonalInfoType.Locality)?.Value;
+            Input.Gender = User.FindFirst(PersonalInfoType.Gender)?.Value;
             Input.Pronoun = User.FindFirst(PersonalInfoType.Pronoun)?.Value;
-            string dob = User.FindFirst(ClaimTypes.DateOfBirth)?.Value;
+            string dob = User.FindFirst(PersonalInfoType.DateOfBirth)?.Value;
             if (!string.IsNullOrEmpty(dob))
             {
                 Input.DateOfBirth = DateTime.Parse(dob);
@@ -72,7 +72,7 @@ namespace Comet.Web.App.Areas.Profile.Pages.Settings
         public async Task<IActionResult> OnPostAsync() 
         {
             ApplicationUser user = await mUserManager.GetUserAsync(User);
-
+            
             if (user == null)
                 return LocalRedirect("/");
 
@@ -83,10 +83,10 @@ namespace Comet.Web.App.Areas.Profile.Pages.Settings
             }
 
             Dictionary<string, string> claimsPairs = new Dictionary<string, string>();
-            claimsPairs.Add(ClaimTypes.DateOfBirth, Input.DateOfBirth?.ToString("s"));
-            claimsPairs.Add(ClaimTypes.Gender, Input.Gender);
+            claimsPairs.Add(PersonalInfoType.DateOfBirth.ToClaimString(), Input.DateOfBirth?.ToString("s"));
+            claimsPairs.Add(PersonalInfoType.Gender.ToClaimString(), Input.Gender);
             claimsPairs.Add(PersonalInfoType.Pronoun.ToClaimString(), Input.Pronoun);
-            claimsPairs.Add(ClaimTypes.Locality, Input.Locality);
+            claimsPairs.Add(PersonalInfoType.Locality.ToClaimString(), Input.Locality);
 
             foreach (var claim in claimsPairs)
             {

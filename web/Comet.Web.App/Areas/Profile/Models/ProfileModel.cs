@@ -1,4 +1,5 @@
 ﻿using System.Collections.Generic;
+using System.ComponentModel;
 using System.Security.Claims;
 
 namespace Comet.Web.App.Areas.Profile.Models
@@ -42,7 +43,10 @@ namespace Comet.Web.App.Areas.Profile.Models
         RelationshipStatus,
         StudiedAt,
         Language,
-        Pronoun
+        Pronoun,
+        Locality,
+        DateOfBirth,
+        Gender
     }
 
     public enum ContactInfoType

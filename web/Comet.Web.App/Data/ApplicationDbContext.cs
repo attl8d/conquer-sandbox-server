@@ -47,6 +47,9 @@ namespace Comet.Web.App.Data
         #region Custom Entities
         
         public virtual DbSet<SecurityQuestion> SecurityQuestions {  get; set; }
+        public virtual DbSet<ApplicationUserBan> ApplicationUserBans { get; set; }
+        public virtual DbSet<ApplicationUserBanReason> ApplicationUserBanReasons { get; set; }
+        public virtual DbSet<ApplicationUserBanReasonFactor> ApplicationUserBanReasonsFactors { get; set; }
 
         #endregion
 

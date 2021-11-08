@@ -1,12 +1,4 @@
-﻿using System;
-using Comet.Web.App.Data;
-using Comet.Web.App.Data.Entities;
-using Microsoft.AspNetCore.Hosting;
-using Microsoft.AspNetCore.Identity;
-using Microsoft.AspNetCore.Identity.UI;
-using Microsoft.EntityFrameworkCore;
-using Microsoft.Extensions.Configuration;
-using Microsoft.Extensions.DependencyInjection;
+﻿using Microsoft.AspNetCore.Hosting;
 
 [assembly: HostingStartup(typeof(Comet.Web.App.Areas.Identity.IdentityHostingStartup))]
 namespace Comet.Web.App.Areas.Identity

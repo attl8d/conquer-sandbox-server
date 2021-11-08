@@ -19,6 +19,7 @@ namespace Comet.Web.App.Services
 
         public enum Claims
         {
+            // Users and roles
             Super,
             CreateRoles,
             UpdateRoles,
@@ -30,7 +31,30 @@ namespace Comet.Web.App.Services
             EditUserClaims,
             ViewRoles,
             ViewUsers,
-            ViewClaims
+            ViewClaims,
+            ViewBans,
+            BanAccount,
+            BanGameAccount,
+            CancelAccountBan,
+            CancelGameBan,
+            ForgiveAccountBan,
+            ForgiveGameBan,
+            CannotBeBanned,
+
+            // Articles
+            CanViewArticlesList,
+            CanWriteArticles,
+            CanEditArticles,
+            CanExcludeArticles,
+            CanHardDeleteArticles,
+            CanModerateComments,
+            CanHardDeleteComments,
+
+            // Foruns
+            CanCreateNewForums
+
+
+            // Shop
         }
     }
 

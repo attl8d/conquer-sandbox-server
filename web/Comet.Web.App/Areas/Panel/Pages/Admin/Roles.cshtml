@@ -6,26 +6,22 @@
     ViewData["title"] = Language.GetString("RoleManagement");
 }
 
-@await Html.PartialAsync("../../../Pages/Shared/_ViewTitleContainer")
-
-<div class="container youplay-news">
-    <div class="col table-responsive">
-        <table id="tblRoleManagement" class="table table-striped">
-            <thead>
-                <tr>
-                    <td>#</td>
-                    <td>@Language.GetString("RoleName")</td>
-                    <td>@Language.GetString("RoleNormalizedName")</td>
-                    <td>@Language.GetString("MemberAmount")</td>
-                    <td>@Language.GetString("CreationDate")</td>
-                    <td>@Language.GetString("ModifiedDate")</td>
-                    <td></td>
-                </tr>
-            </thead>
-            <tbody>
-            </tbody>
-        </table>
-    </div>
+<div class="table-responsive">
+    <table id="tblRoleManagement" class="table table-striped">
+        <thead>
+            <tr>
+                <td>#</td>
+                <td>@Language.GetString("RoleName")</td>
+                <td>@Language.GetString("RoleNormalizedName")</td>
+                <td>@Language.GetString("MemberAmount")</td>
+                <td>@Language.GetString("CreationDate")</td>
+                <td>@Language.GetString("ModifiedDate")</td>
+                <td></td>
+            </tr>
+        </thead>
+        <tbody>
+        </tbody>
+    </table>
 </div>
 
 @section Scripts

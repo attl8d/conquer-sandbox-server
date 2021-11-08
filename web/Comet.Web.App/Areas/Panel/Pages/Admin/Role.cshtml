@@ -3,122 +3,120 @@
 @inject LanguageService Language;
 @model Comet.Web.App.Areas.Panel.Pages.Admin.RoleModel
 @{
-    ViewData["title"] = Language.GetString("RoleManagement");
+    ViewData["title"] = Language.GetString("RoleAdministration", Model.Role.Name);
 }
 
-<div class="container youplay-news">
-    <div class="row">
-        <div class="col-md-12">
-            <a class="btn btn-sm btn-primary" asp-area="Panel" asp-page="/Admin/Roles">@Language.GetString("GoBack")</a>
-            <div class="form-horizontal mt-30 mb-40">
-                <div class="form-group">
-                    <label class="control-label col-sm-3" for="cur_password">#:</label>
-                    <div class="col-sm-9">
-                        <div class="youplay-input">
-                            <input type="text" value="@Model.Role.Id" readonly>
-                        </div>
+<div class="row">
+    <div class="col-md-12">
+        <a class="btn btn-sm btn-primary" asp-area="Panel" asp-page="/Admin/Roles">@Language.GetString("GoBack")</a>
+        <div class="form-horizontal mt-30 mb-40">
+            <div class="form-group">
+                <label class="control-label col-sm-3" for="cur_password">#:</label>
+                <div class="col-sm-9">
+                    <div class="youplay-input">
+                        <input type="text" value="@Model.Role.Id" readonly>
                     </div>
                 </div>
-                <div class="form-group">
-                    <label class="control-label col-sm-3" for="new_password">@Language.GetString("Name"):</label>
-                    <div class="col-sm-9">
-                        <div class="youplay-input">
-                            <input type="text" value="@Model.Role.Name" readonly>
-                        </div>
+            </div>
+            <div class="form-group">
+                <label class="control-label col-sm-3" for="new_password">@Language.GetString("Name"):</label>
+                <div class="col-sm-9">
+                    <div class="youplay-input">
+                        <input type="text" value="@Model.Role.Name" readonly>
                     </div>
                 </div>
-                <div class="form-group">
-                    <label class="control-label col-sm-3" for="new_password">@Language.GetString("NormalizedName"):</label>
-                    <div class="col-sm-9">
-                        <div class="youplay-input">
-                            <input type="text" value="@Model.Role.NormalizedName" readonly>
-                        </div>
+            </div>
+            <div class="form-group">
+                <label class="control-label col-sm-3" for="new_password">@Language.GetString("NormalizedName"):</label>
+                <div class="col-sm-9">
+                    <div class="youplay-input">
+                        <input type="text" value="@Model.Role.NormalizedName" readonly>
                     </div>
                 </div>
-                <div class="form-group">
-                    <label class="control-label col-sm-3" for="new_password">@Language.GetString("CreationDate"):</label>
-                    <div class="col-sm-9">
-                        <div class="youplay-input">
-                            <input type="datetime" value="@Model.Role.CreationDate.ToString("yyyy-MM-ddTHH:mm:ss")" readonly>
-                        </div>
+            </div>
+            <div class="form-group">
+                <label class="control-label col-sm-3" for="new_password">@Language.GetString("CreationDate"):</label>
+                <div class="col-sm-9">
+                    <div class="youplay-input">
+                        <input type="datetime" value="@Model.Role.CreationDate.ToString("yyyy-MM-ddTHH:mm:ss")" readonly>
                     </div>
                 </div>
-                <div class="form-group">
-                    <label class="control-label col-sm-3" for="new_password">@Language.GetString("ModifiedDate"):</label>
-                    <div class="col-sm-9">
-                        <div class="youplay-input">
-                            <input type="datetime" value="@Model.Role.ModifiedDate?.ToString("yyyy-MM-ddTHH:mm:ss")" readonly>
-                        </div>
+            </div>
+            <div class="form-group">
+                <label class="control-label col-sm-3" for="new_password">@Language.GetString("ModifiedDate"):</label>
+                <div class="col-sm-9">
+                    <div class="youplay-input">
+                        <input type="datetime" value="@Model.Role.ModifiedDate?.ToString("yyyy-MM-ddTHH:mm:ss")" readonly>
                     </div>
                 </div>
             </div>
         </div>
-        <div class="col-md-6 table-responsive">
-            <h2>@Language.GetString("RoleClaims")</h2>
-            <div class="youplay-input youplay-select">
-                <select id="claimSelect">
-                    <option value=""></option>
-                    @foreach (var claim in Model.Claims.Where(x => !x.Key.Equals(Security.Claims.Super.ToString())))
-                    {
-                        <option value="@claim.Key">@Language.GetString(claim.Value.ToPermissionString())</option>
-                    }
-                </select>
-            </div>
-            <table id="tblRoleClaims" class="table table-striped table-hover">
-                <thead>
-                    <tr>
-                        <th>@Language.GetString("Name")</th>
-                        <th></th>
-                    </tr>
-                </thead>
-                <tbody></tbody>
-            </table>
+    </div>
+    <div class="col-md-6 table-responsive">
+        <h2>@Language.GetString("RoleClaims")</h2>
+        <div class="youplay-input youplay-select">
+            <select id="claimSelect">
+                <option value=""></option>
+                @foreach (var claim in Model.Claims.Where(x => !x.Key.Equals(Security.Claims.Super.ToString())))
+                {
+                    <option value="@claim.Key">@Language.GetString(claim.Value.ToPermissionString())</option>
+                }
+            </select>
         </div>
+        <table id="tblRoleClaims" class="table table-striped table-hover">
+            <thead>
+                <tr>
+                    <th>@Language.GetString("Name")</th>
+                    <th></th>
+                </tr>
+            </thead>
+            <tbody></tbody>
+        </table>
+    </div>
 
-        <div class="col-md-6">
-            <h2>@Language.GetString("RoleUsers")</h2>
-            
-            <div class="form-horizontal mt-30 mb-40">
-                <div class="form-group">
-                    <label class="control-label col-sm-3" for="cur_password">@Language.GetString("UserIdentity"):</label>
-                    <div class="col-sm-9">
-                        <div class="youplay-input">
-                            <input id="txtUserIdentity" type="number" placeholder="@Language.GetString("AddUserToRoleFromIdentity")">
-                        </div>
-                    </div>
-                </div>
-                <div class="form-group">
-                    <label class="control-label col-sm-3" for="new_password">@Language.GetString("UserName"):</label>
-                    <div class="col-sm-9">
-                        <div class="youplay-input">
-                            <input id="txtUserName" type="text" placeholder="@Language.GetString("AddUserToRoleFromUserName")">
-                        </div>
-                    </div>
-                </div>
-                <div class="form-group">
-                    <label class="control-label col-sm-3" for="new_password">@Language.GetString("Email"):</label>
-                    <div class="col-sm-9">
-                        <div class="youplay-input">
-                            <input id="txtUserEmail" type="email" placeholder="@Language.GetString("AddUserToRoleFromEmail")">
-                        </div>
-                    </div>
-                </div>
+    <div class="col-md-6">
+        <h2>@Language.GetString("RoleUsers")</h2>
 
-                <button id="btnAddUser" class="btn btn-success">@Language.GetString("AddUser")</button>
+        <div class="form-horizontal mt-30 mb-40">
+            <div class="form-group">
+                <label class="control-label col-sm-4" for="cur_password">@Language.GetString("UserIdentity"):</label>
+                <div class="col-sm-8">
+                    <div class="youplay-input">
+                        <input id="txtUserIdentity" type="number" placeholder="@Language.GetString("AddUserToRoleFromIdentity")">
+                    </div>
+                </div>
+            </div>
+            <div class="form-group">
+                <label class="control-label col-sm-4" for="new_password">@Language.GetString("UserName"):</label>
+                <div class="col-sm-8">
+                    <div class="youplay-input">
+                        <input id="txtUserName" type="text" placeholder="@Language.GetString("AddUserToRoleFromUserName")">
+                    </div>
+                </div>
+            </div>
+            <div class="form-group">
+                <label class="control-label col-sm-4" for="new_password">@Language.GetString("Email"):</label>
+                <div class="col-sm-8">
+                    <div class="youplay-input">
+                        <input id="txtUserEmail" type="email" placeholder="@Language.GetString("AddUserToRoleFromEmail")">
+                    </div>
+                </div>
             </div>
 
-            <table id="tblRoleUsers" class="table table-striped table-hover">
-                <thead>
-                    <tr>
-                        <th>#</th>
-                        <th>@Language.GetString("Name")</th>
-                        <th>@Language.GetString("UserName")</th>
-                        <th></th>
-                    </tr>
-                </thead>
-                <tbody></tbody>
-            </table>
+            <button id="btnAddUser" class="btn btn-success">@Language.GetString("AddUser")</button>
         </div>
+
+        <table id="tblRoleUsers" class="table table-striped table-hover">
+            <thead>
+                <tr>
+                    <th>#</th>
+                    <th>@Language.GetString("Name")</th>
+                    <th>@Language.GetString("UserName")</th>
+                    <th></th>
+                </tr>
+            </thead>
+            <tbody></tbody>
+        </table>
     </div>
 </div>
 
@@ -181,7 +179,7 @@
                     {
                         let row = body.insertRow();
                         row.insertCell().innerHTML = result[idx].claimName;
-                        row.insertCell().innerHTML = `<i onclick="removeClaimFromRole(${result[idx].roleId}, '${result[idx].claimType}', $(this).parent().parent());" class="fa fa-close text-danger" title="Remover"></i>`;
+                        row.insertCell().innerHTML = `<i onclick="removeClaimFromRole(@Model.RoleId, '${result[idx].claimType}', $(this).parent().parent());" class="fa fa-close text-danger" title="Remover"></i>`;
                     }
                 }
                 else {
@@ -208,15 +206,17 @@
             let currentClaim = this.textContent;
 
             $('#tblRoleClaims>tbody>tr').each(function() {
-                if (this.cells.length > 1 && this.cells[1].textContent === currentClaim) {
+                if (this.cells.length > 1 && this.cells[0].textContent === currentClaim) {
                     $(option).hide();
                     return false;
                 }
             });
         });
+
+        $("#claimSelect option:selected").prop("selected", false);
     }
 
-    function removeClaimFromRole(idRole, claimType, row) {        
+    function removeClaimFromRole(idRole, claimType, row) {
         $.ajax({
             url: '@Url.Action("DeleteClaimFromRole", "Roles")',
             type: 'DELETE',
@@ -281,7 +281,7 @@
     });
 
     $('#btnAddUser').click(function() {
-        
+
         let userId = 0;
         let userName = '';
         let email = '';
@@ -328,7 +328,7 @@
             }
         });
     });
-    
+
     $('#txtUserIdentity').change(function() {
         $('#txtUserName').val('');
         $('#txtUserEmail').val('');

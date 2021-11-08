@@ -129,6 +129,9 @@
   <data name="AccountActivatedSuccessfully" xml:space="preserve">
     <value>Sua conta foi ativada com sucesso.</value>
   </data>
+  <data name="AccountInformation" xml:space="preserve">
+    <value>Informações da Conta</value>
+  </data>
   <data name="AccountType" xml:space="preserve">
     <value>Tipo de Conta</value>
   </data>
@@ -150,14 +153,59 @@
   <data name="AddUser" xml:space="preserve">
     <value>Adicionar Usuário</value>
   </data>
+  <data name="AddUserToRoleFromEmail" xml:space="preserve">
+    <value>Procurar pelo email cadastrado</value>
+  </data>
+  <data name="AddUserToRoleFromIdentity" xml:space="preserve">
+    <value>Procurar pelo ID</value>
+  </data>
+  <data name="AddUserToRoleFromUserName" xml:space="preserve">
+    <value>Procurar pelo nome de usuário</value>
+  </data>
   <data name="Administrator" xml:space="preserve">
     <value>Administrador</value>
   </data>
   <data name="AdminPanel" xml:space="preserve">
     <value>Administração</value>
   </data>
+  <data name="AdmPanelPasswordAlert" xml:space="preserve">
+    <value>Apenas preencha o campo da senha caso seja solicitada a alteração da mesma. Não altere as senhas dos usuários sem autorização e validação dos dados.</value>
+  </data>
   <data name="AuthenticationApp" xml:space="preserve">
     <value>Aplicação de Autenticação</value>
+  </data>
+  <data name="BanDescriptionAndObservations" xml:space="preserve">
+    <value>&lt;p&gt;
+            Banir este usuário aqui irá também banir todas as contas dele nos jogos. Caso deseje banir alguma conta de jogo
+            específica vá até a área de contas de jogo.
+        &lt;/p&gt;
+
+        &lt;p&gt;Observações: &lt;/p&gt;
+        &lt;ul&gt;
+            &lt;li&gt;
+                Cancelamento: Se o banimento requer atividade do usuário para poder ter sua conta de volta, então ele pode ser
+                cancelado. Isso NÃO limpa a ficha do usuário, o próximo banimento pelo mesmo motivo acarretará em uma punição mais grave.
+            &lt;/li&gt;
+            &lt;li&gt;
+                Perdão: O perdão é dado quando o banimento foi deferido de forma injusta, porém, este continuará na lista do usuário mas
+                não contará na lista de reincidências.
+            &lt;/li&gt;
+            &lt;li&gt;Banimentos Permanentes não podem ser cancelados, mas alguns podem ser perdoados.&lt;/li&gt;
+        &lt;/ul&gt;</value>
+  </data>
+  <data name="BanTermsAdmDisplay" xml:space="preserve">
+    <value>&lt;h4 class="alert-heading"&gt;{3}&lt;/h4&gt;
+&lt;p&gt;Este banimento terá duração de {2}.&lt;/p&gt;&lt;ul&gt;&lt;li&gt;Banimento pode ser cancelado: {0}&lt;/li&gt;&lt;li&gt;Motivo pode ser perdoado: {1}&lt;/li&gt;&lt;/ul&gt;</value>
+  </data>
+  <data name="BanTermsAdmDisplayPermanent" xml:space="preserve">
+    <value>&lt;h4 class="alert-heading"&gt;{2}&lt;/h4&gt;
+&lt;p&gt;Este banimento será permanente.&lt;/p&gt;&lt;ul&gt;&lt;li&gt;Banimento pode ser cancelado: {0}&lt;/li&gt;&lt;li&gt;Motivo pode ser perdoado: {1}&lt;/li&gt;&lt;/ul&gt;</value>
+  </data>
+  <data name="BanTermsTimeDisplay" xml:space="preserve">
+    <value>{0} dias e {1:00} minutos e {2:00} segundos</value>
+  </data>
+  <data name="BanType" xml:space="preserve">
+    <value>Tipo de Banimento</value>
   </data>
   <data name="BestChildMemory" xml:space="preserve">
     <value>Melhor lembrança de quando criança</value>
@@ -173,6 +221,9 @@
   </data>
   <data name="Birthday" xml:space="preserve">
     <value>Data de Nascimento</value>
+  </data>
+  <data name="BugAbuse" xml:space="preserve">
+    <value>Abuso de Bugs e Irregularidades</value>
   </data>
   <data name="Change" xml:space="preserve">
     <value>Alterar</value>
@@ -220,6 +271,9 @@
   <data name="Days" xml:space="preserve">
     <value>dias</value>
   </data>
+  <data name="Description" xml:space="preserve">
+    <value>Descrição</value>
+  </data>
   <data name="Disable2fa" xml:space="preserve">
     <value>Desabilitar Autenticação de Dois Fatores</value>
   </data>
@@ -235,6 +289,12 @@
   <data name="DisableAuthenticator" xml:space="preserve">
     <value>Desabilitar Autenticação de Dois Fatores</value>
   </data>
+  <data name="Discrimination" xml:space="preserve">
+    <value>Discriminação</value>
+  </data>
+  <data name="DoBan" xml:space="preserve">
+    <value>Banir</value>
+  </data>
   <data name="Download2faApplication" xml:space="preserve">
     <value>Baixe uma aplicação de autenticação de dois fatores como o Microsoft Authenticator para
                     &lt;a href="https://go.microsoft.com/fwlink/?Linkid=825072"&gt;Android&lt;/a&gt; e
@@ -249,11 +309,17 @@
   <data name="EnableAuthenticator" xml:space="preserve">
     <value>Habilitar Autenticação de Dois Fatores</value>
   </data>
+  <data name="EndDate" xml:space="preserve">
+    <value>Fim</value>
+  </data>
   <data name="ExclusiveWindowsRelease" xml:space="preserve">
     <value>Lançamento exclusivo para Windows</value>
   </data>
   <data name="FirstLoveName" xml:space="preserve">
     <value>Nome do primeiro amor</value>
+  </data>
+  <data name="Flood" xml:space="preserve">
+    <value>Flood e Spam</value>
   </data>
   <data name="FooterDiscord" xml:space="preserve">
     <value>Entre em nosso canal do &lt;a href="{0}"&gt;Discord&lt;/a&gt;.</value>
@@ -283,6 +349,9 @@
   <data name="ForgotYourPassword" xml:space="preserve">
     <value>Esqueci minha senha</value>
   </data>
+  <data name="FormerModerator" xml:space="preserve">
+    <value>Membro desativado</value>
+  </data>
   <data name="Forums" xml:space="preserve">
     <value>Fóruns</value>
   </data>
@@ -297,6 +366,12 @@
   </data>
   <data name="Gender" xml:space="preserve">
     <value>Gênero</value>
+  </data>
+  <data name="General" xml:space="preserve">
+    <value>Geral</value>
+  </data>
+  <data name="GeneralBadConduct" xml:space="preserve">
+    <value>Má Conduta em Geral</value>
   </data>
   <data name="GenerateRecoveryCodes" xml:space="preserve">
     <value>Gerar Códigos de Recuperação</value>
@@ -327,6 +402,15 @@
   </data>
   <data name="Hometown" xml:space="preserve">
     <value>Cidade Natal</value>
+  </data>
+  <data name="InappropriateName" xml:space="preserve">
+    <value>Nome Inapropriado</value>
+  </data>
+  <data name="InappropriateSyndicateName" xml:space="preserve">
+    <value>Nome Inapropriado de Sindicato</value>
+  </data>
+  <data name="InvalidBanType" xml:space="preserve">
+    <value>Tipo de banimento inválido.</value>
   </data>
   <data name="InvalidLoginAttempt" xml:space="preserve">
     <value>Nome de usuário ou senha inválidos.</value>
@@ -480,6 +564,12 @@
   <data name="NewVerificationEmailSent" xml:space="preserve">
     <value>Um e-mail foi enviado para confirmar a alteração. O endereço de e-mail será alterado apenas após a confirmação.</value>
   </data>
+  <data name="No" xml:space="preserve">
+    <value>Não</value>
+  </data>
+  <data name="NoData" xml:space="preserve">
+    <value>Sem dados</value>
+  </data>
   <data name="NormalizedName" xml:space="preserve">
     <value>Nome Padronizado</value>
   </data>
@@ -492,6 +582,15 @@
   <data name="NotificationSettings" xml:space="preserve">
     <value>Configurações de Notificação</value>
   </data>
+  <data name="NoUserData" xml:space="preserve">
+    <value>Não foram encontrados os dados do usuário.</value>
+  </data>
+  <data name="OfensiveLanguage" xml:space="preserve">
+    <value>Linguagem Ofensiva</value>
+  </data>
+  <data name="ParentStaffRepresentation" xml:space="preserve">
+    <value>Representação de Parente de Equipe</value>
+  </data>
   <data name="Password" xml:space="preserve">
     <value>Senha</value>
   </data>
@@ -500,6 +599,21 @@
   </data>
   <data name="PasswordReseted" xml:space="preserve">
     <value>Sua senha foi resetada. Por favor, &lt;a asp-page="./Login"&gt;clique aqui para entrar&lt;/a&gt;.</value>
+  </data>
+  <data name="Permission.BanAccount" xml:space="preserve">
+    <value>Banir Conta FTW</value>
+  </data>
+  <data name="Permission.BanGameAccount" xml:space="preserve">
+    <value>Banir Conta de Jogo</value>
+  </data>
+  <data name="Permission.CancelAccountBan" xml:space="preserve">
+    <value>Cancelar Banimento de Conta FTW</value>
+  </data>
+  <data name="Permission.CancelGameBan" xml:space="preserve">
+    <value>Cancelar Banimento de Conta de Jogo</value>
+  </data>
+  <data name="Permission.CannotBeBanned" xml:space="preserve">
+    <value>Não pode ser banido</value>
   </data>
   <data name="Permission.CreateRoles" xml:space="preserve">
     <value>Criar Funções</value>
@@ -522,8 +636,17 @@
   <data name="Permission.EditUsers" xml:space="preserve">
     <value>Atualizar Usuários</value>
   </data>
+  <data name="Permission.ForgiveAccountBan" xml:space="preserve">
+    <value>Perdoar Banimento de Conta FTW</value>
+  </data>
+  <data name="Permission.ForgiveGameBan" xml:space="preserve">
+    <value>Perdoar Banimento de Conta de Jogo</value>
+  </data>
   <data name="Permission.UpdateRoles" xml:space="preserve">
     <value>Atualizar Funções</value>
+  </data>
+  <data name="Permission.ViewBans" xml:space="preserve">
+    <value>Visualizar Banimentos</value>
   </data>
   <data name="Permission.ViewClaims" xml:space="preserve">
     <value>Visualizar Permissões</value>
@@ -575,6 +698,9 @@
   </data>
   <data name="RealName" xml:space="preserve">
     <value>Nome Completo</value>
+  </data>
+  <data name="Reason" xml:space="preserve">
+    <value>Motivo</value>
   </data>
   <data name="RecoveryCodesLeft0Alert" xml:space="preserve">
     <value>&lt;div class="alert alert-danger"&gt;
@@ -671,6 +797,9 @@
   <data name="RestoreCharacters" xml:space="preserve">
     <value>Restaurar Personagens Deletados</value>
   </data>
+  <data name="RoleAdministration" xml:space="preserve">
+    <value>{0} - Gerenciar Função</value>
+  </data>
   <data name="RoleClaims" xml:space="preserve">
     <value>Permissões</value>
   </data>
@@ -714,6 +843,9 @@
   <data name="SendVerificationEmail" xml:space="preserve">
     <value>Enviar e-mail de verificação</value>
   </data>
+  <data name="ServerAdvertisement" xml:space="preserve">
+    <value>Divulgação de Servidores Terceiros</value>
+  </data>
   <data name="SetPassword" xml:space="preserve">
     <value>Definir Senha</value>
   </data>
@@ -740,6 +872,15 @@
   </data>
   <data name="SignIn" xml:space="preserve">
     <value>Conecte-se</value>
+  </data>
+  <data name="StaffDisrespect" xml:space="preserve">
+    <value>Desrespeito a Staff</value>
+  </data>
+  <data name="StaffRepresentation" xml:space="preserve">
+    <value>Representação de Equipe Administrativa</value>
+  </data>
+  <data name="StartDate" xml:space="preserve">
+    <value>Início</value>
   </data>
   <data name="StudiedAt" xml:space="preserve">
     <value>Estudou em</value>
@@ -801,14 +942,41 @@
   <data name="TwoFactorCode" xml:space="preserve">
     <value>Código de Dois Fatores</value>
   </data>
+  <data name="TwoFactorDisableAlert" xml:space="preserve">
+    <value>Desabilitar a autenticação de dois fatores removerá o fator de segurança extra na conta do usuário. Apenas desabilite sob autorização expressa do usuário e validação dos dados de segurança.</value>
+  </data>
+  <data name="TwoFactorEnabled" xml:space="preserve">
+    <value>Autenticação de dois fatores habilitada</value>
+  </data>
   <data name="UseAnotherRegistrationProvider" xml:space="preserve">
     <value>Use outro provedor para se conectar.</value>
+  </data>
+  <data name="UserAdministration" xml:space="preserve">
+    <value>{0} - Gerenciar Usuário</value>
+  </data>
+  <data name="UserAlreadyBanned" xml:space="preserve">
+    <value>O usuário selecionado já está banido. Aguarde o banimento acabar ou realize o cancelamento do banimento atual.</value>
+  </data>
+  <data name="UserBans" xml:space="preserve">
+    <value>Banimentos</value>
+  </data>
+  <data name="UserCannotBeBanned" xml:space="preserve">
+    <value>Usuário está em um grupo protegido e não pode ser banido.</value>
+  </data>
+  <data name="UserClaims" xml:space="preserve">
+    <value>Permissões Individuais</value>
   </data>
   <data name="UserIdentity" xml:space="preserve">
     <value>Identidade</value>
   </data>
+  <data name="UserManagement" xml:space="preserve">
+    <value>Gerenciamento de Usuários</value>
+  </data>
   <data name="UserName" xml:space="preserve">
     <value>Nome de Usuário</value>
+  </data>
+  <data name="UserNotFound" xml:space="preserve">
+    <value>Usuário não encontrado.</value>
   </data>
   <data name="VerificationCode" xml:space="preserve">
     <value>Código de Verificação</value>
@@ -824,5 +992,11 @@
   </data>
   <data name="WatchTrailer" xml:space="preserve">
     <value>Assista ao trailer</value>
+  </data>
+  <data name="Writer" xml:space="preserve">
+    <value>Escritor</value>
+  </data>
+  <data name="Yes" xml:space="preserve">
+    <value>Sim</value>
   </data>
 </root>

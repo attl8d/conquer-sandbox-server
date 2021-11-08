@@ -1,6 +1,7 @@
 ﻿using Comet.Web.App.Areas.Profile.Models;
 using Comet.Web.App.Data;
 using Comet.Web.App.Data.Entities;
+using Comet.Web.App.Model.Account;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Logging;
@@ -80,6 +81,9 @@ namespace Comet.Web.App.Services.Identity
 
         public async Task<ProfileModel> GetUserProfileAsync(ApplicationUser user, CancellationToken cancellationToken = default)
         {
+            ThrowIfDisposed();
+            cancellationToken.ThrowIfCancellationRequested();
+
             string title = mLanguage.GetString(Security.Roles.Member.ToString());
 
             var roleUser = await mDbContext.UserRoles.FirstOrDefaultAsync(x => x.UserId == user.Id, cancellationToken: cancellationToken);
@@ -122,6 +126,123 @@ namespace Comet.Web.App.Services.Identity
                 profile.Name += $" ({profile.PersonalInfo[PersonalInfoType.SocialName]})";
             }
             return profile;
+        }
+
+        public async Task<BanReport> GetBanInformationAsync(ApplicationUser user, CancellationToken cancellationToken = default)
+        {
+            ThrowIfDisposed();
+            cancellationToken.ThrowIfCancellationRequested();
+
+            BanReport banReport = new BanReport();
+            var userBans = await mDbContext.ApplicationUserBans.Where(x => x.AccountId == user.Id).ToListAsync(cancellationToken);
+            foreach (var dbBan in userBans)
+            {
+                BanReport.BanInformation info = new BanReport.BanInformation();
+                
+                var banReason = await mDbContext.ApplicationUserBanReasons.FirstOrDefaultAsync(x => x.Id == dbBan.ReasonId, cancellationToken: cancellationToken);
+                if (banReason == null)
+                    continue;
+
+                info.ReasonId = banReason.Id;
+                info.Reason = mLanguage.GetString(banReason.Name);
+                info.Description = dbBan.Reason;
+                info.From = dbBan.BanTime;
+                info.To = dbBan.ExpireTime;
+
+                var bannedBy = await mDbContext.Users.FirstOrDefaultAsync(x => x.Id == dbBan.BannedBy, cancellationToken: cancellationToken);
+                if (bannedBy == null)
+                {
+                    info.BannedBy = mLanguage.GetString("FormerModerator");
+                }
+                else
+                {
+                    info.BannedBy = bannedBy.Name;
+                }
+
+                if (banReason.Type == 0)
+                {
+                    info.Id = user.Id;
+                    info.Name = user.UserName;
+
+                    banReport.Account.Add(info);
+                }
+                else
+                {
+                    info.Id = 0;
+                    info.Name = "TODO GameName";
+
+                    banReport.Game.Add(info);
+                }
+            }
+            return banReport;
+        }
+
+        public async Task<BanReport.BanTerm> QueryNextBanTermAsync(ApplicationUser user, int type, int data = 0, CancellationToken cancellationToken = default)
+        {
+            ThrowIfDisposed();
+            cancellationToken.ThrowIfCancellationRequested();
+
+            var report = await GetBanInformationAsync(user, cancellationToken);
+            
+            var banType = await mDbContext.ApplicationUserBanReasons.FirstOrDefaultAsync(x => x.Id == type, cancellationToken: cancellationToken);
+            
+            if (banType == null)
+                return null;
+
+            if (banType.Type == 1 && data == 0)
+                return null;
+
+            ApplicationUserBanReasonFactor factor;
+            BanReport.BanTerm term = new();
+
+            term.Type = mLanguage.GetString(banType.Name);
+            if (banType.Type == 0)
+            {
+                int banCount = report.Account.Count(x => x.ReasonId == type && (x.Flags & BanFlags.Forgiven) == 0);
+                var factors = await mDbContext.ApplicationUserBanReasonsFactors.Where(x => x.ReasonId == banType.Id).ToListAsync();
+                if (banCount > 0 && factors.All(x => x.Ocurrences != banCount))
+                {
+                    if (banCount >= factors.Max(x => x.Ocurrences))
+                        factor = factors.FirstOrDefault(x => x.Ocurrences == factors.Max(y => y.Ocurrences));
+                    else
+                        factor = factors.FirstOrDefault();
+                }
+                else
+                {
+                    factor = factors.FirstOrDefault(x => x.Ocurrences == banCount);
+                }
+            }
+            else
+            {
+                int banCount = report.Game.Count(x => x.ReasonId == type && (x.Flags & BanFlags.Forgiven) == 0);
+                var factors = await mDbContext.ApplicationUserBanReasonsFactors.Where(x => x.ReasonId == banType.Id).ToListAsync();
+                if (banCount > 0 && factors.All(x => x.Ocurrences != banCount))
+                {
+                    if (banCount >= factors.Max(x => x.Ocurrences))
+                        factor = factors.FirstOrDefault(x => x.Ocurrences == factors.Max(y => y.Ocurrences));
+                    else 
+                        factor = factors.FirstOrDefault();
+                }
+                else
+                {
+                    factor = factors.FirstOrDefault(x => x.Ocurrences == banCount);
+                }
+            }
+
+            var termTime = TimeSpan.FromMinutes(factor.Minutes);
+            string tempTimeReturn = mLanguage.GetString("BanTermsTimeDisplay", termTime.TotalDays, termTime.Hours, termTime.Minutes);
+
+            term.Minutes = factor.Minutes;
+            term.Terms = factor.Permanent 
+                ? mLanguage.GetString("BanTermsAdmDisplayPermanent",
+                    factor.AllowCancel ? mLanguage.GetString("Yes") : mLanguage.GetString("No"),
+                    factor.CanBeForgiven ? mLanguage.GetString("Yes") : mLanguage.GetString("No"),
+                    term.Type) 
+                : mLanguage.GetString("BanTermsAdmDisplay",
+                    factor.AllowCancel ? mLanguage.GetString("Yes") : mLanguage.GetString("No"),
+                    factor.CanBeForgiven ? mLanguage.GetString("Yes") : mLanguage.GetString("No"),
+                    tempTimeReturn, term.Type);
+            return term;
         }
     }
 }

@@ -1,12 +1,10 @@
-using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Threading.Tasks;
-using Microsoft.AspNetCore.Mvc;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc.RazorPages;
+using static Comet.Web.App.Services.Security;
 
 namespace Comet.Web.App.Areas.Panel.Pages.Admin
 {
+    [Authorize(Policy = Moderator)]
     public class IndexModel : PageModel
     {
         public void OnGet()

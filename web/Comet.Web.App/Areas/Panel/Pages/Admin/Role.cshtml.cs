@@ -8,10 +8,11 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
+using static Comet.Web.App.Services.Security;
 
 namespace Comet.Web.App.Areas.Panel.Pages.Admin
 {
-    [Authorize]
+    [Authorize(Policy = Moderator)]
     public class RoleModel : PageModel
     {
         private readonly ApplicationDbContext mDbContext;

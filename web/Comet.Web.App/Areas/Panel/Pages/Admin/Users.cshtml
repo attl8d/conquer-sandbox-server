@@ -1,0 +1,75 @@
+﻿@page
+@using Comet.Web.App.Services
+@inject LanguageService Language;
+@model Comet.Web.App.Areas.Panel.Pages.Admin.UsersModel
+@{
+    ViewData["title"] = Language.GetString("RoleManagement");
+}
+
+<div class="table-responsive">
+    <table id="tblUserManagement" class="table table-striped">
+        <thead>
+            <tr>
+                <td>#</td>
+                <td>@Language.GetString("UserName")</td>
+                <td>@Language.GetString("Name")</td>
+                <td>@Language.GetString("Email")</td>
+                <td>@Language.GetString("Role")</td>
+                <td>@Language.GetString("CreationDate")</td>
+                <td></td>
+            </tr>
+        </thead>
+        <tbody>
+        </tbody>
+    </table>
+</div>
+
+@section Scripts
+{
+<script>
+    const ipp = 25;
+
+    function refresh(page) {
+        $.ajax({
+            url: `@Url.Action("Get", "Users")?page=${page}&ipp=${ipp}`,
+            method: 'GET',
+            success: function(result) {
+
+                let table = document.getElementById('tblUserManagement');
+                let body = table.tBodies[0];
+
+                $(body).empty();
+
+                if (result.length) {
+                    for (let idx = 0; idx < result.length; idx++)
+                    {
+                        let row = body.insertRow();
+                        row.insertCell().innerHTML = result[idx].id;
+                        row.insertCell().innerHTML = result[idx].userName;
+                        row.insertCell().innerHTML = result[idx].name;
+                        row.insertCell().innerHTML = result[idx].email;
+                        row.insertCell().innerHTML = result[idx].role;
+                        let date = new Date(result[idx].creationDate);
+                        row.insertCell().innerHTML = date.toLocaleDateString('pt-BR') + ' ' + date.toLocaleTimeString('pt-BR');
+                        row.insertCell().innerHTML = `<a href="/Panel/Admin/User/${result[idx].id}"><i class="fa fa-edit" title="Editar"></i></a>`;
+                    }
+                }
+                else {
+                    let cell = body.insertRow().insertCell();
+                    cell.colSpan = 7;
+                    cell.innerHTML = '@Language.GetString("NoData")';
+                }
+
+            },
+            error: function (result) {
+
+            }
+        });
+    }
+
+    $(document).ready(function() {
+        refresh(1);
+    });
+
+</script>
+}

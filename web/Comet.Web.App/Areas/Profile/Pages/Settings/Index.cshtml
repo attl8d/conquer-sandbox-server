@@ -43,20 +43,20 @@
                     </div>
 
                     <div class="form-group">
-                            <label class="control-label col-sm-3">@Language.GetString("Email"):</label>
-                            <div class="col-sm-9">
-                                @Model.User.FindFirst(ClaimTypes.Email)?.Value
-                                <a class="btn btn-sm btn-success" asp-area="Profile" asp-page="/Settings/Security">@Language.GetString("ChangeEmail")</a>
-                            </div>
+                        <label class="control-label col-sm-3">@Language.GetString("Email"):</label>
+                        <div class="col-sm-9">
+                            @Model.User.FindFirst(ClaimTypes.Email)?.Value
+                            <a class="btn btn-sm btn-success" asp-area="Profile" asp-page="/Settings/Security">@Language.GetString("ChangeEmail")</a>
                         </div>
+                    </div>
 
                     <div class="form-group">
-                            <label class="control-label col-sm-3">@Language.GetString("Password"):</label>
-                            <div class="col-sm-9">
-                                ******
-                                <a class="btn btn-sm btn-success" asp-area="Profile" asp-page="/Settings/Security">@Language.GetString("ChangePassword")</a>
-                            </div>
+                        <label class="control-label col-sm-3">@Language.GetString("Password"):</label>
+                        <div class="col-sm-9">
+                            ******
+                            <a class="btn btn-sm btn-success" asp-area="Profile" asp-page="/Settings/Security">@Language.GetString("ChangePassword")</a>
                         </div>
+                    </div>
 
                     <div class="form-group">
                         <label class="control-label col-sm-3">@Language.GetString("AccountType"):</label>
@@ -66,45 +66,45 @@
                     </div>
 
                     <div class="form-group">
-                            <label class="control-label col-sm-3">@Language.GetString("BirthDate"):</label>
-                            <div class="col-sm-9">
-                                <div class="youplay-input">
-                                    <input asp-for="Input.DateOfBirth" />
-                                </div>
+                        <label class="control-label col-sm-3">@Language.GetString("BirthDate"):</label>
+                        <div class="col-sm-9">
+                            <div class="youplay-input">
+                                <input asp-for="Input.DateOfBirth" />
                             </div>
                         </div>
+                    </div>
 
-                        <div class="form-group">
-                            <label class="control-label col-sm-3">@Language.GetString("Gender"):</label>
-                            <div class="col-sm-9">
-                                <div class="youplay-select">
-                                    <select asp-for="Input.Gender">
-                                        <option value=""></option>
-                                        <option value="M">Masculino</option>
-                                        <option value="F">Feminino</option>
-                                        <option value="O">Outro</option>
-                                    </select>
-                                </div>
+                    <div class="form-group">
+                        <label class="control-label col-sm-3">@Language.GetString("Gender"):</label>
+                        <div class="col-sm-9">
+                            <div class="youplay-select">
+                                <select asp-for="Input.Gender">
+                                    <option value=""></option>
+                                    <option value="M">Masculino</option>
+                                    <option value="F">Feminino</option>
+                                    <option value="O">Outro</option>
+                                </select>
                             </div>
                         </div>
+                    </div>
 
-                        <div class="form-group">
-                            <label class="control-label col-sm-3">@Language.GetString("Pronoun"):</label>
-                            <div class="col-sm-9">
-                                <div class="youplay-input">
-                                    <input asp-for="Input.Pronoun" class="youplay-input" />
-                                </div>
+                    <div class="form-group">
+                        <label class="control-label col-sm-3">@Language.GetString("Pronoun"):</label>
+                        <div class="col-sm-9">
+                            <div class="youplay-input">
+                                <input asp-for="Input.Pronoun" class="youplay-input" />
                             </div>
                         </div>
+                    </div>
 
-                        <div class="form-group">
-                            <label class="control-label col-sm-3">@Language.GetString("Location"):</label>
-                            <div class="col-sm-9">
-                                <div class="youplay-input">
-                                    <input asp-for="Input.Locality" class="youplay-input" />
-                                </div>
+                    <div class="form-group">
+                        <label class="control-label col-sm-3">@Language.GetString("Location"):</label>
+                        <div class="col-sm-9">
+                            <div class="youplay-input">
+                                <input asp-for="Input.Locality" class="youplay-input" />
                             </div>
                         </div>
+                    </div>
 
                     <div class="form-group">
                         <div class="col-sm-offset-3 col-sm-9">
@@ -113,34 +113,6 @@
                     </div>
                 </div>
             </form>
-
-            @*<h3>@Language.GetString("PhoneNumber"):</h3>
-            <div class="form-horizontal mt-30 mb-40">
-                <table class="table table-bordered" aria-hidden="true">
-                    <tbody>
-                        @foreach (var phone in Model.Profile.ContactInfo.Where(x => x.Key == ContactInfoType.Phone || x.Key == ContactInfoType.MobilePhone))
-                        {
-                            <tr>
-                                <td>@Language.GetString(phone.Key.ToString())</td>
-                                <td>@phone.Value</td>
-                            </tr>
-                        }
-                    </tbody>
-                </table>
-                <div class="form-group">
-                    <label class="control-label col-sm-3">@Language.GetString("NewPhoneNumber"):</label>
-                    <div class="col-sm-9">
-                        <div class="youplay-input">
-                            <input type="text" id="new_phone" placeholder="@Language.GetString("NewPhoneNumber")">
-                        </div>
-                    </div>
-                </div>
-                <div class="form-group">
-                    <div class="col-sm-offset-3 col-sm-9">
-                        <button type="submit" class="btn btn-default">@Language.GetString("AddPhone")</button>
-                    </div>
-                </div>
-            </div>*@
         </div>
         <!-- Right Side -->
         <div class="col-md-3">

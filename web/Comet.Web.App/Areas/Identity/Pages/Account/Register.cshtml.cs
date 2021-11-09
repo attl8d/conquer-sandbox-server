@@ -19,6 +19,7 @@ using Comet.Web.App.Data;
 using Microsoft.EntityFrameworkCore;
 using System.Security.Claims;
 using static Comet.Web.App.Areas.Identity.Pages.Account.LoginModel;
+using Comet.Web.App.Areas.Profile.Models;
 
 namespace Comet.Web.App.Areas.Identity.Pages.Account
 {
@@ -143,14 +144,12 @@ namespace Comet.Web.App.Areas.Identity.Pages.Account
                     UserName = Input.UserName,
                     Email = Input.Email,
                     PhoneNumber = Input.Phone,
-                    Name = Input.RealName,
                     Salt = WhirlpoolPasswordService<ApplicationUser>.GenerateSalt(),
                     SecurityStamp = Guid.NewGuid().ToString(),
                     CreationDate = DateTime.Now,
                     SecurityQuestion = Input.SecurityQuestion,
                     SecurityAnswer = Input.SecurityAnswer,
-                    SecurityCode = securityCode,
-                    Birthdate = Input.Birthday
+                    SecurityCode = securityCode
                 };
                 var result = await mUserManager.CreateAsync(user, Input.Password);
                 if (result.Succeeded)
@@ -159,6 +158,8 @@ namespace Comet.Web.App.Areas.Identity.Pages.Account
 
                     await mUserManager.AddToRoleAsync(user, Security.Roles.Member);
                     await mUserManager.AddClaimAsync(user, new Claim("Locale", Input.Language));
+                    await mUserManager.AddClaimAsync(user, new Claim(PersonalInfoType.Name.ToClaimString(), Input.RealName));
+                    await mUserManager.AddClaimAsync(user, new Claim(PersonalInfoType.DateOfBirth.ToClaimString(), Input.Birthday.ToString("s")));
 
                     var code = await mUserManager.GenerateEmailConfirmationTokenAsync(user);
                     code = WebEncoders.Base64UrlEncode(Encoding.UTF8.GetBytes(code));

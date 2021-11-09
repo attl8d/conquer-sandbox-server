@@ -110,7 +110,6 @@
             <thead>
                 <tr>
                     <th>#</th>
-                    <th>@Language.GetString("Name")</th>
                     <th>@Language.GetString("UserName")</th>
                     <th></th>
                 </tr>
@@ -145,7 +144,6 @@
                     {
                         let row = body.insertRow();
                         row.insertCell().innerHTML = result[idx].id;
-                        row.insertCell().innerHTML = result[idx].name;
                         row.insertCell().innerHTML = result[idx].userName;
                         row.insertCell().innerHTML = `<i onclick="removeUserFromRole(@Model.RoleId, ${result[idx].id}, $(this).parent().parent())" class="fa fa-close text-danger" title="Remover"></i>`;
                     }

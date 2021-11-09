@@ -168,8 +168,11 @@
   <data name="AdminPanel" xml:space="preserve">
     <value>Administração</value>
   </data>
+  <data name="AdmPanelEmailAlert" xml:space="preserve">
+    <value>Preencha o e-mail para alterá-lo, porém, o usuário ainda precisará confirmar o novo e-mail antes de fazer login com o novo endereço.</value>
+  </data>
   <data name="AdmPanelPasswordAlert" xml:space="preserve">
-    <value>Apenas preencha o campo da senha caso seja solicitada a alteração da mesma. Não altere as senhas dos usuários sem autorização e validação dos dados.</value>
+    <value>Preencha o campo da senha com qualquer valor para que o usuário receba uma nova senha em seu e-mail.</value>
   </data>
   <data name="AuthenticationApp" xml:space="preserve">
     <value>Aplicação de Autenticação</value>
@@ -240,6 +243,9 @@
   <data name="ConfigureAuthenticatorApp" xml:space="preserve">
     <value>Configurar Autenticação de Dois Fatores</value>
   </data>
+  <data name="ConfirmEmailChange" xml:space="preserve">
+    <value>Confirmar Alteração de E-mail</value>
+  </data>
   <data name="ConfirmNewPassword" xml:space="preserve">
     <value>Confirme a Nova Senha</value>
   </data>
@@ -255,6 +261,9 @@
   </data>
   <data name="CouldNotActivateAccount" xml:space="preserve">
     <value>Não foi possível ativar a conta.</value>
+  </data>
+  <data name="CouldNotDisable2fa" xml:space="preserve">
+    <value>Ocorreu um erro ao desabilitar a autenticação de dois fatores.</value>
   </data>
   <data name="CouldNotFindAccountToActivate" xml:space="preserve">
     <value>Não foi possível encontrar a conta de ID: {0} para ativação.</value>
@@ -306,11 +315,17 @@
   <data name="Email" xml:space="preserve">
     <value>Endereço de E-mail</value>
   </data>
+  <data name="EmailChangedSuccessfully" xml:space="preserve">
+    <value>Seu e-mail foi alterado com sucesso.</value>
+  </data>
   <data name="EnableAuthenticator" xml:space="preserve">
     <value>Habilitar Autenticação de Dois Fatores</value>
   </data>
   <data name="EndDate" xml:space="preserve">
     <value>Fim</value>
+  </data>
+  <data name="ErrorChangingEmail" xml:space="preserve">
+    <value>Não foi possível alterar o seu endereço de e-mail. O código não é mais válido ou você já fez a validação com este código.</value>
   </data>
   <data name="ExclusiveWindowsRelease" xml:space="preserve">
     <value>Lançamento exclusivo para Windows</value>
@@ -598,7 +613,7 @@
     <value>Sua senha foi alterada com sucesso.</value>
   </data>
   <data name="PasswordReseted" xml:space="preserve">
-    <value>Sua senha foi resetada. Por favor, &lt;a asp-page="./Login"&gt;clique aqui para entrar&lt;/a&gt;.</value>
+    <value>Sua senha foi resetada. Por favor, &lt;a href="/Identity/Account/Login"&gt;clique aqui para entrar&lt;/a&gt;.</value>
   </data>
   <data name="Permission.BanAccount" xml:space="preserve">
     <value>Banir Conta FTW</value>
@@ -788,6 +803,9 @@
   <data name="ResetAuthenticatorKey" xml:space="preserve">
     <value>Resetar Chave de Autenticação</value>
   </data>
+  <data name="ResetPassword" xml:space="preserve">
+    <value>Resetar senha</value>
+  </data>
   <data name="ResetPasswordConfirmation" xml:space="preserve">
     <value>Confirmação de Alteração de Senha</value>
   </data>
@@ -814,6 +832,9 @@
   </data>
   <data name="RoleUsers" xml:space="preserve">
     <value>Usuários</value>
+  </data>
+  <data name="Save" xml:space="preserve">
+    <value>Salvar</value>
   </data>
   <data name="SaveRegionalSettings" xml:space="preserve">
     <value>Gravar Opções Regionais</value>
@@ -968,6 +989,12 @@
   </data>
   <data name="UserIdentity" xml:space="preserve">
     <value>Identidade</value>
+  </data>
+  <data name="UserIsBannedProfileMessage" xml:space="preserve">
+    <value>Este usuário está atualmente banido por "{0}". O banimento expira em: {1}.</value>
+  </data>
+  <data name="UserIsCurrentlyBanned" xml:space="preserve">
+    <value>Usuário Banido</value>
   </data>
   <data name="UserManagement" xml:space="preserve">
     <value>Gerenciamento de Usuários</value>

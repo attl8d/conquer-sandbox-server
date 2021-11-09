@@ -61,7 +61,7 @@ namespace Comet.Web.App.API
                 .Select(user => new
                 {
                     user.Id,
-                    user.Name,
+                    user.Email,
                     user.UserName
                 })
                 .Skip(page)

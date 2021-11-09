@@ -6,9 +6,18 @@
     ViewData["title"] = Language.GetString("UserAdministration", Model.Account.UserName);
 }
 
+@if (Model.BanReport.IsAccountBanned && Model.BanReport.CurrentBan != null)
+{
+    <div class="alert alert-warning">
+        <h4 class="alert-heading">@Language.GetString("UserIsCurrentlyBanned")</h4>
+        <p>@Language.GetString("UserIsBannedProfileMessage", Model.BanReport.CurrentBan.Reason, Model.BanReport.CurrentBan.To.ToString("f"))</p>
+        <a href="#" class="btn btn-secondary mt-10">Visualizar Banimento</a>
+    </div>
+}
+
 <a class="btn btn-sm btn-primary" asp-area="Panel" asp-page="/Admin/Users">@Language.GetString("GoBack")</a>
 <div class="row">
-    <form>
+    <form method="post">
         <div class="col-md-6">
             <h3>@Language.GetString("AccountInformation")</h3>
             <div class="form-horizontal mt-30 mb-40">
@@ -27,6 +36,7 @@
                         <div class="youplay-input">
                             <input asp-for="InputUser.Email">
                         </div>
+                        <small id="emailHelp" class="form-text text-muted">@Language.GetString("AdmPanelEmailAlert")</small>
                     </div>
                 </div>
 
@@ -42,15 +52,16 @@
                 <div class="form-group">
                     <label class="control-label col-sm-4">@Language.GetString("Password")</label>
                     <div class="col-sm-8">
-                        <div class="youplay-input">
-                            <input asp-for="InputUser.Password">
+                        <div class="youplay-checkbox">
+                            <input type="checkbox" asp-for="InputUser.Password">
+                            <label asp-for="InputUser.Password">@Language.GetString("ResetPassword")</label>
                         </div>
                         <small id="passwordHelp" class="form-text text-muted">@Language.GetString("AdmPanelPasswordAlert")</small>
                     </div>
                 </div>
 
                 <div class="form-group">
-                    <div class="col-sm-offset-3 pl-15">
+                    <div class="col-sm-offset-4">
                         <div class="youplay-checkbox">
                             <input type="checkbox" asp-for="InputUser.TwoFactorEnabled">
                             <label asp-for="InputUser.TwoFactorEnabled">@Language.GetString("TwoFactorEnabled")</label>
@@ -90,7 +101,7 @@
                     <label class="control-label col-sm-4">@Language.GetString("Name")</label>
                     <div class="col-sm-8">
                         <div class="youplay-input">
-                            <input type="text" value="@Model.Account.Name">
+                            <input asp-for="InputUser.Name">
                         </div>
                     </div>
                 </div>
@@ -199,7 +210,10 @@
                     </div>
                 </div>
 
-                <button type="submit" class="btn btn-danger">@Language.GetString("DoBan")</button>
+                @if (!Model.BanReport.IsAccountBanned)
+                {
+                    <button type="submit" class="btn btn-danger">@Language.GetString("DoBan")</button>
+                }
             </form>
         </div>
 

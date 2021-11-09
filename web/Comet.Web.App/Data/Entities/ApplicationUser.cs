@@ -23,11 +23,6 @@ namespace Comet.Web.App.Data.Entities
             set => base.NormalizedUserName = value;
         }
 
-        [PersonalData]
-        public string Name { get; set; }
-        [PersonalData]
-        public DateTime? Birthdate { get; set; }
-
         public ulong SecurityCode { get; set; }
         [ForeignKey("FK_SecurityQuestion")]
         public int? SecurityQuestion { get; set; }

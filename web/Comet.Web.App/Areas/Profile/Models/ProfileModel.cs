@@ -37,6 +37,7 @@ namespace Comet.Web.App.Areas.Profile.Models
 
     public enum PersonalInfoType
     {
+        Name,
         SocialName,
         Hometown,
         CurrentCity,

@@ -97,7 +97,6 @@ namespace Comet.Web.App.Services.Identity
             var profile = new ProfileModel
             {
                 Id = user.Id,
-                Name = user.Name,
                 UserName = user.UserName,
                 Email = user.Email,
                 Title = title,
@@ -119,6 +118,15 @@ namespace Comet.Web.App.Services.Identity
                 var claim = userClaims.FirstOrDefault(x => x.ClaimType.Equals(personal.ToClaimString()));
                 if (claim != null)
                     profile.PersonalInfo.Add(personal, claim.ClaimValue);
+            }
+
+            if (profile.PersonalInfo.ContainsKey(PersonalInfoType.Name))
+            {
+                profile.Name = profile.PersonalInfo[PersonalInfoType.Name];
+            }
+            else
+            {
+                profile.Name = user.UserName;
             }
 
             if (profile.PersonalInfo.ContainsKey(PersonalInfoType.SocialName))
@@ -156,7 +164,7 @@ namespace Comet.Web.App.Services.Identity
                 }
                 else
                 {
-                    info.BannedBy = bannedBy.Name;
+                    info.BannedBy = bannedBy.UserName;
                 }
 
                 if (banReason.Type == 0)

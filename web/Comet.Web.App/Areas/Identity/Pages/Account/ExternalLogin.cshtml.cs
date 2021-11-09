@@ -18,6 +18,7 @@ using Comet.Web.App.Services;
 using Comet.Web.App.Data;
 using Microsoft.EntityFrameworkCore;
 using Comet.Web.App.Services.Password;
+using Comet.Web.App.Areas.Profile.Models;
 
 namespace Comet.Web.App.Areas.Identity.Pages.Account
 {
@@ -193,7 +194,6 @@ namespace Comet.Web.App.Areas.Identity.Pages.Account
                 {
                     UserName = Input.UserName,
                     Email = info.Principal.FindFirstValue(ClaimTypes.Email),
-                    Name = info.Principal.FindFirstValue(ClaimTypes.Name),
                     PasswordHash = string.Empty,
                     Salt = WhirlpoolPasswordService<ApplicationUser>.GenerateSalt(),
                     PhoneNumber = string.Empty,
@@ -201,8 +201,7 @@ namespace Comet.Web.App.Areas.Identity.Pages.Account
                     CreationDate = DateTime.Now,
                     SecurityQuestion = Input.SecurityQuestion,
                     SecurityAnswer = Input.SecurityAnswer,
-                    SecurityCode = securityCode,
-                    Birthdate = Input.Birthday
+                    SecurityCode = securityCode
                 };
 
                 var result = await mUserManager.CreateAsync(user, Input.Password);
@@ -211,6 +210,9 @@ namespace Comet.Web.App.Areas.Identity.Pages.Account
                     result = await mUserManager.AddLoginAsync(user, info);
 
                     await mUserManager.AddToRoleAsync(user, Security.Roles.Member);
+                    await mUserManager.AddClaimAsync(user, new Claim("Locale", Input.Language));
+                    await mUserManager.AddClaimAsync(user, new Claim(PersonalInfoType.Name.ToClaimString(), info.Principal.FindFirstValue(ClaimTypes.Name)));
+                    await mUserManager.AddClaimAsync(user, new Claim(PersonalInfoType.DateOfBirth.ToClaimString(), Input.Birthday.ToString("s")));
 
                     if (result.Succeeded)
                     {

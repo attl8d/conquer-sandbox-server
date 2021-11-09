@@ -36,7 +36,10 @@ namespace Comet.Web.App.Model.Account
             public DateTime From { get; set; }
             public DateTime To { get; set; }
 
-            public bool IsActive => To > DateTime.Now;
+            public bool IsActive => !IsCancelled && !IsForgiven && To > DateTime.Now;
+
+            public bool IsCancelled => (Flags & BanFlags.Removed) != 0;
+            public bool IsForgiven => (Flags & BanFlags.Forgiven) != 0;
         }
     }
 

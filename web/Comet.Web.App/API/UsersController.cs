@@ -58,7 +58,6 @@ namespace Comet.Web.App.API
                 list.Add(new
                 {
                     user.Id,
-                    user.Name,
                     user.UserName,
                     user.Email,
                     role,

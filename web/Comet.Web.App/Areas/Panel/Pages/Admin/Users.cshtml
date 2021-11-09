@@ -12,7 +12,6 @@
             <tr>
                 <td>#</td>
                 <td>@Language.GetString("UserName")</td>
-                <td>@Language.GetString("Name")</td>
                 <td>@Language.GetString("Email")</td>
                 <td>@Language.GetString("Role")</td>
                 <td>@Language.GetString("CreationDate")</td>
@@ -46,7 +45,6 @@
                         let row = body.insertRow();
                         row.insertCell().innerHTML = result[idx].id;
                         row.insertCell().innerHTML = result[idx].userName;
-                        row.insertCell().innerHTML = result[idx].name;
                         row.insertCell().innerHTML = result[idx].email;
                         row.insertCell().innerHTML = result[idx].role;
                         let date = new Date(result[idx].creationDate);

@@ -4,6 +4,7 @@ using Comet.Web.App.Middlewares;
 using Comet.Web.App.Services;
 using Comet.Web.App.Services.Identity;
 using Comet.Web.App.Services.Password;
+using Comet.Web.App.Services.Realms;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Hosting;
 using Microsoft.AspNetCore.Identity;
@@ -98,6 +99,7 @@ namespace Comet.Web.App
             services.AddTransient<IPasswordHasher<ApplicationUser>, WhirlpoolPasswordService<ApplicationUser>>();
             services.AddTransient(typeof(LogService<>));
             services.AddTransient<LanguageService>();
+            services.AddTransient<RealmService>();
 
             // Services that must be created once every request
 

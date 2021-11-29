@@ -6,7 +6,11 @@ using IdentityServer4.EntityFramework.Options;
 using Microsoft.AspNetCore.Identity.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Configuration;
+using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
+using System;
+using System.Data;
+using System.Threading;
 using System.Threading.Tasks;
 
 namespace Comet.Web.App.Data
@@ -24,14 +28,17 @@ namespace Comet.Web.App.Data
     {
         private readonly IOptions<OperationalStoreOptions> mOperationalStoreOptions;
         private IConfiguration mConfiguration;
+        private ILogger<ApplicationDbContext> mLog;
 
         public ApplicationDbContext(IConfiguration configuration, 
             DbContextOptions<ApplicationDbContext> options,
-            IOptions<OperationalStoreOptions> operationalStoreOptions)
+            IOptions<OperationalStoreOptions> operationalStoreOptions,
+            ILogger<ApplicationDbContext> logger)
             : base(options)
         {
             mOperationalStoreOptions = operationalStoreOptions;
             mConfiguration = configuration;
+            mLog = logger;
         }
 
         /// <summary>
@@ -51,12 +58,12 @@ namespace Comet.Web.App.Data
         public virtual DbSet<ApplicationUserBanReason> ApplicationUserBanReasons { get; set; }
         public virtual DbSet<ApplicationUserBanReasonFactor> ApplicationUserBanReasonsFactors { get; set; }
         public virtual DbSet<LogHistory> LogHistory { get; set; }
+        public virtual DbSet<RealmData> RealmDatas { get; set; }
 
         #endregion
 
         Task<int> IPersistedGrantDbContext.SaveChangesAsync() => base.SaveChangesAsync();
 
-        /// <inheritdoc />
         protected override void OnModelCreating(ModelBuilder builder)
         {
             builder.Entity<ApplicationUserToken>()
@@ -72,5 +79,70 @@ namespace Comet.Web.App.Data
 
             builder.ConfigurePersistedGrantContext(mOperationalStoreOptions.Value);
         }
+
+        #region CRUDOP
+
+        public async Task<bool> SaveAsync<T>(T entity, CancellationToken cancellationToken = default)
+        {
+            try
+            {
+                Update(entity);
+                await SaveChangesAsync(cancellationToken);
+                return true;
+            }
+            catch (Exception ex)
+            {
+                mLog.LogError(ex.ToString());
+                return false;
+            }
+        }
+
+        public async Task<bool> DeleteAsync<T>(T entity, CancellationToken cancellationToken = default)
+        {
+            try
+            {
+                Remove(entity);
+                await SaveChangesAsync(cancellationToken);
+                return true;
+            }
+            catch (Exception ex)
+            {
+                mLog.LogError(ex.ToString());
+                return false;
+            }
+        }
+
+        public async Task<DataTable> SelectAsync(string query, CancellationToken cancellationToken = default)
+        {
+            var result = new DataTable();
+            var connection = Database.GetDbConnection();
+            var state = connection.State;
+
+            try
+            {
+                if (state != ConnectionState.Open)
+                    await connection.OpenAsync(cancellationToken);
+
+                var command = connection.CreateCommand();
+                command.CommandText = query;
+                command.CommandType = CommandType.Text;
+
+                await using var reader = await command.ExecuteReaderAsync(cancellationToken);
+                result.Load(reader);
+            }
+            catch (Exception ex)
+            {
+                mLog.LogError(ex.ToString());
+            }
+            finally
+            {
+                if (state != ConnectionState.Closed)
+                    await connection.CloseAsync();
+            }
+
+            return result;
+        }
+
+        #endregion
     }
 }

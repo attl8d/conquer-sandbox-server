@@ -292,6 +292,15 @@
   <data name="CouldNotFindAccountToActivate" xml:space="preserve">
     <value>Não foi possível encontrar a conta de ID: {0} para ativação.</value>
   </data>
+  <data name="CouldNotInsertRealm" xml:space="preserve">
+    <value>Não foi possível inserir o registro.</value>
+  </data>
+  <data name="CouldNotUpdateRealm" xml:space="preserve">
+    <value>Não foi possível atualizar o registro.</value>
+  </data>
+  <data name="Create" xml:space="preserve">
+    <value>Criar</value>
+  </data>
   <data name="CreationDate" xml:space="preserve">
     <value>Data de Criação</value>
   </data>
@@ -300,6 +309,21 @@
   </data>
   <data name="CurrentPassword" xml:space="preserve">
     <value>Senha Atual</value>
+  </data>
+  <data name="DatabaseHostname" xml:space="preserve">
+    <value>MySQL Host</value>
+  </data>
+  <data name="DatabasePassword" xml:space="preserve">
+    <value>MySQL Senha</value>
+  </data>
+  <data name="DatabasePort" xml:space="preserve">
+    <value>MySQL Porta</value>
+  </data>
+  <data name="DatabaseSchema" xml:space="preserve">
+    <value>MySQL Banco de Dados</value>
+  </data>
+  <data name="DatabaseUsername" xml:space="preserve">
+    <value>MySQL Usuário</value>
   </data>
   <data name="Days" xml:space="preserve">
     <value>dias</value>
@@ -420,6 +444,12 @@
   </data>
   <data name="Game" xml:space="preserve">
     <value>Jogo</value>
+  </data>
+  <data name="GameIpAddress" xml:space="preserve">
+    <value>Endereço de IP</value>
+  </data>
+  <data name="GameIpPort" xml:space="preserve">
+    <value>Porta do Servidor</value>
   </data>
   <data name="GameMaster" xml:space="preserve">
     <value>Suporte [GM]</value>
@@ -768,6 +798,27 @@
   <data name="Pronoun" xml:space="preserve">
     <value>Como deseja ser chamado</value>
   </data>
+  <data name="RealmDataTitle" xml:space="preserve">
+    <value>Servidor {0}</value>
+  </data>
+  <data name="RealmID" xml:space="preserve">
+    <value>Código</value>
+  </data>
+  <data name="RealmManagement" xml:space="preserve">
+    <value>Gerenciamento de Servidores</value>
+  </data>
+  <data name="RealmName" xml:space="preserve">
+    <value>Nome do Servidor</value>
+  </data>
+  <data name="RealmPassword" xml:space="preserve">
+    <value>Senha</value>
+  </data>
+  <data name="RealmStatus" xml:space="preserve">
+    <value>Status</value>
+  </data>
+  <data name="RealmUsername" xml:space="preserve">
+    <value>Usuário</value>
+  </data>
   <data name="RealName" xml:space="preserve">
     <value>Nome Completo</value>
   </data>
@@ -895,6 +946,12 @@
   </data>
   <data name="RoleUsers" xml:space="preserve">
     <value>Usuários</value>
+  </data>
+  <data name="RpcIpAddress" xml:space="preserve">
+    <value>Endereço RPC</value>
+  </data>
+  <data name="RpcPort" xml:space="preserve">
+    <value>Porta RPC</value>
   </data>
   <data name="Save" xml:space="preserve">
     <value>Salvar</value>

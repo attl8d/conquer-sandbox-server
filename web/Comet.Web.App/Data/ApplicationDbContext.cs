@@ -50,6 +50,7 @@ namespace Comet.Web.App.Data
         public virtual DbSet<ApplicationUserBan> ApplicationUserBans { get; set; }
         public virtual DbSet<ApplicationUserBanReason> ApplicationUserBanReasons { get; set; }
         public virtual DbSet<ApplicationUserBanReasonFactor> ApplicationUserBanReasonsFactors { get; set; }
+        public virtual DbSet<LogHistory> LogHistory { get; set; }
 
         #endregion
 
@@ -66,6 +67,8 @@ namespace Comet.Web.App.Data
                 .HasKey(x => new { x.LoginProvider, x.ProviderKey });
             builder.Entity<DeviceFlowCodes>().HasKey(x => x.UserCode);
             builder.Entity<PersistedGrant>().HasKey(x => x.Key);
+
+            builder.Entity<LogHistory>().Property(x => x.Type).HasConversion<int>();
 
             builder.ConfigurePersistedGrantContext(mOperationalStoreOptions.Value);
         }

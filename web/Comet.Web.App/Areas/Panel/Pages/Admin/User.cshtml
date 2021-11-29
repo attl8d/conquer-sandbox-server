@@ -11,7 +11,7 @@
     <div class="alert alert-warning">
         <h4 class="alert-heading">@Language.GetString("UserIsCurrentlyBanned")</h4>
         <p>@Language.GetString("UserIsBannedProfileMessage", Model.BanReport.CurrentBan.Reason, Model.BanReport.CurrentBan.To.ToString("f"))</p>
-        <a href="#" class="btn btn-secondary mt-10">Visualizar Banimento</a>
+        <a asp-area="Panel" asp-page="/Admin/BanDetails" asp-route-BanId="@Model.BanReport.CurrentBan.BanIdentity" class="btn btn-secondary mt-10">Visualizar Banimento</a>
     </div>
 }
 
@@ -347,7 +347,7 @@
             };
 
         $.ajax({
-            url: '@Url.Action("GetUserBanFactor", "Users")',
+            url: '@Url.Action("GetUserBanFactor", "Bans")',
             type: 'POST',
             headers: {
                 'Content-Type': 'application/json'
@@ -375,7 +375,7 @@
 
         $.ajax({
             type: 'POST',
-            url: '@Url.Action("DoBanAccount", "Users")',
+            url: '@Url.Action("DoBanAccount", "Bans")',
              headers: {
                 'Content-Type': 'application/json'
             },
@@ -417,7 +417,7 @@
         });
 
         $.ajax({
-            url: '@Url.Action("QueryAccountBans", "Users")?userId=@Model.Account.Id',
+            url: '@Url.Action("QueryAccountBans", "Bans")?userId=@Model.Account.Id',
             method: 'GET',
             success: function (result) {
                 let table = document.getElementById('tblUserBans');

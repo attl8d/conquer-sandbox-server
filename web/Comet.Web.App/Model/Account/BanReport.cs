@@ -36,10 +36,13 @@ namespace Comet.Web.App.Model.Account
             public DateTime From { get; set; }
             public DateTime To { get; set; }
 
-            public bool IsActive => !IsCancelled && !IsForgiven && To > DateTime.Now;
+            public bool IsActive => !IsCancelled && !IsForgiven && !IsFalsePositive && To > DateTime.Now;
 
             public bool IsCancelled => (Flags & BanFlags.Removed) != 0;
             public bool IsForgiven => (Flags & BanFlags.Forgiven) != 0;
+            public bool IsFalsePositive => (Flags & BanFlags.FalsePositive) != 0;
+
+            public int BanIdentity { get; set; }
         }
     }
 
@@ -54,6 +57,10 @@ namespace Comet.Web.App.Model.Account
         /// <summary>
         /// This ban has been forgiven and won't count.
         /// </summary>
-        Forgiven = 0x2
+        Forgiven = 0x2,
+        /// <summary>
+        /// This ban has been given without a real reason and has been removed.
+        /// </summary>
+        FalsePositive = 0x4
     }
 }

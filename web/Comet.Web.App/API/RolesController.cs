@@ -56,6 +56,9 @@ namespace Comet.Web.App.API
         [HttpGet(Name = "GetUsersByRole")]
         public async Task<IActionResult> GetUsersByRoleAsync(int roleId, int page = 0, int ipp = 10)
         {
+            if (!User.HasPermission(Claims.ViewRoles))
+                return Forbid();
+
             var userRoles = await mDbContext.UserRoles.Where(x => x.RoleId == roleId).Select(x => x.UserId).ToArrayAsync();
             var result = await mDbContext.Users.Where(x => userRoles.Any(y => y == x.Id))
                 .Select(user => new
@@ -73,6 +76,9 @@ namespace Comet.Web.App.API
         [HttpGet(Name = "GetClaimsByRole")]
         public async Task<IActionResult> GetClaimsByRoleAsync(int roleId)
         {
+            if (!User.HasPermission(Claims.ViewClaims))
+                return Forbid();
+
             var claims = await mDbContext.RoleClaims.Where(x => x.RoleId == roleId).ToListAsync();
 
             var result = new List<object>();
@@ -93,6 +99,9 @@ namespace Comet.Web.App.API
         [HttpPost(Name = "SetClaimToRole")]
         public async Task<IActionResult> SetClaimToRoleAsync([FromBody] RoleClaimModel model)
         {
+            if (!User.HasPermission(Claims.EditRoleClaims))
+                return Forbid();
+
             if (!Enum.TryParse(model.claimType, out Claims claimType))
                 return BadRequest("Invalid claim type.");
 
@@ -118,6 +127,9 @@ namespace Comet.Web.App.API
         [HttpDelete(Name = "DeleteClaimFromRole")]
         public async Task<IActionResult> DeleteClaimFromRoleAsync([FromBody] RoleClaimModel model)
         {
+            if (!User.HasPermission(Claims.EditRoleClaims))
+                return Forbid();
+
             if (!Enum.TryParse(model.claimType, out Claims claimType))
                 return BadRequest("Invalid claim type.");
 
@@ -137,6 +149,9 @@ namespace Comet.Web.App.API
         [HttpPost(Name = "SetUserOnRole")]
         public async Task<IActionResult> SetUserOnRoleAsync([FromBody] RoleUserModel model)
         {
+            if (!User.HasPermission(Claims.EditUserClaims))
+                return Forbid();
+
             ApplicationUser user = null;
             if (!string.IsNullOrEmpty(model.userName))
             {
@@ -188,6 +203,9 @@ namespace Comet.Web.App.API
         [HttpPost("DeleteUserFromRole")]
         public async Task<IActionResult> DeleteUserFromRoleAsync(RoleUserModel model)
         {
+            if (!User.HasPermission(Claims.EditUserClaims))
+                return Forbid();
+
             ApplicationUser user = null;
             if (!string.IsNullOrEmpty(model.userName))
             {

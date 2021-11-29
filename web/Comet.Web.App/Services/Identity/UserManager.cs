@@ -151,11 +151,13 @@ namespace Comet.Web.App.Services.Identity
                 if (banReason == null)
                     continue;
 
+                info.BanIdentity = dbBan.Id;
                 info.ReasonId = banReason.Id;
                 info.Reason = mLanguage.GetString(banReason.Name);
                 info.Description = dbBan.Reason;
                 info.From = dbBan.BanTime;
                 info.To = dbBan.ExpireTime;
+                info.Flags = (BanFlags)dbBan.Flags;
 
                 var bannedBy = await mDbContext.Users.FirstOrDefaultAsync(x => x.Id == dbBan.BannedBy, cancellationToken: cancellationToken);
                 if (bannedBy == null)

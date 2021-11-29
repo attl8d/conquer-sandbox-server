@@ -126,6 +126,9 @@
   <data name="AccessDeniedMessage" xml:space="preserve">
     <value>Você não tem acesso ao recurso requisitado.</value>
   </data>
+  <data name="Account" xml:space="preserve">
+    <value>Conta</value>
+  </data>
   <data name="AccountActivatedSuccessfully" xml:space="preserve">
     <value>Sua conta foi ativada com sucesso.</value>
   </data>
@@ -162,6 +165,9 @@
   <data name="AddUserToRoleFromUserName" xml:space="preserve">
     <value>Procurar pelo nome de usuário</value>
   </data>
+  <data name="AdminDashboard" xml:space="preserve">
+    <value>Dashboard Administrativo</value>
+  </data>
   <data name="Administrator" xml:space="preserve">
     <value>Administrador</value>
   </data>
@@ -196,6 +202,21 @@
             &lt;li&gt;Banimentos Permanentes não podem ser cancelados, mas alguns podem ser perdoados.&lt;/li&gt;
         &lt;/ul&gt;</value>
   </data>
+  <data name="BanDetailsTitle" xml:space="preserve">
+    <value>[#{0}] {1} - Detalhe de Banimento</value>
+  </data>
+  <data name="BanHistory" xml:space="preserve">
+    <value>Histórico de Banimentos</value>
+  </data>
+  <data name="Banned" xml:space="preserve">
+    <value>Banido</value>
+  </data>
+  <data name="BannedBy" xml:space="preserve">
+    <value>Banido por</value>
+  </data>
+  <data name="BansManagement" xml:space="preserve">
+    <value>Gerenciamento de Bans</value>
+  </data>
   <data name="BanTermsAdmDisplay" xml:space="preserve">
     <value>&lt;h4 class="alert-heading"&gt;{3}&lt;/h4&gt;
 &lt;p&gt;Este banimento terá duração de {2}.&lt;/p&gt;&lt;ul&gt;&lt;li&gt;Banimento pode ser cancelado: {0}&lt;/li&gt;&lt;li&gt;Motivo pode ser perdoado: {1}&lt;/li&gt;&lt;/ul&gt;</value>
@@ -209,6 +230,9 @@
   </data>
   <data name="BanType" xml:space="preserve">
     <value>Tipo de Banimento</value>
+  </data>
+  <data name="BanTypeWindowTitle" xml:space="preserve">
+    <value>Banimento de conta - {0}</value>
   </data>
   <data name="BestChildMemory" xml:space="preserve">
     <value>Melhor lembrança de quando criança</value>
@@ -321,6 +345,12 @@
   <data name="EnableAuthenticator" xml:space="preserve">
     <value>Habilitar Autenticação de Dois Fatores</value>
   </data>
+  <data name="EndBan" xml:space="preserve">
+    <value>Encerrar Banimento</value>
+  </data>
+  <data name="EndBanDesc" xml:space="preserve">
+    <value>Encerrar o banimento não o remove da lista de banimentos. Este banimento vai incrementar o contador e na próxima vez que o usuário for banido pelo mesmo motivo ele poderá receber uma punição maior.</value>
+  </data>
   <data name="EndDate" xml:space="preserve">
     <value>Fim</value>
   </data>
@@ -329,6 +359,12 @@
   </data>
   <data name="ExclusiveWindowsRelease" xml:space="preserve">
     <value>Lançamento exclusivo para Windows</value>
+  </data>
+  <data name="Expired" xml:space="preserve">
+    <value>Expirado</value>
+  </data>
+  <data name="FalsePositive" xml:space="preserve">
+    <value>Falso Positivo</value>
   </data>
   <data name="FirstLoveName" xml:space="preserve">
     <value>Nome do primeiro amor</value>
@@ -352,6 +388,15 @@
   <data name="ForgetThisBrowser" xml:space="preserve">
     <value>Esqueça esse Navegador</value>
   </data>
+  <data name="ForgiveBan" xml:space="preserve">
+    <value>Perdoar Banimento</value>
+  </data>
+  <data name="ForgiveBanDesc" xml:space="preserve">
+    <value>Perdoar o Banimento deixará o banimento listado, porém, não contará para o próximo. Este banimento será "esquecido".</value>
+  </data>
+  <data name="Forgiven" xml:space="preserve">
+    <value>Perdoado</value>
+  </data>
   <data name="ForgotPasswordConfirmation" xml:space="preserve">
     <value>&lt;p&gt;Foi enviado um e-mail para o seu endereço registrado. Não se esqueça de verificar a caixa de spam.&lt;/p&gt;</value>
   </data>
@@ -369,6 +414,12 @@
   </data>
   <data name="Forums" xml:space="preserve">
     <value>Fóruns</value>
+  </data>
+  <data name="From" xml:space="preserve">
+    <value>De</value>
+  </data>
+  <data name="Game" xml:space="preserve">
+    <value>Jogo</value>
   </data>
   <data name="GameMaster" xml:space="preserve">
     <value>Suporte [GM]</value>
@@ -579,11 +630,17 @@
   <data name="NewVerificationEmailSent" xml:space="preserve">
     <value>Um e-mail foi enviado para confirmar a alteração. O endereço de e-mail será alterado apenas após a confirmação.</value>
   </data>
+  <data name="NextBan" xml:space="preserve">
+    <value>Próximo Banimento</value>
+  </data>
   <data name="No" xml:space="preserve">
     <value>Não</value>
   </data>
   <data name="NoData" xml:space="preserve">
     <value>Sem dados</value>
+  </data>
+  <data name="NoPermission" xml:space="preserve">
+    <value>Você não tem permissão para executar esta ação.</value>
   </data>
   <data name="NormalizedName" xml:space="preserve">
     <value>Nome Padronizado</value>
@@ -766,6 +823,12 @@
   <data name="RememberMe" xml:space="preserve">
     <value>Mantenha-me conectado</value>
   </data>
+  <data name="Removed" xml:space="preserve">
+    <value>Removido</value>
+  </data>
+  <data name="RemoveExpiredBan" xml:space="preserve">
+    <value>Remover Status de Banimento</value>
+  </data>
   <data name="RemoveFriend" xml:space="preserve">
     <value>&lt;i class="fa fa-user-minus"&gt;&lt;/i&gt; Amigo</value>
   </data>
@@ -891,6 +954,12 @@
   <data name="Sigin3rdPartyAccount" xml:space="preserve">
     <value>Conecte-se usando sua conta no {0}.</value>
   </data>
+  <data name="SignalFalsePositive" xml:space="preserve">
+    <value>Falso-Positivo</value>
+  </data>
+  <data name="SignalFalsePositiveDesc" xml:space="preserve">
+    <value>Marcará o banimento como falso-positivo, deve ser marcado quando o banimento foi dado de forma injusta.</value>
+  </data>
   <data name="SignIn" xml:space="preserve">
     <value>Conecte-se</value>
   </data>
@@ -909,11 +978,17 @@
   <data name="Super Administrator" xml:space="preserve">
     <value>Fundador</value>
   </data>
+  <data name="TargetUserName" xml:space="preserve">
+    <value>Usuário Banido</value>
+  </data>
   <data name="TermsOfPrivacy" xml:space="preserve">
     <value>Termos de Privacidade</value>
   </data>
   <data name="TermsOfUse" xml:space="preserve">
     <value>Termos de Serviço</value>
+  </data>
+  <data name="To" xml:space="preserve">
+    <value>Até</value>
   </data>
   <data name="TopArcher" xml:space="preserve">
     <value>Maiores Arqueiros</value>
@@ -968,6 +1043,9 @@
   </data>
   <data name="TwoFactorEnabled" xml:space="preserve">
     <value>Autenticação de dois fatores habilitada</value>
+  </data>
+  <data name="Unbanned" xml:space="preserve">
+    <value>Desbanido</value>
   </data>
   <data name="UseAnotherRegistrationProvider" xml:space="preserve">
     <value>Use outro provedor para se conectar.</value>

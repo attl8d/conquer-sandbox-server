@@ -1,4 +1,7 @@
 ﻿@page
+@using Comet.Web.App.Services
+@inject LanguageService Language
 @model Comet.Web.App.Areas.Panel.Pages.Admin.IndexModel
 @{
+    ViewData["Title"] = Language.GetString("AdminDashboard");
 }

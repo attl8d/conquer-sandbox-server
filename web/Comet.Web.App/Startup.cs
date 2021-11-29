@@ -92,9 +92,14 @@ namespace Comet.Web.App
                 opt.EnableSsl = bool.Parse(Configuration["DontReplyMail:EnableSsl"]);
                 opt.FromName = Configuration["DontReplyMail:FromName"];
             });
+
+            // Services that must be created every time
             services.AddTransient<IEmailSender, EmailService>();
+            services.AddTransient<IPasswordHasher<ApplicationUser>, WhirlpoolPasswordService<ApplicationUser>>();
+            services.AddTransient(typeof(LogService<>));
             services.AddTransient<LanguageService>();
-            services.AddScoped<IPasswordHasher<ApplicationUser>, WhirlpoolPasswordService<ApplicationUser>>();
+
+            // Services that must be created once every request
 
             services.AddAuthorization(opt =>
             {

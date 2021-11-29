@@ -3,7 +3,7 @@
 namespace Comet.Web.App.Data.Entities
 {
     [Table("realms")]
-    public class DbRealm
+    public class RealmData
     {
     }
 }

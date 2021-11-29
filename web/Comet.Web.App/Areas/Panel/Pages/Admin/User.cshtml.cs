@@ -5,7 +5,6 @@ using Comet.Web.App.Model.Account;
 using Comet.Web.App.Services;
 using Comet.Web.App.Services.Identity;
 using Microsoft.AspNetCore.Authorization;
-using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Identity.UI.Services;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.RazorPages;
@@ -64,7 +63,7 @@ namespace Comet.Web.App.Areas.Panel.Pages.Admin
             if (Account == null)
                 return;
 
-            Claims = new Dictionary<string, Claims>(Enum.GetValues<Claims>().ToDictionary(x => x.ToString()));
+            Claims = new Dictionary<string, Claims>(Enum.GetValues<Claims>().Where(x => x != Security.Claims.Super).ToDictionary(x => x.ToString()));
 
             AccountPrincipal = await mSigninManager.CreateUserPrincipalAsync(Account);
 
@@ -122,6 +121,14 @@ namespace Comet.Web.App.Areas.Panel.Pages.Admin
 
         public async Task<IActionResult> OnPostAsync()
         {
+            if (!User.HasPermission(Security.Claims.EditUsers))
+            {
+                ModelState.Clear();
+                ModelState.AddModelError("NoPermission", mLanguage.GetString("NoPermission"));
+                await LoadAsync();
+                return Page();
+            }
+
             await LoadAsync();
 
             if (Account == null)
@@ -201,7 +208,7 @@ namespace Comet.Web.App.Areas.Panel.Pages.Admin
                 }                
             }
 
-            Dictionary<string, string> claimsPairs = new Dictionary<string, string>();
+            Dictionary<string, string> claimsPairs = new();
             claimsPairs.Add(PersonalInfoType.DateOfBirth.ToClaimString(), InputUser.BirthDate?.ToString("s"));
             claimsPairs.Add(PersonalInfoType.Gender.ToClaimString(), InputUser.Gender);
             claimsPairs.Add(PersonalInfoType.Pronoun.ToClaimString(), InputUser.Pronoun);

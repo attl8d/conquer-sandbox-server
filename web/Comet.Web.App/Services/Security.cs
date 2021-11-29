@@ -40,6 +40,9 @@ namespace Comet.Web.App.Services
             ForgiveAccountBan,
             ForgiveGameBan,
             CannotBeBanned,
+            ChangeUserRole,
+            SignalFalsePositiveAccountBan,
+            SignalFalsePositiveGameBan,
 
             // Articles
             CanViewArticlesList,

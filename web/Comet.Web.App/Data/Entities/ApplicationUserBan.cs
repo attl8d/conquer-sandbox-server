@@ -16,6 +16,7 @@ namespace Comet.Web.App.Data.Entities
         public virtual int BannedBy { get; set; }
         public virtual int ReasonId { get; set; }
         public virtual string Reason { get; set; } // description
+        public virtual int Flags { get; set; }
         // \/\/\/\/ should not be used :]
         public virtual DateTime? UpdatedAt { get; set; }
         public virtual DateTime? DeletedAt { get; set; }

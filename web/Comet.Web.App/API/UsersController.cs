@@ -7,7 +7,6 @@ using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 using System;
 using System.Collections.Generic;
-using System.ComponentModel.DataAnnotations;
 using System.Linq;
 using System.Threading.Tasks;
 using static Comet.Web.App.Services.Security;
@@ -129,107 +128,6 @@ namespace Comet.Web.App.API
             mDbContext.UserClaims.Remove(userClaim);
             await mDbContext.SaveChangesAsync();
             return Ok();
-        }
-
-        [HttpGet(Name = "QueryAccountBans")]
-        public async Task<IActionResult> QueryAccountBansAsync(int userId)
-        {
-            ApplicationUser user = await mUserManager.FindByIdAsync(userId.ToString());
-            if (user == null)
-                return NotFound();
-
-            var bans = await mUserManager.GetBanInformationAsync(user);
-
-            return Ok(bans.Account);
-        }
-
-        [HttpPost(Name = "GetUserBanFactor")]
-        public async Task<IActionResult> GetUserBanFactorAsync([FromBody] UserCheckBanModel model)
-        {
-            ApplicationUser user = await mUserManager.FindByIdAsync(model.userId.ToString());
-            if (user == null)
-                return NotFound();
-
-            var factor = await mUserManager.QueryNextBanTermAsync(user, model.reason);
-            if (factor == null)
-                return BadRequest();
-
-            return Ok(factor);
-        }
-
-        [HttpPost(Name = "DoBanAccount")]
-        public async Task<IActionResult> DoBanAccountAsync([FromBody] UserBanModel model)
-        {
-            if (!User.HasPermission(Claims.BanAccount))
-                return Unauthorized();
-
-            ApplicationUser user = await mUserManager.FindByIdAsync(model.userId.ToString());
-            if (user == null)
-                return NotFound(mLanguage.GetString("UserNotFound"));
-
-            var info = await mUserManager.GetBanInformationAsync(user);
-            if (info == null)
-                return NotFound(mLanguage.GetString("NoUserData"));
-
-            var term = await mUserManager.QueryNextBanTermAsync(user, model.reason);
-            if (term == null)
-                return BadRequest(mLanguage.GetString("InvalidBanType"));
-
-            if (info.IsAccountBanned)
-                return Ok(mLanguage.GetString("UserAlreadyBanned"));
-
-            ApplicationUser admin = await mUserManager.GetUserAsync(User);
-            if (admin == null)
-                return Unauthorized();
-
-            var principal = await mSigninManager.CreateUserPrincipalAsync(user);
-
-            if (!User.IsInRole(Roles.SuperAdministrator) && principal.IsInRole(Roles.Administrator))
-                return Unauthorized();
-
-            if (!User.IsInRole(Roles.SuperAdministrator) && principal.HasPermission(Claims.CannotBeBanned))
-                return Unauthorized(mLanguage.GetString("UserCannotBeBanned"));
-
-            ApplicationUserBan ban = new()
-            {
-                AccountId = user.Id,
-                BannedBy = admin.Id,
-                BanTime = DateTime.Now,
-                ExpireTime = DateTime.Now.AddMinutes(term.Minutes),
-                Data = 0,
-                Reason = model.description,
-                ReasonId = model.reason
-            };
-
-            mDbContext.ApplicationUserBans.Add(ban);
-            try
-            {
-                int result = await mDbContext.SaveChangesAsync();
-                if (result <= 0)
-                {
-                    ModelState.AddModelError("DbError", "Não foi possível gravar as informações no banco de dados.");
-                    return StatusCode(500, ModelState);
-                }
-            }
-            catch (Exception ex)
-            {
-                return BadRequest(ex.Message);
-            }
-
-            return Ok();
-        }
-
-        public class UserBanModel
-        {
-            public int userId { get; set; }
-            public int reason { get; set; }
-            public string description { get; set; }
-        }
-
-        public class UserCheckBanModel
-        {
-            public int userId { get; set; }
-            public int reason { get; set; }
         }
 
         public class UserClaimModel

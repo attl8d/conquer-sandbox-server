@@ -1,4 +1,5 @@
-﻿using Comet.Web.App.Services;
+﻿using Comet.Web.App.Areas.Profile.Models;
+using Comet.Web.App.Services;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Http;
 using System.Globalization;
@@ -11,37 +12,30 @@ namespace Comet.Web.App.Middlewares
     {
         private readonly RequestDelegate mNext;
         private readonly LanguageService mLanguage;
-        private IHttpContextAccessor mHttpContextAccessor;
 
         public LocalizationMiddleware(RequestDelegate next, 
-            LanguageService language,
-            IHttpContextAccessor httpContextAccessor)
+            LanguageService language)
         {
             mNext = next;
             mLanguage = language;
-            mHttpContextAccessor = httpContextAccessor;
         }
 
         public async Task InvokeAsync(HttpContext context)
         {
-            string locale = null;
-            if (mHttpContextAccessor.HttpContext?.User != null)
-            {
-                locale = mHttpContextAccessor.HttpContext.User.FindFirst("Locale")?.Value;
-            }
+            //string locale = null;
+            //if (!context.User.Identity.IsAuthenticated)
+            //{
+            //    locale = context.User.FindFirst(PersonalInfoType.Language.ToClaimString())?.Value;
 
-            if (string.IsNullOrEmpty(locale))
-            {
-                string acceptLanguage = context.Request.Headers["Accept-Language"].ToString().Split(";")[0].Split(",")[0];
-                if (mLanguage.IsLanguageAvailable(acceptLanguage))
-                    locale = acceptLanguage;
-                else
-                    locale = mLanguage.CurrentCulture.LanguageCultureName;
-            }
+            //    string acceptLanguage = context.Request.Headers["Accept-Language"].ToString().Split(";")[0].Split(",")[0];
+            //    if (mLanguage.IsLanguageAvailable(acceptLanguage))
+            //        locale = acceptLanguage;
+            //    else
+            //        locale = mLanguage.CurrentCulture.LanguageCultureName;
 
-            var culture = CultureInfo.CreateSpecificCulture(locale);
-            Thread.CurrentThread.CurrentCulture = culture;
-            Thread.CurrentThread.CurrentUICulture = culture;
+
+            //}
+
             await mNext(context);
         }
     }

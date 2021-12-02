@@ -30,7 +30,7 @@ namespace Comet.Web.App.Services
             int accountId = 0, 
             long data = 0)
         {
-            mLogger.Log(level, $"[{type:-16}] -> AccountId: {accountId}, Data: {data}, {message}");
+            mLogger.Log(level, $"[{type.ToString():-16}] -> AccountId: {accountId}, Data: {data}, {message}");
 
             mDbContext.LogHistory.Add(new LogHistory
             {

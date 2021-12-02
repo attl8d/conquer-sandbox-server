@@ -31,6 +31,8 @@ Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "web", "web", "{B4AAF119-4A1
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Comet.Web.App", "web\Comet.Web.App\Comet.Web.App.csproj", "{BDCFA264-0DBF-4C19-83F9-66E6D17BD639}"
 EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Comet.Web.Language.Editor", "web\Comet.Web.Language.Editor\Comet.Web.Language.Editor.csproj", "{F80FBC10-6E38-4E7F-8E77-5C62547CD722}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug (x64)|Any CPU = Debug (x64)|Any CPU
@@ -139,6 +141,22 @@ Global
 		{BDCFA264-0DBF-4C19-83F9-66E6D17BD639}.Release|Any CPU.Build.0 = Release|Any CPU
 		{BDCFA264-0DBF-4C19-83F9-66E6D17BD639}.Release|x64.ActiveCfg = Release|Any CPU
 		{BDCFA264-0DBF-4C19-83F9-66E6D17BD639}.Release|x64.Build.0 = Release|Any CPU
+		{F80FBC10-6E38-4E7F-8E77-5C62547CD722}.Debug (x64)|Any CPU.ActiveCfg = Debug|Any CPU
+		{F80FBC10-6E38-4E7F-8E77-5C62547CD722}.Debug (x64)|Any CPU.Build.0 = Debug|Any CPU
+		{F80FBC10-6E38-4E7F-8E77-5C62547CD722}.Debug (x64)|x64.ActiveCfg = Debug|Any CPU
+		{F80FBC10-6E38-4E7F-8E77-5C62547CD722}.Debug (x64)|x64.Build.0 = Debug|Any CPU
+		{F80FBC10-6E38-4E7F-8E77-5C62547CD722}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{F80FBC10-6E38-4E7F-8E77-5C62547CD722}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{F80FBC10-6E38-4E7F-8E77-5C62547CD722}.Debug|x64.ActiveCfg = Debug|Any CPU
+		{F80FBC10-6E38-4E7F-8E77-5C62547CD722}.Debug|x64.Build.0 = Debug|Any CPU
+		{F80FBC10-6E38-4E7F-8E77-5C62547CD722}.Release (x64)|Any CPU.ActiveCfg = Release|Any CPU
+		{F80FBC10-6E38-4E7F-8E77-5C62547CD722}.Release (x64)|Any CPU.Build.0 = Release|Any CPU
+		{F80FBC10-6E38-4E7F-8E77-5C62547CD722}.Release (x64)|x64.ActiveCfg = Release|Any CPU
+		{F80FBC10-6E38-4E7F-8E77-5C62547CD722}.Release (x64)|x64.Build.0 = Release|Any CPU
+		{F80FBC10-6E38-4E7F-8E77-5C62547CD722}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{F80FBC10-6E38-4E7F-8E77-5C62547CD722}.Release|Any CPU.Build.0 = Release|Any CPU
+		{F80FBC10-6E38-4E7F-8E77-5C62547CD722}.Release|x64.ActiveCfg = Release|Any CPU
+		{F80FBC10-6E38-4E7F-8E77-5C62547CD722}.Release|x64.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
@@ -150,6 +168,7 @@ Global
 		{8F7D9D60-5E68-4578-BA2B-893180C36DDE} = {8D777D02-43F8-4139-BFF4-96C5D61A49A8}
 		{83EFAE67-FB03-4A6A-8A08-2628AEDD9C7C} = {8D777D02-43F8-4139-BFF4-96C5D61A49A8}
 		{BDCFA264-0DBF-4C19-83F9-66E6D17BD639} = {B4AAF119-4A1C-4E4E-A7E8-1F41FA59484D}
+		{F80FBC10-6E38-4E7F-8E77-5C62547CD722} = {B4AAF119-4A1C-4E4E-A7E8-1F41FA59484D}
 	EndGlobalSection
 	GlobalSection(ExtensibilityGlobals) = postSolution
 		SolutionGuid = {A8305219-BDBB-4FF3-96C4-E25E6A8B4416}

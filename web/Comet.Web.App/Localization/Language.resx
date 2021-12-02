@@ -180,8 +180,26 @@
   <data name="AdmPanelPasswordAlert" xml:space="preserve">
     <value>Preencha o campo da senha com qualquer valor para que o usuário receba uma nova senha em seu e-mail.</value>
   </data>
+  <data name="ArticleCategory" xml:space="preserve">
+    <value>Categoria</value>
+  </data>
+  <data name="ArticleCategoryType" xml:space="preserve">
+    <value>Tipo de Artigo</value>
+  </data>
+  <data name="ArticleManagementTitle" xml:space="preserve">
+    <value>Listagem de Artigos</value>
+  </data>
+  <data name="ArticleManageTitle" xml:space="preserve">
+    <value>Artigo: {0}</value>
+  </data>
+  <data name="Articles" xml:space="preserve">
+    <value>Artigos</value>
+  </data>
   <data name="AuthenticationApp" xml:space="preserve">
     <value>Aplicação de Autenticação</value>
+  </data>
+  <data name="Author" xml:space="preserve">
+    <value>Autor</value>
   </data>
   <data name="BanDescriptionAndObservations" xml:space="preserve">
     <value>&lt;p&gt;
@@ -282,6 +300,9 @@
   </data>
   <data name="ContactInformation" xml:space="preserve">
     <value>Informações de Contato</value>
+  </data>
+  <data name="Content" xml:space="preserve">
+    <value>Conteúdo</value>
   </data>
   <data name="CouldNotActivateAccount" xml:space="preserve">
     <value>Não foi possível ativar a conta.</value>
@@ -493,6 +514,9 @@
   <data name="Groups" xml:space="preserve">
     <value>Grupos</value>
   </data>
+  <data name="Guides" xml:space="preserve">
+    <value>Guias</value>
+  </data>
   <data name="HeaderDescription" xml:space="preserve">
     <value>O World Conquer é um servidor não oficial para o popular MMORPG Conquer Online (registrado em 99.com).</value>
   </data>
@@ -504,6 +528,9 @@
   </data>
   <data name="InappropriateSyndicateName" xml:space="preserve">
     <value>Nome Inapropriado de Sindicato</value>
+  </data>
+  <data name="Interviews" xml:space="preserve">
+    <value>Entrevistas</value>
   </data>
   <data name="InvalidBanType" xml:space="preserve">
     <value>Tipo de banimento inválido.</value>
@@ -657,6 +684,12 @@
   <data name="NewPhoneNumber" xml:space="preserve">
     <value>Novo número de telefone</value>
   </data>
+  <data name="NewRealm" xml:space="preserve">
+    <value>Novo Servidor</value>
+  </data>
+  <data name="News" xml:space="preserve">
+    <value>Notícias</value>
+  </data>
   <data name="NewVerificationEmailSent" xml:space="preserve">
     <value>Um e-mail foi enviado para confirmar a alteração. O endereço de e-mail será alterado apenas após a confirmação.</value>
   </data>
@@ -684,6 +717,9 @@
   <data name="NotificationSettings" xml:space="preserve">
     <value>Configurações de Notificação</value>
   </data>
+  <data name="NotPublished" xml:space="preserve">
+    <value>Não publicado</value>
+  </data>
   <data name="NoUserData" xml:space="preserve">
     <value>Não foram encontrados os dados do usuário.</value>
   </data>
@@ -701,6 +737,9 @@
   </data>
   <data name="PasswordReseted" xml:space="preserve">
     <value>Sua senha foi resetada. Por favor, &lt;a href="/Identity/Account/Login"&gt;clique aqui para entrar&lt;/a&gt;.</value>
+  </data>
+  <data name="PatchNotes" xml:space="preserve">
+    <value>Notas de Atualização</value>
   </data>
   <data name="Permission.BanAccount" xml:space="preserve">
     <value>Banir Conta FTW</value>
@@ -797,6 +836,9 @@
   </data>
   <data name="Pronoun" xml:space="preserve">
     <value>Como deseja ser chamado</value>
+  </data>
+  <data name="PublishDate" xml:space="preserve">
+    <value>Data de Publicação</value>
   </data>
   <data name="RealmDataTitle" xml:space="preserve">
     <value>Servidor {0}</value>
@@ -1044,8 +1086,17 @@
   <data name="TermsOfUse" xml:space="preserve">
     <value>Termos de Serviço</value>
   </data>
+  <data name="Title" xml:space="preserve">
+    <value>Título</value>
+  </data>
   <data name="To" xml:space="preserve">
     <value>Até</value>
+  </data>
+  <data name="Today" xml:space="preserve">
+    <value>Hoje</value>
+  </data>
+  <data name="Tomorrow" xml:space="preserve">
+    <value>Amanhã</value>
   </data>
   <data name="TopArcher" xml:space="preserve">
     <value>Maiores Arqueiros</value>
@@ -1160,5 +1211,8 @@
   </data>
   <data name="Yes" xml:space="preserve">
     <value>Sim</value>
+  </data>
+  <data name="Yesterday" xml:space="preserve">
+    <value>Ontem</value>
   </data>
 </root>

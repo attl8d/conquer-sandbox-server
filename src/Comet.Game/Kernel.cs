@@ -35,6 +35,7 @@ using Comet.Game.States;
 using Comet.Game.States.Families;
 using Comet.Game.World;
 using Comet.Game.World.Managers;
+using Comet.Game.World.Schedule;
 using Comet.Game.World.Threading;
 using Comet.Network.Services;
 using Comet.Shared;
@@ -53,6 +54,8 @@ namespace Comet.Game
     {
         public const int SERVER_VERSION = 5838;
         public static readonly string Version;
+
+        private static SchedulerFactory schedulerFactory { get; set; }
 
         /// <summary>
         /// The account server client object.
@@ -90,7 +93,7 @@ namespace Comet.Game
         public static UserProcessor UserThread = new UserProcessor();
         public static GeneratorManager GeneratorManager = new GeneratorManager();
         public static AiProcessor AiThread = new AiProcessor();
-        public static AutomaticActionsProcessing AutomaticActions = new AutomaticActionsProcessing();
+        //public static AutomaticActionsProcessing AutomaticActions = new AutomaticActionsProcessing();
         public static EventsProcessing EventThread = new EventsProcessing();
         public static GeneratorProcessing GeneratorThread = new GeneratorProcessing();
 
@@ -146,10 +149,16 @@ namespace Comet.Game
             await SystemThread.StartAsync();
             await UserThread.StartAsync();
             await AiThread.StartAsync();
-            await AutomaticActions.StartAsync();
-            await AutomaticActions.DailyResetAsync();
+            //await AutomaticActions.StartAsync();
             await EventThread.StartAsync();
             await GeneratorThread.StartAsync();
+
+            schedulerFactory = new SchedulerFactory();
+            await schedulerFactory.StartAsync();
+
+            await schedulerFactory.ScheduleAsync<AutomaticActionJob>("0 * * * * ?");
+            await schedulerFactory.ScheduleAsync<DailyResetJob>("0 0 0 * * ?");
+
             return true;
         }
 
@@ -157,7 +166,7 @@ namespace Comet.Game
         {
             await UserThread.CloseAsync();
             await AiThread.CloseAsync();
-            await AutomaticActions.CloseAsync();
+            //await AutomaticActions.CloseAsync();
             await EventThread.CloseAsync();
             await GeneratorThread.CloseAsync();
 

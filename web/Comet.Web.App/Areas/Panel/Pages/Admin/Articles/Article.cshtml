@@ -1,0 +1,157 @@
+﻿@page "{ArticleId=0}/{Locale=pt-BR}"
+@using Comet.Web.App.Services
+@inject LanguageService Language
+@model Comet.Web.App.Areas.Panel.Pages.Admin.Articles.ArticleModel
+@{
+    ViewData["Title"] = Language.GetString("ArticleManageTitle", "");
+}
+
+<a class="btn btn-sm btn-primary" asp-area="Panel" asp-page="/Admin/Articles/Index">@Language.GetString("GoBack")</a>
+<div class="row">
+    <form method="post">
+        <div asp-validation-summary="All" class="text-danger"></div>
+        <div class="col-md-6">
+            <div class="form-horizontal mt-30 mb-40">
+                <div class="form-group">
+                    <label class="control-label col-sm-4">@Language.GetString("ArticleCategoryType")</label>
+                    <div class="col-sm-8">
+                        <div class="youplay-select">
+                            <select asp-for="Input.ArticleTypeId">
+                                @foreach (var item in Model.CategoryTypes)
+                                {
+                                    <option value="@item.Id">@Language.GetString(item.Name)</option>
+                                }
+                            </select>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="form-group">
+                    <label class="control-label col-sm-4">@Language.GetString("ArticleCategory")</label>
+                    <div class="col-sm-8">
+                        <div class="youplay-select">
+                            <select asp-for="Input.ArticleCategoryId">
+                                @foreach (var item in Model.Categories)
+                                {
+                                    <option value="@item.Id">@Language.GetString(item.Name)</option>
+                                }
+                            </select>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="form-group">
+                    <label class="control-label col-sm-4">@Language.GetString("Language")</label>
+                    <div class="col-sm-8">
+                        <div class="youplay-select">
+                            <select asp-for="Input.Locale">
+                                @foreach (var question in LanguageService.AvailableLanguages)
+                                {
+                                    <option value="@question.LanguageCultureName">@question.LanguageFullName</option>
+                                }
+                            </select>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-6">
+            <div class="form-horizontal mt-30 mb-40">
+                <div class="form-group">
+                    <label class="control-label col-sm-4">@Language.GetString("Author")</label>
+                    <div class="col-sm-8">
+                        @Model.Author
+                    </div>
+                </div>
+
+                <div class="form-group">
+                    <div class="col-sm-offset-4">
+                        <div class="youplay-checkbox">
+                            <input type="checkbox" asp-for="Input.NotPublished">
+                            <label asp-for="Input.NotPublished">@Language.GetString("NotPublished")</label>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="form-group">
+                    <label class="control-label col-sm-4">@Language.GetString("PublishDate")</label>
+                    <div class="col-sm-8">
+                        <div class="youplay-input">
+                            <input asp-for="Input.PublishDate">
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <div class="col">
+            <div class="form-horizontal mt-30 mb-40">
+                <div class="form-group">
+                    <label class="control-label col-sm-2">@Language.GetString("Title")</label>
+                    <div class="col-sm-10">
+                        <div class="youplay-input">
+                            <input asp-for="Input.Title">
+                        </div>
+                    </div>
+                </div>
+
+                <div class="form-group">
+                    <label class="control-label col-sm-2">@Language.GetString("Content")</label>
+                    <div class="col-sm-10">
+                        <textarea asp-for="Input.Content"></textarea>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <button class="btn btn-success" type="submit">@Language.GetString("Save")</button>
+    </form>
+</div>
+
+@section Scripts
+{
+<script src="https://cdn.tiny.cloud/1/naro9bdzzj0939szj7c1mb3umgkd7r570mo692wc832gzal3/tinymce/5/tinymce.min.js" referrerpolicy="origin"></script>
+
+<script>
+    const ArticleIdentity = @Model.ArticleId;
+
+    $('#Input_ArticleTypeId').change(function() {
+        let value = this.value;
+        $.ajax({
+            url: `@Url.Action("GetActiveArticleCategoriesByType", "Articles")?type=${value}`,
+            type: 'GET',
+            success: function(result) {
+                $('#Input_ArticleCategoryId').empty();
+
+                for (let idx = 0; idx < result.length; idx++) {
+                    $('#Input_ArticleCategoryId').append(`<option value="${result[idx].id}">${result[idx].name}</option>`);
+                }
+                console.log(result);
+            },
+            error: function(result) {
+                console.log(result);
+            }
+        });
+    });
+
+    $(document).ready(function(){
+
+        tinymce.init({
+            selector: '#Input_Content',
+            plugins: 'print preview paste importcss searchreplace autolink autosave save directionality code visualblocks visualchars fullscreen image link media template codesample table charmap hr pagebreak nonbreaking anchor toc insertdatetime advlist lists wordcount imagetools textpattern noneditable help charmap quickbars emoticons',
+            imagetools_cors_hosts: ['picsum.photos'],
+            menubar: 'file edit view insert format tools table help',
+            toolbar: 'undo redo | bold italic underline strikethrough | fontselect fontsizeselect formatselect | alignleft aligncenter alignright alignjustify | outdent indent |  numlist bullist | forecolor backcolor removeformat | pagebreak | charmap emoticons | fullscreen  preview save print | insertfile image media template link anchor codesample | ltr rtl',
+            autosave_ask_before_unload: true,
+            autosave_interval: '30s',
+            autosave_prefix: '{path}{query}-{id}-',
+            autosave_restore_when_empty: false,
+            autosave_retention: '5m',
+            image_caption: true,
+            quickbars_selection_toolbar: 'bold italic | quicklink h2 h3 blockquote quickimage quicktable',
+            height: 400,
+            tinycomments_mode: 'embedded'
+            //tinycomments_author: ''
+        });
+
+    });
+</script>
+}

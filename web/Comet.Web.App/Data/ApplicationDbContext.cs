@@ -9,6 +9,7 @@ using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
 using System;
+using System.Collections.Generic;
 using System.Data;
 using System.Threading;
 using System.Threading.Tasks;
@@ -59,6 +60,10 @@ namespace Comet.Web.App.Data
         public virtual DbSet<ApplicationUserBanReasonFactor> ApplicationUserBanReasonsFactors { get; set; }
         public virtual DbSet<LogHistory> LogHistory { get; set; }
         public virtual DbSet<RealmData> RealmDatas { get; set; }
+        public virtual DbSet<Article> Articles { get; set; }
+        public virtual DbSet<ArticleContent> ArticleContents { get; set; }
+        public virtual DbSet<ArticleCategory> ArticleCategories { get; set; }
+        public virtual DbSet<ArticleCategoryType> ArticleCategoryTypes { get; set; }
 
         #endregion
 
@@ -76,6 +81,7 @@ namespace Comet.Web.App.Data
             builder.Entity<PersistedGrant>().HasKey(x => x.Key);
 
             builder.Entity<LogHistory>().Property(x => x.Type).HasConversion<int>();
+            builder.Entity<Article>().Property(x => x.Flags).HasConversion<ulong>();
 
             builder.ConfigurePersistedGrantContext(mOperationalStoreOptions.Value);
         }

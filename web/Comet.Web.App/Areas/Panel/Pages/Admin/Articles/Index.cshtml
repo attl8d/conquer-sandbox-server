@@ -1,0 +1,92 @@
+﻿@page
+@using Comet.Web.App.Services
+@inject LanguageService Language
+@model Comet.Web.App.Areas.Panel.Pages.Admin.Articles.IndexModel
+@{
+    ViewData["Title"] = Language.GetString("ArticleManagementTitle");
+}
+
+<a class="btn btn-sm btn-primary" asp-area="Panel" asp-page="/Admin/Articles/Article" asp-route-ArticleId="0">@Language.GetString("NewArticle")</a>
+<div class="row">
+    @foreach (var catType in Model.ArticleCategorieTypes)
+    {
+        <h2>@Language.GetString(catType.Name)</h2>
+        <div class="table-responsive">
+            <table id="tblArticleCategoryType@(catType.Id)" class="table table-stripped table-bordered">
+                <thead>
+                    <tr>
+                        <td>#</td>
+                        <td>Categoria</td>
+                        <td>Titulo</td>
+                        <td>Editor</td>
+                        <td>Idiomas</td>
+                        <td>Data Publicação</td>
+                        <td></td>
+                    </tr>
+                </thead>
+                <tbody></tbody>
+            </table>
+        </div>
+    }
+</div>
+
+@section Scripts
+{
+<script>
+    const CategoryTypes = [ @(string.Join(',', Model.ArticleCategorieTypes.Select(x => x.Id))) ];
+    const ipp = 10;
+
+    function loadCategoryData(category, page) {
+        $.ajax({
+            url: `@Url.Action("GetByCategoryType", "Articles")?categoryType=${category}&page=${page}&ipp=${ipp}`,
+            type: 'GET',
+            success: function(result) {
+                console.log(result);
+                let table = document.getElementById(`tblArticleCategoryType${category}`);
+                let body = table.tBodies[0];
+
+                $(body).empty();
+
+            if (result.length) {
+                for (let idx = 0; idx < result.length; idx++)
+                {
+                    let row = body.insertRow();
+
+                    $(row.insertCell()).html(`${result[idx].id}`);
+                    $(row.insertCell()).html(`${result[idx].category}`);
+                    $(row.insertCell()).html(`${result[idx].title}`);
+                    $(row.insertCell()).html(`${result[idx].writer}`);
+
+                    let localeCell = $(row.insertCell());
+                    for (let idxLocale = 0; idxLocale < result[idx].locales.length; idxLocale++) {
+                        if (idxLocale > 0)
+                            $(localeCell).append('<br />');
+                        $(localeCell).append(`<a href="@Url.Page("Article")/${result[idx].id}/${result[idx].locales[idxLocale]}">${result[idx].locales[idxLocale]}</a>`);
+                    }
+
+                    let date = new Date(result[idx].publishDate);
+                    $(row.insertCell()).html(date.toLocaleDateString('pt-BR') + ' ' + date.toLocaleTimeString('pt-BR'));
+                    $(row.insertCell()).html(``);
+                }
+            }
+            else {
+                let cell = body.insertRow().insertCell();
+                cell.colSpan = 5;
+                cell.innerHTML = '@Language.GetString("NoData")';
+            }
+            },
+            error: function(result) {
+                console.log(result);
+            }
+        });
+    }
+
+    $(document).ready(function(){
+        for (idx in CategoryTypes) {
+            console.log(`${idx} >> ${CategoryTypes[idx]}`);
+            loadCategoryData(CategoryTypes[idx], 0);
+        }
+    });
+
+</script>
+}

@@ -1,5 +1,7 @@
 ﻿@page
+@using Comet.Web.App.Model.Helpers
 @using Comet.Web.App.Services
+@using System.Threading
 @inject LanguageService LanguageManager
 @model IndexModel
 @{
@@ -66,8 +68,38 @@ Additional classes:
 <!-- Latest News -->
 <h2 class="container h1">@LanguageManager.GetString("LatestNews")</h2>
 <section class="youplay-news container">
-
-    <a asp-area="News" asp-page="Index" class="btn read-more pull-left">@LanguageManager.GetString("MoreNews")</a>
+    @foreach (var article in Model.Articles) 
+    {
+        var content = article.Content.FirstOrDefault(x => x.Locale.Equals(LanguageManager.CurrentLocale, StringComparison.InvariantCultureIgnoreCase)) ?? article.Content.FirstOrDefault();
+        <div class="news-one">
+            <div class="row vertical-gutter">
+                <div class="col-md-4">
+                    <a asp-area="Article" asp-page="Index" asp-route-ArticleId="@article.Id" class="angled-img">
+                        <div class="img">
+                            <img src="@Href("~/assets/images/no-img.jpg")" alt="">
+                        </div>
+                    </a>
+                </div>
+                <div class="col-md-8">
+                    <div class="clearfix">
+                        <h3 class="h3 pull-left m-0">
+                            <a asp-area="Article" asp-page="Index" asp-route-ArticleId="@article.Id">@content.Title</a>
+                        </h3>
+                        <span class="date pull-right">
+                            <i class="fa fa-calendar"></i> @content.CreationDate.ToDateString(LanguageManager)
+                        </span>
+                    </div>
+                    <div class="tags">
+                        <i class="fa fa-tags"></i> <a href="#">@LanguageManager.GetString(article.Category.Name)</a>
+                    </div>
+                    <div class="description">
+                        @Html.Raw(string.Concat(content.Content.GetParagraphs().Take(2)))
+                    </div>
+                    <a asp-area="Article" asp-page="Index" asp-route-ArticleId="@article.Id" class="btn read-more pull-left">@LanguageManager.GetString("ReadMore")</a>
+                </div>
+            </div>
+        </div>
+    }
 </section>
 <!-- /Latest News -->
 

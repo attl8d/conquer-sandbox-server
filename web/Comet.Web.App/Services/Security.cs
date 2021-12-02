@@ -47,7 +47,6 @@ namespace Comet.Web.App.Services
             // Articles
             CanViewArticlesList,
             CanWriteArticles,
-            CanEditArticles,
             CanExcludeArticles,
             CanHardDeleteArticles,
             CanModerateComments,

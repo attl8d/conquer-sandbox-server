@@ -18,16 +18,19 @@ namespace Comet.Web.App.Areas.Profile.Pages.Settings
         private readonly ILogger<RegionalModel> mLogger;
         private readonly LanguageService mLanguage;
         private readonly ApplicationDbContext mDbContext;
+        private readonly SignInManager mSignInManager;
 
         public RegionalModel(UserManager userManager,
             ILogger<RegionalModel> logger,
             LanguageService language,
-            ApplicationDbContext dbContext)
+            ApplicationDbContext dbContext,
+            SignInManager signInManager)
         {
             mUserManager = userManager;
             mLogger = logger;
             mLanguage = language;
             mDbContext = dbContext;
+            mSignInManager = signInManager;
         }
 
         public ProfileModel Profile { get; private set; }
@@ -66,6 +69,7 @@ namespace Comet.Web.App.Areas.Profile.Pages.Settings
                 }
             }
 
+            await mSignInManager.RefreshSignInAsync(user);
             return RedirectToPage();
         }
 

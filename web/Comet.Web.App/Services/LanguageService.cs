@@ -1,9 +1,13 @@
-﻿using Microsoft.Extensions.Logging;
+﻿using Comet.Web.App.Areas.Profile.Models;
+using Comet.Web.App.Services.Identity;
+using Microsoft.AspNetCore.Http;
+using Microsoft.Extensions.Logging;
 using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Reflection;
 using System.Resources;
+using System.Security.Claims;
 using System.Threading;
 
 namespace Comet.Web.App.Services
@@ -12,19 +16,23 @@ namespace Comet.Web.App.Services
     {
         public static List<Languages> AvailableLanguages = new List<Languages>
         {
-            new Languages {LanguageFullName = "Português Brasileiro", LanguageCultureName = "pt-BR"}
-            // new Languages {LanguageFullName = "English", LanguageCultureName = "en-US"}
+            new Languages {LanguageFullName = "Português Brasileiro", LanguageCultureName = "pt-BR"},
+            new Languages {LanguageFullName = "English", LanguageCultureName = "en-US"}
         };
 
         private Dictionary<string, ResourceManager> ResourceManager = new Dictionary<string, ResourceManager>();
         private ILogger<LanguageService> mLogger;
+        private IHttpContextAccessor mHttpContextAccessor;
 
-        public LanguageService(ILogger<LanguageService> logger)
+        public LanguageService(ILogger<LanguageService> logger, IHttpContextAccessor httpContextAccessor)
         {
             mLogger = logger;
+            mHttpContextAccessor = httpContextAccessor;
 
             Initialize();
         }
+
+        public string CurrentLocale => CurrentCulture.LanguageCultureName;
 
         private void Initialize()
         {
@@ -61,7 +69,16 @@ namespace Comet.Web.App.Services
         {
             get
             {
-                string locale = Thread.CurrentThread.CurrentCulture.Name;
+                string locale = ""; //= Thread.CurrentThread.CurrentCulture.Name;
+                if (!mHttpContextAccessor.HttpContext.User.Identity.IsAuthenticated)
+                {
+                    locale = mHttpContextAccessor.HttpContext.Request.Headers["Accept-Language"].ToString().Split(";")[0].Split(",")[0];
+                }
+                else
+                {
+                    locale = mHttpContextAccessor.HttpContext.User.FindFirst(PersonalInfoType.Language.ToClaimString()).Value;
+                }
+
                 if (!AvailableLanguages.Any(x => x.LanguageCultureName.Equals(locale)))
                     locale = GetDefaultLanguage();
                 return AvailableLanguages.FirstOrDefault(x => x.LanguageCultureName.Equals(locale));
@@ -70,7 +87,7 @@ namespace Comet.Web.App.Services
 
         public string GetString(string name, params object[] args)
         {
-            string locale = Thread.CurrentThread.CurrentCulture.Name;
+            string locale = CurrentCulture.LanguageCultureName;
             if (!ResourceManager.ContainsKey(locale))
                 locale = GetDefaultLanguage();
             string result = ResourceManager[locale].GetString(name);

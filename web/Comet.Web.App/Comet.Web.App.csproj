@@ -33,6 +33,7 @@
   <ItemGroup>
     <Folder Include="Areas\Panel\Models\" />
     <Folder Include="Areas\Panel\Pages\Admin\Forums\" />
+    <Folder Include="Middlewares\" />
   </ItemGroup>
 
   <ItemGroup>

@@ -6,3 +6,13 @@
 .validation-summary-errors li {
     list-style: none;
 }
+
+.dropup > .dropdown-menu {
+    background: rgba(8, 3, 37, 0.8);
+    border: none;
+}
+
+.dropup > .dropdown-menu ul > li {
+    list-style: none;
+    margin: 10px 0;
+}

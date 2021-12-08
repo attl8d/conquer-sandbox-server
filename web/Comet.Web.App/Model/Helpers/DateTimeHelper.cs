@@ -1,5 +1,6 @@
 ﻿using Comet.Web.App.Services;
 using System;
+using System.Globalization;
 using System.Threading;
 
 namespace Comet.Web.App.Model.Helpers
@@ -14,7 +15,7 @@ namespace Comet.Web.App.Model.Helpers
                 -1 => $"{language.GetString("Tomorrow")}, {date:t}",
                 0 => $"{language.GetString("Today")}, {date:t}",
                 1 => $"{language.GetString("Yesterday")}, {date:t}",
-                _ => date.ToString("U", Thread.CurrentThread.CurrentUICulture)
+                _ => date.ToString("U", new CultureInfo(language.CurrentLocale))
             };
         }
     }

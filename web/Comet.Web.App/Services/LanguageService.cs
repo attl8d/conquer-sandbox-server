@@ -24,6 +24,8 @@ namespace Comet.Web.App.Services
         private ILogger<LanguageService> mLogger;
         private IHttpContextAccessor mHttpContextAccessor;
 
+        private Languages mCurrentCulture = null;
+
         public LanguageService(ILogger<LanguageService> logger, IHttpContextAccessor httpContextAccessor)
         {
             mLogger = logger;
@@ -60,28 +62,40 @@ namespace Comet.Web.App.Services
             return AvailableLanguages.FirstOrDefault(a => a.LanguageCultureName.Equals(lang)) != null;
         }
 
-        private string GetDefaultLanguage()
+        private static string GetDefaultLanguage()
         {
             return AvailableLanguages[0].LanguageCultureName;
         }
 
-        public Languages CurrentCulture
+        public Languages CurrentCulture 
         {
             get
             {
-                string locale = ""; //= Thread.CurrentThread.CurrentCulture.Name;
-                if (!mHttpContextAccessor.HttpContext.User.Identity.IsAuthenticated)
+                if (mCurrentCulture == null)
                 {
-                    locale = mHttpContextAccessor.HttpContext.Request.Headers["Accept-Language"].ToString().Split(";")[0].Split(",")[0];
-                }
-                else
-                {
-                    locale = mHttpContextAccessor.HttpContext.User.FindFirst(PersonalInfoType.Language.ToClaimString()).Value;
-                }
+                    string locale = ""; //= Thread.CurrentThread.CurrentCulture.Name;
+                    if (!mHttpContextAccessor.HttpContext.User.Identity.IsAuthenticated)
+                    {
+                        if (mHttpContextAccessor.HttpContext.Request.Cookies.ContainsKey("Locale"))
+                        {
+                            locale = mHttpContextAccessor.HttpContext.Request.Cookies["Locale"];
+                        }
+                        else
+                        {
+                            locale = mHttpContextAccessor.HttpContext.Request.Headers["Accept-Language"].ToString().Split(";")[0].Split(",")[0];
+                        }
+                    }
+                    else
+                    {
+                        locale = mHttpContextAccessor.HttpContext.User.FindFirst(PersonalInfoType.Language.ToClaimString()).Value;
+                    }
 
-                if (!AvailableLanguages.Any(x => x.LanguageCultureName.Equals(locale)))
-                    locale = GetDefaultLanguage();
-                return AvailableLanguages.FirstOrDefault(x => x.LanguageCultureName.Equals(locale));
+                    if (!AvailableLanguages.Any(x => x.LanguageCultureName.Equals(locale)))
+                        locale = GetDefaultLanguage();
+
+                    mCurrentCulture = AvailableLanguages.FirstOrDefault(x => x.LanguageCultureName.Equals(locale));
+                }
+                return mCurrentCulture;
             }
         }
 

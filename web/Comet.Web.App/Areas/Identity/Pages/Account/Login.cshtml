@@ -16,7 +16,7 @@
             <div class="container">
                 <div class="youplay-login">
                     <div class="youplay-form text-center">
-                        <h2>Conecte-se</h2>
+                        <h2>@Language.GetString("SignIn")</h2>
                         <div class="btn-group social-list dib">
                             <form id="external-account" asp-page="./ExternalLogin" asp-route-returnUrl="@Model.ReturnUrl" method="post" class="form-horizontal">
                                 @foreach (var provider in Model.ExternalLogins)

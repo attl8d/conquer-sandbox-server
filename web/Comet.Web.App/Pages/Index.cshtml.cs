@@ -5,6 +5,7 @@ using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.RazorPages;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Logging;
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
@@ -30,6 +31,7 @@ namespace Comet.Web.App.Pages
         {
             Articles = await mContext
                 .Articles
+                .Where(x => x.PublishDate <= DateTime.Now)
                 .Include(x => x.Category)
                 .Include(x => x.User)
                 .Include(x => x.Content).ThenInclude(x => x.Writer)

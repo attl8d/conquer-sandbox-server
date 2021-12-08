@@ -1,5 +1,6 @@
 using Comet.Web.App.Data;
 using Comet.Web.App.Data.Entities;
+using Comet.Web.App.Middlewares;
 using Comet.Web.App.Services;
 using Comet.Web.App.Services.Identity;
 using Comet.Web.App.Services.Password;
@@ -165,6 +166,8 @@ namespace Comet.Web.App
             app.UseCors("PagSeguro");
             app.UseAuthentication();
             app.UseAuthorization();
+
+            app.UseCometLocalization();
 
             app.UseRequestLocalization(opt =>
             {

@@ -39,6 +39,9 @@ namespace Comet.Web.App.Areas.Panel.Pages.Admin.Articles
         public List<ArticleCategory> Categories { get; private set; } = new List<ArticleCategory>();
         public List<ArticleCategoryType> CategoryTypes { get; private set; } = new List<ArticleCategoryType>();
 
+        public List<Languages> FeaturedLanguages { get; private set; } = new List<Languages>();
+        public List<Languages> UnfeaturedLanguages { get; private set; } = new List<Languages>();
+
         public async Task LoadAsync()
         {
             CategoryTypes = await mContext.ArticleCategoryTypes.Where(x => x.Flags == 0).ToListAsync();
@@ -72,7 +75,7 @@ namespace Comet.Web.App.Areas.Panel.Pages.Admin.Articles
                 {
                     ArticleCategoryId = article.CategoryId,
                     ArticleTypeId = article.Category.CategoryTypeId,
-                    Locale = content?.Locale,
+                    Locale = Locale.Equals(content?.Locale) ? content?.Locale : Locale,
                     Title = content?.Title,
                     Content = content?.Content,
                     PublishDate = article.PublishDate,
@@ -91,6 +94,18 @@ namespace Comet.Web.App.Areas.Panel.Pages.Admin.Articles
                 }
 
                 Categories = await mContext.ArticleCategories.Where(x => x.CategoryTypeId == Input.ArticleTypeId).ToListAsync();
+            }
+
+            foreach (var language in LanguageService.AvailableLanguages)
+            {
+                if (article?.Content.Any(x => x.Locale.Equals(language.LanguageCultureName)) == true)
+                {
+                    FeaturedLanguages.Add(language);
+                }
+                else
+                {
+                    UnfeaturedLanguages.Add(language);
+                }
             }
         }
 

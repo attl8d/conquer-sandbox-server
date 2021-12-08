@@ -411,6 +411,9 @@
   <data name="FalsePositive" xml:space="preserve">
     <value>Falso Positivo</value>
   </data>
+  <data name="FeaturedLanguage" xml:space="preserve">
+    <value>Idiomas Traduzidos</value>
+  </data>
   <data name="FirstLoveName" xml:space="preserve">
     <value>Nome do primeiro amor</value>
   </data>
@@ -675,6 +678,9 @@
   <data name="Never" xml:space="preserve">
     <value>Nunca</value>
   </data>
+  <data name="NewArticle" xml:space="preserve">
+    <value>Novo Artigo</value>
+  </data>
   <data name="NewEmail" xml:space="preserve">
     <value>Novo E-mail</value>
   </data>
@@ -707,6 +713,9 @@
   </data>
   <data name="NormalizedName" xml:space="preserve">
     <value>Nome Padronizado</value>
+  </data>
+  <data name="NotFeaturedLanguage" xml:space="preserve">
+    <value>Idiomas sem tradução</value>
   </data>
   <data name="NothingToShare" xml:space="preserve">
     <value>Nada para compartilhar</value>
@@ -970,6 +979,9 @@
   </data>
   <data name="RestoreCharacters" xml:space="preserve">
     <value>Restaurar Personagens Deletados</value>
+  </data>
+  <data name="Role" xml:space="preserve">
+    <value>Função</value>
   </data>
   <data name="RoleAdministration" xml:space="preserve">
     <value>{0} - Gerenciar Função</value>

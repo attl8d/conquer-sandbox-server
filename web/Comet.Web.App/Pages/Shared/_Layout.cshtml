@@ -2,6 +2,10 @@
 @using Comet.Web.App.Services
 @using System.Security.Claims
 @inject LanguageService LanguageManager
+@{
+    bool isUnderMaintenance = (bool)Context.Items["Maintenance"];
+    bool userHasAccess = (bool)Context.Items["MaintenanceAccess"];
+}
 <!DOCTYPE html>
 <html>
 <head>
@@ -38,12 +42,12 @@
     <script defer src="~/assets/vendor/fontawesome-free/js/v4-shims.js"></script>
     <!-- Youplay -->
     <link rel="stylesheet" href="~/assets/css/youplay.css">
-    
+
     @if (LanguageManager.CurrentCulture.Rtl)
     {
         <link rel="stylesheet" href="~/assets/css/youplay-rtl.min.css" />
     }
-    
+
     <!-- Custom Styles -->
     <link rel="stylesheet" href="~/assets/css/custom.css">
 
@@ -74,157 +78,160 @@
                 </a>
             </div>
             <div id="navbar" class="navbar-collapse collapse">
-                <ul class="nav navbar-nav">
-                    <li class=" dropdown dropdown-hover">
-                        <a href="#" class="dropdown-toggle" data-toggle="dropdown" role="button" aria-expanded="false">
-                            @LanguageManager.GetString("MenuHome") <span class="caret"></span>
-                            <span class="label">@LanguageManager.GetString("MenuHomeDesc")</span>
-                        </a>
-                        <div class="dropdown-menu">
-                            <ul role="menu">
-                                @if (!User.Identity.IsAuthenticated)
-                                {
-                                    <li>
-                                        <a asp-area="" asp-page="/Register"> @LanguageManager.GetString("MenuRegister") </a>
-                                    </li>
-                                }
-                                <li>
-                                    <a asp-area="" asp-page="/Downloads"> @LanguageManager.GetString("MenuDownloads") </a>
-                                </li>
-                                <li>
-                                    <a href="#"> @LanguageManager.GetString("MenuAboutUs") </a>
-                                </li>
-                                <li>
-                                    <a href="#"> @LanguageManager.GetString("MenuContactUs") </a>
-                                </li>
-                            </ul>
-                        </div>
-                    </li>
-                    <li class=" dropdown dropdown-hover">
-                        <a href="#" class="dropdown-toggle" data-toggle="dropdown" role="button" aria-expanded="false">
-                            @LanguageManager.GetString("MenuShopSales") <span class="caret"></span>
-                            <span class="label">@LanguageManager.GetString("MenuShopSalesDesc")</span>
-                        </a>
-                        <div class="dropdown-menu">
-                            <ul role="menu">
-                                <li>
-                                    <a asp-area="Shop" asp-page="/Index"> @LanguageManager.GetString("MenuShop") </a>
-                                </li>
-                                <li>
-                                    <a asp-area="Shop" asp-page="/Cart"> @LanguageManager.GetString("MenuCart") </a>
-                                </li>
-                            </ul>
-                            <ul role="menu">
-                                <li>
-                                    <a asp-area="Store" asp-page="/Index"> @LanguageManager.GetString("MenuSpendCredits") </a>
-                                </li>
-                                <li>
-                                    <a asp-area="Store" asp-page="/Rewards"> @LanguageManager.GetString("MenuRewards") </a>
-                                </li>
-                            </ul>
-                        </div>
-                    </li>
-                    <li class=" dropdown dropdown-hover">
-                        <a href="#" class="dropdown-toggle" data-toggle="dropdown" role="button" aria-expanded="false">
-                            @LanguageManager.GetString("MenuStatistics") <span class="caret"></span>
-                            <span class="label">@LanguageManager.GetString("MenuStatisticsDesc")</span>
-                        </a>
-                        <div class="dropdown-menu">
-                            <ul role="menu">
-                                <li>
-                                    <a asp-area="Ranking" asp-page="/Index" asp-route-ServerName="All" asp-route-RankType="Players">@LanguageManager.GetString("TopPlayers")</a>
-                                </li>
-                                <li>
-                                    <a asp-area="Ranking" asp-page="/Index" asp-route-ServerName="All" asp-route-RankType="Warrior">@LanguageManager.GetString("TopWarrior")</a>
-                                </li>
-                                <li>
-                                    <a asp-area="Ranking" asp-page="/Index" asp-route-ServerName="All" asp-route-RankType="WaterTaoist">@LanguageManager.GetString("TopWaterTaoist")</a>
-                                </li>
-                                <li>
-                                    <a asp-area="Ranking" asp-page="/Index" asp-route-ServerName="All" asp-route-RankType="Moneybag">@LanguageManager.GetString("TopMoneybag")</a>
-                                </li>
-                                <li>
-                                    <a asp-area="Ranking" asp-page="/Index" asp-route-ServerName="All" asp-route-RankType="GuildWarWinners">@LanguageManager.GetString("TopGuildWarWinners")</a>
-                                </li>
-                                <li>
-                                    <a asp-area="Ranking" asp-page="/Index" asp-route-ServerName="All" asp-route-RankType="Superman">@LanguageManager.GetString("TopSuperman")</a>
-                                </li>
-                            </ul>
-                            <ul role="menu">
-                                <li>
-                                    <a asp-area="Ranking" asp-page="/Index" asp-route-ServerName="All" asp-route-RankType="Trojan">@LanguageManager.GetString("TopTrojan")</a>
-                                </li>
-                                <li>
-                                    <a asp-area="Ranking" asp-page="/Index" asp-route-ServerName="All" asp-route-RankType="Archer">@LanguageManager.GetString("TopArcher")</a>
-                                </li>
-                                <li>
-                                    <a asp-area="Ranking" asp-page="/Index" asp-route-ServerName="All" asp-route-RankType="FireTaoist">@LanguageManager.GetString("TopFireTaoist")</a>
-                                </li>
-                                <li>
-                                    <a asp-area="Ranking" asp-page="/Index" asp-route-ServerName="All" asp-route-RankType="Syndicate">@LanguageManager.GetString("TopSyndicate")</a>
-                                </li>
-                                <li>
-                                    <a asp-area="Ranking" asp-page="/Index" asp-route-ServerName="All" asp-route-RankType="Noble">@LanguageManager.GetString("TopNoble")</a>
-                                </li>
-                            </ul>
-                        </div>
-                    </li>
-                    <li class="dropdown dropdown-hover">
-                        <a href="#" class="dropdown-toggle" data-toggle="dropdown" role="button" aria-expanded="false">
-                            @LanguageManager.GetString("MenuHelp") <span class="caret"></span>
-                            <span class="label">@LanguageManager.GetString("MenuHelpDesc")</span>
-                        </a>
-                        <div class="dropdown-menu">
-                            <ul role="menu">
-                                <li>
-                                    <a asp-area="News" asp-page="/Index">@LanguageManager.GetString("MenuNews")</a>
-                                </li>
-                                <li>
-                                    <a asp-area="Guides" asp-page="/Index"> @LanguageManager.GetString("MenuGuides") </a>
-                                </li>
-                                <li>
-                                    <a href="https://ftwmasters.com.br/forum" target="_blank" rel="noopener"> @LanguageManager.GetString("MenuForum") </a>
-                                </li>
-                                <li>
-                                    <a href="https://worldconqueronline.tawk.help" target="_blank" rel="noopener"> @LanguageManager.GetString("MenuHelpDesk") </a>
-                                </li>
-                                <li>
-                                    <a asp-area="Support" asp-page="/Index">@LanguageManager.GetString("MenuTickets")</a>
-                                </li>
-                            </ul>
-                        </div>
-                    </li>
-                    @if (User.Identity.IsAuthenticated)
-                    {
+                @if (!isUnderMaintenance || userHasAccess)
+                {
+                    <ul class="nav navbar-nav">
                         <li class=" dropdown dropdown-hover">
                             <a href="#" class="dropdown-toggle" data-toggle="dropdown" role="button" aria-expanded="false">
-                                @LanguageManager.GetString("MenuUser") <span class="caret"></span>
-                                <span class="label">@LanguageManager.GetString("MenuUserDesc")</span>
+                                @LanguageManager.GetString("MenuHome") <span class="caret"></span>
+                                <span class="label">@LanguageManager.GetString("MenuHomeDesc")</span>
                             </a>
                             <div class="dropdown-menu">
                                 <ul role="menu">
+                                    @if (!User.Identity.IsAuthenticated)
+                                    {
+                                        <li>
+                                            <a asp-area="" asp-page="/Register"> @LanguageManager.GetString("MenuRegister") </a>
+                                        </li>
+                                    }
                                     <li>
-                                        <a asp-area="Panel" asp-page="/User/Accounts"> @LanguageManager.GetString("MenuAccounts") </a>
+                                        <a asp-area="" asp-page="/Downloads"> @LanguageManager.GetString("MenuDownloads") </a>
                                     </li>
                                     <li>
-                                        <a asp-area="Panel" asp-page="/User/BindVip"> @LanguageManager.GetString("BindVip") </a>
+                                        <a href="#"> @LanguageManager.GetString("MenuAboutUs") </a>
                                     </li>
                                     <li>
-                                        <a asp-area="Panel" asp-page="/User/RestoreCharacters"> @LanguageManager.GetString("RestoreCharacters") </a>
-                                    </li>
-                                </ul>
-                                <ul role="menu">
-                                    <li>
-                                        <a asp-area="Panel" asp-page="/User/Purchases">@LanguageManager.GetString("MenuPurchases")</a>
-                                    </li>
-                                    <li>
-                                        <a asp-area="Panel" asp-page="/User/BillingInformation">@LanguageManager.GetString("BillingInformation")</a>
+                                        <a href="#"> @LanguageManager.GetString("MenuContactUs") </a>
                                     </li>
                                 </ul>
                             </div>
                         </li>
-                    }
-                </ul>
+                        <li class=" dropdown dropdown-hover">
+                            <a href="#" class="dropdown-toggle" data-toggle="dropdown" role="button" aria-expanded="false">
+                                @LanguageManager.GetString("MenuShopSales") <span class="caret"></span>
+                                <span class="label">@LanguageManager.GetString("MenuShopSalesDesc")</span>
+                            </a>
+                            <div class="dropdown-menu">
+                                <ul role="menu">
+                                    <li>
+                                        <a asp-area="Shop" asp-page="/Index"> @LanguageManager.GetString("MenuShop") </a>
+                                    </li>
+                                    <li>
+                                        <a asp-area="Shop" asp-page="/Cart"> @LanguageManager.GetString("MenuCart") </a>
+                                    </li>
+                                </ul>
+                                <ul role="menu">
+                                    <li>
+                                        <a asp-area="Store" asp-page="/Index"> @LanguageManager.GetString("MenuSpendCredits") </a>
+                                    </li>
+                                    <li>
+                                        <a asp-area="Store" asp-page="/Rewards"> @LanguageManager.GetString("MenuRewards") </a>
+                                    </li>
+                                </ul>
+                            </div>
+                        </li>
+                        <li class=" dropdown dropdown-hover">
+                            <a href="#" class="dropdown-toggle" data-toggle="dropdown" role="button" aria-expanded="false">
+                                @LanguageManager.GetString("MenuStatistics") <span class="caret"></span>
+                                <span class="label">@LanguageManager.GetString("MenuStatisticsDesc")</span>
+                            </a>
+                            <div class="dropdown-menu">
+                                <ul role="menu">
+                                    <li>
+                                        <a asp-area="Ranking" asp-page="/Index" asp-route-ServerName="All" asp-route-RankType="Players">@LanguageManager.GetString("TopPlayers")</a>
+                                    </li>
+                                    <li>
+                                        <a asp-area="Ranking" asp-page="/Index" asp-route-ServerName="All" asp-route-RankType="Warrior">@LanguageManager.GetString("TopWarrior")</a>
+                                    </li>
+                                    <li>
+                                        <a asp-area="Ranking" asp-page="/Index" asp-route-ServerName="All" asp-route-RankType="WaterTaoist">@LanguageManager.GetString("TopWaterTaoist")</a>
+                                    </li>
+                                    <li>
+                                        <a asp-area="Ranking" asp-page="/Index" asp-route-ServerName="All" asp-route-RankType="Moneybag">@LanguageManager.GetString("TopMoneybag")</a>
+                                    </li>
+                                    <li>
+                                        <a asp-area="Ranking" asp-page="/Index" asp-route-ServerName="All" asp-route-RankType="GuildWarWinners">@LanguageManager.GetString("TopGuildWarWinners")</a>
+                                    </li>
+                                    <li>
+                                        <a asp-area="Ranking" asp-page="/Index" asp-route-ServerName="All" asp-route-RankType="Superman">@LanguageManager.GetString("TopSuperman")</a>
+                                    </li>
+                                </ul>
+                                <ul role="menu">
+                                    <li>
+                                        <a asp-area="Ranking" asp-page="/Index" asp-route-ServerName="All" asp-route-RankType="Trojan">@LanguageManager.GetString("TopTrojan")</a>
+                                    </li>
+                                    <li>
+                                        <a asp-area="Ranking" asp-page="/Index" asp-route-ServerName="All" asp-route-RankType="Archer">@LanguageManager.GetString("TopArcher")</a>
+                                    </li>
+                                    <li>
+                                        <a asp-area="Ranking" asp-page="/Index" asp-route-ServerName="All" asp-route-RankType="FireTaoist">@LanguageManager.GetString("TopFireTaoist")</a>
+                                    </li>
+                                    <li>
+                                        <a asp-area="Ranking" asp-page="/Index" asp-route-ServerName="All" asp-route-RankType="Syndicate">@LanguageManager.GetString("TopSyndicate")</a>
+                                    </li>
+                                    <li>
+                                        <a asp-area="Ranking" asp-page="/Index" asp-route-ServerName="All" asp-route-RankType="Noble">@LanguageManager.GetString("TopNoble")</a>
+                                    </li>
+                                </ul>
+                            </div>
+                        </li>
+                        <li class="dropdown dropdown-hover">
+                            <a href="#" class="dropdown-toggle" data-toggle="dropdown" role="button" aria-expanded="false">
+                                @LanguageManager.GetString("MenuHelp") <span class="caret"></span>
+                                <span class="label">@LanguageManager.GetString("MenuHelpDesc")</span>
+                            </a>
+                            <div class="dropdown-menu">
+                                <ul role="menu">
+                                    <li>
+                                        <a asp-area="News" asp-page="/Index">@LanguageManager.GetString("MenuNews")</a>
+                                    </li>
+                                    <li>
+                                        <a asp-area="Guides" asp-page="/Index"> @LanguageManager.GetString("MenuGuides") </a>
+                                    </li>
+                                    <li>
+                                        <a href="https://ftwmasters.com.br/forum" target="_blank" rel="noopener"> @LanguageManager.GetString("MenuForum") </a>
+                                    </li>
+                                    <li>
+                                        <a href="https://worldconqueronline.tawk.help" target="_blank" rel="noopener"> @LanguageManager.GetString("MenuHelpDesk") </a>
+                                    </li>
+                                    <li>
+                                        <a asp-area="Support" asp-page="/Index">@LanguageManager.GetString("MenuTickets")</a>
+                                    </li>
+                                </ul>
+                            </div>
+                        </li>
+                        @if (User.Identity.IsAuthenticated)
+                        {
+                            <li class=" dropdown dropdown-hover">
+                                <a href="#" class="dropdown-toggle" data-toggle="dropdown" role="button" aria-expanded="false">
+                                    @LanguageManager.GetString("MenuUser") <span class="caret"></span>
+                                    <span class="label">@LanguageManager.GetString("MenuUserDesc")</span>
+                                </a>
+                                <div class="dropdown-menu">
+                                    <ul role="menu">
+                                        <li>
+                                            <a asp-area="Panel" asp-page="/User/Accounts"> @LanguageManager.GetString("MenuAccounts") </a>
+                                        </li>
+                                        <li>
+                                            <a asp-area="Panel" asp-page="/User/BindVip"> @LanguageManager.GetString("BindVip") </a>
+                                        </li>
+                                        <li>
+                                            <a asp-area="Panel" asp-page="/User/RestoreCharacters"> @LanguageManager.GetString("RestoreCharacters") </a>
+                                        </li>
+                                    </ul>
+                                    <ul role="menu">
+                                        <li>
+                                            <a asp-area="Panel" asp-page="/User/Purchases">@LanguageManager.GetString("MenuPurchases")</a>
+                                        </li>
+                                        <li>
+                                            <a asp-area="Panel" asp-page="/User/BillingInformation">@LanguageManager.GetString("BillingInformation")</a>
+                                        </li>
+                                    </ul>
+                                </div>
+                            </li>
+                        }
+                    </ul>
+                }
                 <ul class="nav navbar-nav navbar-right">
                     @if (User.Identity.IsAuthenticated)
                     {
@@ -278,6 +285,14 @@
     <div class="content-wrap">
         @RenderBody()
 
+        @if (isUnderMaintenance)
+        {
+            <div class="alert alert-warning alert-dismissible" role="alert">
+                <button type="button" class="close" data-dismiss="alert" aria-label="Close"><span aria-hidden="true">&times;</span></button>
+                @Html.Raw(LanguageManager.GetString("MaintenanceWarning"))
+            </div>
+        }
+
         <!-- Partners -->
         <section class="youplay-banner youplay-banner-parallax small mt-80">
             <div class="image" data-speed="0.4">
@@ -305,7 +320,6 @@
             </div>
         </section>
         <!-- /Partners -->
-
         <!-- Features -->
         <h2 class="container h1">Por que jogar conosco?</h2>
         <section class="youplay-features container">
@@ -402,14 +416,14 @@
                             <a asp-area="" asp-page="/TermsOfUse">@LanguageManager.GetString("TermsOfUse")</a>
                             | <a asp-area="" asp-page="/Privacy">@LanguageManager.GetString("TermsOfPrivacy")</a>
                             | <a asp-area="" asp-page="/RefundPolicy">@LanguageManager.GetString("RefundPolicy")</a>
-                            @if (User.IsInRole(Security.Roles.Administrator) 
-                                || User.IsInRole(Security.Roles.SuperAdministrator))
+                            @if (User.IsInRole(Security.Roles.Administrator)
+                            || User.IsInRole(Security.Roles.SuperAdministrator))
                             {
                                 <text> | <a asp-area="Panel" asp-page="/Admin/Index">@LanguageManager.GetString("AdminPanel")</a></text>
                             }
-                            @if (User.IsInRole(Security.Roles.Moderator) 
-                                || User.IsInRole(Security.Roles.Administrator) 
-                                || User.IsInRole(Security.Roles.SuperAdministrator))
+                            @if (User.IsInRole(Security.Roles.Moderator)
+                            || User.IsInRole(Security.Roles.Administrator)
+                            || User.IsInRole(Security.Roles.SuperAdministrator))
                             {
                                 <text> | <a asp-area="Panel" asp-page="/Moderator/Index">@LanguageManager.GetString("ModeratorPanel")</a></text>
                             }
@@ -441,7 +455,6 @@
     </div>
 
     <!-- START: Scripts -->
-
     <!-- Object Fit Polyfill -->
     <script src="~/assets/vendor/object-fit-images/dist/ofi.min.js"></script>
     <!-- jQuery -->

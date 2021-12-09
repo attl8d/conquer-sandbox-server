@@ -1,0 +1,66 @@
+﻿@page "{ArticleId=0}"
+@using Comet.Web.App.Model.Helpers
+@using Comet.Web.App.Services
+@inject LanguageService Language;
+@model Comet.Web.App.Areas.Read.Pages.IndexModel
+@{
+    ViewData["Title"] = Model.ArticleContent.Title;
+}
+
+<div class="content-wrap no-banner">
+    <h1 class="container">@Model.ArticleContent.Title</h1>
+    <div class="container youplay-news youplay-post">
+
+        <article class="news-one">
+
+            <div class="description">
+
+                @Html.Raw(Model.ArticleContent.Content)
+
+            </div>
+
+            <div class="tags">
+                <i class="fa fa-tags"></i> <a href="#">@Language.GetString(Model.Article.Category.Name)</a>
+            </div>
+
+
+            <div class="meta">
+                <div class="item">
+                    <i class="fa fa-user meta-icon"></i> @Language.GetString("Author") <a href="#">@Model.Author</a>
+                </div>
+                <div class="item">
+                    <i class="fa fa-calendar meta-icon"></i> @Language.GetString("Published") <a href="#">@Model.Article.PublishDate.ToDateString(Language)</a>
+                </div>
+                <div class="item">
+                    <i class="fa fa-bookmark meta-icon"></i> @Language.GetString("Category") <a href="#">@Language.GetString(@Model.Article.Category.Name)</a>
+                </div>
+                <div class="item">
+                    <i class="fa fa-eye meta-icon"></i> @Language.GetString("Views") 0
+                </div>
+                <div class="item">
+                    <a href="#"><i class="fa fa-heart"></i> 0</a>
+                </div>
+            </div>
+
+        </article>
+
+
+        <div class="comments-block">
+            <h2>@Language.GetString("Comments")<small>(@Language.GetString("BeTheFirstToComment"))</small></h2>
+
+
+            <h2>@Language.GetString("LeaveAResponse")</h2>
+
+            <form action="#" class="comment-form">
+                <div class="comment-cont clearfix">
+                    <div class="youplay-textarea">
+                        <textarea name="message" rows="5"></textarea>
+                    </div>
+                    <button class="btn btn-default pull-right">@Language.GetString("Submit")</button>
+                </div>
+            </form>
+
+        </div>
+
+    </div>
+</div>

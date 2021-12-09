@@ -176,6 +176,8 @@ namespace Comet.Web.App
                 opt.SupportedUICultures = LanguageService.AvailableLanguages.Select(x => new CultureInfo(x.LanguageCultureName)).ToList();
             });
 
+            app.UseMaintenanceMiddleware();
+
             app.UseEndpoints(endpoints =>
             {
                 endpoints.MapControllerRoute(

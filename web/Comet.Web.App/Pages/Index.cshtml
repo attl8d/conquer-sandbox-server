@@ -2,7 +2,7 @@
 @using Comet.Web.App.Model.Helpers
 @using Comet.Web.App.Services
 @using System.Threading
-@inject LanguageService LanguageManager
+@inject LanguageService Language
 @model IndexModel
 @{
     ViewData["Title"] = "Home page";
@@ -25,9 +25,9 @@ Additional classes:
         <div>
             <div class="container">
                 <div class="text-center">
-                    <h1 class="fs-60">@LanguageManager.GetString("GameName")</h1>
+                    <h1 class="fs-60">@Language.GetString("GameName")</h1>
                     <a class="btn btn-md video-popup" href="https://www.youtube.com/watch?v=5CGCVdypB3c">
-                        <i class="fa fa-play-circle"></i>&nbsp;@Html.Raw(LanguageManager.GetString("WatchTrailer"))
+                        <i class="fa fa-play-circle"></i>&nbsp;@Html.Raw(Language.GetString("WatchTrailer"))
                     </a>
                 </div>
             </div>
@@ -42,8 +42,8 @@ Additional classes:
     </div>
     <div class="info container align-center">
         <div>
-            <h2>@LanguageManager.GetString("GameNameVersion")</h2>
-            <h3>@LanguageManager.GetString("ExclusiveWindowsRelease")</h3>
+            <h2>@Language.GetString("GameNameVersion")</h2>
+            <h3>@Language.GetString("ExclusiveWindowsRelease")</h3>
             @if (DateTime.Now < new DateTime(2022, 01, 01, 01, 00, 00))
             {
                 <!-- See countdown init in bottom of the page -->
@@ -52,29 +52,29 @@ Additional classes:
                 <br>
             }
 
-            <a class="btn btn-md" asp-area="" asp-page="/Downloads">@LanguageManager.GetString("Download")</a>
+            <a class="btn btn-md" asp-area="" asp-page="/Downloads">@Language.GetString("Download")</a>
             @if (!User.Identity.IsAuthenticated)
             {
-                <a class="btn btn-md" asp-page="Register">@LanguageManager.GetString("Register")</a>
+                <a class="btn btn-md" asp-page="Register">@Language.GetString("Register")</a>
             }
             else
             {
-                <a class="btn btn-md" asp-area="Panel" asp-page="/User/Accounts">@LanguageManager.GetString("Register")</a>
+                <a class="btn btn-md" asp-area="Panel" asp-page="/User/Accounts">@Language.GetString("Register")</a>
             }
         </div>
     </div>
 </section>
 <!-- /Preorder -->
 <!-- Latest News -->
-<h2 class="container h1">@LanguageManager.GetString("LatestNews")</h2>
+<h2 class="container h1">@Language.GetString("LatestNews")</h2>
 <section class="youplay-news container">
     @foreach (var article in Model.Articles) 
     {
-        var content = article.Content.FirstOrDefault(x => x.Locale.Equals(LanguageManager.CurrentLocale, StringComparison.InvariantCultureIgnoreCase)) ?? article.Content.FirstOrDefault();
+        var content = article.Content.FirstOrDefault(x => x.Locale.Equals(Language.CurrentLocale, StringComparison.InvariantCultureIgnoreCase)) ?? article.Content.FirstOrDefault();
         <div class="news-one">
             <div class="row vertical-gutter">
                 <div class="col-md-4">
-                    <a asp-area="Article" asp-page="Index" asp-route-ArticleId="@article.Id" class="angled-img">
+                    <a asp-area="Read" asp-page="Index" asp-route-ArticleId="@article.Id" class="angled-img">
                         <div class="img">
                             <img src="@Href("~/assets/images/no-img.jpg")" alt="">
                         </div>
@@ -83,19 +83,19 @@ Additional classes:
                 <div class="col-md-8">
                     <div class="clearfix">
                         <h3 class="h3 pull-left m-0">
-                            <a asp-area="Article" asp-page="Index" asp-route-ArticleId="@article.Id">@content.Title</a>
+                            <a asp-area="Read" asp-page="Index" asp-route-ArticleId="@article.Id">@content.Title</a>
                         </h3>
                         <span class="date pull-right">
-                            <i class="fa fa-calendar"></i> @content.CreationDate.ToDateString(LanguageManager)
+                            <i class="fa fa-calendar"></i> @article.PublishDate.ToDateString(Language)
                         </span>
                     </div>
                     <div class="tags">
-                        <i class="fa fa-tags"></i> <a href="#">@LanguageManager.GetString(article.Category.Name)</a>
+                        <i class="fa fa-tags"></i> <a href="#">@Language.GetString(article.Category.Name)</a>
                     </div>
                     <div class="description">
                         @Html.Raw(string.Concat(content.Content.GetParagraphs().Take(2)))
                     </div>
-                    <a asp-area="Article" asp-page="Index" asp-route-ArticleId="@article.Id" class="btn read-more pull-left">@LanguageManager.GetString("ReadMore")</a>
+                    <a asp-area="Read" asp-page="Index" asp-route-ArticleId="@article.Id" class="btn read-more pull-left">@Language.GetString("ReadMore")</a>
                 </div>
             </div>
         </div>
@@ -113,7 +113,7 @@ Additional classes:
             end = moment.tz(end, tz).toDate();
             $(this).countdown(end, function(event)
             {
-                $(this).html(event.strftime(['<div class="countdown-item">', '<span>Dias</span>', '<span><span>%D</span></span>', '</div>', '<div class="countdown-item">', '<span>Horas</span>', '<span><span>%H</span></span>', '</div>', '<div class="countdown-item">', '<span>Minutos</span>', '<span><span>%M</span></span>', '</div>', '<div class="countdown-item">', '<span>Segundos</span>', '<span><span>%S</span></span>', '</div>'].join('')));
+                $(this).html(event.strftime(['<div class="countdown-item">', '<span>@Language.GetString("Days")</span>', '<span><span>%D</span></span>', '</div>', '<div class="countdown-item">', '<span>@Language.GetString("Hours")</span>', '<span><span>%H</span></span>', '</div>', '<div class="countdown-item">', '<span>@Language.GetString("Minutes")</span>', '<span><span>%M</span></span>', '</div>', '<div class="countdown-item">', '<span>@Language.GetString("Seconds")</span>', '<span><span>%S</span></span>', '</div>'].join('')));
             });
         });
     </script>

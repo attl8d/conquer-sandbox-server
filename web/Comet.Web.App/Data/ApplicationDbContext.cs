@@ -64,6 +64,7 @@ namespace Comet.Web.App.Data
         public virtual DbSet<ArticleContent> ArticleContents { get; set; }
         public virtual DbSet<ArticleCategory> ArticleCategories { get; set; }
         public virtual DbSet<ArticleCategoryType> ArticleCategoryTypes { get; set; }
+        public virtual DbSet<SystemConfig> SystemConfigs { get; set; }
 
         #endregion
 

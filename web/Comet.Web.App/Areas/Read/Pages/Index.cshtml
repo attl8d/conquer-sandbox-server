@@ -5,6 +5,8 @@
 @model Comet.Web.App.Areas.Read.Pages.IndexModel
 @{
     ViewData["Title"] = Model.ArticleContent.Title;
+    string partialId = Guid.NewGuid().ToString();
+    string formId = $"comment-form-{partialId}";
 }
 
 <div class="content-wrap no-banner">
@@ -35,10 +37,11 @@
                     <i class="fa fa-bookmark meta-icon"></i> @Language.GetString("Category") <a href="#">@Language.GetString(@Model.Article.Category.Name)</a>
                 </div>
                 <div class="item">
-                    <i class="fa fa-eye meta-icon"></i> @Language.GetString("Views") 0
+                    <i class="fa fa-eye meta-icon"></i> @Language.GetString("Views") @Model.Article.Views
                 </div>
                 <div class="item">
-                    <a href="#"><i class="fa fa-heart"></i> 0</a>
+                    <a href="#"><i class="fa fa fa-thumbs-up"></i> 0</a>
+                    <a href="#"><i class="fa fa fa-thumbs-down"></i> 0</a>
                 </div>
             </div>
 
@@ -46,21 +49,100 @@
 
 
         <div class="comments-block">
-            <h2>@Language.GetString("Comments")<small>(@Language.GetString("BeTheFirstToComment"))</small></h2>
+            <h2>@Language.GetString("Comments")<small>(@(Model.Comments.Count == 0 ? Language.GetString("BeTheFirstToComment") : $"{Model.Comments.Count}"))</small></h2>
 
+            <ul class="comments-list">
 
-            <h2>@Language.GetString("LeaveAResponse")</h2>
+                @foreach (var comment in Model.Comments)
+                {
+                    <li>
+                        <article>
+                            <div class="comment-avatar pull-left">
+                                <img src="@Href("~/assets/images/avatar.png")" />
+                            </div>
+                            <div class="review-cont clearfix">
+                                <a class="comment-author h4" href="#">
+                                    @comment.UserName
+                                </a>
 
-            <form action="#" class="comment-form">
-                <div class="comment-cont clearfix">
-                    <div class="youplay-textarea">
-                        <textarea name="message" rows="5"></textarea>
+                                <div class="date">
+                                    <i class="fa fa-calendar"></i>
+                                    @comment.Date.ToDateString(Language)
+
+                                    &nbsp;
+                                    <button class="btn btn-danger@(comment.HasDislike ? " active" : "") pull-right" href="#" id="CommentDislike_@comment.Identity">
+                                        <i class="fa fa-thumbs-down"></i> <span id="commentDislike_@comment.Identity">@comment.Dislikes</span>
+                                    </button>
+                                    <button class="btn btn-success@(comment.HasLike ? " active" : "") pull-right" href="#" id="CommentLike_@comment.Identity">
+                                        <i class="fa fa-thumbs-up"></i> <span id="commentLike_@comment.Identity">@comment.Likes</span>
+                                    </button>
+                                    &nbsp;
+                                </div>
+                            </div>
+
+                            <div class="comment-text">
+                                @comment.Message
+                            </div>
+                        </article>
+                    </li>
+                }
+
+            </ul>
+
+            @if (Model.IsAllowedToComment)
+            {
+                <h2>@Language.GetString("LeaveAResponse")</h2>
+                <form class="comment-form" enctype="application/x-www-form-urlencoded" id="@formId">
+                    <div class="comment-cont clearfix">
+                        <div class="youplay-input">
+                            <input type="text" name="username" readonly value="@Model.CurrentUserName">
+                        </div>
+                        <div class="youplay-textarea">
+                            <textarea name="message" rows="5" placeholder="@Language.GetString("GoodComment")"></textarea>
+                        </div>
+                        <button class="btn btn-default pull-right">@Language.GetString("Submit")</button>
                     </div>
-                    <button class="btn btn-default pull-right">@Language.GetString("Submit")</button>
-                </div>
-            </form>
-
+                </form>
+            }
         </div>
 
     </div>
 </div>
+
+@section Scripts
+{
+<script>
+
+    const cannotInteract = @Model.IsAllowedToComment;
+
+    $("#@formId").submit(function() {
+        event.preventDefault();
+
+        let formData =
+        {
+            PostId: @Model.ArticleId,
+            Message: $('textarea[name=message]').val(),
+            Rating: 0
+        };
+
+        if (formData.Message.length < 6 || formData.Message.length > 1024) {
+            alert('@Language.GetString("CommentMessageSize", 6, 1024)');
+            return;
+        }
+
+        $.ajax({
+            url: '@Url.Action("PostComment", "Articles")',
+            type: 'POST',
+            data: JSON.stringify(formData),
+            contentType: "application/json",
+            success: function (data) {
+                window.location.href = '@(HttpContext.Request.Path)';
+            },
+            error: function(data) {
+                alert('@Language.GetString("UnableToProcess")');
+            }
+        });
+    });
+
+</script>
+}

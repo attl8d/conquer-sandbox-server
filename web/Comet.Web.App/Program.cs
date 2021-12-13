@@ -27,7 +27,7 @@ namespace Comet.Web.App
                         q.AddTrigger(opts => opts
                             .ForJob(key)
                             .WithIdentity("DailyGameSynchronizationJob-Trigger")
-                            .WithDailyTimeIntervalSchedule(x => x.OnEveryDay().StartingDailyAt(TimeOfDay.HourMinuteAndSecondOfDay(0, 0, 0))));
+                            .WithCronSchedule("0 0 0 * * ?"));
                     });
 
                     // Add the Quartz.NET hosted service

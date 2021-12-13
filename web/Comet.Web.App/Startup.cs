@@ -168,15 +168,16 @@ namespace Comet.Web.App
             app.UseAuthorization();
 
             app.UseCometLocalization();
+            app.UseCometSession();
+            app.UseMaintenanceMiddleware();
+            app.UseBanMiddleware();
 
             app.UseRequestLocalization(opt =>
             {
                 opt.DefaultRequestCulture = new RequestCulture(LanguageService.AvailableLanguages[0].LanguageCultureName);
                 opt.SupportedCultures = LanguageService.AvailableLanguages.Select(x => new CultureInfo(x.LanguageCultureName)).ToList();
                 opt.SupportedUICultures = LanguageService.AvailableLanguages.Select(x => new CultureInfo(x.LanguageCultureName)).ToList();
-            });
-
-            app.UseMaintenanceMiddleware();
+            });            
 
             app.UseEndpoints(endpoints =>
             {

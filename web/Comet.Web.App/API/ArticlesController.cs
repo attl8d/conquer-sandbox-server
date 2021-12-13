@@ -1,6 +1,8 @@
 ﻿using Comet.Web.App.Data;
+using Comet.Web.App.Data.Entities;
 using Comet.Web.App.Services;
 using Comet.Web.App.Services.Identity;
+using HtmlAgilityPack;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
@@ -88,11 +90,51 @@ namespace Comet.Web.App.API
             return Ok(result);
         }
 
-        [HttpGet(Name = "GetMainPageNews")]
-        public async Task<IActionResult> GetMainPageNewsAsync()
+        [HttpPost(Name = "PostComment")]
+        public async Task<IActionResult> PostCommentAsync([FromBody] PostCommentModel model)
         {
+            if (!User.Identity.IsAuthenticated)
+                return Unauthorized();
+
+            var user = await mUserManager.GetUserAsync(User);
+            if (user == null)
+                return Unauthorized();
+
+            Article article = await mContext.Articles.FirstOrDefaultAsync(x => x.Id == model.PostId);
+            if (article == null)
+                return NoContent();
+
+            HtmlDocument html = new HtmlDocument();
+            html.LoadHtml(model.Message);
+            string message = html.DocumentNode.InnerText;
+
+            if (message.Length < 6 || message.Length > 1024)
+                return BadRequest(mLanguage.GetString("CommentMessageSize", 6, 1024));
+
+            ArticleComment comment = new ArticleComment
+            {
+                ArticleId = model.PostId,
+                CreationDate = DateTime.Now,
+                Dislikes = 0,
+                Likes = 0,
+                IpAddress = HttpContext.Connection.RemoteIpAddress.ToString(),
+                TokenId = Request.Cookies["ReadGuid"],
+                Flag = 0,
+                Message = message,
+                UserId = user.Id
+            };
+
+            if (!await mContext.SaveAsync(comment))
+                return UnprocessableEntity("DatabaseError");
 
             return Ok();
+        }
+
+        public class PostCommentModel
+        {
+            public int PostId { get; set; }
+            public string Message { get; set; }
+            public int Rating { get; set; }
         }
 
         public class NewsDisplayModel

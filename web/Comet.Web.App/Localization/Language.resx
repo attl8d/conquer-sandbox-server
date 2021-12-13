@@ -273,6 +273,9 @@
   <data name="BugAbuse" xml:space="preserve">
     <value>Abuso de Bugs e Irregularidades</value>
   </data>
+  <data name="Category" xml:space="preserve">
+    <value>Categoria</value>
+  </data>
   <data name="Change" xml:space="preserve">
     <value>Alterar</value>
   </data>
@@ -284,6 +287,9 @@
   </data>
   <data name="ChangePassword" xml:space="preserve">
     <value>Mudar Senha</value>
+  </data>
+  <data name="CommentMessageSize" xml:space="preserve">
+    <value>Sua mensagem deve conter entre {0} e {1} caracteres.</value>
   </data>
   <data name="Comments" xml:space="preserve">
     <value>Comentários</value>
@@ -519,6 +525,9 @@
   </data>
   <data name="GoBack" xml:space="preserve">
     <value>Voltar</value>
+  </data>
+  <data name="GoodComment" xml:space="preserve">
+    <value>Uma mensagem carinhosa :]</value>
   </data>
   <data name="Groups" xml:space="preserve">
     <value>Grupos</value>
@@ -873,6 +882,9 @@
   <data name="PublishDate" xml:space="preserve">
     <value>Data de Publicação</value>
   </data>
+  <data name="Published" xml:space="preserve">
+    <value>Publicado</value>
+  </data>
   <data name="ReadMore" xml:space="preserve">
     <value>Leia mais</value>
   </data>
@@ -1197,6 +1209,9 @@
   <data name="TwoFactorEnabled" xml:space="preserve">
     <value>Autenticação de dois fatores habilitada</value>
   </data>
+  <data name="UnableToProcess" xml:space="preserve">
+    <value>Não foi possível processar a ação solicitada.</value>
+  </data>
   <data name="Unbanned" xml:space="preserve">
     <value>Desbanido</value>
   </data>
@@ -1247,6 +1262,12 @@
   </data>
   <data name="Verify" xml:space="preserve">
     <value>Verificar</value>
+  </data>
+  <data name="Views" xml:space="preserve">
+    <value>Visualizações</value>
+  </data>
+  <data name="Visitor" xml:space="preserve">
+    <value>Visitante</value>
   </data>
   <data name="WatchTrailer" xml:space="preserve">
     <value>Assista ao trailer</value>

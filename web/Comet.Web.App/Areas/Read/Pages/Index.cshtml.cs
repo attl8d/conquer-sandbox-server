@@ -1,3 +1,4 @@
+using Comet.Shared;
 using Comet.Web.App.Areas.Profile.Models;
 using Comet.Web.App.Data;
 using Comet.Web.App.Data.Entities;
@@ -7,6 +8,7 @@ using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.RazorPages;
 using Microsoft.EntityFrameworkCore;
 using System;
+using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
 
@@ -16,14 +18,12 @@ namespace Comet.Web.App.Areas.Read.Pages
     {
         private readonly ApplicationDbContext mContext;
         private readonly UserManager mUserManager;
-        private readonly SignInManager mSignInManager;
         private readonly LanguageService mLanguage;
 
-        public IndexModel(ApplicationDbContext context, UserManager userManager, SignInManager signInManager, LanguageService language)
+        public IndexModel(ApplicationDbContext context, UserManager userManager, LanguageService language)
         {
             mContext = context;
             mUserManager = userManager;
-            mSignInManager = signInManager;
             mLanguage = language;
         }
 
@@ -32,6 +32,13 @@ namespace Comet.Web.App.Areas.Read.Pages
         public string Author { get; private set; }
         public Article Article { get; private set; }
         public ArticleContent ArticleContent { get; private set; }
+
+        public int Views { get; private set; }
+
+        public List<ArticleComment> Comments { get; } = new List<ArticleComment>();
+
+        public string CurrentUserName { get; private set; }
+        public bool IsAllowedToComment { get; private set; }
 
         public async Task<IActionResult> OnGetAsync()
         {
@@ -59,7 +66,73 @@ namespace Comet.Web.App.Areas.Read.Pages
                     Author = writer.Name;
             }
 
+            ApplicationUser user = null;
+            if (User.Identity.IsAuthenticated)
+            {
+                user = await mUserManager.GetUserAsync(User);
+                CurrentUserName = user.UserName;
+            }
+            string readToken = Request.Cookies["ReadGuid"];
+            var readObj = await mContext.ArticleReadTokens
+                .FirstOrDefaultAsync(x => x.ArticleId == ArticleId && x.TokenId.Equals(readToken));
+            string userAgent = Request.Headers["User-Agent"];
+            if (readObj == null)
+            {
+                Article.Views += 1;
+                mContext.Update(Article);
+                mContext.Update(new ArticleReadToken
+                {
+                    ArticleId = (uint)article.Id,
+                    TokenId = readToken,
+                    CreationDate = UnixTimestamp.Now(),
+                    IpAddress = HttpContext.Connection.RemoteIpAddress.ToString(),
+                    Referer = HttpContext.Request.Path,
+                    UserAgent = userAgent,
+                    UserId = user?.Id
+                });
+                await mContext.SaveChangesAsync();
+            }
+
+            var comments = await mContext.ArticleComments
+                .Include(x => x.User)
+                .Include(x => x.Article)
+                .Where(x => x.ArticleId == ArticleId)
+                .OrderBy(x => x.Id)
+                .ToListAsync();
+            foreach (var comment in comments)
+            {
+                var profile = await mUserManager.GetUserProfileAsync(comment.User);
+
+                Comments.Add(new ArticleComment
+                {
+                    Identity = comment.Id,
+                    Date = comment.CreationDate,
+                    HasLike = false,
+                    HasDislike = false,
+                    Dislikes = comment.Dislikes,
+                    Likes = comment.Likes,
+                    Message = comment.Message,
+                    UserName = profile?.Name ?? comment.User?.UserName ?? mLanguage.GetString("Visitor"),
+                    Avatar = profile.ProfileImage ?? ""
+                });
+            }
+
+            IsAllowedToComment = User.Identity.IsAuthenticated && !((bool)HttpContext.Items["Banned"]);
             return Page();
+        }
+
+        public struct ArticleComment
+        {
+            public int Identity;
+            public string UserName;
+            public string Avatar;
+            public string Message;
+            public DateTime Date;
+            public int Likes;
+            public int Dislikes;
+
+            public bool HasLike;
+            public bool HasDislike;
         }
     }
 }

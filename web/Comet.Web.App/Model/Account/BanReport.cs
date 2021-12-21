@@ -19,6 +19,7 @@ namespace Comet.Web.App.Model.Account
             public string Type { get; set; }
             public int Minutes { get; set; }
             public string Terms { get; set; }
+            public bool IsPermanent { get; set; }
         }
         
         public class BanInformation

@@ -11,35 +11,15 @@
         <div class="col-md-3">
             <div class="side-block">
                 <h4 class="block-title">
-                    Usuário
+                    @Language.GetString("UserPanel")
                 </h4>
                 <ul class="block-content">
-                    <li><a asp-area="Panel" asp-page="/Admin/Users">Usuários</a></li>
-                    <li><a asp-area="Panel" asp-page="/Admin/Roles">Grupos de Úsuário</a></li>
-                    <li><a asp-area="Panel" asp-page="/Admin/Bans">Banimentos</a></li>
-                </ul>
-
-                <h4 class="block-title">
-                    Fóruns
-                </h4>
-                <ul class="block-content">
-                    <li><a href="#">Fóruns</a></li>
-                    <li><a href="#">Publicações</a></li>
-                </ul>
-
-                <h4 class="block-title">
-                    Artigos
-                </h4>
-                <ul class="block-content">
-                    <li><a href="#">Artigos</a></li>
-                    <li><a href="#">Tipos de Artigos</a></li>
-                </ul>
-
-                <h4 class="block-title">
-                    Loja
-                </h4>
-                <ul class="block-content">
-                    <li><a href="#">Produtos</a></li>
+                    <li><a asp-area="Panel" asp-page="/User/Index">@Language.GetString("UserPanelDashboard")</a></li>
+                    <li><a asp-area="Panel" asp-page="/User/Accounts">@Language.GetString("UserPanelGameAccounts")</a></li>
+                    <li><a asp-area="Panel" asp-page="/User/VIP">@Language.GetString("UserPanelBindVip")</a></li>
+                    <li><a asp-area="Panel" asp-page="/User/RestoreDeletedCharacter">@Language.GetString("UserPanelRestoreDeletedCharacters")</a></li>
+                    <li><a asp-area="Panel" asp-page="/User/Purchases">@Language.GetString("UserPanelPurchases")</a></li>
+                    <li><a asp-area="Panel" asp-page="/User/BillingInformation">@Language.GetString("UserPanelBillingInformation")</a></li>
                 </ul>
             </div>
         </div>

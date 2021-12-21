@@ -1,5 +1,4 @@
-﻿using Comet.Web.App.Data;
-using Microsoft.AspNetCore.Identity.UI.Services;
+﻿using Microsoft.AspNetCore.Identity.UI.Services;
 using Microsoft.Extensions.Options;
 using System.Threading.Tasks;
 using Microsoft.Extensions.Logging;
@@ -13,14 +12,12 @@ namespace Comet.Web.App.Services
 {
     public class EmailService : IEmailSender
     {
-        private EmailSettings mSettings;
-        private ApplicationDbContext mDbContext;
-        private ILogger<EmailService> mLogger;
+        private readonly EmailSettings mSettings;
+        private readonly ILogger<EmailService> mLogger;
 
-        public EmailService(ILogger<EmailService> logger, IOptions<EmailSettings> settings, ApplicationDbContext dbContext)
+        public EmailService(ILogger<EmailService> logger, IOptions<EmailSettings> settings)
         {
             mSettings = settings.Value;
-            mDbContext = dbContext;
             mLogger = logger;
         }
 
@@ -38,7 +35,7 @@ namespace Comet.Web.App.Services
             {
                 using var client = new SmtpClient();
                 /**
-                 * PLEASE REMOVE THE BELOW LINES IF USING A PROPER SSL CERTIFICATE
+                 * Keep this lines if using Selfsigned certificate (or no certificate at all)
                  */
                 client.ServerCertificateValidationCallback = (s, c, h, e) => true; //NOSONAR
                 client.CheckCertificateRevocation = false; //NOSONAR

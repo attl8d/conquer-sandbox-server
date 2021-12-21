@@ -27,7 +27,12 @@ namespace Comet.Web.App.Data.Entities
             ViewAdminRolesPage,
             ViewAdminRolePage,
             ViewAdminBansPage,
-            ViewAdminBanDetailPage
+            ViewAdminBanDetailPage,
+            ChangeAccountPassword,
+            ChangeGamePassword,
+            LogIn,
+            LogOut,
+            GameAccountCreation,
         }
     }
 }

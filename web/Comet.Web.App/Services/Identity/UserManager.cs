@@ -145,11 +145,25 @@ namespace Comet.Web.App.Services.Identity
             var userBans = await mDbContext.ApplicationUserBans.Where(x => x.AccountId == user.Id).ToListAsync(cancellationToken);
             foreach (var dbBan in userBans)
             {
-                BanReport.BanInformation info = new BanReport.BanInformation();
-                
+                BanReport.BanInformation info = new BanReport.BanInformation();                
                 var banReason = await mDbContext.ApplicationUserBanReasons.FirstOrDefaultAsync(x => x.Id == dbBan.ReasonId, cancellationToken: cancellationToken);
                 if (banReason == null)
                     continue;
+
+                if (banReason.Type == 0)
+                {
+                    info.Id = user.Id;
+                    info.Name = user.UserName;
+
+                    banReport.Account.Add(info);
+                }
+                else
+                {
+                    info.Id = 0;
+                    info.Name = "TODO GameName";
+
+                    banReport.Game.Add(info);
+                }
 
                 info.BanIdentity = dbBan.Id;
                 info.ReasonId = banReason.Id;
@@ -167,21 +181,6 @@ namespace Comet.Web.App.Services.Identity
                 else
                 {
                     info.BannedBy = bannedBy.UserName;
-                }
-
-                if (banReason.Type == 0)
-                {
-                    info.Id = user.Id;
-                    info.Name = user.UserName;
-
-                    banReport.Account.Add(info);
-                }
-                else
-                {
-                    info.Id = 0;
-                    info.Name = "TODO GameName";
-
-                    banReport.Game.Add(info);
                 }
             }
             return banReport;
@@ -242,6 +241,7 @@ namespace Comet.Web.App.Services.Identity
             var termTime = TimeSpan.FromMinutes(factor.Minutes);
             string tempTimeReturn = mLanguage.GetString("BanTermsTimeDisplay", termTime.TotalDays, termTime.Hours, termTime.Minutes);
 
+            term.IsPermanent = factor.Permanent;
             term.Minutes = factor.Minutes;
             term.Terms = factor.Permanent 
                 ? mLanguage.GetString("BanTermsAdmDisplayPermanent",
@@ -253,6 +253,32 @@ namespace Comet.Web.App.Services.Identity
                     factor.CanBeForgiven ? mLanguage.GetString("Yes") : mLanguage.GetString("No"),
                     tempTimeReturn, term.Type);
             return term;
+        }
+
+        public async Task<List<GameAccountModel>> GetGameAccountsAsync(ApplicationUser user, CancellationToken cancellationToken = default)
+        {
+            ThrowIfDisposed();
+            cancellationToken.ThrowIfCancellationRequested();
+
+            var accounts = await mDbContext.GameAccounts
+                .Include(x => x.Parent)
+                .Where(x => x.ParentId == user.Id)
+                .ToListAsync(cancellationToken);
+            var bans = await GetBanInformationAsync(user, cancellationToken);
+            List<GameAccountModel> result = new List<GameAccountModel>();
+
+            foreach (var account in accounts)
+            {
+                result.Add(new GameAccountModel
+                {
+                    Id = (int)account.AccountID,
+                    Name = account.Username,
+                    BanExpire = bans.Game.FirstOrDefault(x => x.Id == account.AccountID && x.IsActive)?.To
+                    // TODO add game characters to list
+                });
+            }
+
+            return result;
         }
     }
 }

@@ -1,5 +1,7 @@
 ﻿using Comet.Web.App.Data;
 using Comet.Web.App.Data.Entities;
+using Comet.Web.App.Services.Identity;
+using Microsoft.AspNetCore.Http;
 using Microsoft.Extensions.Logging;
 using Newtonsoft.Json;
 using System.Threading.Tasks;
@@ -15,12 +17,18 @@ namespace Comet.Web.App.Services
     {
         private readonly ILogger<TParent> mLogger;
         private readonly ApplicationDbContext mDbContext;
+        private readonly IHttpContextAccessor mHttpContextAcessor;
+        private readonly UserManager mUserManager;
 
         public LogService(ILogger<TParent> logger,
-            ApplicationDbContext context)
+            ApplicationDbContext context,
+            IHttpContextAccessor httpContextAccessor,
+            UserManager userManager)
         {
             mLogger = logger;
             mDbContext = context;
+            mHttpContextAcessor = httpContextAccessor;
+            mUserManager = userManager;
         }
 
         public async Task LogAsync(string message, 
@@ -30,6 +38,13 @@ namespace Comet.Web.App.Services
             int accountId = 0, 
             long data = 0)
         {
+            if (accountId == 0 && mHttpContextAcessor.HttpContext.User.Identity.IsAuthenticated)
+            {
+                var user = await mUserManager.GetUserAsync(mHttpContextAcessor.HttpContext.User);
+                if (user != null)
+                    accountId = user.Id;
+            }
+
             mLogger.Log(level, $"[{type.ToString():-16}] -> AccountId: {accountId}, Data: {data}, {message}");
 
             mDbContext.LogHistory.Add(new LogHistory

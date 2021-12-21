@@ -153,12 +153,22 @@ namespace Comet.Web.App.API
             if (!User.IsInRole(Roles.SuperAdministrator) && principal.HasPermission(Claims.CannotBeBanned))
                 return Unauthorized(mLanguage.GetString("UserCannotBeBanned"));
 
+            DateTime expireTime;
+            if (term.IsPermanent)
+            {
+                expireTime = DateTime.MaxValue;
+            }
+            else
+            {
+                expireTime = DateTime.Now.AddMinutes(term.Minutes);
+            }
+
             ApplicationUserBan ban = new()
             {
                 AccountId = user.Id,
                 BannedBy = admin.Id,
                 BanTime = DateTime.Now,
-                ExpireTime = DateTime.Now.AddMinutes(term.Minutes),
+                ExpireTime = expireTime,
                 Data = 0,
                 Reason = model.description,
                 ReasonId = model.reason

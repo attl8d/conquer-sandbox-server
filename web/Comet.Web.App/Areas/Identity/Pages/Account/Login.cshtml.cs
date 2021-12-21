@@ -18,11 +18,11 @@ namespace Comet.Web.App.Areas.Identity.Pages.Account
     {
         private readonly UserManager<ApplicationUser> mUserManager;
         private readonly SignInManager<ApplicationUser> mSignInManager;
-        private readonly ILogger<LoginModel> mLogger;
+        private readonly LogService<LoginModel> mLogger;
         private readonly LanguageService mLanguage;
 
-        public LoginModel(SignInManager<ApplicationUser> signInManager, 
-            ILogger<LoginModel> logger,
+        public LoginModel(SignInManager<ApplicationUser> signInManager,
+            LogService<LoginModel> logger,
             UserManager<ApplicationUser> userManager,
             LanguageService languageService)
         {
@@ -101,26 +101,29 @@ namespace Comet.Web.App.Areas.Identity.Pages.Account
                 var result = await mSignInManager.PasswordSignInAsync(user, Input.Password, Input.RememberMe, lockoutOnFailure: false);
                 if (result.Succeeded)
                 {
-                    mLogger.LogInformation("User logged in.");
+                    await mLogger.LogAsync("User logged in.", LogHistory.LogType.LogIn);
                     return LocalRedirect(returnUrl);
                 }
                 if (result.RequiresTwoFactor)
                 {
+                    await mLogger.LogAsync("User account redirecting to 2fa.", LogHistory.LogType.LogIn);
                     return RedirectToPage("./LoginWith2fa", new { ReturnUrl = returnUrl, RememberMe = Input.RememberMe });
                 }
                 if (result.IsLockedOut)
                 {
-                    mLogger.LogWarning("User account locked out.");
+                    await mLogger.LogAsync("User account locked out.", LogHistory.LogType.LogIn);
                     return RedirectToPage("./Lockout");
                 }
                 else
                 {
                     if (user != null && !user.EmailConfirmed)
                     {
+                        await mLogger.LogAsync("User account not confirmed. Access denied.", LogHistory.LogType.LogIn);
                         ModelState.AddModelError(string.Empty, mLanguage.GetString("InvalidLoginAttempt2"));
                     }
                     else
                     {
+                        await mLogger.LogAsync("User account wrong id or password.", LogHistory.LogType.LogIn);
                         ModelState.AddModelError(string.Empty, mLanguage.GetString("InvalidLoginAttempt"));
                     }
                     return Page();

@@ -23,14 +23,14 @@ namespace Comet.Web.App.Areas.Profile.Pages.Settings
     public class SecurityModel : PageModel
     {
         private readonly UserManager mUserManager;
-        private readonly ILogger<SecurityModel> mLogger;
+        private readonly LogService<SecurityModel> mLogger;
         private readonly LanguageService mLanguage;
         private readonly ApplicationDbContext mDbContext;
         private readonly IEmailSender mEmailSender;
         private readonly SignInManager mSignInManager;
 
         public SecurityModel(UserManager userManager,
-            ILogger<SecurityModel> logger,
+            LogService<SecurityModel> logger,
             LanguageService language,
             ApplicationDbContext dbContext,
             IEmailSender emailService,
@@ -159,7 +159,7 @@ namespace Comet.Web.App.Areas.Profile.Pages.Settings
             }
 
             await mSignInManager.RefreshSignInAsync(user);
-            mLogger.LogInformation("User changed their password successfully.");
+            await mLogger.LogAsync("User changed their password successfully.", LogHistory.LogType.ChangeAccountPassword);
             StatusMessage = mLanguage.GetString("PasswordChangeSuccess");
 
             await mEmailSender.SendEmailAsync(user.Email,

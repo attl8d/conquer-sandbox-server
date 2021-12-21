@@ -138,6 +138,9 @@
   <data name="AccountType" xml:space="preserve">
     <value>Tipo de Conta</value>
   </data>
+  <data name="Active" xml:space="preserve">
+    <value>Ativo</value>
+  </data>
   <data name="Activity" xml:space="preserve">
     <value>Atividade</value>
   </data>
@@ -232,6 +235,9 @@
   <data name="BannedBy" xml:space="preserve">
     <value>Banido por</value>
   </data>
+  <data name="BannedTill" xml:space="preserve">
+    <value>Banido até {0}</value>
+  </data>
   <data name="BansManagement" xml:space="preserve">
     <value>Gerenciamento de Bans</value>
   </data>
@@ -285,8 +291,20 @@
   <data name="ChangeEmail" xml:space="preserve">
     <value>Alterar E-mail</value>
   </data>
+  <data name="ChangeGamePasswordEmailHtml" xml:space="preserve">
+    <value>&lt;p&gt;A senha da sua conta {0} foi alterada em {1}.&lt;/p&gt;&lt;p&gt;Caso não tenha sido você, faça login em nosso sistema e altere a sua senha.&lt;/p&gt;</value>
+  </data>
+  <data name="ChangeGamePasswordEmailSubject" xml:space="preserve">
+    <value>Mudança de Senha - World Conquer Online</value>
+  </data>
   <data name="ChangePassword" xml:space="preserve">
     <value>Mudar Senha</value>
+  </data>
+  <data name="ChangePasswordPageTitle" xml:space="preserve">
+    <value>{0} - Mudança de Senha</value>
+  </data>
+  <data name="Characters" xml:space="preserve">
+    <value>Personagens</value>
   </data>
   <data name="CommentMessageSize" xml:space="preserve">
     <value>Sua mensagem deve conter entre {0} e {1} caracteres.</value>
@@ -360,6 +378,9 @@
   </data>
   <data name="Days" xml:space="preserve">
     <value>dias</value>
+  </data>
+  <data name="DbError" xml:space="preserve">
+    <value>Erro no banco de dados.</value>
   </data>
   <data name="Description" xml:space="preserve">
     <value>Descrição</value>
@@ -481,6 +502,9 @@
   <data name="Game" xml:space="preserve">
     <value>Jogo</value>
   </data>
+  <data name="GameAccountAlreadyExists" xml:space="preserve">
+    <value>O nome de usuário já está em uso.</value>
+  </data>
   <data name="GameIpAddress" xml:space="preserve">
     <value>Endereço de IP</value>
   </data>
@@ -495,6 +519,24 @@
   </data>
   <data name="GameNameVersion" xml:space="preserve">
     <value>World Conquer Online - Versão 5187</value>
+  </data>
+  <data name="GamePasswordMaxLength" xml:space="preserve">
+    <value>Sua senha não pode exceder 16 caracteres.</value>
+  </data>
+  <data name="GamePasswordMinLength" xml:space="preserve">
+    <value>Sua senha deve ter no mínimo 8 caracteres.</value>
+  </data>
+  <data name="GamePasswordRegex" xml:space="preserve">
+    <value>Sua senha deve obedecer os seguintes parametros: ter uma letra minúscula, ter uma letra maiúscula, ter pelo menos um número e não pode conter símbolos.</value>
+  </data>
+  <data name="GameUserNameMaxLength" xml:space="preserve">
+    <value>O nome de usuário não pode exceder 16 caracteres.</value>
+  </data>
+  <data name="GameUserNameMinLength" xml:space="preserve">
+    <value>O nome de usuário deve ter no mínimo 4 caracteres.</value>
+  </data>
+  <data name="GameUserNameRegex" xml:space="preserve">
+    <value>O nome de usuário pode conter apenas letras maiúsculas, letras minúsculas e números.</value>
   </data>
   <data name="Gender" xml:space="preserve">
     <value>Gênero</value>
@@ -602,6 +644,9 @@
   </data>
   <data name="MaintenanceWarning" xml:space="preserve">
     <value>&lt;strong&gt;ATENÇÃO!&lt;/strong&gt; O sistema está em manutenção! Apenas Administradores podem navegar pelo site.</value>
+  </data>
+  <data name="ManageGameAccountTitle" xml:space="preserve">
+    <value>Gerenciamento de Contas de Jogo</value>
   </data>
   <data name="Member" xml:space="preserve">
     <value>Membro</value>
@@ -777,8 +822,14 @@
   <data name="PasswordChangeSuccess" xml:space="preserve">
     <value>Sua senha foi alterada com sucesso.</value>
   </data>
+  <data name="PasswordNotEqual" xml:space="preserve">
+    <value>As senhas não conferem.</value>
+  </data>
   <data name="PasswordReseted" xml:space="preserve">
     <value>Sua senha foi resetada. Por favor, &lt;a href="/Identity/Account/Login"&gt;clique aqui para entrar&lt;/a&gt;.</value>
+  </data>
+  <data name="PasswordsCantBeEmptyOnCreation" xml:space="preserve">
+    <value>As senhas não podem estar vazias na criação da entidade.</value>
   </data>
   <data name="PatchNotes" xml:space="preserve">
     <value>Notas de Atualização</value>
@@ -1019,6 +1070,9 @@
   <data name="RestoreCharacters" xml:space="preserve">
     <value>Restaurar Personagens Deletados</value>
   </data>
+  <data name="RestoreDeletedCharactersTitle" xml:space="preserve">
+    <value>Restaurar Personagem Deletado</value>
+  </data>
   <data name="Role" xml:space="preserve">
     <value>Função</value>
   </data>
@@ -1233,6 +1287,15 @@
   <data name="UserClaims" xml:space="preserve">
     <value>Permissões Individuais</value>
   </data>
+  <data name="UserCPAccountsCreationDesc" xml:space="preserve">
+    <value>Atenção! Esta conta é utilizada dentro de jogo e você deve se atentar aos seguintes detalhes! Seu nome de usuário deve conter entre 4 e 16 caracteres e NÃO pode conter caracteres especiais (apenas maiúsculas, minúsculas e números). A mesma coisa para as suas senhas, sem caracterees especiais e deve conter entre 8 e 16 caracteres.</value>
+  </data>
+  <data name="UserCPAccountsCreationTitle" xml:space="preserve">
+    <value>Criação de nova conta</value>
+  </data>
+  <data name="UserCPAccountsManageTitle" xml:space="preserve">
+    <value>Contas criadas</value>
+  </data>
   <data name="UserIdentity" xml:space="preserve">
     <value>Identidade</value>
   </data>
@@ -1250,6 +1313,27 @@
   </data>
   <data name="UserNotFound" xml:space="preserve">
     <value>Usuário não encontrado.</value>
+  </data>
+  <data name="UserPanel" xml:space="preserve">
+    <value>Painel de Usuário</value>
+  </data>
+  <data name="UserPanelBillingInformation" xml:space="preserve">
+    <value>Informações de Cobrança</value>
+  </data>
+  <data name="UserPanelBindVip" xml:space="preserve">
+    <value>Vincular VIP</value>
+  </data>
+  <data name="UserPanelDashboard" xml:space="preserve">
+    <value>Visão Geral</value>
+  </data>
+  <data name="UserPanelGameAccounts" xml:space="preserve">
+    <value>Contas</value>
+  </data>
+  <data name="UserPanelPurchases" xml:space="preserve">
+    <value>Minhas Compras</value>
+  </data>
+  <data name="UserPanelRestoreDeletedCharacters" xml:space="preserve">
+    <value>Restaurar Contas Deletadas</value>
   </data>
   <data name="VerificationCode" xml:space="preserve">
     <value>Código de Verificação</value>

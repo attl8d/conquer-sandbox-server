@@ -75,6 +75,11 @@ namespace Comet.Web.App.Areas.Panel.Pages.Admin
 
             if (RealmID == 0)
             {
+                if (string.IsNullOrEmpty(Input.DatabasePass) || string.IsNullOrEmpty(Input.Password))
+                {
+                    ModelState.AddModelError("PasswordError", "PasswordsCantBeEmptyOnCreation");
+                }
+
                 if (!await mRealmService.CreateRealmAsync(new RealmService.CreateRealmModel
                 {
                     DatabaseHost = Input.DatabaseHost,
@@ -117,7 +122,7 @@ namespace Comet.Web.App.Areas.Panel.Pages.Admin
                     RealmName = Input.RealmName,
                     Username = Input.Username,
                     Password = Input.Password,
-                    RealmID = Input.RealmID
+                    RealmID = RealmID
                 }))
                 {
                     ModelState.AddModelError("DbError", mLanguageService.GetString("CouldNotUpdateRealm"));
@@ -148,7 +153,6 @@ namespace Comet.Web.App.Areas.Panel.Pages.Admin
             [Required]
             [MaxLength(16)]
             public string Username { get; set; }
-            [Required]
             [MaxLength(16)]
             [DataType(DataType.Password)]
             public string Password { get; set; }
@@ -157,9 +161,10 @@ namespace Comet.Web.App.Areas.Panel.Pages.Admin
             public string DatabaseHost { get; set; } = "localhost";
             [Required]
             public string DatabaseUser { get; set; } = "root";
-            [Required]
+#if !DEBUG
             [MinLength(20)]
             [MaxLength(100)]
+#endif
             [DataType(DataType.Password)]
             public string DatabasePass { get; set; }
             [Required]

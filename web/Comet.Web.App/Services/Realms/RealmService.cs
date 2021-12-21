@@ -49,6 +49,15 @@ namespace Comet.Web.App.Services.Realms
             }
         }
 
+        public string GetRealmConnectionString(string realmName)
+        {
+            var realmData = mDictRealms.Values.FirstOrDefault(x => x.Name.Equals(realmName));
+            if (realmData == null)
+                return string.Empty;
+            var realm = GetRealmData(realmData.RealmID);
+            return $"server={realm.DatabaseHostname};database={realm.DatabaseSchema};user={realm.DatabaseUsername};password={AesCipher.Decrypt(CipherKey, realmData.DatabasePass)};port={realm.DatabasePort}";
+        }
+
         public List<RealmPublicListData> GetRealmList()
         {
             return mDictRealms.Values.Select(x =>

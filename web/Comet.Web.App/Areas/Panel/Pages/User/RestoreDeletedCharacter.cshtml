@@ -1,0 +1,90 @@
+﻿@page
+@using Comet.Web.App.Services
+@inject LanguageService Language
+@model Comet.Web.App.Areas.Panel.Pages.User.RestoreDeletedCharacterModel
+@{
+    ViewData["Title"] = Language.GetString("RestoreDeletedCharactersTitle");
+}
+
+<div class="row">
+    <div class="col-md-6">
+        <div class="form-group">
+            <label class="control-label col-sm-3">@Language.GetString("Server"):</label>
+            <div class="col-sm-9">
+                <div class="youplay-select">
+                    <select id="GameServer">
+                        <option value=""></option>
+                        @foreach (var server in Model.Realms)
+                        {
+                            <option value="@server.RealmName">@server.RealmName</option>
+                        }
+                    </select>
+                </div>
+            </div>
+        </div>
+    </div>
+    <div class="col-md-6 table-responsive">
+        <table id="tblRestoreUsers" class="table table-bordered table-hover">
+            <thead>
+                <tr>
+                    <td>@Language.GetString("Name")</td>
+                    <td>@Language.GetString("Account")</td>
+                    <td>@Language.GetString("Level")</td>
+                    <td></td>
+                </tr>
+            </thead>
+            <tbody>
+
+            </tbody>
+        </table>
+    </div>
+</div>
+
+@section Scripts
+{
+<script>
+    $('#GameServer').change(function() {
+
+        $.ajax({
+            url: '@Url.Action("QueryDeletedCharacters", "Characters")',
+            type: 'GET',
+            data: {
+                realmName: this.value
+            },
+            success: function(result) {
+
+                let table = document.getElementById('tblRestoreUsers');
+                let body = table.tBodies[0];
+
+                $(body).empty();
+
+                if (result.length) {
+                    for (let idx = 0; idx < result.length; idx++)
+                    {
+                        let row = body.insertRow();                        
+                        row.insertCell().innerHTML = `${result[idx].name}`;
+                        row.insertCell().innerHTML = `${result[idx].account}`;
+                        row.insertCell().innerHTML = `${result[idx].level}`;
+                        if (result[idx].canBeRestored) {
+                            row.insertCell().innerHTML = `<a id="restore_${result[idx].id}" href="#" onclick="event.preventDefault();"><i class="fa fa-trash-restore"></i></a>`;
+                        }
+                        else {
+                            row.insertCell().innerHTML = ``;
+                        }
+                    }
+                }
+                else {
+                    let cell = body.insertRow().insertCell();
+                    cell.colSpan = 4;
+                    cell.innerHTML = '@Language.GetString("NoData")';
+                }
+
+            },
+            error: function(result) {
+                console.log(result);
+            }
+        });
+
+    });
+</script>
+}

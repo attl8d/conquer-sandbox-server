@@ -9,7 +9,6 @@ using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
 using System;
-using System.Collections.Generic;
 using System.Data;
 using System.Threading;
 using System.Threading.Tasks;
@@ -30,6 +29,11 @@ namespace Comet.Web.App.Data
         private readonly IOptions<OperationalStoreOptions> mOperationalStoreOptions;
         private IConfiguration mConfiguration;
         private ILogger<ApplicationDbContext> mLog;
+
+        public ApplicationDbContext()
+        {
+
+        }
 
         public ApplicationDbContext(IConfiguration configuration, 
             DbContextOptions<ApplicationDbContext> options,
@@ -67,10 +71,13 @@ namespace Comet.Web.App.Data
         public virtual DbSet<SystemConfig> SystemConfigs { get; set; }
         public virtual DbSet<ArticleReadToken> ArticleReadTokens { get; set; }
         public virtual DbSet<ArticleComment> ArticleComments { get; set; }
+        public virtual DbSet<GameAccount> GameAccounts { get; set; }
 
         #endregion
 
         Task<int> IPersistedGrantDbContext.SaveChangesAsync() => base.SaveChangesAsync();
+
+        public string ConnectionString { get; set; } = null;
 
         protected override void OnModelCreating(ModelBuilder builder)
         {
@@ -87,6 +94,16 @@ namespace Comet.Web.App.Data
             builder.Entity<Article>().Property(x => x.Flags).HasConversion<ulong>();
 
             builder.ConfigurePersistedGrantContext(mOperationalStoreOptions.Value);
+        }
+
+        protected override void OnConfiguring(DbContextOptionsBuilder optionsBuilder)
+        {
+            base.OnConfiguring(optionsBuilder);
+
+            if (!optionsBuilder.IsConfigured && !string.IsNullOrEmpty(ConnectionString))
+            {
+                optionsBuilder.UseMySql(ConnectionString, ServerVersion.AutoDetect(ConnectionString));
+            }
         }
 
         #region CRUDOP

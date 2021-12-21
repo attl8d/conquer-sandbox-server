@@ -202,32 +202,11 @@
                         </li>
                         @if (User.Identity.IsAuthenticated)
                         {
-                            <li class=" dropdown dropdown-hover">
-                                <a href="#" class="dropdown-toggle" data-toggle="dropdown" role="button" aria-expanded="false">
-                                    @LanguageManager.GetString("MenuUser") <span class="caret"></span>
+                            <li>
+                                <a asp-area="Panel" asp-page="/User/Index" role="button" aria-expanded="false">
+                                    @LanguageManager.GetString("MenuUser")
                                     <span class="label">@LanguageManager.GetString("MenuUserDesc")</span>
                                 </a>
-                                <div class="dropdown-menu">
-                                    <ul role="menu">
-                                        <li>
-                                            <a asp-area="Panel" asp-page="/User/Accounts"> @LanguageManager.GetString("MenuAccounts") </a>
-                                        </li>
-                                        <li>
-                                            <a asp-area="Panel" asp-page="/User/BindVip"> @LanguageManager.GetString("BindVip") </a>
-                                        </li>
-                                        <li>
-                                            <a asp-area="Panel" asp-page="/User/RestoreCharacters"> @LanguageManager.GetString("RestoreCharacters") </a>
-                                        </li>
-                                    </ul>
-                                    <ul role="menu">
-                                        <li>
-                                            <a asp-area="Panel" asp-page="/User/Purchases">@LanguageManager.GetString("MenuPurchases")</a>
-                                        </li>
-                                        <li>
-                                            <a asp-area="Panel" asp-page="/User/BillingInformation">@LanguageManager.GetString("BillingInformation")</a>
-                                        </li>
-                                    </ul>
-                                </div>
                             </li>
                         }
                     </ul>

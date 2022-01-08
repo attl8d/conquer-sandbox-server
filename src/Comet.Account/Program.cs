@@ -63,7 +63,7 @@ namespace Comet.Account
             var config = new ServerConfiguration(args);
             if (!config.Valid)
             {
-                Console.WriteLine("Invalid server configuration file");
+                await Log.WriteLogAsync(LogLevel.Info, "Invalid server configuration file");
                 return;
             }
 
@@ -164,7 +164,6 @@ namespace Comet.Account
                             IPAddress = "127.0.0.1",
                             Salt = salt,
                             StatusID = 1,
-                            VipLevel = (byte) vip,
                             MacAddress = ""
                         };
 

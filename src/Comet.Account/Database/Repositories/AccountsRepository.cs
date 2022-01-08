@@ -50,8 +50,7 @@ namespace Comet.Account.Database.Repositories
         public static async Task<DbAccount> FindAsync(string username)
         {
             await using var db = new ServerDbContext();
-            return await db.Accounts.Include(x => x.Authority)
-                .Include(x => x.Status)
+            return await db.Accounts
                 .Where(x => x.Username == username)
                 .SingleOrDefaultAsync();
         }
@@ -59,8 +58,7 @@ namespace Comet.Account.Database.Repositories
         public static async Task<DbAccount> FindAsync(uint identity)
         {
             await using var db = new ServerDbContext();
-            return await db.Accounts.Include(x => x.Authority)
-                .Include(x => x.Status)
+            return await db.Accounts
                 .Where(x => x.AccountID == identity)
                 .SingleOrDefaultAsync();
         }

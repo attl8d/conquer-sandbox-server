@@ -37,14 +37,6 @@ namespace Comet.Account.Database.Models
     [Table("account")]
     public class DbAccount
     {
-        /// <summary>
-        ///     Initializes navigational properties for <see cref="DbAccount" />.
-        /// </summary>
-        public DbAccount()
-        {
-            Logins = new HashSet<DbLogin>();
-        }
-
         // Column Properties
         public uint AccountID { get; set; }
         public string Username { get; set; }
@@ -55,11 +47,5 @@ namespace Comet.Account.Database.Models
         public string IPAddress { get; set; }
         public string MacAddress { get; set; }
         public DateTime Registered { get; set; }
-        public byte VipLevel { get; set; }
-
-        // Navigational Properties
-        public virtual DbAccountAuthority Authority { get; set; }
-        public virtual DbAccountStatus Status { get; set; }
-        public virtual ICollection<DbLogin> Logins { get; set; }
     }
 }

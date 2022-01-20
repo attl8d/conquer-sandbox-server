@@ -35,6 +35,7 @@ using Comet.Game.States.BaseEntities;
 using Comet.Game.States.Items;
 using Comet.Game.States.Magics;
 using Comet.Game.World;
+using Comet.Game.World.Managers;
 using Comet.Game.World.Maps;
 using Comet.Network.Packets;
 using Comet.Shared;
@@ -109,7 +110,7 @@ namespace Comet.Game.States
         {
             m_idMap = idMap;
 
-            if ((Map = Kernel.MapManager.GetMap(idMap)) == null)
+            if ((Map = MapManager.GetMap(idMap)) == null)
                 return false;
 
             m_posX = x;
@@ -118,7 +119,7 @@ namespace Comet.Game.States
             Life = MaxLife;
 
             m_idUseMagic = m_dbMonster.MagicType;
-            m_monsterMagics = Kernel.RoleManager.GetMonsterMagics(m_dbMonster.Type);
+            m_monsterMagics = RoleManager.GetMonsterMagics(m_dbMonster.Type);
 
             if (m_dbMonster.MagicType > 0)
             {
@@ -384,7 +385,7 @@ namespace Comet.Game.States
             if (await Kernel.ChanceCalcAsync(625, 54_000_000))
             {
                 await DropItemAsync(Item.TYPE_DRAGONBALL, user);
-                await Kernel.RoleManager.BroadcastMsgAsync(
+                await RoleManager.BroadcastMsgAsync(
                     string.Format(Language.StrDragonBallDropped, attacker?.Name ?? Language.StrNone,
                         attacker?.Map.Name ?? Language.StrNone), MsgTalk.TalkChannel.TopLeft);
 
@@ -447,7 +448,7 @@ namespace Comet.Game.States
             {
                 uint idItemtype = await GetDropItemAsync();
 
-                DbItemtype itemtype = Kernel.ItemManager.GetItemtype(idItemtype);
+                DbItemtype itemtype = ItemManager.GetItemtype(idItemtype);
                 if (itemtype == null)
                     continue;
 
@@ -461,7 +462,7 @@ namespace Comet.Game.States
 
         public async Task DropItemAsync(uint type, Character owner)
         {
-            DbItemtype itemType = Kernel.ItemManager.GetItemtype(type);
+            DbItemtype itemType = ItemManager.GetItemtype(type);
             if (itemType != null) await DropItemAsync(itemType, owner);
         }
 
@@ -514,7 +515,7 @@ namespace Comet.Game.States
              * 7 = hp
              * 8 = mp
              */
-            var drops = Kernel.ItemManager.GetByRange(Level, 15, 15).ToList();
+            var drops = ItemManager.GetByRange(Level, 15, 15).ToList();
             var possibleDrops = new List<byte>();
             if (m_dbMonster.DropArmet != 99)
                 possibleDrops.Add(0);
@@ -591,10 +592,10 @@ namespace Comet.Game.States
                 drops.Clear();
             }
 
-            DbItemtype pot = Kernel.ItemManager.GetItemtype(m_dbMonster.DropHp);
+            DbItemtype pot = ItemManager.GetItemtype(m_dbMonster.DropHp);
             if (pot != null)
                 drops.Add(pot);
-            pot = Kernel.ItemManager.GetItemtype(m_dbMonster.DropMp);
+            pot = ItemManager.GetItemtype(m_dbMonster.DropMp);
             if (pot != null)
                 drops.Add(pot);
 
@@ -739,7 +740,7 @@ namespace Comet.Game.States
 
         public override async Task EnterMapAsync()
         {
-            Map = Kernel.MapManager.GetMap(MapIdentity);
+            Map = MapManager.GetMap(MapIdentity);
             if (Map != null)
                 await Map.AddAsync(this);
 
@@ -759,7 +760,7 @@ namespace Comet.Game.States
             if (Map != null)
             {
                 await Map.RemoveAsync(Identity);
-                Kernel.RoleManager.RemoveRole(Identity);
+                RoleManager.RemoveRole(Identity);
             }
             Map = null;
         }

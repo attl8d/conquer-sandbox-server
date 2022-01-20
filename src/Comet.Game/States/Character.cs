@@ -64,7 +64,7 @@ namespace Comet.Game.States
         private Client m_socket;
         private readonly DbCharacter m_dbObject;
 
-        private TimeOut m_flowerRankRefresh = new TimeOut(10);
+        private TimeOut m_flowerRankRefresh = new TimeOut(1);
         private TimeOutMS m_energyTm = new TimeOutMS(ADD_ENERGY_STAND_MS);
         private TimeOut m_autoHeal = new TimeOut(AUTOHEALLIFE_TIME);
         private TimeOut m_pkDecrease = new TimeOut(PK_DEC_TIME);
@@ -129,6 +129,8 @@ namespace Comet.Game.States
             m_pkDecrease.Update();
             m_xpPoints.Update();
             m_ghost.Update();
+
+            Flag |= UserFlagType.ShowSpecialItems;
         }
 
         public Client Client => m_socket;
@@ -233,7 +235,7 @@ namespace Comet.Game.States
                 bBack = true;
             }
 
-            DbMonstertype pType = Kernel.RoleManager.GetMonstertype(dwLook);
+            DbMonstertype pType = RoleManager.GetMonstertype(dwLook);
             if (pType == null)
             {
                 return false;
@@ -550,7 +552,7 @@ namespace Comet.Game.States
             if (!IsNewbie() && ProfessionSort == 13 && ProfessionLevel >= 3)
                 multiplier += 1;
 
-            DbLevelExperience levExp = Kernel.RoleManager.GetLevelExperience(Level);
+            DbLevelExperience levExp = RoleManager.GetLevelExperience(Level);
             if (IsBlessed)
             {
                 if (levExp != null)
@@ -587,7 +589,7 @@ namespace Comet.Game.States
 
         public async Task<bool> AwardExperienceAsync(long amount, bool noContribute = false)
         {
-            if (Level > Kernel.RoleManager.GetLevelLimit())
+            if (Level > RoleManager.GetLevelLimit())
                 return true;
             
             amount += (long)Experience;
@@ -598,9 +600,9 @@ namespace Comet.Game.States
             long usedExp = amount;
 
             double mentorUpLevTime = 0;
-            while (newLevel < MAX_UPLEV && amount >= (long)Kernel.RoleManager.GetLevelExperience(newLevel).Exp)
+            while (newLevel < MAX_UPLEV && amount >= (long)RoleManager.GetLevelExperience(newLevel).Exp)
             {
-                DbLevelExperience dbExp = Kernel.RoleManager.GetLevelExperience(newLevel);
+                DbLevelExperience dbExp = RoleManager.GetLevelExperience(newLevel);
                 amount -= (long) dbExp.Exp;
                 leveled = true;
                 newLevel++;
@@ -618,13 +620,13 @@ namespace Comet.Game.States
 
                 mentorUpLevTime += dbExp.MentorUpLevTime;//(leveXp.MentorUpLevTime * ((float)usedExp / leveXp.Exp));
 
-                if (newLevel < Kernel.RoleManager.GetLevelLimit()) continue;
+                if (newLevel < RoleManager.GetLevelLimit()) continue;
                 amount = 0;
                 break;
             }
 
             uint metLev = 0;
-            var leveXp = Kernel.RoleManager.GetLevelExperience(newLevel);
+            var leveXp = RoleManager.GetLevelExperience(newLevel);
             if (leveXp != null)
             {
                 float fExp = amount / (float)leveXp.Exp;
@@ -648,14 +650,14 @@ namespace Comet.Game.States
 
                 newLevel += extra;
 
-                if (newLevel >= Kernel.RoleManager.GetLevelLimit())
+                if (newLevel >= RoleManager.GetLevelLimit())
                 {
-                    newLevel = (byte)Kernel.RoleManager.GetLevelLimit();
+                    newLevel = (byte)RoleManager.GetLevelLimit();
                     amount = 0;
                 }
                 else if (m_dbObject.MeteLevel >= newLevel * 10000)
                 {
-                    amount = (long)(Kernel.RoleManager.GetLevelExperience(newLevel).Exp * ((m_dbObject.MeteLevel % 10000) / 1000d));
+                    amount = (long)(RoleManager.GetLevelExperience(newLevel).Exp * ((m_dbObject.MeteLevel % 10000) / 1000d));
                 }
             }
 
@@ -667,7 +669,7 @@ namespace Comet.Game.States
                 else
                     job = (byte)((Profession - Profession % 10) / 10);
 
-                var allot = Kernel.RoleManager.GetPointAllot(job, newLevel);
+                var allot = RoleManager.GetPointAllot(job, newLevel);
                 Level = newLevel;
                 if (AutoAllot && allot != null)
                 {
@@ -768,33 +770,33 @@ namespace Comet.Game.States
         {
             long exp = 0;
 
-            if (Level >= Kernel.RoleManager.GetLevelLimit())
+            if (Level >= RoleManager.GetLevelLimit())
                 return 0;
 
             byte level = Level;
             if (Experience > 0)
             {
-                double pct = 1.00 - Experience / (double)Kernel.RoleManager.GetLevelExperience(Level).Exp;
-                if (amount > pct * Kernel.RoleManager.GetLevelExperience(Level).UpLevTime)
+                double pct = 1.00 - Experience / (double)RoleManager.GetLevelExperience(Level).Exp;
+                if (amount > pct * RoleManager.GetLevelExperience(Level).UpLevTime)
                 {
-                    amount -= (int)(pct * Kernel.RoleManager.GetLevelExperience(Level).UpLevTime);
-                    exp += (long)(Kernel.RoleManager.GetLevelExperience(Level).Exp - Experience);
+                    amount -= (int)(pct * RoleManager.GetLevelExperience(Level).UpLevTime);
+                    exp += (long)(RoleManager.GetLevelExperience(Level).Exp - Experience);
                     level++;
                 }
             }
 
-            while (amount > Kernel.RoleManager.GetLevelExperience(level).UpLevTime)
+            while (amount > RoleManager.GetLevelExperience(level).UpLevTime)
             {
-                amount -= Kernel.RoleManager.GetLevelExperience(level).UpLevTime;
-                exp += (long)Kernel.RoleManager.GetLevelExperience(level).Exp;
+                amount -= RoleManager.GetLevelExperience(level).UpLevTime;
+                exp += (long)RoleManager.GetLevelExperience(level).Exp;
 
-                if (level >= Kernel.RoleManager.GetLevelLimit())
+                if (level >= RoleManager.GetLevelLimit())
                     return exp;
                 level++;
             }
 
-            exp += (long)(amount / (double)Kernel.RoleManager.GetLevelExperience(Level).UpLevTime *
-                          Kernel.RoleManager.GetLevelExperience(Level).Exp);
+            exp += (long)(amount / (double)RoleManager.GetLevelExperience(Level).UpLevTime *
+                          RoleManager.GetLevelExperience(Level).Exp);
             return exp;
         }
 
@@ -802,12 +804,12 @@ namespace Comet.Game.States
         {
             long expBallExp = CalculateExpBall(amount);
             byte newLevel = Level;
-            while (newLevel < MAX_UPLEV && amount >= (long)Kernel.RoleManager.GetLevelExperience(newLevel).Exp)
+            while (newLevel < MAX_UPLEV && amount >= (long)RoleManager.GetLevelExperience(newLevel).Exp)
             {
-                DbLevelExperience dbExp = Kernel.RoleManager.GetLevelExperience(newLevel);
+                DbLevelExperience dbExp = RoleManager.GetLevelExperience(newLevel);
                 expBallExp -= (long)dbExp.Exp;
                 newLevel++;
-                if (newLevel < Kernel.RoleManager.GetLevelLimit()) continue;
+                if (newLevel < RoleManager.GetLevelLimit()) continue;
                 expBallExp = 0;
                 break;
             }
@@ -822,7 +824,7 @@ namespace Comet.Game.States
 
         public bool CanUseExpBall()
         {
-            if (Level >= Kernel.RoleManager.GetLevelLimit())
+            if (Level >= RoleManager.GetLevelLimit())
                 return false;
 
             if (m_dbObject.ExpBallUsage < uint.Parse(DateTime.Now.ToString("yyyyMMdd")))
@@ -1636,7 +1638,7 @@ namespace Comet.Game.States
 
             if (mapItem.OwnerIdentity != Identity && mapItem.IsPrivate())
             {
-                Character owner = Kernel.RoleManager.GetUser(mapItem.OwnerIdentity);
+                Character owner = RoleManager.GetUser(mapItem.OwnerIdentity);
                 if (owner != null && !IsMate(owner))
                 {
                     if (Team == null 
@@ -1695,9 +1697,9 @@ namespace Comet.Game.States
 
         #region Peerage
 
-        public NobilityRank NobilityRank => Kernel.PeerageManager.GetRanking(Identity);
+        public NobilityRank NobilityRank => PeerageManager.GetRanking(Identity);
 
-        public int NobilityPosition => Kernel.PeerageManager.GetPosition(Identity);
+        public int NobilityPosition => PeerageManager.GetPosition(Identity);
 
         public ulong NobilityDonation
         {
@@ -2726,25 +2728,25 @@ namespace Comet.Game.States
                     {
                         //await UserPackage.RandDropEquipmentAsync(atkrUser);
                         //await UserPackage.RandDropEquipmentAsync(atkrUser);
-                        await Kernel.ItemManager.DetainItemAsync(this, atkrUser);
-                        await Kernel.ItemManager.DetainItemAsync(this, atkrUser);
+                        await ItemManager.DetainItemAsync(this, atkrUser);
+                        await ItemManager.DetainItemAsync(this, atkrUser);
                     }
                     else if (PkPoints >= 100)
                     {
                         //await UserPackage.RandDropEquipmentAsync(atkrUser);
-                        await Kernel.ItemManager.DetainItemAsync(this, atkrUser);
+                        await ItemManager.DetainItemAsync(this, atkrUser);
                     }
                     else if (PkPoints >= 30 && await Kernel.ChanceCalcAsync(40, 100))
                     {
                         //await UserPackage.RandDropEquipmentAsync(atkrUser);
-                        await Kernel.ItemManager.DetainItemAsync(this, atkrUser);
+                        await ItemManager.DetainItemAsync(this, atkrUser);
                     }
 
                     if (PkPoints >= 100)
                     {
                         await SavePositionAsync(6000, 31, 72);
                         await FlyMapAsync(6000, 31, 72);
-                        await Kernel.RoleManager.BroadcastMsgAsync(
+                        await RoleManager.BroadcastMsgAsync(
                             string.Format(Language.StrGoToJail, attacker.Name, Name), MsgTalk.TalkChannel.Talk,
                             Color.White);
                     }
@@ -2760,7 +2762,7 @@ namespace Comet.Game.States
                 {
                     await SavePositionAsync(6000, 31, 72);
                     await FlyMapAsync(6000, 31, 72);
-                    await Kernel.RoleManager.BroadcastMsgAsync(
+                    await RoleManager.BroadcastMsgAsync(
                         string.Format(Language.StrGoToJail, attacker.Name, Name), MsgTalk.TalkChannel.Talk,
                         Color.White);
                 }
@@ -2935,7 +2937,7 @@ namespace Comet.Game.States
 
         public async Task<bool> RebirthAsync(ushort prof, ushort look)
         {
-            DbRebirth data = Kernel.RoleManager.GetRebirth(Profession, prof, Metempsychosis + 1);
+            DbRebirth data = RoleManager.GetRebirth(Profession, prof, Metempsychosis + 1);
 
             if (data == null)
             {
@@ -2952,7 +2954,7 @@ namespace Comet.Game.States
 
             if (Level >= 130)
             {
-                DbLevelExperience levExp = Kernel.RoleManager.GetLevelExperience(Level);
+                DbLevelExperience levExp = RoleManager.GetLevelExperience(Level);
                 if (levExp != null)
                 {
                     float fExp = Experience / (float)levExp.Exp;
@@ -2974,9 +2976,9 @@ namespace Comet.Game.States
                     await UserPackage[pos].DegradeItemAsync(false);
             }
 
-            var removeSkills = Kernel.RoleManager.GetMagictypeOp(MagicTypeOp.MagictypeOperation.RemoveOnRebirth, oldProf / 10, prof / 10, metempsychosis)?.Magics;
-            var resetSkills = Kernel.RoleManager.GetMagictypeOp(MagicTypeOp.MagictypeOperation.ResetOnRebirth, oldProf / 10, prof/10, metempsychosis)?.Magics;
-            var learnSkills = Kernel.RoleManager.GetMagictypeOp(MagicTypeOp.MagictypeOperation.LearnAfterRebirth, oldProf / 10, prof/10, metempsychosis)?.Magics;
+            var removeSkills = RoleManager.GetMagictypeOp(MagicTypeOp.MagictypeOperation.RemoveOnRebirth, oldProf / 10, prof / 10, metempsychosis)?.Magics;
+            var resetSkills = RoleManager.GetMagictypeOp(MagicTypeOp.MagictypeOperation.ResetOnRebirth, oldProf / 10, prof/10, metempsychosis)?.Magics;
+            var learnSkills = RoleManager.GetMagictypeOp(MagicTypeOp.MagictypeOperation.LearnAfterRebirth, oldProf / 10, prof/10, metempsychosis)?.Magics;
 
             if (removeSkills != null)
             {
@@ -3017,7 +3019,7 @@ namespace Comet.Game.States
             byte prof = (byte) (newProf > 100 ? 10 : newProf / 10);
 
             int force = 0, speed = 0, health = 0, soul = 0;
-            DbPointAllot pointAllot = Kernel.RoleManager.GetPointAllot(prof, 1);
+            DbPointAllot pointAllot = RoleManager.GetPointAllot(prof, 1);
             if (pointAllot != null)
             {
                 force = pointAllot.Strength;
@@ -3618,7 +3620,7 @@ namespace Comet.Game.States
 
             foreach (var enemy in await EnemyRepository.GetOwnEnemyAsync(Identity))
             {
-                Character user = Kernel.RoleManager.GetUser(enemy.UserIdentity);
+                Character user = RoleManager.GetUser(enemy.UserIdentity);
                 if (user != null)
                     await user.SendAsync(new MsgFriend
                     {
@@ -3696,7 +3698,7 @@ namespace Comet.Game.States
             await SendAsync(string.Format(Language.StrTradeBuddyBrokePartnership1, partner.Name));
 
             var delete = partner.DeleteAsync();
-            Character target = Kernel.RoleManager.GetUser(idTarget);
+            Character target = RoleManager.GetUser(idTarget);
             if (target != null)
             {
                 partner = target.GetTradePartner(Identity);
@@ -3766,7 +3768,7 @@ namespace Comet.Game.States
             if (!Kernel.IsValidName(name))
                 return false;
 
-            if (Kernel.SyndicateManager.GetSyndicate(name) != null)
+            if (SyndicateManager.GetSyndicate(name) != null)
             {
                 await SendAsync(Language.StrSynNameInUse);
                 return false;
@@ -3786,7 +3788,7 @@ namespace Comet.Game.States
                 return false;
             }
 
-            if (!Kernel.SyndicateManager.AddSyndicate(Syndicate))
+            if (!SyndicateManager.AddSyndicate(Syndicate))
             {
                 await Syndicate.DeleteAsync();
                 Syndicate = null;
@@ -3794,7 +3796,7 @@ namespace Comet.Game.States
                 return false;
             }
             
-            await Kernel.RoleManager.BroadcastMsgAsync(string.Format(Language.StrSynCreate, Name, name), MsgTalk.TalkChannel.Talk, Color.White);
+            await RoleManager.BroadcastMsgAsync(string.Format(Language.StrSynCreate, Name, name), MsgTalk.TalkChannel.Talk, Color.White);
             await SendSyndicateAsync();
             await Screen.SynchroScreenAsync();
             await Syndicate.BroadcastNameAsync();
@@ -4003,7 +4005,7 @@ namespace Comet.Game.States
         /// </summary>
         public override async Task EnterMapAsync()
         {
-            Map = Kernel.MapManager.GetMap(m_idMap);
+            Map = MapManager.GetMap(m_idMap);
             if (Map != null)
             {
                 await Map.AddAsync(this);
@@ -4114,7 +4116,7 @@ namespace Comet.Game.States
 
         public async Task SavePositionAsync(uint idMap, ushort x, ushort y)
         {
-            GameMap map = Kernel.MapManager.GetMap(idMap);
+            GameMap map = MapManager.GetMap(idMap);
             if (map?.IsRecordDisable() == false)
             {
                 m_dbObject.X = x;
@@ -4135,7 +4137,7 @@ namespace Comet.Game.States
             if (idMap == 0)
                 idMap = MapIdentity;
 
-            GameMap newMap = Kernel.MapManager.GetMap(idMap);
+            GameMap newMap = MapManager.GetMap(idMap);
             if (newMap == null || !newMap.IsValidPoint(x, y))
             {
                 await Log.WriteLogAsync(LogLevel.Warning, $"FlyMap user fly invalid position {idMap}[{x},{y}]");
@@ -4509,14 +4511,14 @@ namespace Comet.Game.States
 
         public async Task FinishXpAsync()
         {
-            int currentPoints = Kernel.RoleManager.GetSupermanPoints(Identity);
+            int currentPoints = RoleManager.GetSupermanPoints(Identity);
             if (KoCount >= 25
                 && currentPoints < KoCount)
             {
-                await Kernel.RoleManager.AddOrUpdateSupermanAsync(Identity, KoCount);
-                int rank = Kernel.RoleManager.GetSupermanRank(Identity);
+                await RoleManager.AddOrUpdateSupermanAsync(Identity, KoCount);
+                int rank = RoleManager.GetSupermanRank(Identity);
                 if (rank < 100)
-                    await Kernel.RoleManager.BroadcastMsgAsync(string.Format(Language.StrSupermanBroadcast, Name, KoCount, rank), MsgTalk.TalkChannel.Talk);
+                    await RoleManager.BroadcastMsgAsync(string.Format(Language.StrSupermanBroadcast, Name, KoCount, rank), MsgTalk.TalkChannel.Talk);
             }
             KoCount = 0;
         }
@@ -4797,9 +4799,9 @@ namespace Comet.Game.States
             float nChance = 15f + ((float)(WeaponSkill[562]?.Level ?? 0) / 2);
             if (await Kernel.ChanceCalcAsync(nChance))
             {
-                uint idItem = await Kernel.MineManager.GetDropAsync(this);
+                uint idItem = await MineManager.GetDropAsync(this);
 
-                DbItemtype itemtype = Kernel.ItemManager.GetItemtype(idItem);
+                DbItemtype itemtype = ItemManager.GetItemtype(idItem);
                 if (itemtype == null)
                     return;
 
@@ -5202,12 +5204,12 @@ namespace Comet.Game.States
 
         public async Task LoadFamilyAsync()
         {
-            Family = Kernel.FamilyManager.FindByUser(Identity);
+            Family = FamilyManager.FindByUser(Identity);
             if (Family == null)
             {
                 if (MateIdentity != 0)
                 {
-                    Family family = Kernel.FamilyManager.FindByUser(MateIdentity);
+                    Family family = FamilyManager.FindByUser(MateIdentity);
                     FamilyMember mateFamily = family?.GetMember(MateIdentity);
                     if (mateFamily == null || mateFamily.Rank == Family.FamilyRank.Spouse)
                         return;
@@ -5232,13 +5234,13 @@ namespace Comet.Game.States
             if (Family.ChallengeMap == 0)
                 return;
 
-            GameMap map = Kernel.MapManager.GetMap(Family.ChallengeMap);
+            GameMap map = MapManager.GetMap(Family.ChallengeMap);
             if (map == null)
                 return;
 
             await SendAsync(string.Format(Language.StrPrepareToChallengeFamilyLogin, map.Name), MsgTalk.TalkChannel.Talk, Color.White);
 
-            map = Kernel.MapManager.GetMap(Family.FamilyMap);
+            map = MapManager.GetMap(Family.FamilyMap);
             if (map == null)
                 return;
 
@@ -5330,7 +5332,7 @@ namespace Comet.Game.States
             if (name.Length > 15)
                 return false;
 
-            if (Kernel.FamilyManager.GetFamily(name) != null)
+            if (FamilyManager.GetFamily(name) != null)
                 return false;
 
             if (!await SpendMoneyAsync((int) proffer, true))
@@ -5502,7 +5504,7 @@ namespace Comet.Game.States
                     return false;
             }
 
-            DbTutorType type = Kernel.RoleManager.GetTutorType(guide.Level);
+            DbTutorType type = RoleManager.GetTutorType(guide.Level);
             if (type == null || guide.ApprenticeCount >= type.StudentNum)
                 return false;
 
@@ -6254,7 +6256,7 @@ namespace Comet.Game.States
                 await Guide.DeleteAsync();
             }
 
-            DbPeerage peerage = Kernel.PeerageManager.GetUser(Identity);
+            DbPeerage peerage = PeerageManager.GetUser(Identity);
             if (peerage != null)
                 await BaseRepository.DeleteAsync(peerage);
 

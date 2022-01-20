@@ -2,13 +2,11 @@
 using Comet.Game.Database.Models;
 using Comet.Game.States;
 using Comet.Game.States.Events;
+using Comet.Game.World.Managers;
 using Comet.Shared;
 using Quartz;
 using System;
-using System.Collections.Generic;
 using System.Diagnostics;
-using System.Linq;
-using System.Text;
 using System.Threading.Tasks;
 
 namespace Comet.Game.World.Schedule
@@ -31,7 +29,7 @@ namespace Comet.Game.World.Schedule
                 {
                     DbCharacter dbUser = users[i];
 
-                    Character player = Kernel.RoleManager.GetUser(dbUser.Identity);
+                    Character player = RoleManager.GetUser(dbUser.Identity);
                     player ??= new Character(dbUser, null);
 
                     // arena
@@ -60,7 +58,7 @@ namespace Comet.Game.World.Schedule
                 }
             }
 
-            await Kernel.FlowerManager.DailyResetAsync().ConfigureAwait(false);
+            await FlowerManager.DailyResetAsync().ConfigureAwait(false);
 
             sw.Stop();
             await BaseRepository.ScalarAsync($"INSERT INTO `daily_reset` (run_time, ms) VALUES (NOW(), {sw.ElapsedMilliseconds});");

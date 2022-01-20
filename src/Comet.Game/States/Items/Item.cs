@@ -29,6 +29,7 @@ using Comet.Game.Database;
 using Comet.Game.Database.Models;
 using Comet.Game.Packets;
 using Comet.Game.States.BaseEntities;
+using Comet.Game.World.Managers;
 using Comet.Shared;
 using Newtonsoft.Json;
 
@@ -74,7 +75,7 @@ namespace Comet.Game.States.Items
             };
 
             m_dbItemtype = type;
-            m_dbItemAddition = Kernel.ItemManager.GetItemAddition(Type, Plus);
+            m_dbItemAddition = ItemManager.GetItemAddition(Type, Plus);
 
             return await SaveAsync() && (m_user.LastAddItemIdentity = Identity) != 0;
         }
@@ -85,12 +86,12 @@ namespace Comet.Game.States.Items
                 return false;
 
             m_dbItem = item;
-            m_dbItemtype = Kernel.ItemManager.GetItemtype(item.Type);
+            m_dbItemtype = ItemManager.GetItemtype(item.Type);
 
             if (m_dbItemtype == null)
                 return false;
 
-            m_dbItemAddition = Kernel.ItemManager.GetItemAddition(item.Type, item.Magic3);
+            m_dbItemAddition = ItemManager.GetItemAddition(item.Type, item.Magic3);
 
             if (m_dbItem.Id == 0)
             {
@@ -148,7 +149,7 @@ namespace Comet.Game.States.Items
 
         public static DbItem CreateEntity(uint type, bool bound = false)
         {
-            DbItemtype itemtype = Kernel.ItemManager.GetItemtype(type);
+            DbItemtype itemtype = ItemManager.GetItemtype(type);
             if (itemtype == null)
                 return null;
 
@@ -846,7 +847,7 @@ namespace Comet.Game.States.Items
 
         public async Task<bool> ChangeTypeAsync(uint newType)
         {
-            DbItemtype itemtype = Kernel.ItemManager.GetItemtype(newType);
+            DbItemtype itemtype = ItemManager.GetItemtype(newType);
             if (itemtype == null)
             {
                 await Log.WriteLogAsync(LogLevel.Error, $"ChangeType() Invalid itemtype id {newType}");
@@ -856,7 +857,7 @@ namespace Comet.Game.States.Items
             m_dbItem.Type = itemtype.Type;
             m_dbItemtype = itemtype;
 
-            m_dbItemAddition = Kernel.ItemManager.GetItemAddition(newType, m_dbItem.Magic3);
+            m_dbItemAddition = ItemManager.GetItemAddition(newType, m_dbItem.Magic3);
             await m_user.SendAsync(new MsgItemInfo(this, MsgItemInfo.ItemMode.Update));
             await SaveAsync();
             return true;
@@ -871,7 +872,7 @@ namespace Comet.Game.States.Items
             if (level > 0)
             {
                 uint type = Type;
-                add = Kernel.ItemManager.GetItemAddition(type, (byte) level);
+                add = ItemManager.GetItemAddition(type, (byte) level);
                 if (add == null)
                     return false;
             }
@@ -1084,7 +1085,7 @@ namespace Comet.Game.States.Items
                 }
             }
 
-            return Kernel.ItemManager.GetItemtype((uint) nextId);
+            return ItemManager.GetItemtype((uint) nextId);
         }
 
         public uint ChkUpEqQuality(uint type)
@@ -1101,7 +1102,7 @@ namespace Comet.Game.States.Items
 
             type = type - type % 10 + nQuality;
 
-            return Kernel.ItemManager.GetItemtype(type)?.Type ?? 0;
+            return ItemManager.GetItemtype(type)?.Type ?? 0;
         }
 
         public bool GetUpEpQualityInfo(out double nChance, out uint idNewType)
@@ -1132,7 +1133,7 @@ namespace Comet.Game.States.Items
                     break;
             }
 
-            DbItemtype itemtype = Kernel.ItemManager.GetItemtype(idNewType);
+            DbItemtype itemtype = ItemManager.GetItemtype(idNewType);
             if (itemtype == null)
                 return false;
 
@@ -1189,7 +1190,7 @@ namespace Comet.Game.States.Items
             else if (sort == 9)
                 firstId = Type - Type % 1000 + Type % 10;
 
-            return Kernel.ItemManager.GetItemtype(firstId)?.Type ?? Type;
+            return ItemManager.GetItemtype(firstId)?.Type ?? Type;
         }
 
         public int GetUpQualityGemAmount()
@@ -1218,7 +1219,7 @@ namespace Comet.Game.States.Items
                 }
 
             uint newId = GetFirstId();
-            DbItemtype newType = Kernel.ItemManager.GetItemtype(newId);
+            DbItemtype newType = ItemManager.GetItemtype(newId);
             if (newType == null || newType.Type == Type)
                 return false;
             return await ChangeTypeAsync(newType.Type);
@@ -1238,7 +1239,7 @@ namespace Comet.Game.States.Items
                 return false;
             }
 
-            DbItemtype newType = Kernel.ItemManager.GetItemtype(newId);
+            DbItemtype newType = ItemManager.GetItemtype(newId);
             if (newType == null)
             {
                 await m_user.SendAsync(Language.StrItemErrMaxLevel);
@@ -1283,7 +1284,7 @@ namespace Comet.Game.States.Items
             }
 
 
-            DbItemtype newType = Kernel.ItemManager.GetItemtype((uint) newId);
+            DbItemtype newType = ItemManager.GetItemtype((uint) newId);
             if (newType == null)
             {
                 await m_user.SendAsync(Language.StrItemErrMaxLevel);

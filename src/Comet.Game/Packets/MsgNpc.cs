@@ -25,6 +25,7 @@ using System.Threading.Tasks;
 using Comet.Game.States;
 using Comet.Game.States.BaseEntities;
 using Comet.Game.States.NPCs;
+using Comet.Game.World.Managers;
 using Comet.Network.Packets;
 
 #endregion
@@ -88,7 +89,7 @@ namespace Comet.Game.Packets
             {
                 case NpcActionType.Activate:
                     user.ClearTaskId();
-                    Role role = Kernel.RoleManager.GetRole(Identity);
+                    Role role = RoleManager.GetRole(Identity);
                     if (role is BaseNpc npc
                         && (role.MapIdentity == user.MapIdentity
                             && role.GetDistance(user) <= 18

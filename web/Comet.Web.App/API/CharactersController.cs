@@ -44,6 +44,9 @@ namespace Comet.Web.App.API
         [HttpGet(Name = "QueryDeletedCharacters")]
         public async Task<IActionResult> QueryDeletedCharactersAsync(string realmName)
         {
+            if (string.IsNullOrEmpty(realmName))
+                return NotFound("Invalid Realm");
+
             await mRealmService.LoadRealmsAsync();
 
             List<DeletedCharacterInfo> result = new List<DeletedCharacterInfo>();

@@ -31,6 +31,7 @@ using Comet.Game.Packets;
 using Comet.Game.States.BaseEntities;
 using Comet.Game.States.NPCs;
 using Comet.Game.States.Syndicates;
+using Comet.Game.World.Managers;
 using Comet.Game.World.Maps;
 using Comet.Shared;
 
@@ -112,7 +113,7 @@ namespace Comet.Game.States.Events
 
         public override async Task<bool> CreateAsync()
         {
-            Map = Kernel.MapManager.GetMap(MAP_ID);
+            Map = MapManager.GetMap(MAP_ID);
             if (Map == null)
             {
                 await Log.WriteLogAsync(LogLevel.Error, $"Could not start TimedGuildWar, invalid mapid {MAP_ID}");
@@ -200,7 +201,7 @@ namespace Comet.Game.States.Events
                 {
                     foreach (UserData userData in synData.Players.Values)
                     {
-                        Character user = Kernel.RoleManager.GetUser(userData.Identity);
+                        Character user = RoleManager.GetUser(userData.Identity);
                         if (user != null)
                             await user.SendAsync(new MsgTalk(0, MsgTalk.TalkChannel.GuildWarRight2, Color.Yellow,
                                 string.Format(Language.StrWarYourScore, userData.Points, MAX_DEATHS_PER_PLAYER - userData.Deaths)));
@@ -228,7 +229,7 @@ namespace Comet.Game.States.Events
 
         public void AddPoints(int amount, uint synId)
         {
-            Syndicate syn = Kernel.SyndicateManager.GetSyndicate((int) synId);
+            Syndicate syn = SyndicateManager.GetSyndicate((int) synId);
             if (syn == null || syn.Deleted)
                 return;
 
@@ -248,7 +249,7 @@ namespace Comet.Game.States.Events
             {
                 synData.TotalPoints += amount;
 
-                foreach (var user in Kernel.RoleManager.QueryUserSetByMap(Map.Identity)
+                foreach (var user in RoleManager.QueryUserSetByMap(Map.Identity)
                     .Where(x => x.SyndicateIdentity == synId))
                 {
                     if (!synData.Players.TryGetValue(user.Identity, out var userData))
@@ -281,7 +282,7 @@ namespace Comet.Game.States.Events
             int totalEmoney = MAX_EMONEY_REWARD;
             foreach (var userData in winner.Players.Values)
             {
-                Character user = Kernel.RoleManager.GetUser(userData.Identity);
+                Character user = RoleManager.GetUser(userData.Identity);
                 if (ipAddresses.Contains(userData.IpAddress))
                 {
                     if (user != null)

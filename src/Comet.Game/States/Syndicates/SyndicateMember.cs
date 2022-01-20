@@ -25,6 +25,7 @@ using Comet.Game.Database;
 using Comet.Game.Database.Models;
 using Comet.Game.Database.Repositories;
 using Comet.Game.Packets;
+using Comet.Game.World.Managers;
 using Comet.Shared;
 
 namespace Comet.Game.States.Syndicates
@@ -37,7 +38,7 @@ namespace Comet.Game.States.Syndicates
         public uint LookFace { get; private set; }
         public string UserName { get; private set; }
         public uint MateIdentity { get; private set; }
-        public NobilityRank NobilityRank => Kernel.PeerageManager.GetRanking(UserIdentity);
+        public NobilityRank NobilityRank => PeerageManager.GetRanking(UserIdentity);
 
         public uint SyndicateIdentity => m_attr.SynId;
 
@@ -179,7 +180,7 @@ namespace Comet.Game.States.Syndicates
 
         public DateTime JoinDate => m_attr.JoinDate;
 
-        public Character User => Kernel.RoleManager.GetUser(UserIdentity);
+        public Character User => RoleManager.GetUser(UserIdentity);
         public bool IsOnline => User != null;
 
         public uint ConquerPointsDonation

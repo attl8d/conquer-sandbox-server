@@ -33,6 +33,7 @@ using Comet.Game.Database.Models;
 using Comet.Game.Packets;
 using Comet.Game.States.BaseEntities;
 using Comet.Game.States.Syndicates;
+using Comet.Game.World.Managers;
 
 #endregion
 
@@ -57,7 +58,7 @@ namespace Comet.Game.States.NPCs
 
             if (IsSynFlag() && OwnerIdentity > 0)
             {
-                Syndicate syn = Kernel.SyndicateManager.GetSyndicate((int) OwnerIdentity);
+                Syndicate syn = SyndicateManager.GetSyndicate((int) OwnerIdentity);
                 if (syn != null)
                     Name = syn.Name;
             }
@@ -294,7 +295,7 @@ namespace Comet.Game.States.NPCs
             Character user = attacker as Character;
             if (IsSynFlag() && user != null)
             {
-                Syndicate owner = Kernel.SyndicateManager.GetSyndicate((int) OwnerIdentity);
+                Syndicate owner = SyndicateManager.GetSyndicate((int) OwnerIdentity);
                 int money = Calculations.MulDiv(nPower, SYNWAR_MONEY_PERCENT, 100);
                 int proffer = Calculations.MulDiv(nPower, SYNWAR_PROFFER_PERCENT, 100);
                 if (money > 0
@@ -366,7 +367,7 @@ namespace Comet.Game.States.NPCs
             OwnerIdentity = idOwner;
             if (IsSynFlag())
             {
-                Syndicate syn = Kernel.SyndicateManager.GetSyndicate((int) OwnerIdentity);
+                Syndicate syn = SyndicateManager.GetSyndicate((int) OwnerIdentity);
                 if (syn == null)
                 {
                     OwnerIdentity = 0;
@@ -381,7 +382,7 @@ namespace Comet.Game.States.NPCs
             // TODO
             /*if (withLinkMap)
             {
-                foreach (var player in Kernel.RoleManager.QueryUserSetByMap(MapIdentity))
+                foreach (var player in RoleManager.QueryUserSetByMap(MapIdentity))
                 {
 
                 }

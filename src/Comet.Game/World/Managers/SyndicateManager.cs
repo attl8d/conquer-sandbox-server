@@ -28,11 +28,11 @@ using Comet.Game.States.Syndicates;
 
 namespace Comet.Game.World.Managers
 {
-    public sealed class SyndicateManager
+    public static class SyndicateManager
     {
-        private ConcurrentDictionary<ushort, Syndicate> m_dicSyndicates = new ConcurrentDictionary<ushort, Syndicate>();
+        private static ConcurrentDictionary<ushort, Syndicate> m_dicSyndicates = new ConcurrentDictionary<ushort, Syndicate>();
 
-        public async Task<bool> InitializeAsync()
+        public static async Task<bool> InitializeAsync()
         {
             var dbSyndicates = await SyndicateRepository.GetAsync();
             foreach (var dbSyn in dbSyndicates)
@@ -51,17 +51,17 @@ namespace Comet.Game.World.Managers
             return true;
         }
 
-        public bool AddSyndicate(Syndicate syn)
+        public static bool AddSyndicate(Syndicate syn)
         {
             return m_dicSyndicates.TryAdd(syn.Identity, syn);
         }
 
-        public Syndicate GetSyndicate(int idSyndicate)
+        public static Syndicate GetSyndicate(int idSyndicate)
         {
             return m_dicSyndicates.TryGetValue((ushort) idSyndicate, out var syn) ? syn : null;
         }
 
-        public Syndicate GetSyndicate(string name)
+        public static Syndicate GetSyndicate(string name)
         {
             return m_dicSyndicates.Values.FirstOrDefault(x => x.Name.Equals(name, StringComparison.InvariantCultureIgnoreCase));
         }
@@ -69,7 +69,7 @@ namespace Comet.Game.World.Managers
         /// <summary>
         /// Find the syndicate a user is in.
         /// </summary>
-        public Syndicate FindByUser(uint idUser)
+        public static Syndicate FindByUser(uint idUser)
         {
             return m_dicSyndicates.Values.FirstOrDefault(x => x.QueryMember(idUser) != null);
         }

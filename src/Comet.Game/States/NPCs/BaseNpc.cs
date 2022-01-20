@@ -31,6 +31,7 @@ using Comet.Game.Database.Repositories;
 using Comet.Game.Packets;
 using Comet.Game.States.BaseEntities;
 using Comet.Game.States.Syndicates;
+using Comet.Game.World.Managers;
 using Comet.Game.World.Maps;
 
 #endregion
@@ -128,7 +129,7 @@ namespace Comet.Game.States.NPCs
 
         public virtual async Task<bool> ChangePosAsync(uint idMap, ushort x, ushort y)
         {
-            GameMap map = Kernel.MapManager.GetMap(idMap);
+            GameMap map = MapManager.GetMap(idMap);
             if (map != null)
             {
                 if (!map.IsStandEnable(x, y) && idMap != 5000)
@@ -150,7 +151,7 @@ namespace Comet.Game.States.NPCs
 
         public override async Task EnterMapAsync()
         {
-            Map = Kernel.MapManager.GetMap(MapIdentity);
+            Map = MapManager.GetMap(MapIdentity);
             if (Map != null)
             {
                 await Map.AddAsync(this);
@@ -272,7 +273,7 @@ namespace Comet.Game.States.NPCs
         {
             for (int i = 0; i < 8; i++)
             {
-                DbTask task = Kernel.EventManager.GetTask(GetTask($"task{i}"));
+                DbTask task = EventManager.GetTask(GetTask($"task{i}"));
                 if (task != null && await user.TestTaskAsync(task))
                     return task.IdNext;
             }
@@ -345,7 +346,7 @@ namespace Comet.Game.States.NPCs
             if (!IsSynFlag())
                 return false;
 
-            Syndicate syn = Kernel.SyndicateManager.GetSyndicate((int) OwnerIdentity);
+            Syndicate syn = SyndicateManager.GetSyndicate((int) OwnerIdentity);
             return syn != null && syn.Money <= 0;
         }
 

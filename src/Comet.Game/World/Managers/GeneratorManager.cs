@@ -37,30 +37,15 @@ using Comet.Shared;
 
 namespace Comet.Game.World.Managers
 {
-    public sealed class GeneratorManager
+    public static class GeneratorManager
     {
-        private ConcurrentDictionary<int, List<Generator>> m_generators = new ConcurrentDictionary<int, List<Generator>>();
+        private static ConcurrentDictionary<int, List<Generator>> m_generators = new ConcurrentDictionary<int, List<Generator>>();
 
-        private long m_Timeout;
+        private static long m_Timeout;
 
-        public GeneratorManager()
-        {
-        }
+        public static string ElapsedMilliseconds => m_Timeout.ToString();
 
-        public string ElapsedMilliseconds => m_Timeout.ToString();
-        //{
-        //    get
-        //    {
-        //        StringBuilder result = new StringBuilder();
-        //        for (int i = 0; i < m_Timeouts.Length; i++)
-        //        {
-        //            result.AppendFormat("\t\t\t\tThread[0x{0:X4}]: {1}ms{2}", i, m_Timeouts[i], i >= m_Timeouts.Length - 1 ? "" : Environment.NewLine);
-        //        }
-        //        return result.ToString();
-        //    }
-        //}
-
-        public async Task<bool> InitializeAsync()
+        public static async Task<bool> InitializeAsync()
         {
             try
             {
@@ -81,7 +66,7 @@ namespace Comet.Game.World.Managers
             }
         }
 
-        public async Task OnTimerAsync()
+        public static async Task OnTimerAsync()
         {
             Stopwatch sw = new Stopwatch();
             sw.Start();
@@ -97,14 +82,14 @@ namespace Comet.Game.World.Managers
             // await Task.Delay(1000);
         }
 
-        public async Task<bool> AddGeneratorAsync(Generator generator)
+        public static async Task<bool> AddGeneratorAsync(Generator generator)
         {
             try
             {
                 if (!generator.CanBeProcessed)
                     return false;
 
-                GameMap map = Kernel.MapManager.GetMap(generator.MapIdentity);
+                GameMap map = MapManager.GetMap(generator.MapIdentity);
                 if (m_generators.ContainsKey(map.Partition))
                     m_generators[map.Partition].Add(generator);
                 else
@@ -121,17 +106,17 @@ namespace Comet.Game.World.Managers
             return true;
         }
 
-        public Generator GetGenerator(uint idGen)
+        public static Generator GetGenerator(uint idGen)
         {
             return m_generators.Keys.SelectMany(partition => m_generators[partition]).FirstOrDefault(gen => gen.Identity == idGen);
         }
 
-        public List<Generator> GetGenerators(uint idMap, string monsterName)
+        public static List<Generator> GetGenerators(uint idMap, string monsterName)
         {
             return (from partition in m_generators.Keys from gen in m_generators[partition] where gen.MapIdentity == idMap && gen.MonsterName.Equals(monsterName) select gen).ToList();
         }
 
-        public List<Generator> GetByMonsterType(uint idType)
+        public static List<Generator> GetByMonsterType(uint idType)
         {
             return (from partition in m_generators.Keys from gen in m_generators[partition] where gen.RoleType == idType select gen).ToList();
         }

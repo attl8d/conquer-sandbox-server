@@ -74,26 +74,24 @@ namespace Comet.Game
 
         public static ServerConfiguration.GameNetworkConfiguration Configuration;
 
-        public static MapManager MapManager = new MapManager();
-        public static RoleManager RoleManager = new RoleManager();
-        public static ItemManager ItemManager = new ItemManager();
-        public static PeerageManager PeerageManager = new PeerageManager();
-        public static MagicManager MagicManager = new MagicManager();
-        public static EventManager EventManager = new EventManager();
-        public static SyndicateManager SyndicateManager = new SyndicateManager();
-        public static MineManager MineManager = new MineManager();
-        public static PigeonManager PigeonManager = new PigeonManager();
-        public static FlowerManager FlowerManager = new FlowerManager();
-        public static FamilyManager FamilyManager = new FamilyManager();
-        public static AstProfManager SubClassManager = new AstProfManager();
+        //public static MapManager MapManager = new MapManager();
+        //public static RoleManager RoleManager = new RoleManager();
+        //public static ItemManager ItemManager = new ItemManager();
+        //public static PeerageManager PeerageManager = new PeerageManager();
+        //public static MagicManager MagicManager = new MagicManager();
+        //public static EventManager EventManager = new EventManager();
+        //public static SyndicateManager SyndicateManager = new SyndicateManager();
+        //public static MineManager MineManager = new MineManager();
+        //public static PigeonManager PigeonManager = new PigeonManager();
+        //public static FlowerManager FlowerManager = new FlowerManager();
+        //public static FamilyManager FamilyManager = new FamilyManager();
+        //public static AstProfManager SubClassManager = new AstProfManager();
 
         public static NetworkMonitor NetworkMonitor = new NetworkMonitor();
 
         public static SystemProcessor SystemThread = new SystemProcessor();
         public static UserProcessor UserThread = new UserProcessor();
-        public static GeneratorManager GeneratorManager = new GeneratorManager();
         public static AiProcessor AiThread = new AiProcessor();
-        //public static AutomaticActionsProcessing AutomaticActions = new AutomaticActionsProcessing();
         public static EventsProcessing EventThread = new EventsProcessing();
         public static GeneratorProcessing GeneratorThread = new GeneratorProcessing();
 
@@ -141,7 +139,7 @@ namespace Comet.Game
             await MineManager.InitializeAsync();
             await PigeonManager.InitializeAsync();
             await FlowerManager.InitializeAsync();
-            await SubClassManager.InitializeAsync();
+            await AstProfManager.InitializeAsync();
             await QuestInfo.InitializeAsync();
 
             await GeneratorManager.InitializeAsync();
@@ -149,7 +147,6 @@ namespace Comet.Game
             await SystemThread.StartAsync();
             await UserThread.StartAsync();
             await AiThread.StartAsync();
-            //await AutomaticActions.StartAsync();
             await EventThread.StartAsync();
             await GeneratorThread.StartAsync();
 

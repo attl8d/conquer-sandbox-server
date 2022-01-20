@@ -1,4 +1,5 @@
 ﻿using Comet.Game.States;
+using Comet.Game.World.Managers;
 using Comet.Network.Packets;
 using System;
 using System.Threading.Tasks;
@@ -133,7 +134,7 @@ namespace Comet.Game.Packets
             }
             else
             {
-                var target = Kernel.RoleManager.GetUser(Identity);
+                var target = RoleManager.GetUser(Identity);
                 if (target != null)
                     return client.SendAsync(new MsgPlayerAttribInfo(target));
                 return Task.CompletedTask;

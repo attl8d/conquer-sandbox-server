@@ -28,12 +28,12 @@ using Comet.Shared;
 
 namespace Comet.Game.World.Managers
 {
-    public sealed class EventManager
+    public static class EventManager
     {
-        private ConcurrentDictionary<uint, DbAction> m_dicActions = new ConcurrentDictionary<uint, DbAction>();
-        private ConcurrentDictionary<uint, DbTask> m_dicTasks = new ConcurrentDictionary<uint, DbTask>();
+        private static ConcurrentDictionary<uint, DbAction> m_dicActions = new ConcurrentDictionary<uint, DbAction>();
+        private static ConcurrentDictionary<uint, DbTask> m_dicTasks = new ConcurrentDictionary<uint, DbTask>();
 
-        public async Task<bool> InitializeAsync()
+        public static async Task<bool> InitializeAsync()
         {
             foreach (var task in await TaskRepository.GetAsync())
             {
@@ -89,7 +89,7 @@ namespace Comet.Game.World.Managers
             return true;
         }
 
-        public async Task ReloadActionTaskAllAsync()
+        public static async Task ReloadActionTaskAllAsync()
         {
             m_dicTasks.Clear();
             foreach (var task in await TaskRepository.GetAsync())
@@ -123,12 +123,12 @@ namespace Comet.Game.World.Managers
             await Log.WriteLogAsync(LogLevel.Debug, $"All Actions has been reloaded. {m_dicActions.Count} in the server.");
         }
 
-        public DbAction GetAction(uint idAction)
+        public static DbAction GetAction(uint idAction)
         {
             return m_dicActions.TryGetValue(idAction, out var result) ? result : null;
         }
 
-        public DbTask GetTask(uint idTask)
+        public static DbTask GetTask(uint idTask)
         {
             return m_dicTasks.TryGetValue(idTask, out var result) ? result : null;
         }

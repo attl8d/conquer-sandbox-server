@@ -2,6 +2,7 @@
 using Comet.Game.Database.Models;
 using Comet.Game.Packets;
 using Comet.Game.States.Items;
+using Comet.Game.World.Managers;
 using System;
 using System.Drawing;
 using System.Threading.Tasks;
@@ -70,7 +71,7 @@ namespace Comet.Game.States
             if ((currFlag & flag) != 0)
                 return;
 
-            DbAchievementType achievementType = Kernel.RoleManager.GetAchievementType(fullFlag);
+            DbAchievementType achievementType = RoleManager.GetAchievementType(fullFlag);
             if (achievementType == null)
                 return;
 

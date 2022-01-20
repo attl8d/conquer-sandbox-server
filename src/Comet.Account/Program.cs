@@ -29,6 +29,7 @@ using System.Threading.Tasks;
 using Comet.Account.Database;
 using Comet.Account.Database.Models;
 using Comet.Account.Database.Repositories;
+using Comet.Account.Packets;
 using Comet.Account.Threading;
 using Comet.Shared;
 
@@ -67,11 +68,18 @@ namespace Comet.Account
                 return;
             }
 
+            MsgAccServerExchange.RealmDataKey = new byte[config.DatabaseKey.Length / 2];
+            for (int index = 0; index < MsgAccServerExchange.RealmDataKey.Length; index++)
+            {
+                string byteValue = config.DatabaseKey.Substring(index * 2, 2);
+                MsgAccServerExchange.RealmDataKey[index] = Convert.ToByte(byteValue, 16);
+            }
+
             // Initialize the database
             await Log.WriteLogAsync(LogLevel.Info, "Initializing server...");
             ServerDbContext.Configuration = config.Database;
             ServerDbContext.Initialize();
-            if (!ServerDbContext.Ping())
+            if (!await ServerDbContext.PingAsync())
             {
                 await Log.WriteLogAsync(LogLevel.Info, "Invalid database configuration");
                 return;

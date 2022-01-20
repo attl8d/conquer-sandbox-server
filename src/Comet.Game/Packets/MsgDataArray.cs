@@ -30,6 +30,7 @@ using System.Threading.Tasks;
 using Comet.Game.Database.Models;
 using Comet.Game.States;
 using Comet.Game.States.Items;
+using Comet.Game.World.Managers;
 using Comet.Network.Packets;
 using Comet.Shared;
 
@@ -493,12 +494,12 @@ namespace Comet.Game.Packets
             {
                 if (user.Gender == 1)
                 {
-                    await Kernel.RoleManager.BroadcastMsgAsync(string.Format(Language.StrComposeOverpowerMale, user.Name,
+                    await RoleManager.BroadcastMsgAsync(string.Format(Language.StrComposeOverpowerMale, user.Name,
                         target.Itemtype.Name, target.Plus), MsgTalk.TalkChannel.TopLeft);
                 }
                 else
                 {
-                    await Kernel.RoleManager.BroadcastMsgAsync(string.Format(Language.StrComposeOverpowerFemale, user.Name,
+                    await RoleManager.BroadcastMsgAsync(string.Format(Language.StrComposeOverpowerFemale, user.Name,
                         target.Itemtype.Name, target.Plus), MsgTalk.TalkChannel.TopLeft);
                 }
             }

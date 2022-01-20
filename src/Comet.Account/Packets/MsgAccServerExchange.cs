@@ -6,11 +6,14 @@ using System.Linq;
 using System.Threading.Tasks;
 using Comet.Shared;
 using Comet.Account.Database;
+using Comet.Network.Security;
 
 namespace Comet.Account.Packets
 {
     public sealed class MsgAccServerExchange : MsgAccServerExchange<GameServer>
     {
+        public static byte[] RealmDataKey { get; set; }
+
         public override async Task ProcessAsync(GameServer client)
         {
             DbRealm realm = Kernel.Realms.Values.FirstOrDefault(x => x.Name.Equals(ServerName, StringComparison.InvariantCultureIgnoreCase));
@@ -26,7 +29,10 @@ namespace Comet.Account.Packets
                 return;
             }
 
-            if (!Username.Equals(realm.Username) || !Password.Equals(realm.Password))
+            string username = AesCipher.Decrypt(RealmDataKey, realm.Username);
+            string password = AesCipher.Decrypt(RealmDataKey, realm.Password);
+
+            if (!Username.Equals(username, StringComparison.InvariantCulture) || !Password.Equals(password, StringComparison.InvariantCulture))
             {
                 await client.SendAsync(new MsgAccServerAction
                 {

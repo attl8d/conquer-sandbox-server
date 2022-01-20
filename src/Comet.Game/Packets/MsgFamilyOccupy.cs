@@ -31,6 +31,7 @@ using Comet.Game.States.BaseEntities;
 using Comet.Game.States.Events;
 using Comet.Game.States.Families;
 using Comet.Game.States.NPCs;
+using Comet.Game.World.Managers;
 using Comet.Game.World.Maps;
 using Comet.Network.Packets;
 using Comet.Shared;
@@ -152,7 +153,7 @@ namespace Comet.Game.Packets
                     if (user.FamilyPosition != Family.FamilyRank.ClanLeader)
                         return;
 
-                    DynamicNpc npc = Kernel.RoleManager.FindRole<DynamicNpc>(x => x.Identity == Identity);
+                    DynamicNpc npc = RoleManager.FindRole<DynamicNpc>(x => x.Identity == Identity);
                     if (npc == null)
                         return;
 
@@ -171,7 +172,7 @@ namespace Comet.Game.Packets
                     await user.Family.SaveAsync();
                     await user.SendFamilyAsync();
 
-                    GameMap map = Kernel.MapManager.GetMap(user.Family.ChallengeMap);
+                    GameMap map = MapManager.GetMap(user.Family.ChallengeMap);
                     if (map == null) //??
                         return;
 
@@ -262,7 +263,7 @@ namespace Comet.Game.Packets
                             return;
                     }
 
-                    GameMap map = Kernel.MapManager.GetMap((uint) npc.Data1);
+                    GameMap map = MapManager.GetMap((uint) npc.Data1);
                     if (map == null) 
                         return;
 
@@ -285,7 +286,7 @@ namespace Comet.Game.Packets
                     if (npc == null)
                         return;
 
-                    GameMap map = Kernel.MapManager.GetMap((uint)npc.Data1);
+                    GameMap map = MapManager.GetMap((uint)npc.Data1);
                     if (map == null) return;
 
                     if ((DateTime.Now - user.FamilyMember.JoinDate).TotalDays < 1)
@@ -314,11 +315,11 @@ namespace Comet.Game.Packets
                     if (exp == 0)
                         return;
 
-                    DbLevelExperience currLevExp = Kernel.RoleManager.GetLevelExperience(user.Level);
+                    DbLevelExperience currLevExp = RoleManager.GetLevelExperience(user.Level);
                     if (currLevExp == null)
                         return;
 
-                    await Kernel.RoleManager.BroadcastMsgAsync(string.Format(Language.StrFetchFamilyNpcExpSuccess, user.Name, map.Name, user.Level, exp * 100), MsgTalk.TalkChannel.Center);
+                    await RoleManager.BroadcastMsgAsync(string.Format(Language.StrFetchFamilyNpcExpSuccess, user.Name, map.Name, user.Level, exp * 100), MsgTalk.TalkChannel.Center);
 
                     long awardExp = (long) (currLevExp.Exp * exp);
                     await user.AwardExperienceAsync(awardExp);
@@ -341,7 +342,7 @@ namespace Comet.Game.Packets
                     if (npc == null)
                         return;
 
-                    GameMap map = Kernel.MapManager.GetMap((uint)npc.Data1);
+                    GameMap map = MapManager.GetMap((uint)npc.Data1);
                     if (map == null) return;
 
                     if (!war.HasRewardToClaim(user))

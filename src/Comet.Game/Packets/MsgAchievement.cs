@@ -1,4 +1,5 @@
 ﻿using Comet.Game.States;
+using Comet.Game.World.Managers;
 using Comet.Network.Packets;
 using System.Collections.Generic;
 using System.Threading.Tasks;
@@ -45,7 +46,7 @@ namespace Comet.Game.Packets
             {
                 case AchievementRequest.Synchro:
                     {
-                        Character target = Kernel.RoleManager.GetUser(Identity);
+                        Character target = RoleManager.GetUser(Identity);
                         if (target != null)
                         {
                             await target.Achievements.SynchroAsync(client.Character);

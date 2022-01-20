@@ -27,6 +27,7 @@ using System.Threading.Tasks;
 using Comet.Game.States.BaseEntities;
 using Comet.Game.States.Families;
 using Comet.Game.States.NPCs;
+using Comet.Game.World.Managers;
 using Comet.Game.World.Maps;
 
 namespace Comet.Game.States.Events
@@ -96,7 +97,7 @@ namespace Comet.Game.States.Events
         {
             if (int.Parse(DateTime.Now.ToString("HHmm")) == 2100 && m_lastUpdate != int.Parse(DateTime.Now.ToString("yyyyMMdd")))
             {
-                foreach (var family in Kernel.FamilyManager.QueryFamilies(x => x.ChallengeMap != 0))
+                foreach (var family in FamilyManager.QueryFamilies(x => x.ChallengeMap != 0))
                 {
                     family.ChallengeMap = 0;
                     await family.SaveAsync();
@@ -124,7 +125,7 @@ namespace Comet.Game.States.Events
             DynamicNpc npc;
             if (idNpc != 0)
             {
-                npc = Kernel.RoleManager.FindRole<DynamicNpc>(idNpc);
+                npc = RoleManager.FindRole<DynamicNpc>(idNpc);
                 if (npc == null || !m_prizePool.ContainsKey(idNpc))
                     return 0;
 
@@ -138,7 +139,7 @@ namespace Comet.Game.States.Events
                 return 0;
             
             // I want the ID of my next reward. This means that I'll get the reward to my Family Map.
-            npc = Kernel.RoleManager.FindRole<DynamicNpc>(x => x.Data1 == sender.Family.FamilyMap);
+            npc = RoleManager.FindRole<DynamicNpc>(x => x.Data1 == sender.Family.FamilyMap);
             if (npc == null || !m_prizePool.ContainsKey(npc.Identity))
                 return 0;
 
@@ -150,7 +151,7 @@ namespace Comet.Game.States.Events
             if (idNpc == 0)
                 return 0;
 
-            var npc = Kernel.RoleManager.FindRole<DynamicNpc>(idNpc);
+            var npc = RoleManager.FindRole<DynamicNpc>(idNpc);
             if (npc == null)
                 return 0;
 
@@ -162,24 +163,24 @@ namespace Comet.Game.States.Events
 
         public Family GetFamilyOwner(uint idNpc)
         {
-            var npc = Kernel.RoleManager.FindRole<DynamicNpc>(idNpc);
+            var npc = RoleManager.FindRole<DynamicNpc>(idNpc);
             if (npc == null)
                 return null;
-            return Kernel.FamilyManager.GetOccupyOwner((uint) npc.Data1);
+            return FamilyManager.GetOccupyOwner((uint) npc.Data1);
         }
 
         public DynamicNpc GetChallengeNpc(Family family)
         {
             if (family == null || family.ChallengeMap == 0)
                 return null;
-            return Kernel.RoleManager.FindRole<DynamicNpc>(x => x.Type == BaseNpc.ROLE_FAMILY_WAR_FLAG && x.Data1 == family.ChallengeMap);
+            return RoleManager.FindRole<DynamicNpc>(x => x.Type == BaseNpc.ROLE_FAMILY_WAR_FLAG && x.Data1 == family.ChallengeMap);
         }
 
         public DynamicNpc GetDominatingNpc(Family family)
         {
             if (family == null || family.FamilyMap == 0)
                 return null;
-            return Kernel.RoleManager.FindRole<DynamicNpc>(x => x.Type == BaseNpc.ROLE_FAMILY_WAR_FLAG && x.Data1 == family.FamilyMap);
+            return RoleManager.FindRole<DynamicNpc>(x => x.Type == BaseNpc.ROLE_FAMILY_WAR_FLAG && x.Data1 == family.FamilyMap);
         }
 
         public uint GetGoldFee(uint idNpc)
@@ -191,12 +192,12 @@ namespace Comet.Game.States.Events
 
         public GameMap GetMap(uint idNpc)
         {
-            return Kernel.MapManager.GetMap(idNpc);
+            return MapManager.GetMap(idNpc);
         }
 
         public List<Family> GetChallengers(uint idNpc)
         {
-            return Kernel.FamilyManager.QueryFamilies(x => x.ChallengeMap == idNpc);
+            return FamilyManager.QueryFamilies(x => x.ChallengeMap == idNpc);
         }
 
         public bool IsChallenged(uint idNpc)

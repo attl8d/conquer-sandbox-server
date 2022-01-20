@@ -25,6 +25,7 @@ using System;
 using System.Threading.Tasks;
 using Comet.Game.Database.Repositories;
 using Comet.Game.States;
+using Comet.Game.World.Managers;
 using Comet.Network.Packets;
 using Comet.Shared;
 using Comet.Shared.Models;
@@ -128,7 +129,7 @@ namespace Comet.Game.Packets
             {
                 // Character already exists
                 client.Character = new Character(character, client);
-                if (await Kernel.RoleManager.LoginUserAsync(client))
+                if (await RoleManager.LoginUserAsync(client))
                 {
                     client.Character.MateName = (await CharactersRepository.FindByIdentityAsync(client.Character.MateIdentity))?.Name ?? Game.Language.StrNone;
                     await client.SendAsync(LoginOk);
@@ -136,7 +137,7 @@ namespace Comet.Game.Packets
                     await client.SendAsync(new MsgUserIpInfo 
                     {
                         LoginTime = UnixTimestamp.Timestamp(client.Character.LastLogin),
-                        DifferentAddress = true,
+                        DifferentAddress = false,
                         Action = MsgUserIpInfo.LastLoginAction.LastLogin
                     });
                     await client.SendAsync(new MsgServerInfo());

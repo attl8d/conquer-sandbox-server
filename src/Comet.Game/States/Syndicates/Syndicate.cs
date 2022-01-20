@@ -24,7 +24,6 @@ using System.Collections.Concurrent;
 using System.Collections.Generic;
 using System.Drawing;
 using System.Linq;
-using System.Reflection.Metadata;
 using System.Threading.Tasks;
 using Comet.Game.Database;
 using Comet.Game.Database.Models;
@@ -32,6 +31,7 @@ using Comet.Game.Database.Repositories;
 using Comet.Game.Packets;
 using Comet.Game.States.Events;
 using Comet.Game.States.Items;
+using Comet.Game.World.Managers;
 using Comet.Network.Packets;
 using Comet.Shared;
 using Microsoft.EntityFrameworkCore;
@@ -824,7 +824,7 @@ namespace Comet.Game.States.Syndicates
 
         public async Task<bool> CreateAsync(string name, int investment, Character leader)
         {
-            if (Kernel.SyndicateManager.GetSyndicate(name) != null)
+            if (SyndicateManager.GetSyndicate(name) != null)
             {
                 await leader.SendAsync(Language.StrSynNameInUse);
                 return false;
@@ -882,7 +882,7 @@ namespace Comet.Game.States.Syndicates
                     continue;
                 }
 
-                Syndicate syndicate = Kernel.SyndicateManager.GetSyndicate((int) ally.AllyIdentity);
+                Syndicate syndicate = SyndicateManager.GetSyndicate((int) ally.AllyIdentity);
                 if (syndicate == null || syndicate.Deleted)
                 {
                     // invalid ally
@@ -896,7 +896,7 @@ namespace Comet.Game.States.Syndicates
             var dbEnemies = await SyndicateEnemyRepository.GetAsync(Identity);
             foreach (var enemy in dbEnemies)
             {
-                Syndicate syndicate = Kernel.SyndicateManager.GetSyndicate((int)enemy.EnemyIdentity);
+                Syndicate syndicate = SyndicateManager.GetSyndicate((int)enemy.EnemyIdentity);
                 if (syndicate == null || syndicate.Deleted)
                 {
                     // invalid ally
@@ -956,7 +956,7 @@ namespace Comet.Game.States.Syndicates
             });
 
             await user.Screen.SynchroScreenAsync();
-            await Kernel.RoleManager.BroadcastMsgAsync(string.Format(Language.StrSynDestroy, Name));
+            await RoleManager.BroadcastMsgAsync(string.Format(Language.StrSynDestroy, Name));
             return await SoftDeleteAsync();
         }
 
@@ -1195,7 +1195,7 @@ namespace Comet.Game.States.Syndicates
 
         public Task<bool> PromoteAsync(Character sender, string target, SyndicateMember.SyndicateRank position)
         {
-            Character user = Kernel.RoleManager.GetUser(target);
+            Character user = RoleManager.GetUser(target);
             if (user == null || user.SyndicateIdentity != sender.SyndicateIdentity)
                 return Task.FromResult(false);
             return PromoteAsync(sender, user, position);
@@ -1203,7 +1203,7 @@ namespace Comet.Game.States.Syndicates
 
         public Task<bool> PromoteAsync(Character sender, uint target, SyndicateMember.SyndicateRank position)
         {
-            Character user = Kernel.RoleManager.GetUser(target);
+            Character user = RoleManager.GetUser(target);
             if (user == null || user.SyndicateIdentity != sender.SyndicateIdentity)
                 return Task.FromResult(false);
             return PromoteAsync(sender, user, position);
@@ -2534,7 +2534,7 @@ namespace Comet.Game.States.Syndicates
 
         public async Task<bool> UnsubscribeItemAsync(uint idItem, uint idUser, bool synchro = true, bool isSystem = false)
         {
-            Character user = Kernel.RoleManager.GetUser(idUser);
+            Character user = RoleManager.GetUser(idUser);
             if (user == null && !isSystem)
                 return false;
 
@@ -3204,7 +3204,7 @@ namespace Comet.Game.States.Syndicates
 
         public async Task BroadcastNameAsync()
         {
-            await Kernel.RoleManager.BroadcastMsgAsync(new MsgName
+            await RoleManager.BroadcastMsgAsync(new MsgName
             {
                 Action = StringAction.Guild,
                 Identity = Identity,

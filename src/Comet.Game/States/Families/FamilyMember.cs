@@ -26,6 +26,7 @@ using System.Threading.Tasks;
 using Comet.Game.Database;
 using Comet.Game.Database.Models;
 using Comet.Game.Database.Repositories;
+using Comet.Game.World.Managers;
 using Comet.Shared;
 
 #endregion
@@ -127,7 +128,7 @@ namespace Comet.Game.States.Families
             set => m_attr.Proffer = value;
         }
 
-        public Character User => Kernel.RoleManager.GetUser(Identity);
+        public Character User => RoleManager.GetUser(Identity);
 
         public bool IsOnline => User != null;
 

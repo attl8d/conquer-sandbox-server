@@ -26,6 +26,7 @@ using System.Collections.Generic;
 using System.Threading.Tasks;
 using Comet.Game.States;
 using Comet.Game.States.Families;
+using Comet.Game.World.Managers;
 using Comet.Network.Packets;
 using Comet.Shared;
 
@@ -98,7 +99,7 @@ namespace Comet.Game.Packets
 
         public override async Task ProcessAsync(Client client)
         {
-            Character user = Kernel.RoleManager.GetUser(client.Character?.Identity ?? 0);
+            Character user = RoleManager.GetUser(client.Character?.Identity ?? 0);
             if (user == null)
             {
                 client.Disconnect();
@@ -134,7 +135,7 @@ namespace Comet.Game.Packets
                     if (user.Family.PureMembersCount >= Family.MAX_MEMBERS)
                         return;
 
-                    Character target = Kernel.RoleManager.GetUser(Identity);
+                    Character target = RoleManager.GetUser(Identity);
                     if (target == null)
                         return;
                     if (target.Family != null)
@@ -157,7 +158,7 @@ namespace Comet.Game.Packets
                     if (user.Family != null)
                         return;
 
-                    Family family = Kernel.FamilyManager.GetFamily(Identity);
+                    Family family = FamilyManager.GetFamily(Identity);
                     if (family == null)
                         return;
 
@@ -181,7 +182,7 @@ namespace Comet.Game.Packets
                     if (user.Family != null)
                         return;
 
-                    Character leader = Kernel.RoleManager.GetUser(Identity);
+                    Character leader = RoleManager.GetUser(Identity);
                     if (leader == null)
                         return;
                     if (leader.FamilyPosition != Family.FamilyRank.ClanLeader)
@@ -207,7 +208,7 @@ namespace Comet.Game.Packets
                     if (user.FamilyPosition != Family.FamilyRank.ClanLeader)
                         return;
 
-                    Character requester = Kernel.RoleManager.GetUser(Identity);
+                    Character requester = RoleManager.GetUser(Identity);
                     if (requester == null)
                         return;
 
@@ -232,7 +233,7 @@ namespace Comet.Game.Packets
                         return;
                     if (Strings.Count == 0)
                         return;
-                    Family target = Kernel.FamilyManager.GetFamily(Strings[0]);
+                    Family target = FamilyManager.GetFamily(Strings[0]);
                     if (target == null)
                         return;
                     if (user.Family.IsEnemy(target.Identity) || user.Family.IsAlly(target.Identity))
@@ -251,7 +252,7 @@ namespace Comet.Game.Packets
                         return;
                     if (Strings.Count == 0)
                         return;
-                    Family target = Kernel.FamilyManager.GetFamily(Strings[0]);
+                    Family target = FamilyManager.GetFamily(Strings[0]);
                     if (target == null)
                         return;
                     if (!user.Family.IsEnemy(target.Identity))
@@ -274,7 +275,7 @@ namespace Comet.Game.Packets
                         return;
                     if (Identity == 0)
                         return;
-                    Character targetUser = Kernel.RoleManager.GetUser(Identity);
+                    Character targetUser = RoleManager.GetUser(Identity);
                     if (targetUser == null)
                         return;
 
@@ -310,7 +311,7 @@ namespace Comet.Game.Packets
                     if (Strings.Count == 0)
                         return;
 
-                    Character targetUser = Kernel.RoleManager.GetUser(Strings[0]);
+                    Character targetUser = RoleManager.GetUser(Strings[0]);
                     if (targetUser == null)
                         return;
 
@@ -342,7 +343,7 @@ namespace Comet.Game.Packets
                         return;
                     if (Strings.Count == 0)
                         return;
-                    Family target = Kernel.FamilyManager.GetFamily(Strings[0]);
+                    Family target = FamilyManager.GetFamily(Strings[0]);
                     if (target == null)
                         return;
                     if (!user.Family.IsAlly(target.Identity))
@@ -370,7 +371,7 @@ namespace Comet.Game.Packets
                         return;
                     if (Strings.Count == 0)
                         return;
-                    Character target = Kernel.RoleManager.GetUser(Strings[0]);
+                    Character target = RoleManager.GetUser(Strings[0]);
                     if (target == null)
                         return;
                     if (target.FamilyIdentity != user.FamilyIdentity)

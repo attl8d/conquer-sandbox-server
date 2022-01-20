@@ -94,6 +94,7 @@ namespace Comet.Game.Packets
 
             Name = user.Name;
             FamilyName = user.FamilyName;
+            ServerName = Kernel.Configuration.ServerName;
         }
 
         public MsgPlayer(Monster monster)
@@ -232,6 +233,7 @@ namespace Comet.Game.Packets
 
         public string Name { get; set; }
         public string FamilyName { get; set; }
+        public string ServerName { get; set; }
 
         /// <summary>
         ///     Encodes the packet structure defined by this message class into a byte packet
@@ -341,7 +343,8 @@ namespace Comet.Game.Packets
                 {
                     Name,
                     Language.StrNone,
-                    FamilyName
+                    FamilyName,
+                    ServerName
                 });
             }
             else

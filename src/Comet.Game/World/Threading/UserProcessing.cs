@@ -23,6 +23,7 @@
 
 using System.Threading.Tasks;
 using Comet.Core;
+using Comet.Game.World.Managers;
 using Comet.Shared;
 using Comet.Shared.Comet.Shared;
 
@@ -39,7 +40,7 @@ namespace Comet.Game.World.Threading
 
         protected override async Task<bool> OnElapseAsync()
         {
-            await Kernel.RoleManager.OnUserTimerAsync();
+            await RoleManager.OnUserTimerAsync();
             return true;
         }
     }

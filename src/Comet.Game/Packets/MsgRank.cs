@@ -87,35 +87,19 @@ namespace Comet.Game.Packets
             writer.Write((byte)RankMode); // 12
             writer.Write(Subtype); // 13
             writer.Write(PageNumber); // 14
-            if (Mode == RequestType.QueryInfo)
+            if (Mode == RequestType.QueryInfo || Mode == RequestType.QueryIcon)
             {
                 writer.Write(Infos.Count); // 16
                 writer.Write(0); // 20
-                //foreach (var info in Infos)
-                //{
-                //    writer.Write(info.Position); // 24 0
-                //    writer.Write(0); // 28 4
-                //    writer.Write(info.Amount); // 32 8
-                //    writer.Write(0); // 36 12
-                //    writer.Write(info.Identity); // 40 16
-                //    writer.Write(info.Identity); // 44 20
-                //    writer.Write(info.Name, 16); // 48 36
-                //    writer.Write(info.Name, 16); // 64 52
-                //    writer.Write(0); // 68
-                //    writer.Write(0); // 72 
-                //    writer.Write(0); // 76
-                //    writer.Write(0); // 80
-                //}
-                writer.Write(1); // 24
-                writer.Write(0); // 28
-                writer.Write(1); // 32
-                writer.Write(0); // 36
-                var info = Infos.First();
-                writer.Write(info.Identity); // 40
-                writer.Write(info.Identity); // 44
-                writer.Write(info.Name, 16);
-                string output = $"{info.Type} {info.Amount} {info.Identity} {info.Identity} {info.Name} {info.Name}";
-                writer.Write(output, output.Length); // 64
+                foreach (var info in Infos)
+                {
+                    writer.Write((long)info.Position); // 24 0
+                    writer.Write((long)info.Amount); // 32 8
+                    writer.Write(info.Identity); // 40 16
+                    writer.Write(info.Identity); // 44 20
+                    writer.Write(info.Name, 16); // 48 24
+                    writer.Write(info.Name, 16); // 64 40
+                }
             }
             else if (Mode == RequestType.RequestRank)
             {
@@ -123,18 +107,13 @@ namespace Comet.Game.Packets
                 writer.Write(0); // 20
                 foreach (var rank in Rank)
                 {
-                    writer.Write(rank.Position); // 24
-                    writer.Write(0); // 28
-                    writer.Write(rank.Amount); // 32
-                    writer.Write(0); // 36
-                    writer.Write(rank.Identity); // 40
-                    writer.Write(rank.Identity); // 44
-                    writer.Write(rank.Name, 16); // 48
-                    writer.Write(rank.Name, 16); // 64
-                    writer.Write(rank.Level); // 68
-                    writer.Write(rank.Profession); // 72
-                    writer.Write(rank.LookFace); // 76
-                    writer.Write(0); // 80
+                    writer.Write(rank.Position); // 0
+                    writer.Write(0); // 4
+                    writer.Write(rank.Amount); // 8
+                    writer.Write(rank.Identity); // 16
+                    writer.Write(rank.Identity); // 20
+                    writer.Write(rank.Name, 16); // 24
+                    writer.Write(rank.Name, 16); // 40
                 }
             }
             else
@@ -150,12 +129,57 @@ namespace Comet.Game.Packets
             Character user = client.Character;
             switch (Mode)
             {
+                case RequestType.RequestRank:
+                    {
+                        if (RankMode == RankType.Flower)
+                        {
+                            List<FlowerManager.FlowerRankingStruct> ranking = default;
+                            if (Identity == 0x1c9c382) // Red Rose
+                            {
+                                ranking = await FlowerManager.GetFlowerRankingAsync(MsgFlower.FlowerType.RedRose, 0, 100);
+                            }
+                            else if (Identity == 0x1c9c3e6) // White Rose
+                            {
+                                ranking = await FlowerManager.GetFlowerRankingAsync(MsgFlower.FlowerType.WhiteRose, 0, 100);
+                            }
+                            else if (Identity == 0x1c9c44a) // Orhcid 
+                            {
+                                ranking = await FlowerManager.GetFlowerRankingAsync(MsgFlower.FlowerType.Orchid, 0, 100);
+                            }
+                            else if (Identity == 0x1c9c4ae) // Tulip
+                            {
+                                ranking = await FlowerManager.GetFlowerRankingAsync(MsgFlower.FlowerType.Tulip, 0, 100);
+                            }
+                            else return;
+
+                            int position = ranking.FirstOrDefault(x => x.Identity == user.Identity).Position;
+                            if (position <= 0 || position > 100)
+                                return;
+
+                            int index = PageNumber * 10;
+                            int count = 0;
+                            if (index >= ranking.Count)
+                                return;
+
+                            for (; index < ranking.Count && count < 10; index++, count++)
+                            {
+                                Rank.Add(new RankData
+                                {
+                                    Identity = ranking[index].Identity,
+                                    Position = index + 1,
+                                    Amount = ranking[index].Value,
+                                    Name = ranking[index].Name,
+                                });
+                            }
+
+                            await user.SendAsync(this);
+                        }
+                        break;
+                    }
+
                 case RequestType.QueryInfo:
                     {
-                        if (user.Gender != 2)
-                            return;
-
-                        FlowerManager.FlowerRankObject flowerToday = await Kernel.FlowerManager.QueryFlowersAsync(user);
+                        FlowerManager.FlowerRankObject flowerToday = await FlowerManager.QueryFlowersAsync(user);
                         await user.SendAsync(new MsgFlower
                         {
                             Mode = MsgFlower.RequestMode.QueryFlower,
@@ -177,10 +201,10 @@ namespace Comet.Game.Packets
                             var orchidRank = await FlowerManager.GetFlowerRankingAsync(MsgFlower.FlowerType.Orchid, 0, 100);
                             var tulipRank = await FlowerManager.GetFlowerRankingAsync(MsgFlower.FlowerType.Tulip, 0, 100);
 
-                            var roseRankToday = Kernel.FlowerManager.GetFlowerRankingToday(MsgFlower.FlowerType.RedRose, 0, 100);
-                            var lilyRankToday = Kernel.FlowerManager.GetFlowerRankingToday(MsgFlower.FlowerType.WhiteRose, 0, 100);
-                            var orchidRankToday = Kernel.FlowerManager.GetFlowerRankingToday(MsgFlower.FlowerType.Orchid, 0, 100);
-                            var tulipRankToday = Kernel.FlowerManager.GetFlowerRankingToday(MsgFlower.FlowerType.Tulip, 0, 100);
+                            var roseRankToday = FlowerManager.GetFlowerRankingToday(MsgFlower.FlowerType.RedRose, 0, 100);
+                            var lilyRankToday = FlowerManager.GetFlowerRankingToday(MsgFlower.FlowerType.WhiteRose, 0, 100);
+                            var orchidRankToday = FlowerManager.GetFlowerRankingToday(MsgFlower.FlowerType.Orchid, 0, 100);
+                            var tulipRankToday = FlowerManager.GetFlowerRankingToday(MsgFlower.FlowerType.Tulip, 0, 100);
 
                             int myRose = roseRank.FirstOrDefault(x => x.Identity == user.Identity).Position;
                             int myLily = lilyRank.FirstOrDefault(x => x.Identity == user.Identity).Position;
@@ -195,120 +219,134 @@ namespace Comet.Game.Packets
                             uint rankType = 0;
                             uint amount = 0;
                             int rank = 0;
+
+                            bool display = false;
                             if (myRoseToday < myRose && myRoseToday > 0 && myRoseToday <= 100)
                             {
-                                // today rank
-                                if (myRoseToday < 3)
-                                    rankType = 30010001;
-                                else if (myRoseToday < 10)
-                                    rankType = 30020001;
-                                else if (myRoseToday < 25)
-                                    rankType = 30040001;
-                                else
-                                    rankType = 30110001;
+                                rankType = 0x1c9c382;
                                 amount = flowerToday?.RedRose ?? 0;
                                 rank = myRoseToday;
+                                display = true;
                             }
                             else if (myRose > 0 && myRose <= 100)
                             {
-                                // lifetime
-                                if (myRose < 3)
-                                    rankType = 30010002;
-                                else if (myRose < 10)
-                                    rankType = 30020002;
-                                else if (myRose < 25)
-                                    rankType = 30040002;
-                                else
-                                    rankType = 30110002;
+                                rankType = 0x1c9c382;
                                 amount = user.FlowerRed;
                                 rank = myRose;
+                                display = true;
                             }
 
+                            MsgRank msg;
+                            if (display)
+                            {
+                                msg = new MsgRank();
+                                msg.Mode = RequestType.QueryInfo;
+                                msg.Identity = rankType;
+                                msg.Infos.Add(new QueryStruct
+                                {
+                                    Type = 1,
+                                    Amount = amount,
+                                    Identity = user.Identity,
+                                    Name = user.Name,
+                                    Position = rank
+                                });
+                                await user.SendAsync(msg);
+                            }
+
+                            display = false;
                             if (myLilyToday < myLily && myLilyToday > 0 && myLilyToday <= 100)
                             {
-                                // today rank
-                                if (myLilyToday < 3)
-                                    rankType = 30010101;
-                                else if (myLilyToday < 10)
-                                    rankType = 30020101;
-                                else if (myLilyToday < 25)
-                                    rankType = 30040101;
-                                else
-                                    rankType = 30110101;
+                                rankType = 0x1c9c3e6;
                                 amount = flowerToday?.WhiteRose ?? 0;
                                 rank = myLilyToday;
+                                display = true;
                             }
                             else if (myLily > 0 && myLily <= 100)
                             {
-                                // lifetime
-                                if (myLily < 3)
-                                    rankType = 30010102;
-                                else if (myLily < 10)
-                                    rankType = 30020102;
-                                else if (myLily < 25)
-                                    rankType = 30040102;
-                                else
-                                    rankType = 30110102;
+                                rankType = 0x1c9c3e6;
                                 amount = user.FlowerWhite;
                                 rank = myLily;
+                                display = true;
                             }
 
+                            if (display)
+                            {
+                                msg = new MsgRank();
+                                msg.Mode = RequestType.QueryInfo;
+                                msg.Identity = rankType;
+                                msg.Infos.Add(new QueryStruct
+                                {
+                                    Type = 1,
+                                    Amount = amount,
+                                    Identity = user.Identity,
+                                    Name = user.Name,
+                                    Position = rank
+                                });
+                                await user.SendAsync(msg);
+                            }
+
+                            display = false;
                             if (myOrchidToday < myOrchid && myOrchidToday > 0 && myOrchidToday <= 100)
                             {
-                                // today rank
-                                if (myOrchidToday < 3)
-                                    rankType = 30010301;
-                                else if (myOrchidToday < 10)
-                                    rankType = 30020301;
-                                else if (myOrchidToday < 25)
-                                    rankType = 30040301;
-                                else
-                                    rankType = 30110301;
+                                rankType = 0x1c9c44a;
                                 amount = flowerToday?.Orchids ?? 0;
                                 rank = myOrchidToday;
+                                display = true;
                             }
                             else if (myOrchid > 0 && myOrchid <= 100)
                             {
-                                // lifetime
-                                if (myOrchid < 3)
-                                    rankType = 30010302;
-                                else if (myOrchid < 10)
-                                    rankType = 30020302;
-                                else if (myOrchid < 25)
-                                    rankType = 30040302;
-                                else
-                                    rankType = 30110302;
+                                rankType = 0x1c9c44a;
                                 amount = user.FlowerOrchid;
                                 rank = myOrchid;
+                                display = true;
                             }
 
+                            if (display)
+                            {
+                                msg = new MsgRank();
+                                msg.Mode = RequestType.QueryInfo;
+                                msg.Identity = rankType;
+                                msg.Infos.Add(new QueryStruct
+                                {
+                                    Type = 1,
+                                    Amount = amount,
+                                    Identity = user.Identity,
+                                    Name = user.Name,
+                                    Position = rank
+                                });
+                                await user.SendAsync(msg);
+                            }
+
+                            display = false;
                             if (myTulipToday < myTulip && myTulipToday > 0 && myTulipToday <= 100)
                             {
-                                // today rank
-                                if (myTulipToday < 3)
-                                    rankType = 30010401;
-                                else if (myTulipToday < 10)
-                                    rankType = 30020401;
-                                else if (myTulipToday < 25)
-                                    rankType = 30040401;
-                                else
-                                    rankType = 30110401;
+                                rankType = 0x1c9c4ae;
                                 amount = flowerToday?.Tulips ?? 0;
                                 rank = myTulipToday;
+                                display = true;
                             }
                             else if (myTulip > 0 && myTulip <= 100)
                             {
-                                // lifetime
-                                if (myTulip < 3)
-                                    rankType = 30010402;
-                                else if (myTulip < 10)
-                                    rankType = 30020402;
-                                else if (myTulip < 25)
-                                    rankType = 30040402;
-                                else
-                                    rankType = 30110402;
+                                rankType = 0x1c9c4ae;
                                 amount = user.FlowerTulip;
                                 rank = myTulip;
+                                display = true;
+                            }
+
+                            if (display)
+                            {
+                                msg = new MsgRank();
+                                msg.Mode = RequestType.QueryInfo;
+                                msg.Identity = rankType;
+                                msg.Infos.Add(new QueryStruct
+                                {
+                                    Type = 1,
+                                    Amount = amount,
+                                    Identity = user.Identity,
+                                    Name = user.Name,
+                                    Position = rank
+                                });
+                                await user.SendAsync(msg);
                             }
 
                             if (rankType != user.FlowerCharm)
@@ -317,25 +355,9 @@ namespace Comet.Game.Packets
                                 await user.Screen.SynchroScreenAsync();
                             }
 
-                            MsgRank msg = new MsgRank();
-                            msg.Mode = RequestType.QueryInfo;
-                            msg.Identity = rankType;
-                            msg.Infos.Add(new QueryStruct
-                            {
-                                Type = 1,
-                                Amount = amount,
-                                Identity = user.Identity,
-                                Name = user.Name,
-                                Position = rank 
-                            });
-                            await user.SendAsync(msg);
+                            Mode = RequestType.QueryIcon;
+                            await client.SendAsync(this);
                         }
-
-                        await user.SendAsync(new MsgRank
-                        {
-                            Mode = RequestType.QueryIcon
-                        });
-
                         break;
                     }
                 default:

@@ -36,6 +36,7 @@ using Comet.Game.States;
 using Comet.Game.States.BaseEntities;
 using Comet.Game.States.Items;
 using Comet.Game.States.NPCs;
+using Comet.Game.World.Managers;
 using Comet.Network.Packets;
 using Comet.Shared;
 
@@ -166,7 +167,7 @@ namespace Comet.Game.World.Maps
         {
             if (m_dbMap == null && m_dbDynamap == null) return false;
 
-            m_mapData = Kernel.MapManager.GetMapData(MapDoc);
+            m_mapData = MapManager.GetMapData(MapDoc);
             if (m_mapData == null)
             {
                 await Log.WriteLogAsync(LogLevel.Warning, $"Could not load map {Identity}({MapDoc}): map data not found");
@@ -276,7 +277,7 @@ namespace Comet.Game.World.Maps
                 }
                 else
                 {
-                    Kernel.RoleManager.AddRole(role);
+                    RoleManager.AddRole(role);
                     foreach (var user in m_users.Values.Where(x =>
                         ScreenCalculations.GetDistance(x.MapX, x.MapY, role.MapX, role.MapY) <= Screen.VIEW_SIZE))
                     {
@@ -298,7 +299,7 @@ namespace Comet.Game.World.Maps
                 LeaveBlock(role);
 
                 if (!(role is Character))
-                    Kernel.RoleManager.RemoveRole(idRole);
+                    RoleManager.RemoveRole(idRole);
 
                 foreach (var user in m_users.Values)
                 {
@@ -693,7 +694,7 @@ namespace Comet.Game.World.Maps
         public bool GetRebornMap(ref uint idMap, ref Point target)
         {
             idMap = m_dbMap?.RebornMap ?? m_dbDynamap.RebornMap;
-            GameMap targetMap = Kernel.MapManager.GetMap(idMap);
+            GameMap targetMap = MapManager.GetMap(idMap);
             if (targetMap == null)
             {
                 Log.WriteLogAsync(LogLevel.Error, $"Could not get reborn map [{Identity}]!").ConfigureAwait(false);

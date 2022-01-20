@@ -36,7 +36,7 @@ using Comet.Game.States;
 
 namespace Comet.Game.World.Managers
 {
-    public sealed class PigeonManager
+    public static class PigeonManager
     {
         private const int PIGEON_PRICE = 5;
         private const int PIGEON_ADDITION = 5;
@@ -44,20 +44,20 @@ namespace Comet.Game.World.Managers
         private const int PIGEON_MAX_MSG_LENGTH = 80;
         private const int PIGEON_STAND_SECS = 60;
 
-        private List<DbPigeon> m_past = new List<DbPigeon>();
-        private List<DbPigeonQueue> m_queue = new List<DbPigeonQueue>();
-        private DbPigeon m_current = null;
+        private static List<DbPigeon> m_past = new List<DbPigeon>();
+        private static List<DbPigeonQueue> m_queue = new List<DbPigeonQueue>();
+        private static DbPigeon m_current = null;
 
-        private TimeOut m_next = new TimeOut(PIGEON_STAND_SECS);
+        private static TimeOut m_next = new TimeOut(PIGEON_STAND_SECS);
 
-        public async Task<bool> InitializeAsync()
+        public static async Task<bool> InitializeAsync()
         {
             m_queue = new List<DbPigeonQueue>((await DbPigeonQueue.GetAsync()).OrderBy(x => x.NextIdentity));
             await SyncAsync();
             return true;
         }
 
-        public async Task<bool> PushAsync(Character sender, string message, bool showError = true, bool forceShow = false)
+        public static async Task<bool> PushAsync(Character sender, string message, bool showError = true, bool forceShow = false)
         {
             if (message.Length > PIGEON_MAX_MSG_LENGTH)
             {
@@ -108,7 +108,7 @@ namespace Comet.Game.World.Managers
             return true;
         }
 
-        public async Task AdditionAsync(Character sender, MsgPigeon request)
+        public static async Task AdditionAsync(Character sender, MsgPigeon request)
         {
             DbPigeonQueue pigeon = null;
             int position = 0;
@@ -159,7 +159,7 @@ namespace Comet.Game.World.Managers
             await sender.SendAsync(Language.StrPigeonSendProducePrompt);
         }
 
-        public Task RebuildQueueAsync()
+        public static Task RebuildQueueAsync()
         {
             uint idx = 0;
             foreach (var queued in m_queue)
@@ -169,7 +169,7 @@ namespace Comet.Game.World.Managers
             return BaseRepository.SaveAsync(m_queue);
         }
 
-        public async Task SyncAsync()
+        public static async Task SyncAsync()
         {
             if (m_queue.Count == 0)
                 return;
@@ -190,10 +190,10 @@ namespace Comet.Game.World.Managers
             m_past.Add(m_current);
 
             await RebuildQueueAsync();
-            await Kernel.RoleManager.BroadcastMsgAsync(new MsgTalk(m_current.UserIdentity,  MsgTalk.TalkChannel.Broadcast, Color.White, MsgTalk.ALLUSERS, m_current.UserName, m_current.Message));
+            await RoleManager.BroadcastMsgAsync(new MsgTalk(m_current.UserIdentity,  MsgTalk.TalkChannel.Broadcast, Color.White, MsgTalk.ALLUSERS, m_current.UserName, m_current.Message));
         }
 
-        public async Task OnTimerAsync()
+        public static async Task OnTimerAsync()
         {
             if (m_queue.Count == 0)
                 return;
@@ -204,7 +204,7 @@ namespace Comet.Game.World.Managers
             await SyncAsync();
         }
 
-        public async Task SendListAsync(Character user, MsgPigeon.PigeonMode request)
+        public static async Task SendListAsync(Character user, MsgPigeon.PigeonMode request)
         {
             List<DbPigeonQueue> temp;
             if (request == MsgPigeon.PigeonMode.Query)
@@ -246,12 +246,12 @@ namespace Comet.Game.World.Managers
                 await user.SendAsync(msg);
         }
 
-        public async Task SendToUserAsync(Character user)
+        public static async Task SendToUserAsync(Character user)
         {
             if (m_current != null)
                 await user.SendAsync(new MsgTalk(m_current.UserIdentity, MsgTalk.TalkChannel.Broadcast, Color.White, MsgTalk.ALLUSERS, m_current.UserName, m_current.Message));
         }
 
-        public int OnQueueByUser(uint idUser) => m_queue.Count(x => x.UserIdentity == idUser);
+        public static int OnQueueByUser(uint idUser) => m_queue.Count(x => x.UserIdentity == idUser);
     }
 }

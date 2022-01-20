@@ -8,16 +8,16 @@ namespace Comet.Game.Packets
     public sealed class MsgSubPro : MsgBase<Client>
     {
         public int Timestamp { get; set; }
-        public SubClassActions Action { get; set; }
+        public AstProfAction Action { get; set; }
         public ulong Points { get; set; }
-        public SubClasses Class 
+        public AstProfType Class 
         {
-            get => (SubClasses)Points;
+            get => (AstProfType)Points;
             set => Points = (ulong)value; 
         }
         public ulong Study { get; set; }
         public byte Count { get; set; }
-        public List<AstProfStruct> Professions { get; set; } = new List<AstProfStruct>();
+        public List<AstProf> Professions { get; set; } = new List<AstProf>();
 
         public override void Decode(byte[] bytes)
         {
@@ -25,17 +25,17 @@ namespace Comet.Game.Packets
             Length = reader.ReadUInt16();
             Type = (PacketType)reader.ReadUInt16();
             Timestamp = reader.ReadInt32();
-            Action = (SubClassActions)reader.ReadUInt16();
+            Action = (AstProfAction)reader.ReadUInt16();
             Points = reader.ReadUInt64();
             Study = reader.ReadUInt64();
             Count = reader.ReadByte();
             for (int i = 0; i < Count; i++)
             {
-                Professions.Add(new AstProfStruct
+                Professions.Add(new AstProf
                 {
-                    Class = (SubClasses)reader.ReadByte(),
+                    Class = (AstProfType)reader.ReadByte(),
                     Level = reader.ReadByte(),
-                    Phase = reader.ReadByte()
+                    Rank = reader.ReadByte()
                 });
             }
         }
@@ -53,7 +53,7 @@ namespace Comet.Game.Packets
             {
                 writer.Write((byte)Professions[i].Class);
                 writer.Write(Professions[i].Level);
-                writer.Write(Professions[i].Phase);
+                writer.Write(Professions[i].Rank);
             }
             return writer.ToArray();
         }
@@ -63,14 +63,14 @@ namespace Comet.Game.Packets
             return base.ProcessAsync(client);
         }
 
-        public struct AstProfStruct
+        public class AstProf
         {
-            public SubClasses Class { get; set; }
+            public AstProfType Class { get; set; }
             public byte Level { get; set; }
-            public byte Phase { get; set; }
+            public byte Rank { get; set; }
         }
 
-        public enum SubClassActions : ushort
+        public enum AstProfAction : ushort
         {
             Switch = 0,
             Activate = 1,
@@ -84,7 +84,7 @@ namespace Comet.Game.Packets
             LearnRemote = 9
         }
 
-        public enum SubClasses : byte
+        public enum AstProfType : byte
         {
             None = 0,
             MartialArtist = 1,

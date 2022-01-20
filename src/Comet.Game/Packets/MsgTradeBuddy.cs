@@ -23,6 +23,7 @@
 
 using System.Threading.Tasks;
 using Comet.Game.States;
+using Comet.Game.World.Managers;
 using Comet.Network.Packets;
 
 #endregion
@@ -79,7 +80,7 @@ namespace Comet.Game.Packets
         public override async Task ProcessAsync(Client client)
         {
             Character user = client.Character;
-            Character target = Kernel.RoleManager.GetUser(Identity);
+            Character target = RoleManager.GetUser(Identity);
             switch (Action)
             {
                 case TradeBuddyAction.RequestPartnership:

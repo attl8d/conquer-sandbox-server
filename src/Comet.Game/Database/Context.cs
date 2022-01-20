@@ -118,6 +118,9 @@ namespace Comet.Game.Database
         public virtual DbSet<DbMail> Mails { get; set; }
         public virtual DbSet<DbAchievement> Achievements { get; set; }
         public virtual DbSet<DbAchievementType> AchievementTypes { get; set; }
+        public virtual DbSet<DbAstProfLevel> AstProfLevels { get; set; }
+        public virtual DbSet<DbAstProfPromoteCondition> AstProfPromoteConditions { get; set; }
+        public virtual DbSet<DbAstProfInaugurationCondition> AstProfInaugurationConditions { get; set; }
 
         public static void Initialize()
         {

@@ -27,6 +27,7 @@ using System.Threading.Tasks;
 using Comet.Game.States;
 using Comet.Game.States.BaseEntities;
 using Comet.Game.States.Syndicates;
+using Comet.Game.World.Managers;
 using Comet.Network.Packets;
 using Comet.Shared;
 using Microsoft.EntityFrameworkCore.Query;
@@ -105,7 +106,7 @@ namespace Comet.Game.Packets
                     if (Identity == 0 || user.Syndicate != null)
                         return;
 
-                    Character leader = Kernel.RoleManager.GetUser(Identity);
+                    Character leader = RoleManager.GetUser(Identity);
                     if (leader == null)
                         return;
 
@@ -134,7 +135,7 @@ namespace Comet.Game.Packets
                     if (Identity == 0 || user.Syndicate == null)
                         return;
 
-                    Character target = Kernel.RoleManager.GetUser(Identity);
+                    Character target = RoleManager.GetUser(Identity);
                     if (target == null)
                         return;
 
@@ -172,7 +173,7 @@ namespace Comet.Game.Packets
 
                 case SyndicateRequest.Query: // 6
                 {
-                    Syndicate queryTarget = Kernel.SyndicateManager.GetSyndicate((int) Identity);
+                    Syndicate queryTarget = SyndicateManager.GetSyndicate((int) Identity);
                     if (queryTarget == null)
                         return;
 
@@ -306,7 +307,7 @@ namespace Comet.Game.Packets
                     if (Strings.Count == 0)
                         return;
 
-                    Syndicate target = Kernel.SyndicateManager.GetSyndicate(Strings[0]);
+                    Syndicate target = SyndicateManager.GetSyndicate(Strings[0]);
 
                     if (target == null || target.Deleted)
                         return;
@@ -335,7 +336,7 @@ namespace Comet.Game.Packets
                         return;
                     if (user.SyndicateRank != SyndicateMember.SyndicateRank.GuildLeader)
                         return;
-                    Syndicate target = Kernel.SyndicateManager.GetSyndicate(Strings[0]);
+                    Syndicate target = SyndicateManager.GetSyndicate(Strings[0]);
                     if (target == null)
                         return;
 
@@ -357,7 +358,7 @@ namespace Comet.Game.Packets
                     if (Strings.Count == 0)
                         return;
 
-                    Syndicate target = Kernel.SyndicateManager.GetSyndicate(Strings[0]);
+                    Syndicate target = SyndicateManager.GetSyndicate(Strings[0]);
                     if (target == null || target.Deleted)
                         return;
 
@@ -371,7 +372,7 @@ namespace Comet.Game.Packets
                         return;
                     if (user.SyndicateRank != SyndicateMember.SyndicateRank.GuildLeader)
                         return;
-                    Syndicate target = Kernel.SyndicateManager.GetSyndicate(Strings[0]);
+                    Syndicate target = SyndicateManager.GetSyndicate(Strings[0]);
                     if (target == null)
                         return;
 

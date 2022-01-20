@@ -32,6 +32,7 @@ using Comet.Game.Database.Repositories;
 using Comet.Game.Packets;
 using Comet.Game.States.NPCs;
 using Comet.Game.World;
+using Comet.Game.World.Managers;
 using Comet.Shared;
 using Org.BouncyCastle.Asn1.Esf;
 
@@ -114,7 +115,7 @@ namespace Comet.Game.States.Items
                 }
                 else if (item.Position == Item.ItemPosition.Storage || item.Position == Item.ItemPosition.Trunk)
                 {
-                    BaseNpc npc = Kernel.RoleManager.GetRole(item.OwnerIdentity) as BaseNpc;
+                    BaseNpc npc = RoleManager.GetRole(item.OwnerIdentity) as BaseNpc;
                     if (npc == null)
                     {
                         await Log.WriteLogAsync(LogLevel.Error, $"Unexistent warehouse {item.OwnerIdentity} for item {item.Identity}");
@@ -139,7 +140,7 @@ namespace Comet.Game.States.Items
 
         public async Task<bool> AwardItemAsync(uint type, Item.ItemPosition pos = Item.ItemPosition.Inventory)
         {
-            DbItemtype itemtype = Kernel.ItemManager.GetItemtype(type);
+            DbItemtype itemtype = ItemManager.GetItemtype(type);
             if (itemtype == null)
                 return false;
 
@@ -1046,7 +1047,7 @@ namespace Comet.Game.States.Items
 
             if (await m_user.DropItemAsync(item.Identity, m_user.MapX, m_user.MapY, true))
             {
-                await Kernel.RoleManager.BroadcastMsgAsync(string.Format(Language.StrDropEquipment, m_user.Name), MsgTalk.TalkChannel.Talk, Color.Red);
+                await RoleManager.BroadcastMsgAsync(string.Format(Language.StrDropEquipment, m_user.Name), MsgTalk.TalkChannel.Talk, Color.Red);
                 await Log.GmLogAsync("detain",
                     $"[{m_user.Identity}] {m_user.Name} has dropped {item.Identity} to [{attacker.Identity}] {attacker.Name} dying at {m_user.MapIdentity}[{m_user.MapX},{m_user.MapY}]");
             }
@@ -1063,7 +1064,7 @@ namespace Comet.Game.States.Items
         {
             if (type != 0)
             {
-                var itemType = Kernel.ItemManager.GetItemtype(type);
+                var itemType = ItemManager.GetItemtype(type);
                 int free = 0;
                 if (itemType != null)
                 {
@@ -1096,7 +1097,7 @@ namespace Comet.Game.States.Items
             int maxStorage = 0;
             if (mode == MsgPackage.StorageType.Storage || mode == MsgPackage.StorageType.Trunk)
             {
-                npc = Kernel.RoleManager.GetRole(idStorage) as BaseNpc;
+                npc = RoleManager.GetRole(idStorage) as BaseNpc;
                 if (npc == null)
                     return false;
 

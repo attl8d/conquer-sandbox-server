@@ -24,6 +24,7 @@
 using System.Threading.Tasks;
 using Comet.Game.States;
 using Comet.Game.States.Events;
+using Comet.Game.World.Managers;
 using Comet.Network.Packets;
 using Comet.Shared;
 
@@ -77,7 +78,7 @@ namespace Comet.Game.Packets
 
         public override async Task ProcessAsync(Client client)
         {
-            Character user = Kernel.RoleManager.GetUser(client.Character.Identity);
+            Character user = RoleManager.GetUser(client.Character.Identity);
             if (user == null)
             {
                 client.Disconnect();

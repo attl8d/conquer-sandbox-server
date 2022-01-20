@@ -47,8 +47,10 @@ namespace Comet.Web.App.Middlewares
                 }
             }
 
-            httpContextAccessor.HttpContext.Items.Add("Maintenance", isUnderMaintenance);
-            httpContextAccessor.HttpContext.Items.Add("MaintenanceAccess", userHasAccess);
+            if (!httpContextAccessor.HttpContext.Items.ContainsKey("Maintenance"))
+                httpContextAccessor.HttpContext.Items.Add("Maintenance", isUnderMaintenance);
+            if (!httpContextAccessor.HttpContext.Items.ContainsKey("MaintenanceAccess"))
+                httpContextAccessor.HttpContext.Items.Add("MaintenanceAccess", userHasAccess);
 
             await mNext(context);
         }

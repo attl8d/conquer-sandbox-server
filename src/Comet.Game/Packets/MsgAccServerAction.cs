@@ -1,4 +1,5 @@
 ﻿using Comet.Game.Internal;
+using Comet.Game.World.Managers;
 using Comet.Network.Packets.Internal;
 using Comet.Shared;
 using System.Threading.Tasks;
@@ -34,10 +35,10 @@ namespace Comet.Game.Packets
                             return;
                         }
 
-                        if (Kernel.RoleManager.OnlinePlayers > 0)
+                        if (RoleManager.OnlinePlayers > 0)
                         {
                             // let's send all players data...
-                            var players = Kernel.RoleManager.QueryUserSet();
+                            var players = RoleManager.QueryUserSet();
                             MsgAccServerPlayerStatus statuses = new MsgAccServerPlayerStatus();
                             MsgAccServerPlayerExchange msg = new MsgAccServerPlayerExchange();
                             msg.ServerName = msg.ServerName = Kernel.Configuration.ServerName;

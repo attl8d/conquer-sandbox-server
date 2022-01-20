@@ -23,6 +23,7 @@
 
 using System.Threading.Tasks;
 using Comet.Game.States;
+using Comet.Game.World.Managers;
 using Comet.Game.World.Maps;
 using Comet.Network.Packets;
 
@@ -92,7 +93,7 @@ namespace Comet.Game.Packets
                         return;
                     }
 
-                    target = Kernel.RoleManager.GetUser(Data);
+                    target = RoleManager.GetUser(Data);
                     if (target == null || target.MapIdentity != user.MapIdentity ||
                         target.GetDistance(user) > Screen.VIEW_SIZE)
                     {

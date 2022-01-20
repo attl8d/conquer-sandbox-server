@@ -39,13 +39,13 @@ using Comet.Shared;
 
 namespace Comet.Game.World.Managers
 {
-    public sealed class ItemManager
+    public static class ItemManager
     {
-        private Dictionary<uint, DbItemtype> m_dicItemtype;
-        private Dictionary<ulong, DbItemAddition> m_dicItemAddition;
-        public static BaseNpc Confiscator => Kernel.RoleManager.FindRole<BaseNpc>(4450);
+        private static Dictionary<uint, DbItemtype> m_dicItemtype;
+        private static Dictionary<ulong, DbItemAddition> m_dicItemAddition;
+        public static BaseNpc Confiscator => RoleManager.FindRole<BaseNpc>(4450);
 
-        public async Task InitializeAsync()
+        public static async Task InitializeAsync()
         {
             m_dicItemtype = new Dictionary<uint, DbItemtype>();
             foreach (var item in await ItemtypeRepository.GetAsync())
@@ -60,24 +60,24 @@ namespace Comet.Game.World.Managers
             }
         }
 
-        public List<DbItemtype> GetByRange(int mobLevel, int tolerationMin, int tolerationMax, int maxLevel = 120)
+        public static List<DbItemtype> GetByRange(int mobLevel, int tolerationMin, int tolerationMax, int maxLevel = 120)
         {
             return m_dicItemtype.Values.Where(x =>
                 x.ReqLevel >= mobLevel - tolerationMin && x.ReqLevel <= mobLevel + tolerationMax &&
                 x.ReqLevel <= maxLevel).ToList();
         }
 
-        public DbItemtype GetItemtype(uint type)
+        public static DbItemtype GetItemtype(uint type)
         {
             return m_dicItemtype.TryGetValue(type, out var item) ? item : null;
         }
 
-        public DbItemAddition GetItemAddition(uint type, byte level)
+        public static DbItemAddition GetItemAddition(uint type, byte level)
         {
             return m_dicItemAddition.TryGetValue(AdditionKey(type, level), out var item) ? item : null;
         }
 
-        private ulong AdditionKey(uint type, byte level)
+        private static ulong AdditionKey(uint type, byte level)
         {
             uint key = type;
             Item.ItemSort sort = Item.GetItemSort(type);
@@ -97,7 +97,7 @@ namespace Comet.Game.World.Managers
             return (key + ((ulong) level << 32));
         }
 
-        public async Task<bool> DetainItemAsync(Character discharger, Character detainer)
+        public static async Task<bool> DetainItemAsync(Character discharger, Character detainer)
         {
             List<Item> items = new List<Item>();
             for (Item.ItemPosition pos = Item.ItemPosition.EquipmentBegin; pos <= Item.ItemPosition.EquipmentEnd; pos++)
@@ -198,7 +198,7 @@ namespace Comet.Game.World.Managers
         /// Claims an expired item or Conquer Points to the hunter.
         /// </summary>
         /// <returns>True if the item has been successfully claimed.</returns>
-        public async Task<bool> ClaimDetainRewardAsync(uint idDetain, Character user)
+        public static async Task<bool> ClaimDetainRewardAsync(uint idDetain, Character user)
         {
             DbDetainedItem dbDetain = await DbDetainedItem.GetByIdAsync(idDetain);
             if (dbDetain == null)
@@ -220,7 +220,7 @@ namespace Comet.Game.World.Managers
             {
                 await user.AwardConquerPointsAsync(dbDetain.RedeemPrice);
 
-                await Kernel.RoleManager.BroadcastMsgAsync(string.Format(Language.StrGetEmoneyBonus, dbDetain.HunterName, dbDetain.TargetName, dbDetain.RedeemPrice), 
+                await RoleManager.BroadcastMsgAsync(string.Format(Language.StrGetEmoneyBonus, dbDetain.HunterName, dbDetain.TargetName, dbDetain.RedeemPrice), 
                     MsgTalk.TalkChannel.Talk);
             }
             else
@@ -238,7 +238,7 @@ namespace Comet.Game.World.Managers
 
                 await user.UserPackage.AddItemAsync(item);
 
-                await Kernel.RoleManager.BroadcastMsgAsync(string.Format(Language.StrGetEquipBonus, dbDetain.HunterName, dbDetain.TargetName, item.FullName),
+                await RoleManager.BroadcastMsgAsync(string.Format(Language.StrGetEquipBonus, dbDetain.HunterName, dbDetain.TargetName, item.FullName),
                     MsgTalk.TalkChannel.Talk);
             }
 
@@ -250,7 +250,7 @@ namespace Comet.Game.World.Managers
         /// Claim a detained item back to it's owner.
         /// </summary>
         /// <returns>True if the item has been successfully detained.</returns>
-        public async Task<bool> ClaimDetainedItemAsync(uint idDetain, Character user)
+        public static async Task<bool> ClaimDetainedItemAsync(uint idDetain, Character user)
         {
             DbDetainedItem dbDetain = await DbDetainedItem.GetByIdAsync(idDetain);
             if (dbDetain == null)
@@ -288,13 +288,13 @@ namespace Comet.Game.World.Managers
             item.Position = Item.ItemPosition.Inventory;
             await user.UserPackage.AddItemAsync(item);
 
-            await Kernel.RoleManager.BroadcastMsgAsync(string.Format(Language.StrRedeemEquip, user.Name, dbDetain.RedeemPrice, dbDetain.HunterName),
+            await RoleManager.BroadcastMsgAsync(string.Format(Language.StrRedeemEquip, user.Name, dbDetain.RedeemPrice, dbDetain.HunterName),
                 MsgTalk.TalkChannel.Talk);
 
             dbDetain.ItemIdentity = 0;
             await BaseRepository.SaveAsync(dbDetain);
 
-            Character hunter = Kernel.RoleManager.GetUser(dbDetain.HunterIdentity);
+            Character hunter = RoleManager.GetUser(dbDetain.HunterIdentity);
             if (hunter != null)
             {
                 await hunter.SendAsync(new MsgItem

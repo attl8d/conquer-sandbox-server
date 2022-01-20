@@ -30,6 +30,7 @@ using Comet.Game.States;
 using Comet.Game.States.BaseEntities;
 using Comet.Game.States.Items;
 using Comet.Game.States.NPCs;
+using Comet.Game.World.Managers;
 using Comet.Game.World.Maps;
 using Comet.Network.Packets;
 using Comet.Shared;
@@ -167,7 +168,7 @@ namespace Comet.Game.Packets
             switch (Action)
             {
                 case ItemActionType.ShopPurchase:
-                    npc = Kernel.RoleManager.GetRole<BaseNpc>(Identity);
+                    npc = RoleManager.GetRole<BaseNpc>(Identity);
                     if (npc == null)
                         return;
                     if (npc.MapIdentity != 5000 && npc.MapIdentity != user.MapIdentity)
@@ -182,7 +183,7 @@ namespace Comet.Game.Packets
                         return;
                     }
 
-                    DbItemtype itemtype = Kernel.ItemManager.GetItemtype(Command);
+                    DbItemtype itemtype = ItemManager.GetItemtype(Command);
                     if (itemtype == null)
                     {
                         await Log.WriteLogAsync(LogLevel.Cheat,
@@ -483,7 +484,7 @@ namespace Comet.Game.Packets
                             return;
                         }
 
-                        DbItemtype dbNewType = Kernel.ItemManager.GetItemtype((uint)idNewType);
+                        DbItemtype dbNewType = ItemManager.GetItemtype((uint)idNewType);
                         if (dbNewType == null)
                         {
                             await user.SendAsync(Language.StrItemErrMaxLevel);
@@ -583,10 +584,10 @@ namespace Comet.Game.Packets
                     }
 
                 case ItemActionType.ClientPing:
-                    Character testUser = Kernel.RoleManager.GetUser(user.Identity);
+                    Character testUser = RoleManager.GetUser(user.Identity);
                     if (testUser == null || !testUser.Client.GUID.Equals(user.Client.GUID))
                     {
-                        await Kernel.RoleManager.KickOutAsync(user.Identity, "Duplicated client!!!!");
+                        await RoleManager.KickOutAsync(user.Identity, "Duplicated client!!!!");
                         user.Client.Disconnect();
                         return;
                     }
@@ -691,7 +692,7 @@ namespace Comet.Game.Packets
 
                 case ItemActionType.RedeemEquipment:
                     {
-                        if (await Kernel.ItemManager.ClaimDetainedItemAsync(Identity, user))
+                        if (await ItemManager.ClaimDetainedItemAsync(Identity, user))
                         {
                             Command = user.Identity;
                             await user.SendAsync(this);
@@ -701,7 +702,7 @@ namespace Comet.Game.Packets
 
                 case ItemActionType.DetainEquipment:
                     {
-                        if (await Kernel.ItemManager.ClaimDetainRewardAsync(Identity, user))
+                        if (await ItemManager.ClaimDetainRewardAsync(Identity, user))
                         {
                             Command = user.Identity;
                             await user.SendAsync(this);

@@ -1,4 +1,5 @@
 ﻿using Comet.Game.Internal;
+using Comet.Game.World.Managers;
 using Comet.Network.Packets.Internal;
 using System.Threading.Tasks;
 
@@ -10,9 +11,9 @@ namespace Comet.Game.Packets
         {
             return client.SendAsync(new MsgAccServerGameInformation
             {
-                PlayerCount = Kernel.RoleManager.OnlinePlayers,
-                PlayerCountRecord = Kernel.RoleManager.MaxOnlinePlayers,
-                PlayerLimit = Kernel.RoleManager.MaxOnlinePlayers,
+                PlayerCount = RoleManager.OnlinePlayers,
+                PlayerCountRecord = RoleManager.MaxOnlinePlayers,
+                PlayerLimit = RoleManager.MaxOnlinePlayers,
                 Status = 1
             });
         }

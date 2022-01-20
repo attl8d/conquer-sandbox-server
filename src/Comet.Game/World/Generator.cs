@@ -29,6 +29,7 @@ using System.Threading.Tasks;
 using Comet.Core;
 using Comet.Game.Database.Models;
 using Comet.Game.States;
+using Comet.Game.World.Managers;
 using Comet.Game.World.Maps;
 using Comet.Shared;
 
@@ -60,7 +61,7 @@ namespace Comet.Game.World
             m_dbGen = dbGen;
             m_pTimer = new TimeOut(Math.Max(m_dbGen.RestSecs, _MIN_TIME_BETWEEN_GEN));
 
-            m_pMap = Kernel.MapManager.GetMap(m_dbGen.Mapid);
+            m_pMap = MapManager.GetMap(m_dbGen.Mapid);
             if (m_pMap == null)
             {
                 Log.WriteLogAsync(LogLevel.Error, $"Could not load map ({m_dbGen.Mapid}) for generator ({m_dbGen.Id})")
@@ -68,7 +69,7 @@ namespace Comet.Game.World
                 return;
             }
 
-            m_dbMonster = Kernel.RoleManager.GetMonstertype(m_dbGen.Npctype);
+            m_dbMonster = RoleManager.GetMonstertype(m_dbGen.Npctype);
             if (m_dbMonster == null)
             {
                 Log.WriteLogAsync(LogLevel.Error, $"Could not load monster ({m_dbGen.Npctype}) for generator ({m_dbGen.Id})")
@@ -95,7 +96,7 @@ namespace Comet.Game.World
                 Id = m_idGenerator++
             };
 
-            m_pMap = Kernel.MapManager.GetMap(m_dbGen.Mapid);
+            m_pMap = MapManager.GetMap(m_dbGen.Mapid);
             if (m_pMap == null)
             {
                 Log.WriteLogAsync(LogLevel.Error, $"Could not load map ({m_dbGen.Mapid}) for generator ({m_dbGen.Id})")
@@ -103,7 +104,7 @@ namespace Comet.Game.World
                 return;
             }
 
-            m_dbMonster = Kernel.RoleManager.GetMonstertype(m_dbGen.Npctype);
+            m_dbMonster = RoleManager.GetMonstertype(m_dbGen.Npctype);
             if (m_dbMonster == null)
             {
                 Log.WriteLogAsync(LogLevel.Error, $"Could not load monster ({m_dbGen.Npctype}) for generator ({m_dbGen.Id})")

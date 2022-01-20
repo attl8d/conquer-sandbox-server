@@ -32,11 +32,11 @@ using Comet.Game.States;
 
 namespace Comet.Game.World.Managers
 {
-    public sealed class MineManager
+    public static class MineManager
     {
-        private ConcurrentDictionary<uint, MineDictionary> m_mineDictionary = new ConcurrentDictionary<uint, MineDictionary>();
+        private static ConcurrentDictionary<uint, MineDictionary> m_mineDictionary = new ConcurrentDictionary<uint, MineDictionary>();
 
-        public async Task<bool> InitializeAsync()
+        public static async Task<bool> InitializeAsync()
         {
             var list = await DbMineRate.GetAsync();
             foreach (var db in list)
@@ -52,7 +52,7 @@ namespace Comet.Game.World.Managers
             return true;
         }
 
-        public Task<uint> GetDropAsync(Character user)
+        public static Task<uint> GetDropAsync(Character user)
         {
             if (!m_mineDictionary.ContainsKey(user.MapIdentity))
                 return Task.FromResult<uint>(0);

@@ -35,6 +35,7 @@ using Comet.Game.States.Magics;
 using Comet.Game.States.NPCs;
 using Comet.Game.States.Syndicates;
 using Comet.Game.World;
+using Comet.Game.World.Managers;
 using Comet.Game.World.Maps;
 using Comet.Network.Packets;
 using Comet.Shared;
@@ -211,7 +212,7 @@ namespace Comet.Game.Packets
         public override async Task ProcessAsync(Client client)
         {
             Character sender = client.Character;
-            Character target = Kernel.RoleManager.GetUser(RecipientName);
+            Character target = RoleManager.GetUser(RecipientName);
 
             if (sender.Name != SenderName)
             {
@@ -341,7 +342,7 @@ namespace Comet.Game.Packets
                         if (sender.CanUseWorldChat())
                             return;
 
-                        await Kernel.RoleManager.BroadcastMsgAsync(this);
+                        await RoleManager.BroadcastMsgAsync(this);
                         break;
                     }
             }
@@ -394,7 +395,7 @@ namespace Comet.Game.Packets
                         if (!uint.TryParse(param, out uint idAwardItem))
                             return true;
 
-                        DbItemtype itemtype = Kernel.ItemManager.GetItemtype(idAwardItem);
+                        DbItemtype itemtype = ItemManager.GetItemtype(idAwardItem);
                         if (itemtype == null)
                         {
                             await user.SendAsync($"[AwardItem] Itemtype {idAwardItem} not found");
@@ -521,7 +522,7 @@ namespace Comet.Game.Packets
                             Generator pGen = new Generator(newGen);
                             await pGen.GenerateAsync();
                             //await Kernel.WorldThread.AddGeneratorAsync(pGen);
-                            await Kernel.GeneratorManager.AddGeneratorAsync(pGen);
+                            await GeneratorManager.AddGeneratorAsync(pGen);
                             return true;
                         }
                     case "/action":
@@ -530,7 +531,7 @@ namespace Comet.Game.Packets
                         return true;
 
                     case "/reloadactionall":
-                        await Kernel.EventManager.ReloadActionTaskAllAsync();
+                        await EventManager.ReloadActionTaskAllAsync();
                         return true;
 
                     case "/xp":
@@ -568,14 +569,14 @@ namespace Comet.Game.Packets
                                 || !ushort.TryParse(moveNpcParams[3], out var mapY))
                                 return true;
 
-                            BaseNpc npc = Kernel.RoleManager.GetRole<BaseNpc>(idNpc);
+                            BaseNpc npc = RoleManager.GetRole<BaseNpc>(idNpc);
                             if (npc == null)
                             {
                                 await user.SendAsync($"Object {idNpc} is not of type npc");
                                 return true;
                             }
 
-                            GameMap map = Kernel.MapManager.GetMap(idMap);
+                            GameMap map = MapManager.GetMap(idMap);
                             if (map == null)
                                 return true;
 
@@ -756,11 +757,11 @@ namespace Comet.Game.Packets
                             Character bringTarget;
                             if (uint.TryParse(param, out uint idFindTarget))
                             {
-                                bringTarget = Kernel.RoleManager.GetUser(idFindTarget);
+                                bringTarget = RoleManager.GetUser(idFindTarget);
                             }
                             else
                             {
-                                bringTarget = Kernel.RoleManager.GetUser(param);
+                                bringTarget = RoleManager.GetUser(param);
                             }
 
                             if (bringTarget == null)
@@ -784,12 +785,12 @@ namespace Comet.Game.Packets
                                 switch (subCmd.ToLower())
                                 {
                                     case "broadcast":
-                                        await Kernel.RoleManager.BroadcastMsgAsync(subParam, TalkChannel.Center,
+                                        await RoleManager.BroadcastMsgAsync(subParam, TalkChannel.Center,
                                             Color.White);
                                         break;
 
                                     case "gmmsg":
-                                        await Kernel.RoleManager.BroadcastMsgAsync($"{user.Name} says: {subParam}",
+                                        await RoleManager.BroadcastMsgAsync($"{user.Name} says: {subParam}",
                                             TalkChannel.Center, Color.White);
                                         break;
 
@@ -797,7 +798,7 @@ namespace Comet.Game.Packets
                                         if (subParam.Equals("all", StringComparison.InvariantCultureIgnoreCase))
                                         {
                                             await user.SendAsync(
-                                                $"Players Online: {Kernel.RoleManager.OnlinePlayers}, Distinct: {Kernel.RoleManager.OnlineUniquePlayers} (max: {Kernel.RoleManager.MaxOnlinePlayers})",
+                                                $"Players Online: {RoleManager.OnlinePlayers}, Distinct: {RoleManager.OnlineUniquePlayers} (max: {RoleManager.MaxOnlinePlayers})",
                                                 TalkChannel.TopLeft, Color.White);
                                         }
                                         else if (subParam.Equals("map", StringComparison.InvariantCultureIgnoreCase))
@@ -857,11 +858,11 @@ namespace Comet.Game.Packets
                             Character findTarget;
                             if (uint.TryParse(param, out uint idFindTarget))
                             {
-                                findTarget = Kernel.RoleManager.GetUser(idFindTarget);
+                                findTarget = RoleManager.GetUser(idFindTarget);
                             }
                             else
                             {
-                                findTarget = Kernel.RoleManager.GetUser(param);
+                                findTarget = RoleManager.GetUser(param);
                             }
 
                             if (findTarget == null)
@@ -877,7 +878,7 @@ namespace Comet.Game.Packets
                             catch (Exception ex)
                             {
                                 await Log.WriteLogAsync("kickout_ex", LogLevel.Exception, ex.ToString());
-                                Kernel.RoleManager.ForceLogoutUser(findTarget.Identity);
+                                RoleManager.ForceLogoutUser(findTarget.Identity);
                             }
 
                             return true;
@@ -888,11 +889,11 @@ namespace Comet.Game.Packets
                             Character findTarget;
                             if (uint.TryParse(param, out uint idFindTarget))
                             {
-                                findTarget = Kernel.RoleManager.GetUser(idFindTarget);
+                                findTarget = RoleManager.GetUser(idFindTarget);
                             }
                             else
                             {
-                                findTarget = Kernel.RoleManager.GetUser(param);
+                                findTarget = RoleManager.GetUser(param);
                             }
 
                             if (findTarget == null)
@@ -915,7 +916,7 @@ namespace Comet.Game.Packets
                                 return true;
                             }
 
-                            Character target = Kernel.RoleManager.GetUser(myParams[0]);
+                            Character target = RoleManager.GetUser(myParams[0]);
                             if (target != null)
                             {
                                 await Log.GmLogAsync("botjail", $"{user.Identity} {user.Name} botjailed {target.Identity} {target.Name} by: {myParams[1]}");
@@ -936,7 +937,7 @@ namespace Comet.Game.Packets
                                 return true;
                             }
 
-                            Character target = Kernel.RoleManager.GetUser(myParams[0]);
+                            Character target = RoleManager.GetUser(myParams[0]);
                             if (target != null)
                             {
                                 await Log.GmLogAsync("macrojail", $"{user.Identity} {user.Name} macrojailed {target.Identity} {target.Name} by: {myParams[1]}");
@@ -980,7 +981,7 @@ namespace Comet.Game.Packets
                     Role target;
                     if (!string.IsNullOrEmpty(param) && uint.TryParse(param, out uint idBpTarget))
                     {
-                        target = Kernel.RoleManager.GetRole(idBpTarget) ?? user;
+                        target = RoleManager.GetRole(idBpTarget) ?? user;
                     }
                     else
                     {

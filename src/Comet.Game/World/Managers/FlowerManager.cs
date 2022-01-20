@@ -35,11 +35,11 @@ using Comet.Game.States;
 
 namespace Comet.Game.World.Managers
 {
-    public class FlowerManager
+    public static class FlowerManager
     {
-        private ConcurrentDictionary<uint, FlowerRankObject> m_dicFlowers = new ConcurrentDictionary<uint, FlowerRankObject>();
+        private static ConcurrentDictionary<uint, FlowerRankObject> m_dicFlowers = new ConcurrentDictionary<uint, FlowerRankObject>();
 
-        public async Task<bool> InitializeAsync()
+        public static async Task<bool> InitializeAsync()
         {
             foreach (var flower in await DbFlower.GetAsync())
             {
@@ -86,7 +86,7 @@ namespace Comet.Game.World.Managers
             return result;
         }
 
-        public List<FlowerRankingStruct> GetFlowerRankingToday(MsgFlower.FlowerType type, int from = 0, int limit = 10)
+        public static List<FlowerRankingStruct> GetFlowerRankingToday(MsgFlower.FlowerType type, int from = 0, int limit = 10)
         {
             int position = 1;
             switch (type)
@@ -143,7 +143,7 @@ namespace Comet.Game.World.Managers
             return new List<FlowerRankingStruct>();
         }
 
-        public async Task<FlowerRankObject> QueryFlowersAsync(Character user)
+        public static async Task<FlowerRankObject> QueryFlowersAsync(Character user)
         {
             if (m_dicFlowers.TryGetValue(user.Identity, out var value))
                 return value;
@@ -155,7 +155,7 @@ namespace Comet.Game.World.Managers
             return null;
         }
 
-        public async Task DailyResetAsync()
+        public static async Task DailyResetAsync()
         {
             await BaseRepository.DeleteAsync(m_dicFlowers.Values.Select(x => x.GetDatabaseObject()).ToList());
             m_dicFlowers.Clear();

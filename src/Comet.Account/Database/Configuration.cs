@@ -54,6 +54,7 @@ namespace Comet.Account.Database
         public DatabaseConfiguration Database { get; set; }
         public NetworkConfiguration Network { get; set; }
         public NetworkConfiguration RealmNetwork { get; set; }
+        public string DatabaseKey { get; set; }
 
         /// <summary>
         ///     Returns true if the server configuration is valid after reading.

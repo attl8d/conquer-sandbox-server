@@ -24,6 +24,7 @@
 using System.Threading.Tasks;
 using Comet.Core;
 using Comet.Game.Packets;
+using Comet.Game.World.Managers;
 
 #endregion
 
@@ -47,21 +48,21 @@ namespace Comet.Game.States
         public override Task OnAcceptAsync()
         {
             if (Value1 + Value2 != Result)
-                return Kernel.RoleManager.KickOutAsync(m_Owner.Identity, "Wrong captcha reply");
+                return RoleManager.KickOutAsync(m_Owner.Identity, "Wrong captcha reply");
             return Task.CompletedTask;
         }
 
         public override Task OnCancelAsync()
         {
             if (Value1 + Value2 == Result)
-                return Kernel.RoleManager.KickOutAsync(m_Owner.Identity, "Wrong captcha reply");
+                return RoleManager.KickOutAsync(m_Owner.Identity, "Wrong captcha reply");
             return Task.CompletedTask;
         }
 
         public override Task OnTimerAsync()
         {
             if (m_Expiration.IsActive() && m_Expiration.IsTimeOut())
-                return Kernel.RoleManager.KickOutAsync(m_Owner.Identity, "No captcha reply");
+                return RoleManager.KickOutAsync(m_Owner.Identity, "No captcha reply");
             return Task.CompletedTask;
         }
 

@@ -35,6 +35,7 @@ using System.Security.Cryptography;
 using System.Linq;
 using System.Text;
 using Comet.Network.Security;
+using Comet.Game.World.Managers;
 
 #endregion
 
@@ -411,12 +412,12 @@ namespace Comet.Game
                 // Packet has been decrypted and now will be queued in the region processor
                 if (actor.Character?.Map != null)
                 {
-                    Character user = Kernel.RoleManager.GetUser(actor.Character.Identity);
+                    Character user = RoleManager.GetUser(actor.Character.Identity);
                     if (user == null || !user.Client.GUID.Equals(actor.GUID))
                     {
                         actor.Disconnect();
                         if (user != null)
-                            await Kernel.RoleManager.KickOutAsync(actor.Identity);
+                            await RoleManager.KickOutAsync(actor.Identity);
                         return;
                     }
                     Kernel.Services.Processor.Queue(actor.Character.Map.Partition, () => msg.ProcessAsync(actor));
@@ -459,7 +460,7 @@ namespace Comet.Game
 
                 Kernel.Services.Processor.Queue(actor.Character.Map?.Partition ?? 0, async () =>
                 {
-                    Kernel.RoleManager.ForceLogoutUser(actor.Character.Identity);
+                    RoleManager.ForceLogoutUser(actor.Character.Identity);
                     await actor.Character.OnDisconnectAsync();
                 });
             }

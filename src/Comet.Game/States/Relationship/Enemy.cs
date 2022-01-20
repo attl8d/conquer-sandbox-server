@@ -25,6 +25,7 @@ using Comet.Game.Database;
 using Comet.Game.Database.Models;
 using Comet.Game.Database.Repositories;
 using Comet.Game.Packets;
+using Comet.Game.World.Managers;
 using Comet.Shared;
 
 namespace Comet.Game.States.Relationship
@@ -44,7 +45,7 @@ namespace Comet.Game.States.Relationship
         public uint Identity => m_DbEnemy.TargetIdentity;
         public string Name => m_TargetName;
         public bool Online => User != null;
-        public Character User => Kernel.RoleManager.GetUser(Identity);
+        public Character User => RoleManager.GetUser(Identity);
 
         public async Task<bool> CreateAsync(Character user)
         {

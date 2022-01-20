@@ -4,6 +4,8 @@ using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.RazorPages;
 using Microsoft.Extensions.Logging;
 using System;
+using System.Linq;
+using System.Security.Claims;
 using System.Threading.Tasks;
 
 namespace Comet.Web.App.Areas.Profile.Pages.Settings
@@ -53,6 +55,10 @@ namespace Comet.Web.App.Areas.Profile.Pages.Settings
             {
                 throw new InvalidOperationException($"Unexpected error occurred disabling 2FA for user with ID '{_userManager.GetUserId(User)}'.");
             }
+
+            Claim amr = (await _userManager.GetClaimsAsync(user))?.FirstOrDefault(x => x.Type.Equals("amr"));
+            if (amr != null)
+                await _userManager.RemoveClaimAsync(user, amr);
 
             _logger.LogInformation("User with ID '{UserId}' has disabled 2fa.", _userManager.GetUserId(User));
             StatusMessage = "2fa has been disabled. You can reenable 2fa when you setup an authenticator app";

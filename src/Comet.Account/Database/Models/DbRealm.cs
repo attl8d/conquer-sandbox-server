@@ -22,6 +22,7 @@
 #region References
 
 using System;
+using System.ComponentModel.DataAnnotations;
 using System.ComponentModel.DataAnnotations.Schema;
 using Comet.Account.States;
 using Comet.Network.RPC;
@@ -42,6 +43,7 @@ namespace Comet.Account.Database.Models
         [NotMapped] public GameServer Server;
 
         // Column Properties
+        [Key]
         public uint RealmID { get; set; }
         public string Name { get; set; }
         public ushort AuthorityID { get; set; }
@@ -57,6 +59,7 @@ namespace Comet.Account.Database.Models
         public string DatabasePass { get; set; }
         public string DatabaseUser { get; set; }
         public string DatabaseSchema { get; set; }
+        public string DatabasePort { get; set; }
 
         // Navigational Properties
         public virtual DbAccountAuthority Authority { get; set; }

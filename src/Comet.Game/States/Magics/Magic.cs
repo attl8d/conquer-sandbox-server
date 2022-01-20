@@ -26,6 +26,7 @@ using Comet.Game.Database;
 using Comet.Game.Database.Models;
 using Comet.Game.Packets;
 using Comet.Game.States.BaseEntities;
+using Comet.Game.World.Managers;
 using Comet.Shared;
 
 namespace Comet.Game.States.Magics
@@ -55,7 +56,7 @@ namespace Comet.Game.States.Magics
 
         public async Task<bool> CreateAsync(uint idMgc, ushort level)
         {
-            mMagicType = Kernel.MagicManager.GetMagictype(idMgc, level);
+            mMagicType = MagicManager.GetMagictype(idMgc, level);
             if (mMagicType == null)
             {
                 await Log.WriteLogAsync(LogLevel.Warning, $"Skill not existent for creation (type:{idMgc}, level:{0}, player: {m_pOwner.Identity})");
@@ -72,7 +73,7 @@ namespace Comet.Game.States.Magics
                 Level = level
             };
 
-            m_pMaxLevel = Kernel.MagicManager.GetMaxLevel(idMgc);
+            m_pMaxLevel = MagicManager.GetMaxLevel(idMgc);
 
             if (m_pOwner is Character)
             {
@@ -84,7 +85,7 @@ namespace Comet.Game.States.Magics
 
         public async Task<bool> CreateAsync(DbMagic pMgc)
         {
-            mMagicType = Kernel.MagicManager.GetMagictype(pMgc.Type, pMgc.Level);
+            mMagicType = MagicManager.GetMagictype(pMgc.Type, pMgc.Level);
             if (mMagicType == null)
             {
                 await Log.WriteLogAsync(LogLevel.Warning, $"Skill not existent (type:{pMgc.Type}, level:{pMgc.Level}, player: {m_pOwner.Identity})");
@@ -93,7 +94,7 @@ namespace Comet.Game.States.Magics
 
             mMagic = pMgc;
 
-            m_pMaxLevel = Kernel.MagicManager.GetMaxLevel(pMgc.Type);
+            m_pMaxLevel = MagicManager.GetMaxLevel(pMgc.Type);
             return true;
         }
 
@@ -111,7 +112,7 @@ namespace Comet.Game.States.Magics
             set
             {
                 mMagic.Level = Math.Min(m_pMaxLevel, value);
-                mMagicType = Kernel.MagicManager.GetMagictype(Type, Level);
+                mMagicType = MagicManager.GetMagictype(Type, Level);
             }
         }
 

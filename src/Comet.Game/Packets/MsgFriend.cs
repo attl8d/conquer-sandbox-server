@@ -23,6 +23,7 @@
 
 using System.Threading.Tasks;
 using Comet.Game.States;
+using Comet.Game.World.Managers;
 using Comet.Network.Packets;
 
 #endregion
@@ -89,7 +90,7 @@ namespace Comet.Game.Packets
             switch (Action)
             {
                 case MsgFriendAction.RequestFriend:
-                    target = Kernel.RoleManager.GetUser(Identity);
+                    target = RoleManager.GetUser(Identity);
                     if (target == null)
                     {
                         await user.SendAsync(Language.StrTargetNotOnline);

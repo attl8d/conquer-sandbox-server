@@ -38,6 +38,7 @@ using Comet.Game.States.Items;
 using Comet.Game.States.NPCs;
 using Comet.Game.States.Syndicates;
 using Comet.Game.World;
+using Comet.Game.World.Managers;
 using Comet.Game.World.Maps;
 using Comet.Shared;
 using Microsoft.EntityFrameworkCore;
@@ -80,7 +81,7 @@ namespace Comet.Game.States
                     deadLookCount = 0;
                 }
 
-                DbAction action = Kernel.EventManager.GetAction(idNext);
+                DbAction action = EventManager.GetAction(idNext);
                 if (action == null)
                 {
                     await Log.WriteLogAsync(LogLevel.Error, $"Error: invalid game action: {idNext}");
@@ -917,7 +918,7 @@ namespace Comet.Game.States
         private static async Task<bool> ExecuteActionBrocastmsgAsync(DbAction action, string param, Character user,
             Role role, Item item, string input)
         {
-            await Kernel.RoleManager.BroadcastMsgAsync(param, (MsgTalk.TalkChannel)action.Data, Color.White);
+            await RoleManager.BroadcastMsgAsync(param, (MsgTalk.TalkChannel)action.Data, Color.White);
             return true;
         }
 
@@ -1038,7 +1039,7 @@ namespace Comet.Game.States
                 idNpc = role?.Identity ?? user?.InteractingNpc ?? 0;
             }
 
-            BaseNpc npc = Kernel.RoleManager.GetRole<BaseNpc>(idNpc);
+            BaseNpc npc = RoleManager.GetRole<BaseNpc>(idNpc);
             if (npc == null)
             {
                 await Log.WriteLogAsync(LogLevel.Warning,
@@ -1147,7 +1148,7 @@ namespace Comet.Game.States
             if (user == null)
                 return false;
 
-            BaseNpc npc = Kernel.RoleManager.GetRole<BaseNpc>(user.InteractingNpc) ?? role as BaseNpc;
+            BaseNpc npc = RoleManager.GetRole<BaseNpc>(user.InteractingNpc) ?? role as BaseNpc;
             if (npc == null)
                 return false;
 
@@ -1158,7 +1159,7 @@ namespace Comet.Game.States
                 return true;
             }
 
-            foreach (var del in Kernel.RoleManager.QueryRoleByType<DynamicNpc>().Where(x => x.Type == action.Data))
+            foreach (var del in RoleManager.QueryRoleByType<DynamicNpc>().Where(x => x.Type == action.Data))
             {
                 await del.DelNpcAsync();
             }
@@ -1179,10 +1180,10 @@ namespace Comet.Game.States
             var score = npc.GetTopScore();
             if (score != null)
             {
-                Syndicate syn = Kernel.SyndicateManager.GetSyndicate((int)score.Identity);
+                Syndicate syn = SyndicateManager.GetSyndicate((int)score.Identity);
                 if (npc.IsSynFlag() && syn != null)
                 {
-                    await Kernel.RoleManager.BroadcastMsgAsync(string.Format(Language.StrWarWon, syn.Name),
+                    await RoleManager.BroadcastMsgAsync(string.Format(Language.StrWarWon, syn.Name),
                         MsgTalk.TalkChannel.Center);
                     npc.Map.OwnerIdentity = syn.Identity;
                 }
@@ -1206,14 +1207,14 @@ namespace Comet.Game.States
                 await npc.SaveAsync();
             }
 
-            foreach (var player in Kernel.RoleManager.QueryRoleByMap<Character>(npc.MapIdentity))
+            foreach (var player in RoleManager.QueryRoleByMap<Character>(npc.MapIdentity))
             {
                 player.SetAttackTarget(null);
             }
 
             if (npc.IsSynFlag())
             {
-                foreach (var resetNpc in Kernel.RoleManager.QueryRoleByMap<BaseNpc>(npc.MapIdentity))
+                foreach (var resetNpc in RoleManager.QueryRoleByMap<BaseNpc>(npc.MapIdentity))
                 {
                     if (resetNpc.IsSynFlag())
                         continue;
@@ -1242,7 +1243,7 @@ namespace Comet.Game.States
             ushort usMapX = ushort.Parse(splitParam[2]);
             ushort usMapY = ushort.Parse(splitParam[3]);
 
-            BaseNpc npc = Kernel.RoleManager.GetRole<BaseNpc>(idNpc);
+            BaseNpc npc = RoleManager.GetRole<BaseNpc>(idNpc);
             if (npc == null)
                 return false;
 
@@ -1290,7 +1291,7 @@ namespace Comet.Game.States
             if (idMap <= 0 || nPosX <= 0 || nPosY <= 0)
                 return false;
 
-            BaseNpc npc = Kernel.RoleManager.GetRole<BaseNpc>(action.Data);
+            BaseNpc npc = RoleManager.GetRole<BaseNpc>(action.Data);
             if (npc == null)
                 return false;
 
@@ -1307,11 +1308,11 @@ namespace Comet.Game.States
 
             if (splitParam[0].Equals("map_user", StringComparison.InvariantCultureIgnoreCase))
             {
-                amount += Kernel.MapManager.GetMap(action.Data)?.PlayerCount ?? 0;
+                amount += MapManager.GetMap(action.Data)?.PlayerCount ?? 0;
             }
             else if (splitParam[0].Equals("alive_user", StringComparison.InvariantCultureIgnoreCase))
             {
-                amount += Kernel.RoleManager.QueryRoleByMap<Character>(action.Data).Count(x => x.IsAlive);
+                amount += RoleManager.QueryRoleByMap<Character>(action.Data).Count(x => x.IsAlive);
             }
             else
             {
@@ -1336,7 +1337,7 @@ namespace Comet.Game.States
         private static async Task<bool> ExecuteActionMapBrocastmsgAsync(DbAction action, string param, Character user,
             Role role, Item item, string input)
         {
-            GameMap map = Kernel.MapManager.GetMap(action.Data);
+            GameMap map = MapManager.GetMap(action.Data);
             if (map == null)
                 return false;
 
@@ -1356,7 +1357,7 @@ namespace Comet.Game.States
             ushort x = ushort.Parse(splitParam[2]);
             ushort y = ushort.Parse(splitParam[3]);
 
-            GameMap map = Kernel.MapManager.GetMap(idMap);
+            GameMap map = MapManager.GetMap(idMap);
             if (map == null)
                 return false;
 
@@ -1384,7 +1385,7 @@ namespace Comet.Game.States
             var dwStatus = byte.Parse(splitParam[1]);
             bool flag = splitParam[2] != "0";
 
-            GameMap map = Kernel.MapManager.GetMap(idMap);
+            GameMap map = MapManager.GetMap(idMap);
             if (map == null)
                 return false;
 
@@ -1412,11 +1413,11 @@ namespace Comet.Game.States
             {
                 if (user == null)
                     return false;
-                map = Kernel.MapManager.GetMap(user.MapIdentity);
+                map = MapManager.GetMap(user.MapIdentity);
             }
             else
             {
-                map = Kernel.MapManager.GetMap(idMap);
+                map = MapManager.GetMap(idMap);
             }
 
             if (map == null)
@@ -1537,13 +1538,13 @@ namespace Comet.Game.States
             }
             else
             {
-                map = Kernel.MapManager.GetMap(idMap);
+                map = MapManager.GetMap(idMap);
             }
 
             if (map == null)
                 return false;
 
-            int count = Kernel.RoleManager.QueryRoleByMap<Monster>(idMap).Count(x =>
+            int count = RoleManager.QueryRoleByMap<Monster>(idMap).Count(x =>
                 ((idType != 0 && x.Type == idType) || idType == 0) && x.MapX >= nRegionX &&
                 x.MapX < nRegionX - nRegionCX
                 && x.MapY >= nRegionY && x.MapY < nRegionY - nRegionCY);
@@ -1582,14 +1583,14 @@ namespace Comet.Game.States
             var amount = int.Parse(splitParam[6]); // amount of items to be dropped
             var duration = int.Parse(splitParam[7]); // duration of the item in the floor
 
-            DbItemtype itemtype = Kernel.ItemManager.GetItemtype(idItemtype);
+            DbItemtype itemtype = ItemManager.GetItemtype(idItemtype);
             if (itemtype == null)
             {
                 await Log.WriteLogAsync(LogLevel.Warning, $"Invalid itemtype {idItemtype}, {param}, {action.Identity}");
                 return false;
             }
 
-            GameMap map = Kernel.MapManager.GetMap(idMap);
+            GameMap map = MapManager.GetMap(idMap);
             if (map == null)
             {
                 await Log.WriteLogAsync(LogLevel.Warning, $"Invalid map {idMap}, {param}, {action.Identity}");
@@ -1654,7 +1655,7 @@ namespace Comet.Game.States
             }
             else
             {
-                map = Kernel.MapManager.GetMap(action.Data);
+                map = MapManager.GetMap(action.Data);
             }
 
             if (map == null)
@@ -1683,7 +1684,7 @@ namespace Comet.Game.States
             }
             else
             {
-                map = Kernel.MapManager.GetMap(idMap);
+                map = MapManager.GetMap(idMap);
             }
 
             if (map == null)
@@ -1711,7 +1712,7 @@ namespace Comet.Game.States
             ushort posX = ushort.Parse(splitParam[1]), posY = ushort.Parse(splitParam[2]);
             string szEffect = splitParam[3];
 
-            GameMap map = Kernel.MapManager.GetMap(idMap);
+            GameMap map = MapManager.GetMap(idMap);
             if (map == null)
                 return false;
 
@@ -1912,7 +1913,7 @@ namespace Comet.Game.States
                     break;
             }
 
-            DynamicNpc npc = user.Map.QueryStatuary(user, lookface, idTask0) ?? Kernel.RoleManager
+            DynamicNpc npc = user.Map.QueryStatuary(user, lookface, idTask0) ?? RoleManager
                 .QueryRoleByType<DynamicNpc>().FirstOrDefault(x => x.LinkId == idLink);
             if (npc == null)
             {
@@ -2013,7 +2014,7 @@ namespace Comet.Game.States
             if (!user.UserPackage.IsPackSpare(1))
                 return false;
 
-            DbItemtype itemtype = Kernel.ItemManager.GetItemtype(action.Data);
+            DbItemtype itemtype = ItemManager.GetItemtype(action.Data);
             if (itemtype == null)
             {
                 await Log.WriteLogAsync(LogLevel.Warning,
@@ -2545,7 +2546,7 @@ namespace Comet.Game.States
                     {
                         if (opt == "set")
                         {
-                            DbItemtype itemt = Kernel.ItemManager.GetItemtype((uint)value);
+                            DbItemtype itemt = ItemManager.GetItemtype((uint)value);
                             if (itemt == null)
                             {
                                 // new item doesnt exist
@@ -2898,7 +2899,7 @@ namespace Comet.Game.States
             if (user.UserPackage.GetItemByType(Item.TYPE_JAR) != null)
                 await user.UserPackage.SpendItemAsync(user.UserPackage.GetItemByType(Item.TYPE_JAR));
 
-            var itemtype = Kernel.ItemManager.GetItemtype(action.Data);
+            var itemtype = ItemManager.GetItemtype(action.Data);
             if (itemtype == null)
                 return false;
 
@@ -3119,7 +3120,7 @@ namespace Comet.Game.States
             if (user.SyndicateRank != SyndicateMember.SyndicateRank.GuildLeader)
                 return false;
 
-            Syndicate target = Kernel.SyndicateManager.GetSyndicate(input);
+            Syndicate target = SyndicateManager.GetSyndicate(input);
             if (target == null)
                 return false;
 
@@ -3138,7 +3139,7 @@ namespace Comet.Game.States
             if (user.SyndicateRank != SyndicateMember.SyndicateRank.GuildLeader)
                 return false;
 
-            Syndicate target = Kernel.SyndicateManager.GetSyndicate(input);
+            Syndicate target = SyndicateManager.GetSyndicate(input);
             if (target == null)
                 return false;
 
@@ -3176,7 +3177,7 @@ namespace Comet.Game.States
             if (user.SyndicateRank != SyndicateMember.SyndicateRank.GuildLeader)
                 return false;
 
-            Syndicate target = Kernel.SyndicateManager.GetSyndicate(input);
+            Syndicate target = SyndicateManager.GetSyndicate(input);
             if (target == null)
                 return false;
 
@@ -3201,7 +3202,7 @@ namespace Comet.Game.States
             if (splitParam.Length < 4)
                 target = user.Syndicate;
             else
-                target = Kernel.SyndicateManager.GetSyndicate(int.Parse(splitParam[3]));
+                target = SyndicateManager.GetSyndicate(int.Parse(splitParam[3]));
 
             if (target == null)
                 return true;
@@ -4171,7 +4172,7 @@ namespace Comet.Game.States
                 || !ushort.TryParse(paramStrings[2], out var y))
                 return false;
 
-            GameMap map = Kernel.MapManager.GetMap(idMap);
+            GameMap map = MapManager.GetMap(idMap);
             if (map == null)
             {
                 await Log.WriteLogAsync(LogLevel.Warning, $"Invalid map identity {idMap} for action {action.Identity}");
@@ -4212,7 +4213,7 @@ namespace Comet.Game.States
                 return true;
             }
 
-            GameMap map = Kernel.MapManager.GetMap(idMap);
+            GameMap map = MapManager.GetMap(idMap);
             if (map == null)
             {
                 await Log.WriteLogAsync(LogLevel.Warning, $"Invalid map identity {idMap} for action {action.Identity}");
@@ -4456,7 +4457,7 @@ namespace Comet.Game.States
             if (user.MateIdentity == 0)
                 return false;
 
-            Character mate = Kernel.RoleManager.GetUser(user.MateIdentity);
+            Character mate = RoleManager.GetUser(user.MateIdentity);
             if (mate == null)
             {
                 DbCharacter dbMate = await CharactersRepository.FindByIdentityAsync(user.MateIdentity);
@@ -4524,7 +4525,7 @@ namespace Comet.Game.States
                 case "couple":
                     await user.BroadcastRoomMsgAsync(msg, true);
 
-                    Character couple = Kernel.RoleManager.GetUser(user.MateIdentity);
+                    Character couple = RoleManager.GetUser(user.MateIdentity);
                     if (couple == null)
                         return true;
 
@@ -4670,7 +4671,7 @@ namespace Comet.Game.States
 
             user.HomeIdentity = pMapInfo.Identity;
             await user.SaveAsync();
-            return Kernel.MapManager.AddMap(map);
+            return MapManager.AddMap(map);
         }
 
         private static async Task<bool> ExecuteActionUserEnterHome(DbAction action, string param, Character user,
@@ -4679,7 +4680,7 @@ namespace Comet.Game.States
             if (user == null || user.HomeIdentity == 0)
                 return false;
 
-            GameMap target = Kernel.MapManager.GetMap(user.HomeIdentity);
+            GameMap target = MapManager.GetMap(user.HomeIdentity);
 
             await user.FlyMapAsync(target.Identity, target.PortalX, target.PortalY);
 
@@ -4703,7 +4704,7 @@ namespace Comet.Game.States
                 return false;
 
             uint idMap = 0;
-            Character mate = Kernel.RoleManager.GetUser(user.MateIdentity);
+            Character mate = RoleManager.GetUser(user.MateIdentity);
             if (mate == null)
             {
                 DbCharacter dbMate = await CharactersRepository.FindByIdentityAsync(user.MateIdentity);
@@ -4717,7 +4718,7 @@ namespace Comet.Game.States
             if (idMap == 0)
                 return false;
 
-            GameMap map = Kernel.MapManager.GetMap(idMap);
+            GameMap map = MapManager.GetMap(idMap);
             if (map == null)
                 return false;
 
@@ -4850,7 +4851,7 @@ namespace Comet.Game.States
             if (profSort == 13 || profSort == 14)
                 profSort = 10;
 
-            DbPointAllot pointAllot = Kernel.RoleManager.GetPointAllot(profSort, 1);
+            DbPointAllot pointAllot = RoleManager.GetPointAllot(profSort, 1);
             if (pointAllot != null)
             {
                 await user.SetAttributesAsync(ClientUpdateType.Strength, pointAllot.Strength);
@@ -5554,7 +5555,7 @@ namespace Comet.Game.States
 
             if (target == "couple")
             {
-                Character mate = Kernel.RoleManager.GetUser(user.MateIdentity);
+                Character mate = RoleManager.GetUser(user.MateIdentity);
                 if (mate == null)
                     return false;
 
@@ -5966,10 +5967,10 @@ namespace Comet.Game.States
                 allItems.RemoveAll(x => x.Rank == 6);
             }
 
-            allItems.RemoveAll(x => Kernel.ItemManager.GetItemtype(x.ItemIdentity) == null);
+            allItems.RemoveAll(x => ItemManager.GetItemtype(x.ItemIdentity) == null);
 
             DbLottery lottery = allItems[await Kernel.NextAsync(allItems.Count) % allItems.Count];
-            DbItemtype itemtype = Kernel.ItemManager.GetItemtype(lottery.ItemIdentity);
+            DbItemtype itemtype = ItemManager.GetItemtype(lottery.ItemIdentity);
 
             DbItem lottoItem = new DbItem
             {
@@ -5997,7 +5998,7 @@ namespace Comet.Game.States
 
             if (lottery.Rank <= 5)
             {
-                await Kernel.RoleManager.BroadcastMsgAsync(
+                await RoleManager.BroadcastMsgAsync(
                     string.Format(Language.StrLotteryHigh, user.Name, lottery.Itemname), MsgTalk.TalkChannel.Talk);
             }
             else
@@ -6024,7 +6025,7 @@ namespace Comet.Game.States
                 || !ushort.TryParse(splitParams[4], out var cy))
                 return false;
 
-            GameMap map = Kernel.MapManager.GetMap(idMap);
+            GameMap map = MapManager.GetMap(idMap);
             if (map == null)
             {
                 await Log.WriteLogAsync(LogLevel.Warning, $"GameAction::ExecuteActionChgMapSquare invalid map {idMap}");
@@ -6059,7 +6060,7 @@ namespace Comet.Game.States
             ulong nStatus = ulong.Parse(pszParam[1]);
             int nFlag = int.Parse(pszParam[2]);
 
-            GameMap map = Kernel.MapManager.GetMap(idMap);
+            GameMap map = MapManager.GetMap(idMap);
             if (map == null)
                 return false;
 
@@ -6074,7 +6075,7 @@ namespace Comet.Game.States
             Role role, Item item, string input)
         {
             //Generator generator = Kernel.WorldThread.GetGenerator(action.Data);
-            Generator generator = Kernel.GeneratorManager.GetGenerator(action.Data);
+            Generator generator = GeneratorManager.GetGenerator(action.Data);
             if (generator == null)
             {
                 await Log.WriteLogAsync(LogLevel.Warning,
@@ -6177,8 +6178,8 @@ namespace Comet.Game.States
             if (pszParam.Length >= 9)
                 szName = pszParam[8];
 
-            DbMonstertype monstertype = Kernel.RoleManager.GetMonstertype(idType);
-            GameMap map = Kernel.MapManager.GetMap(idMap);
+            DbMonstertype monstertype = RoleManager.GetMonstertype(idType);
+            GameMap map = MapManager.GetMap(idMap);
 
             if (monstertype == null || map == null)
             {
@@ -6188,7 +6189,7 @@ namespace Comet.Game.States
             }
 
             //Generator generator = Kernel.WorldThread.GetGenerator(idGen);
-            Generator generator = Kernel.GeneratorManager.GetGenerator(idGen);
+            Generator generator = GeneratorManager.GetGenerator(idGen);
             if (generator == null)
             {
                 await Log.WriteLogAsync(LogLevel.Warning,
@@ -6276,7 +6277,7 @@ namespace Comet.Game.States
                     szData = pszParam[24];
             }
 
-            GameMap map = Kernel.MapManager.GetMap(idMap);
+            GameMap map = MapManager.GetMap(idMap);
             if (map == null)
             {
                 await Log.WriteLogAsync(LogLevel.Warning,
@@ -6347,11 +6348,11 @@ namespace Comet.Game.States
             switch (szField.ToLowerInvariant())
             {
                 case "name":
-                    nCount += Kernel.GeneratorManager.GetGenerators(idMap, szData)
+                    nCount += GeneratorManager.GetGenerators(idMap, szData)
                         .Sum(x => x.GetRoles().Count(y => y.IsAlive));
                     break;
                 case "gen_id":
-                    Generator gen = Kernel.GeneratorManager.GetGenerator(uint.Parse(szData));
+                    Generator gen = GeneratorManager.GetGenerator(uint.Parse(szData));
                     if (gen == null)
                         return false;
                     nCount += gen.GetRoles().Count(x => x.IsAlive);
@@ -6393,7 +6394,7 @@ namespace Comet.Game.States
 
             if (!string.IsNullOrEmpty(szName))
             {
-                foreach (var gen in Kernel.GeneratorManager.GetGenerators(idMap, szName))
+                foreach (var gen in GeneratorManager.GetGenerators(idMap, szName))
                 {
                     await gen.ClearGeneratorAsync();
                     ret = true;
@@ -6402,7 +6403,7 @@ namespace Comet.Game.States
 
             if (idType != 0)
             {
-                foreach (var gen in Kernel.GeneratorManager.GetByMonsterType(idType))
+                foreach (var gen in GeneratorManager.GetByMonsterType(idType))
                 {
                     if (gen.MapIdentity == idMap)
                     {
@@ -6418,7 +6419,7 @@ namespace Comet.Game.States
         private static async Task<bool> ExecuteActionEventBbs(DbAction action, string param, Character user, Role role,
             Item item, string input)
         {
-            await Kernel.RoleManager.BroadcastMsgAsync(param, MsgTalk.TalkChannel.System);
+            await RoleManager.BroadcastMsgAsync(param, MsgTalk.TalkChannel.System);
             return true;
         }
 
@@ -6430,7 +6431,7 @@ namespace Comet.Game.States
                 return false;
 
             uint npcType = uint.Parse(pszParam[2]);
-            foreach (var dynaNpc in Kernel.RoleManager.QueryRoleByMap<DynamicNpc>(uint.Parse(pszParam[0])))
+            foreach (var dynaNpc in RoleManager.QueryRoleByMap<DynamicNpc>(uint.Parse(pszParam[0])))
             {
                 if (dynaNpc.Type == npcType)
                     await dynaNpc.DelNpcAsync();
@@ -6451,8 +6452,8 @@ namespace Comet.Game.States
                 !ushort.TryParse(pszParam[2], out var usMapX) || !ushort.TryParse(pszParam[3], out var usMapY))
                 return false;
 
-            GameMap sourceMap = Kernel.MapManager.GetMap(idSource);
-            GameMap targetMap = Kernel.MapManager.GetMap(idTarget);
+            GameMap sourceMap = MapManager.GetMap(idSource);
+            GameMap targetMap = MapManager.GetMap(idTarget);
 
             if (sourceMap == null || targetMap == null)
                 return false;
@@ -6463,7 +6464,7 @@ namespace Comet.Game.States
             if (!sourceMap[usMapX, usMapY].IsAccessible())
                 return false;
 
-            foreach (var player in Kernel.RoleManager.QueryRoleByType<Character>()
+            foreach (var player in RoleManager.QueryRoleByType<Character>()
                 .Where(x => x.MapIdentity == sourceMap.Identity))
             {
                 await player.FlyMapAsync(idTarget, usMapX, usMapY);
@@ -6483,14 +6484,14 @@ namespace Comet.Game.States
                                                            || !int.TryParse(pszParam[2], out var nAmount))
                 return false;
 
-            GameMap map = Kernel.MapManager.GetMap(idMap);
+            GameMap map = MapManager.GetMap(idMap);
             if (map == null)
                 return false;
 
             if (nAmount <= 0)
                 nAmount = int.MaxValue;
 
-            foreach (var player in Kernel.RoleManager.QueryRoleByMap<Character>(idMap))
+            foreach (var player in RoleManager.QueryRoleByMap<Character>(idMap))
             {
                 if (nAmount-- <= 0)
                     break;
@@ -6670,7 +6671,7 @@ namespace Comet.Game.States
             if (user?.Family == null)
                 return false;
 
-            DynamicNpc npc = Kernel.RoleManager.FindRole<DynamicNpc>(x => x.Identity == action.Data);
+            DynamicNpc npc = RoleManager.FindRole<DynamicNpc>(x => x.Identity == action.Data);
             if (npc == null)
                 return false;
 
@@ -6683,7 +6684,7 @@ namespace Comet.Game.States
             if (!war.IsInTime)
                 return false;
 
-            GameMap map = Kernel.MapManager.GetMap((uint)npc.Data1);
+            GameMap map = MapManager.GetMap((uint)npc.Data1);
             if (map == null)
                 return false;
 
@@ -6702,7 +6703,7 @@ namespace Comet.Game.States
                 {
                     // this map is now transfered
                     // the clan will lose the old one
-                    Family old = Kernel.FamilyManager.GetOccupyOwner((uint)npc.Data1);
+                    Family old = FamilyManager.GetOccupyOwner((uint)npc.Data1);
                     if (old != null)
                     {
                         old.FamilyMap = 0;
@@ -6722,7 +6723,7 @@ namespace Comet.Game.States
                 if (currentTime < 204500 || currentTime > 205459)
                     return false;
 
-                Family current = Kernel.FamilyManager.GetOccupyOwner((uint)npc.Data1);
+                Family current = FamilyManager.GetOccupyOwner((uint)npc.Data1);
                 if (families.All(x => x.Key != current?.Identity))
                 {
                     Character higherBpPlayer = map.QueryPlayers(x =>
@@ -6758,7 +6759,7 @@ namespace Comet.Game.States
             if (user?.Family == null)
                 return false;
 
-            DynamicNpc npc = Kernel.RoleManager.FindRole<DynamicNpc>(x => x.Identity == action.Data);
+            DynamicNpc npc = RoleManager.FindRole<DynamicNpc>(x => x.Identity == action.Data);
             if (npc == null)
                 return false;
 
@@ -6773,7 +6774,7 @@ namespace Comet.Game.States
             if (user?.Family == null)
                 return false;
 
-            DynamicNpc npc = Kernel.RoleManager.FindRole<DynamicNpc>(x => x.Identity == action.Data);
+            DynamicNpc npc = RoleManager.FindRole<DynamicNpc>(x => x.Identity == action.Data);
             if (npc == null)
                 return false;
 
@@ -6806,7 +6807,7 @@ namespace Comet.Game.States
                 posY = ushort.Parse(splitParams[5]),
                 data = ushort.Parse(splitParams[6]);
 
-            if (Kernel.MapManager.GetMap(idMap) == null)
+            if (MapManager.GetMap(idMap) == null)
             {
                 await Log.WriteLogAsync(LogLevel.Error,
                     $"Invalid map for ExecuteActionTrapCreate {idMap}:{action.Identity}");
@@ -6922,7 +6923,7 @@ namespace Comet.Game.States
 
             if (result.Contains("%levelup_exp"))
             {
-                DbLevelExperience db = Kernel.RoleManager.GetLevelExperience(user?.Level ?? 0);
+                DbLevelExperience db = RoleManager.GetLevelExperience(user?.Level ?? 0);
                 result = result.Replace("%levelup_exp", db != null ? db.Exp.ToString() : "0");
             }
 
@@ -7070,7 +7071,7 @@ namespace Comet.Game.States
         public uint UserIdentity { get; }
         public uint Action { get; }
         public bool CanBeExecuted => m_timeOut.IsActive() && m_timeOut.IsTimeOut();
-        public bool IsValid => Kernel.RoleManager.GetUser(UserIdentity) != null;
+        public bool IsValid => RoleManager.GetUser(UserIdentity) != null;
 
         public void Clear()
         {

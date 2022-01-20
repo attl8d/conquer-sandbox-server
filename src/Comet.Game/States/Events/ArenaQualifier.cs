@@ -32,6 +32,7 @@ using Comet.Game.Packets;
 using Comet.Game.States.BaseEntities;
 using Comet.Game.States.Magics;
 using Comet.Game.World;
+using Comet.Game.World.Managers;
 using Comet.Game.World.Maps;
 using Comet.Network.Packets;
 using Comet.Shared;
@@ -74,7 +75,7 @@ namespace Comet.Game.States.Events
 
         public override async Task<bool> CreateAsync()
         {
-            Map = Kernel.MapManager.GetMap(BASE_MAP_ID_U);
+            Map = MapManager.GetMap(BASE_MAP_ID_U);
             
             if (Map == null)
             {
@@ -189,7 +190,7 @@ namespace Comet.Game.States.Events
         {
             foreach (var queueUser in m_awaitingQueue.Values)
             {
-                Character player = Kernel.RoleManager.GetUser(queueUser.Identity);
+                Character player = RoleManager.GetUser(queueUser.Identity);
                 if (player == null)
                 {
                     await UnsubscribeAsync(queueUser.Identity);
@@ -200,7 +201,7 @@ namespace Comet.Game.States.Events
                 if (target == null)
                     continue;
 
-                Character targetPlayer = Kernel.RoleManager.GetUser(target.Identity);
+                Character targetPlayer = RoleManager.GetUser(target.Identity);
                 if (targetPlayer == null)
                 {
                     await UnsubscribeAsync(target.Identity);
@@ -268,7 +269,7 @@ namespace Comet.Game.States.Events
         
         public async Task<bool> UnsubscribeAsync(uint idUser)
         {
-            Character user = Kernel.RoleManager.GetUser(idUser);
+            Character user = RoleManager.GetUser(idUser);
 
             LeaveQueue(idUser);
             if (user != null)
@@ -390,7 +391,7 @@ namespace Comet.Game.States.Events
         {
             if (m_awaitingQueue.TryRemove(idUser, out var result))
             {
-                Character user = Kernel.RoleManager.GetUser(idUser);
+                Character user = RoleManager.GetUser(idUser);
                 if (user != null)
                     user.QualifierStatus = MsgQualifyingDetailInfo.ArenaStatus.NotSignedUp;
                 return result;
@@ -589,7 +590,7 @@ namespace Comet.Game.States.Events
                     return false;
                 }
 
-                Kernel.MapManager.AddMap(Map);
+                MapManager.AddMap(Map);
                 
                 if (!await PrepareAsync(Player1, Object1, Player2, Object2))
                 {
@@ -677,7 +678,7 @@ namespace Comet.Game.States.Events
 
             public async Task DestroyAsync(uint idDisconnect = 0, bool notStarted = false)
             {
-                Character temp = Kernel.RoleManager.GetUser(Player1.Identity);
+                Character temp = RoleManager.GetUser(Player1.Identity);
                 if (Player1.Identity != idDisconnect && temp != null)
                 {
                     if (!notStarted)
@@ -706,7 +707,7 @@ namespace Comet.Game.States.Events
                     });
                 }
 
-                temp = Kernel.RoleManager.GetUser(Player2.Identity);
+                temp = RoleManager.GetUser(Player2.Identity);
                 if (Player2.Identity != idDisconnect && temp != null)
                 {
                     if (!notStarted)
@@ -737,7 +738,7 @@ namespace Comet.Game.States.Events
 
                 if (Map != null)
                 {
-                    Kernel.MapManager.RemoveMap(Map.Identity);
+                    MapManager.RemoveMap(Map.Identity);
                 }
 
                 MapIdentityGenerator.ReturnIdentity(MapIdentity);
@@ -831,7 +832,7 @@ namespace Comet.Game.States.Events
                     strLose += $"({loser.SyndicateName}) ";
                 strLose += loser.Name;
 
-                await Kernel.RoleManager.BroadcastMsgAsync(string.Format(Language.StrArenicMatchEnd, strWin, strLose, winner.QualifierRank), MsgTalk.TalkChannel.Qualifier);
+                await RoleManager.BroadcastMsgAsync(string.Format(Language.StrArenicMatchEnd, strWin, strLose, winner.QualifierRank), MsgTalk.TalkChannel.Qualifier);
 
                 if (force)
                     await DestroyAsync(disconnect, true);
@@ -893,7 +894,7 @@ namespace Comet.Game.States.Events
                     strLose2 += $"({Player2.SyndicateName}) ";
                 strLose2 += Player2.Name;
 
-                await Kernel.RoleManager.BroadcastMsgAsync(string.Format(Language.StrArenicMatchDraw, strLose1, strLose2), MsgTalk.TalkChannel.Qualifier);
+                await RoleManager.BroadcastMsgAsync(string.Format(Language.StrArenicMatchDraw, strLose1, strLose2), MsgTalk.TalkChannel.Qualifier);
 
                 if (force)
                     await DestroyAsync(0, true);

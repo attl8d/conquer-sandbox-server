@@ -1,5 +1,6 @@
 ﻿using Comet.Game.Internal;
 using Comet.Game.States;
+using Comet.Game.World.Managers;
 using Comet.Network.Packets;
 using System.Threading.Tasks;
 
@@ -20,7 +21,7 @@ namespace Comet.Game.Packets
 
         public override Task ProcessAsync(AccountServer client)
         {
-            Character user = Kernel.RoleManager.GetUserByAccount(AccountIdentity);
+            Character user = RoleManager.GetUserByAccount(AccountIdentity);
             if (user == null)
                 return Task.CompletedTask;
 

@@ -1,4 +1,5 @@
-﻿using Comet.Shared.Comet.Shared;
+﻿using Comet.Game.World.Managers;
+using Comet.Shared.Comet.Shared;
 using System.Threading.Tasks;
 
 namespace Comet.Game.World.Threading
@@ -12,7 +13,7 @@ namespace Comet.Game.World.Threading
 
         protected override async Task<bool> OnElapseAsync()
         {
-            await Kernel.GeneratorManager.OnTimerAsync();
+            await GeneratorManager.OnTimerAsync();
             return true;
         }
     }

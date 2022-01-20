@@ -25,6 +25,7 @@ using System.Threading.Tasks;
 using Comet.Game.Database.Models;
 using Comet.Game.States;
 using Comet.Game.States.Guide;
+using Comet.Game.World.Managers;
 using Comet.Network.Packets;
 
 #endregion
@@ -91,7 +92,7 @@ namespace Comet.Game.Packets
             {
                 case Request.InviteApprentice:
                     {
-                        Character target = Kernel.RoleManager.GetUser(Param);
+                        Character target = RoleManager.GetUser(Param);
                         if (target == null)
                             return;
 
@@ -127,7 +128,7 @@ namespace Comet.Game.Packets
                             }
                         }
 
-                        DbTutorType type = Kernel.RoleManager.GetTutorType(user.Level);
+                        DbTutorType type = RoleManager.GetTutorType(user.Level);
                         if (type == null || user.ApprenticeCount >= type.StudentNum)
                         {
                             await user.SendAsync(Language.StrGuideTooManyStudents);
@@ -153,7 +154,7 @@ namespace Comet.Game.Packets
 
                 case Request.RequestMentor:
                     {
-                        Character target = Kernel.RoleManager.GetUser(Param);
+                        Character target = RoleManager.GetUser(Param);
                         if (target == null)
                             return;
 
@@ -189,7 +190,7 @@ namespace Comet.Game.Packets
                             }
                         }
 
-                        DbTutorType type = Kernel.RoleManager.GetTutorType(target.Level);
+                        DbTutorType type = RoleManager.GetTutorType(target.Level);
                         if (type == null || target.ApprenticeCount >= type.StudentNum)
                         {
                             await user.SendAsync(Language.StrGuideTooManyStudents1);
@@ -262,7 +263,7 @@ namespace Comet.Game.Packets
 
                 case Request.AcceptRequestApprentice:
                     {
-                        Character target = Kernel.RoleManager.GetUser(Identity);
+                        Character target = RoleManager.GetUser(Identity);
                         if (target == null)
                             return;
 
@@ -290,7 +291,7 @@ namespace Comet.Game.Packets
                             return;
                         }
 
-                        Character target = Kernel.RoleManager.GetUser(Identity);
+                        Character target = RoleManager.GetUser(Identity);
                         if (target == null)
                             return;
 

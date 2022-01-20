@@ -25,6 +25,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
 using Comet.Game.States;
+using Comet.Game.World.Managers;
 using Comet.Network.Packets;
 
 #endregion
@@ -78,16 +79,16 @@ namespace Comet.Game.Packets
             {
                 case PigeonMode.Query:
                 case PigeonMode.QueryUser:
-                    await Kernel.PigeonManager.SendListAsync(client.Character, Mode);
+                    await PigeonManager.SendListAsync(client.Character, Mode);
                     break;
                 case PigeonMode.Send:
-                    await Kernel.PigeonManager.PushAsync(client.Character,Strings.FirstOrDefault());
-                    await Kernel.PigeonManager.SendListAsync(client.Character, PigeonMode.Query);
+                    await PigeonManager.PushAsync(client.Character,Strings.FirstOrDefault());
+                    await PigeonManager.SendListAsync(client.Character, PigeonMode.Query);
                     break;
                 case PigeonMode.SuperUrgent:
                 case PigeonMode.Urgent:
-                    await Kernel.PigeonManager.AdditionAsync(client.Character, this);
-                    await Kernel.PigeonManager.SendListAsync(client.Character, PigeonMode.Query);
+                    await PigeonManager.AdditionAsync(client.Character, this);
+                    await PigeonManager.SendListAsync(client.Character, PigeonMode.Query);
                     break;
             }
         }

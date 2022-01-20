@@ -28,6 +28,7 @@ using Comet.Game.Database.Repositories;
 using Comet.Game.Packets;
 using Comet.Game.States.BaseEntities;
 using Comet.Game.States.Items;
+using Comet.Game.World.Managers;
 
 namespace Comet.Game.States.Magics
 {
@@ -221,7 +222,7 @@ namespace Comet.Game.States.Magics
 
         public bool FindMagicType(ushort type, byte pLevel)
         {
-            return Kernel.MagicManager.GetMagictype(type, pLevel) != null;
+            return MagicManager.GetMagictype(type, pLevel) != null;
         }
 
         public bool CheckLevel(ushort type, ushort level)

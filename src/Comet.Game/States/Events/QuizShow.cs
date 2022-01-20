@@ -77,7 +77,7 @@ namespace Comet.Game.States.Events
 
         public override async Task<bool> CreateAsync()
         {
-            m_owner = Kernel.RoleManager.GetRole<DynamicNpc>(NPC_ID_U);
+            m_owner = RoleManager.GetRole<DynamicNpc>(NPC_ID_U);
             if (m_owner == null)
             {
                 await Log.WriteLogAsync(LogLevel.Error, $"Could not load NPC {NPC_ID_U} for {Name}");
@@ -106,7 +106,7 @@ namespace Comet.Game.States.Events
                         temp.RemoveAt(idx);
                     }
 
-                    foreach (var user in Kernel.RoleManager.QueryRoleByType<Character>())
+                    foreach (var user in RoleManager.QueryRoleByType<Character>())
                     {
                         if (!m_users.TryGetValue(user.Identity, out var res))
                         {
@@ -118,7 +118,7 @@ namespace Comet.Game.States.Events
                         }
                     }
 
-                    _ = Kernel.RoleManager.BroadcastMsgAsync(new MsgQuiz
+                    _ = RoleManager.BroadcastMsgAsync(new MsgQuiz
                     {
                         Action = MsgQuiz.QuizAction.Start,
                         Param1 = (ushort)(60 - DateTime.Now.Second),
@@ -144,7 +144,7 @@ namespace Comet.Game.States.Events
                     DbQuiz question = m_quizQuestions[m_questionIdx];
                     foreach (var player in m_users.Values.Where(x => !x.Canceled))
                     {
-                        Character user = Kernel.RoleManager.GetUser(player.Identity);
+                        Character user = RoleManager.GetUser(player.Identity);
                         if (user == null)
                             continue;
 
@@ -197,7 +197,7 @@ namespace Comet.Game.States.Events
                             expBallReward = m_expReward[3];
                         }
 
-                        Character user = Kernel.RoleManager.GetUser(player.Identity);
+                        Character user = RoleManager.GetUser(player.Identity);
                         if (user != null)
                         {
                             MsgQuiz msg = new MsgQuiz
@@ -349,7 +349,7 @@ namespace Comet.Game.States.Events
         {
             foreach (var user in m_users.Values.Where(x => !x.Canceled))
             {
-                Character player = Kernel.RoleManager.GetUser(user.Identity);
+                Character player = RoleManager.GetUser(user.Identity);
                 if (player == null)
                     continue;
                 await player.SendAsync(msg);

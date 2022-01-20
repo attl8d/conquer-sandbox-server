@@ -72,6 +72,8 @@ namespace Comet.Web.App.Data
         public virtual DbSet<ArticleReadToken> ArticleReadTokens { get; set; }
         public virtual DbSet<ArticleComment> ArticleComments { get; set; }
         public virtual DbSet<GameAccount> GameAccounts { get; set; }
+        public virtual DbSet<CreditCard> CreditCards { get; set; }
+        public virtual DbSet<GameAccountVipBind> GameAccountVipBinds { get; set; }
 
         #endregion
 

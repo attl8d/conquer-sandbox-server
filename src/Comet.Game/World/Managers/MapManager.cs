@@ -34,14 +34,14 @@ using Comet.Shared;
 
 namespace Comet.Game.World.Managers
 {
-    public sealed class MapManager
+    public static class MapManager
     {
-        private readonly ConcurrentDictionary<uint, GameMapData> m_mapData =
+        private static readonly ConcurrentDictionary<uint, GameMapData> m_mapData =
             new ConcurrentDictionary<uint, GameMapData>();
 
-        public ConcurrentDictionary<uint, GameMap> GameMaps { get; } = new ConcurrentDictionary<uint, GameMap>();
+        public static ConcurrentDictionary<uint, GameMap> GameMaps { get; } = new ConcurrentDictionary<uint, GameMap>();
 
-        public async Task LoadDataAsync()
+        public static async Task LoadDataAsync()
         {
             var stream = File.OpenRead(string.Format(".{0}ini{0}GameMap.dat", Path.DirectorySeparatorChar));
             BinaryReader reader = new BinaryReader(stream);
@@ -72,7 +72,7 @@ namespace Comet.Game.World.Managers
             await stream.DisposeAsync();
         }
 
-        public async Task LoadMapsAsync()
+        public static async Task LoadMapsAsync()
         {
             List<DbMap> maps = await MapsRepository.GetAsync();
             foreach (var dbmap in maps)
@@ -102,22 +102,22 @@ namespace Comet.Game.World.Managers
             }
         }
 
-        public GameMap GetMap(uint idMap)
+        public static GameMap GetMap(uint idMap)
         {
             return GameMaps.TryGetValue(idMap, out var value) ? value : null;
         }
 
-        public GameMapData GetMapData(uint idDoc)
+        public static GameMapData GetMapData(uint idDoc)
         {
             return m_mapData.TryGetValue(idDoc, out var map) ? map : null;
         }
 
-        public bool AddMap(GameMap map)
+        public static bool AddMap(GameMap map)
         {
             return GameMaps.TryAdd(map.Identity, map);
         }
 
-        public bool RemoveMap(uint idMap)
+        public static bool RemoveMap(uint idMap)
         {
             return GameMaps.TryRemove(idMap, out _);
         }

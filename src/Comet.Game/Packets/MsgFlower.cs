@@ -28,6 +28,7 @@ using Comet.Game.Database;
 using Comet.Game.Database.Models;
 using Comet.Game.States;
 using Comet.Game.States.Items;
+using Comet.Game.World.Managers;
 using Comet.Network.Packets;
 using Comet.Shared;
 
@@ -153,7 +154,7 @@ namespace Comet.Game.Packets
                         uint idTarget = Identity;
                         uint idItem = ItemIdentity;
 
-                        Character target = Kernel.RoleManager.GetUser(idTarget);
+                        Character target = RoleManager.GetUser(idTarget);
 
                         if (!user.IsAlive)
                         {
@@ -261,7 +262,7 @@ namespace Comet.Game.Packets
                             await user.UserPackage.SpendItemAsync(flower);
                         }
 
-                         var flowersToday = await Kernel.FlowerManager.QueryFlowersAsync(target);
+                         var flowersToday = await FlowerManager.QueryFlowersAsync(target);
                         switch (type)
                         {
                             case FlowerType.RedRose:
@@ -285,7 +286,7 @@ namespace Comet.Game.Packets
                         await user.SendAsync(Language.StrFlowerSendSuccess);
                         if (ItemIdentity != 0 && amount >= 99)
                         {
-                            await Kernel.RoleManager.BroadcastMsgAsync(
+                            await RoleManager.BroadcastMsgAsync(
                                 string.Format(Language.StrFlowerGmPromptAll, user.Name, amount, flowerName, target.Name),
                                 MsgTalk.TalkChannel.Center);
                         }

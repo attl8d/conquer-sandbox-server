@@ -1,12 +1,10 @@
 ﻿using Comet.Game.Database.Models;
 using Comet.Game.States;
+using Comet.Game.World.Managers;
 using Comet.Shared;
 using Quartz;
 using System;
 using System.Collections.Concurrent;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
 using System.Threading.Tasks;
 
 namespace Comet.Game.World.Schedule
@@ -26,7 +24,7 @@ namespace Comet.Game.World.Schedule
 
             for (int a = 0; a < _ACTION_SYSTEM_EVENT_LIMIT; a++)
             {
-                DbAction action = Kernel.EventManager.GetAction((uint)(_ACTION_SYSTEM_EVENT + a));
+                DbAction action = EventManager.GetAction((uint)(_ACTION_SYSTEM_EVENT + a));
                 if (action != null)
                     m_dicActions.TryAdd(action.Identity, action);
             }

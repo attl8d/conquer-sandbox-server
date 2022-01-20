@@ -27,6 +27,7 @@ using Comet.Game.Database.Models;
 using Comet.Game.Packets;
 using Comet.Game.States.BaseEntities;
 using Comet.Game.World;
+using Comet.Game.World.Managers;
 using Comet.Shared;
 
 #endregion
@@ -117,7 +118,7 @@ namespace Comet.Game.States
 
         public override Task EnterMapAsync()
         {
-            Map = Kernel.MapManager.GetMap(MapIdentity);
+            Map = MapManager.GetMap(MapIdentity);
             if (Map != null)
             {
                 return Map.AddAsync(this);

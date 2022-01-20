@@ -42,17 +42,20 @@ namespace Comet.Web.App.Middlewares
                 if (User.Identity.IsAuthenticated)
                 {
                     ApplicationUser user = await userManager.GetUserAsync(User);
-                    Claim temp = User.FindFirst(PersonalInfoType.Language);
-                    Claim now = new(PersonalInfoType.Language.ToClaimString(), locale);
-                    if (temp != null)
+                    if (user != null)
                     {
-                        await userManager.ReplaceClaimAsync(user, temp, now);
+                        Claim temp = User.FindFirst(PersonalInfoType.Language);
+                        Claim now = new(PersonalInfoType.Language.ToClaimString(), locale);
+                        if (temp != null)
+                        {
+                            await userManager.ReplaceClaimAsync(user, temp, now);
+                        }
+                        else
+                        {
+                            await userManager.AddClaimAsync(user, now);
+                        }
+                        await signInManager.RefreshSignInAsync(user);
                     }
-                    else
-                    {
-                        await userManager.AddClaimAsync(user, now);
-                    }
-                    await signInManager.RefreshSignInAsync(user);
                 }
                 else
                 {

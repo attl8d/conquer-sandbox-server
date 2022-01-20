@@ -33,12 +33,12 @@ using Comet.Game.States.Families;
 
 namespace Comet.Game.World.Managers
 {
-    public sealed class FamilyManager
+    public static class FamilyManager
     {
-        private ConcurrentDictionary<uint, Family> m_dicFamilies = new ConcurrentDictionary<uint, Family>();
-        private ConcurrentDictionary<uint, DbFamilyBattleEffectShareLimit> m_familyBpLimit = new ConcurrentDictionary<uint, DbFamilyBattleEffectShareLimit>();
+        private static ConcurrentDictionary<uint, Family> m_dicFamilies = new ConcurrentDictionary<uint, Family>();
+        private static ConcurrentDictionary<uint, DbFamilyBattleEffectShareLimit> m_familyBpLimit = new ConcurrentDictionary<uint, DbFamilyBattleEffectShareLimit>();
 
-        public async Task<bool> InitializeAsync()
+        public static async Task<bool> InitializeAsync()
         {
             var dbFamilies = await DbFamily.GetAsync();
             foreach (var dbFamily in dbFamilies)
@@ -61,22 +61,22 @@ namespace Comet.Game.World.Managers
             return true;
         }
 
-        public bool AddFamily(Family family)
+        public static bool AddFamily(Family family)
         {
             return m_dicFamilies.TryAdd(family.Identity, family);
         }
 
-        public Family GetFamily(uint idFamily)
+        public static Family GetFamily(uint idFamily)
         {
             return m_dicFamilies.TryGetValue((ushort)idFamily, out var family) ? family : null;
         }
 
-        public Family GetFamily(string name)
+        public static Family GetFamily(string name)
         {
             return m_dicFamilies.Values.FirstOrDefault(x => x.Name.Equals(name, StringComparison.InvariantCultureIgnoreCase));
         }
 
-        public Family GetOccupyOwner(uint idMap)
+        public static Family GetOccupyOwner(uint idMap)
         {
             return m_dicFamilies.Values.FirstOrDefault(x => x.FamilyMap == idMap);
         }
@@ -84,17 +84,17 @@ namespace Comet.Game.World.Managers
         /// <summary>
         /// Find the family a user is in.
         /// </summary>
-        public Family FindByUser(uint idUser)
+        public static Family FindByUser(uint idUser)
         {
             return m_dicFamilies.Values.FirstOrDefault(x => x.GetMember(idUser) != null);
         }
 
-        public List<Family> QueryFamilies(Func<Family, bool> predicate)
+        public static List<Family> QueryFamilies(Func<Family, bool> predicate)
         {
             return m_dicFamilies.Values.Where(predicate).ToList();
         }
 
-        public DbFamilyBattleEffectShareLimit GetSharedBattlePowerLimit(int level)
+        public static DbFamilyBattleEffectShareLimit GetSharedBattlePowerLimit(int level)
         {
             return m_familyBpLimit.Values.FirstOrDefault(x => x.Identity == level);
         }

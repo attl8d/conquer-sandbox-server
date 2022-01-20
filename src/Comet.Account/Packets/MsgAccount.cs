@@ -68,7 +68,7 @@ namespace Comet.Account.Packets
         public override async Task ProcessAsync(Client client)
         {
             // Fetch account info from the database
-            client.Account = await AccountsRepository.FindAsync(Username).ConfigureAwait(false);
+            client.Account = await AccountsRepository.FindAsync(Username);
             if (client.Account == null || !AccountsRepository.CheckPassword(
                 DecryptPassword(Password, client.Seed), client.Account.Password, client.Account.Salt))
             {
@@ -120,9 +120,10 @@ namespace Comet.Account.Packets
             {
                 AccountID = client.Account.AccountID,
                 AuthorityID = client.Account.AuthorityID,
-                AuthorityName = client.Account.Authority.AuthorityName,
+                AuthorityName = "",
                 IPAddress = client.IPAddress,
-                VipLevel = client.Account.VipLevel
+                LastLogin = 0,
+                VipLevel = 0
             });
         }
 

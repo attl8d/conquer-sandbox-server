@@ -27,6 +27,7 @@ using Comet.Game.Database.Models;
 using Comet.Game.States;
 using Comet.Game.States.BaseEntities;
 using Comet.Game.States.Syndicates;
+using Comet.Game.World.Managers;
 using Comet.Game.World.Maps;
 using Comet.Network.Packets;
 using Comet.Shared;
@@ -112,7 +113,7 @@ namespace Comet.Game.Packets
 
                             user.ClearTaskId();
                             await GameAction.ExecuteActionAsync(idTask, user,
-                                Kernel.RoleManager.GetRole(user.InteractingNpc), user.UserPackage[user.InteractingItem], Text);
+                                RoleManager.GetRole(user.InteractingNpc), user.UserPackage[user.InteractingItem], Text);
                         }
 
                         break;
@@ -125,7 +126,7 @@ namespace Comet.Game.Packets
                             return;
                         }
 
-                        Role targetRole = Kernel.RoleManager.GetRole(user.InteractingNpc);
+                        Role targetRole = RoleManager.GetRole(user.InteractingNpc);
                         if (targetRole != null
                             && targetRole.MapIdentity != 5000
                             && targetRole.MapIdentity != user.MapIdentity)
@@ -148,7 +149,7 @@ namespace Comet.Game.Packets
                         }
 
                         uint idTask = user.GetTaskId(OptionIndex);
-                        DbTask task = Kernel.EventManager.GetTask(idTask);
+                        DbTask task = EventManager.GetTask(idTask);
                         if (task == null)
                         {
                             if (OptionIndex != 0)

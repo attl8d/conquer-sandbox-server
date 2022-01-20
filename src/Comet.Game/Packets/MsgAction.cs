@@ -33,6 +33,7 @@ using Comet.Game.States.Events;
 using Comet.Game.States.Items;
 using Comet.Game.States.Magics;
 using Comet.Game.States.Relationship;
+using Comet.Game.World.Managers;
 using Comet.Game.World.Maps;
 using Comet.Network.Packets;
 using Comet.Shared;
@@ -156,7 +157,7 @@ namespace Comet.Game.Packets
             Character user = client.Character;
 
             Role target = null;
-            Character targetUser = Kernel.RoleManager.GetUser(Command);
+            Character targetUser = RoleManager.GetUser(Command);
 
             switch (Action)
             {
@@ -181,7 +182,7 @@ namespace Comet.Game.Packets
                         client.Character.MapY = 54;
                     }
 
-                    GameMap targetMap = Kernel.MapManager.GetMap(client.Character.MapIdentity);
+                    GameMap targetMap = MapManager.GetMap(client.Character.MapIdentity);
                     if (targetMap == null)
                     {
                         await user.SavePositionAsync(1002, 430, 378);
@@ -244,7 +245,7 @@ namespace Comet.Game.Packets
 
                     if (user.MateIdentity != 0)
                     {
-                        Character mate = Kernel.RoleManager.GetUser(user.MateIdentity);
+                        Character mate = RoleManager.GetUser(user.MateIdentity);
                         if (mate != null)
                         {
                             await mate.SendAsync(user.Gender == 1
@@ -337,7 +338,7 @@ namespace Comet.Game.Packets
                         return;
 
                     if (await user.DeleteCharacterAsync())
-                        await Kernel.RoleManager.KickOutAsync(user.Identity, "DELETED");
+                        await RoleManager.KickOutAsync(user.Identity, "DELETED");
                     break;
 
                 case ActionType.CharacterPkMode: // 96
@@ -349,7 +350,7 @@ namespace Comet.Game.Packets
                     break;
 
                 case ActionType.LoginGuild: // 97
-                    client.Character.Syndicate = Kernel.SyndicateManager.FindByUser(client.Identity);
+                    client.Character.Syndicate = SyndicateManager.FindByUser(client.Identity);
                     await client.Character.SendSyndicateAsync();
                     if (client.Character.Syndicate != null)
                         await client.Character.Syndicate.SendRelationAsync(client.Character);
@@ -415,7 +416,7 @@ namespace Comet.Game.Packets
                     break;
 
                 case ActionType.CharacterObservation: // 117
-                    targetUser = Kernel.RoleManager.GetUser(Command);
+                    targetUser = RoleManager.GetUser(Command);
                     if (targetUser == null)
                         return;
 
@@ -494,7 +495,7 @@ namespace Comet.Game.Packets
                         await client.Character.SendBlessAsync();
                         await client.Character.SendLuckAsync();
                         await user.Screen.SynchroScreenAsync();
-                        await Kernel.PigeonManager.SendToUserAsync(user);
+                        await PigeonManager.SendToUserAsync(user);
                         await user.SendMerchantAsync();
                         await user.SendAsync(new MsgHangUp
                         {
@@ -530,7 +531,7 @@ namespace Comet.Game.Packets
                         if (user.GetDistance(newX, newY) >= 2 * Screen.VIEW_SIZE)
                         {
                             await user.SendAsync(Language.StrInvalidMsg, MsgTalk.TalkChannel.System, SColor.Red);
-                            await Kernel.RoleManager.KickOutAsync(user.Identity, "big jump");
+                            await RoleManager.KickOutAsync(user.Identity, "big jump");
                             return;
                         }
 
@@ -609,7 +610,7 @@ namespace Comet.Game.Packets
                 }
 
                 case ActionType.FriendObservation: // 310
-                    targetUser = Kernel.RoleManager.GetUser(Command);
+                    targetUser = RoleManager.GetUser(Command);
                     if (targetUser == null)
                         return;
 

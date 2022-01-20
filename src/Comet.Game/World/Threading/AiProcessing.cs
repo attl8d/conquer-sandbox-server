@@ -23,6 +23,7 @@
 
 using System;
 using System.Threading.Tasks;
+using Comet.Game.World.Managers;
 using Comet.Shared;
 using Comet.Shared.Comet.Shared;
 
@@ -44,9 +45,9 @@ namespace Comet.Game.World.Threading
             try
             {
                 ProcessedMonsters = 0;
-                foreach (var map in Kernel.MapManager.GameMaps.Values)
+                foreach (var map in MapManager.GameMaps.Values)
                     ProcessedMonsters += await map.OnTimerAsync();
-                await Kernel.RoleManager.OnRoleTimerAsync();
+                await RoleManager.OnRoleTimerAsync();
             }
             catch (Exception ex)
             {

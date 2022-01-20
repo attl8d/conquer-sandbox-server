@@ -25,6 +25,7 @@ using System;
 using System.Threading.Tasks;
 using Comet.Core;
 using Comet.Game.Internal;
+using Comet.Game.World.Managers;
 using Comet.Shared;
 using Comet.Shared.Comet.Shared;
 using Comet.Shared.Models;
@@ -57,7 +58,7 @@ namespace Comet.Game.World.Threading
         protected override async Task<bool> OnElapseAsync()
         {
             Console.Title = string.Format(TITLE_FORMAT_S, Kernel.Configuration.ServerName, DateTime.Now.ToString("G"),
-                Kernel.NetworkMonitor.UpdateStatsAsync(m_interval), Kernel.RoleManager.OnlinePlayers, Kernel.RoleManager.MaxOnlinePlayers,
+                Kernel.NetworkMonitor.UpdateStatsAsync(m_interval), RoleManager.OnlinePlayers, RoleManager.MaxOnlinePlayers,
                 Kernel.SystemThread.ElapsedMilliseconds, Kernel.UserThread.ElapsedMilliseconds,
                 Kernel.AiThread.ElapsedMilliseconds, Kernel.Version);
 
@@ -86,11 +87,11 @@ namespace Comet.Game.World.Threading
             await Log.WriteLogAsync("GameAnalytics", LogLevel.Info, "=".PadLeft(64, '='));
             await Log.WriteLogAsync("GameAnalytics", LogLevel.Info, $"Server Start Time: {m_serverStartTime:G}");
             await Log.WriteLogAsync("GameAnalytics", LogLevel.Info, $"Total Online Time: {(int)interval.TotalDays} days, {interval.Hours} hours, {interval.Minutes} minutes, {interval.Seconds} seconds");
-            await Log.WriteLogAsync("GameAnalytics", LogLevel.Info, $"Online Players[{Kernel.RoleManager.OnlinePlayers}], Max Online Players[{Kernel.RoleManager.MaxOnlinePlayers}], Distinct Players[{Kernel.RoleManager.OnlineUniquePlayers}], Role Count[{Kernel.RoleManager.RolesCount}]");
+            await Log.WriteLogAsync("GameAnalytics", LogLevel.Info, $"Online Players[{RoleManager.OnlinePlayers}], Max Online Players[{RoleManager.MaxOnlinePlayers}], Distinct Players[{RoleManager.OnlineUniquePlayers}], Role Count[{RoleManager.RolesCount}]");
             await Log.WriteLogAsync("GameAnalytics", LogLevel.Info, $"Total Bytes Sent: {Kernel.NetworkMonitor.TotalBytesSent:N0}, Total Packets Sent: {Kernel.NetworkMonitor.TotalPacketsSent:N0}");
             await Log.WriteLogAsync("GameAnalytics", LogLevel.Info, $"Total Bytes Recv: {Kernel.NetworkMonitor.TotalBytesRecv:N0}, Total Packets Recv: {Kernel.NetworkMonitor.TotalPacketsRecv:N0}");
             await Log.WriteLogAsync("GameAnalytics", LogLevel.Info, $"System Thread: {Kernel.SystemThread.ElapsedMilliseconds:N0}ms");
-            await Log.WriteLogAsync("GameAnalytics", LogLevel.Info, $"Generator Thread: {Kernel.GeneratorManager.ElapsedMilliseconds}ms");
+            await Log.WriteLogAsync("GameAnalytics", LogLevel.Info, $"Generator Thread: {GeneratorManager.ElapsedMilliseconds}ms");
             await Log.WriteLogAsync("GameAnalytics", LogLevel.Info, $"User Thread: {Kernel.UserThread.ElapsedMilliseconds:N0}ms");
             await Log.WriteLogAsync("GameAnalytics", LogLevel.Info, $"Ai Thread: {Kernel.AiThread.ElapsedMilliseconds:N0}ms ({Kernel.AiThread.ProcessedMonsters} AI Agents)");
             await Log.WriteLogAsync("GameAnalytics", LogLevel.Info, $"Identities Remaining: ");

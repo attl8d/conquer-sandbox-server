@@ -1,5 +1,6 @@
 ﻿using Comet.Game.Internal;
 using Comet.Game.States;
+using Comet.Game.World.Managers;
 using Comet.Network.Packets.Internal;
 using System.Threading.Tasks;
 
@@ -9,7 +10,7 @@ namespace Comet.Game.Packets
     {
         public override async Task ProcessAsync(AccountServer client)
         {
-            Character account = Kernel.RoleManager.GetUserByAccount(AccountIdentity);
+            Character account = RoleManager.GetUserByAccount(AccountIdentity);
             if (account == null)
                 return;
 
@@ -17,12 +18,12 @@ namespace Comet.Game.Packets
             {
                 case ServerAction.Disconnect:
                     {
-                        await Kernel.RoleManager.KickOutAsync(account.Identity, "REALM MANAGER REQUEST");
+                        await RoleManager.KickOutAsync(account.Identity, "REALM MANAGER REQUEST");
                         break;
                     }
                 case ServerAction.Ban:
                     {
-                        await Kernel.RoleManager.KickOutAsync(account.Identity, "Account banned!");
+                        await RoleManager.KickOutAsync(account.Identity, "Account banned!");
                         break;
                     }
                 case ServerAction.Maintenance:

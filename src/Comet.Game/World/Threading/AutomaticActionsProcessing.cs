@@ -23,12 +23,10 @@
 
 using System;
 using System.Collections.Concurrent;
-using System.Diagnostics;
 using System.Threading.Tasks;
-using Comet.Game.Database;
 using Comet.Game.Database.Models;
 using Comet.Game.States;
-using Comet.Game.States.Events;
+using Comet.Game.World.Managers;
 using Comet.Shared;
 using Comet.Shared.Comet.Shared;
 
@@ -43,8 +41,6 @@ namespace Comet.Game.World.Threading
 
         private readonly ConcurrentDictionary<uint, DbAction> m_dicActions;
 
-        private int m_dailyReset = 0;
-
         public AutomaticActionsProcessing() 
             : base(60000, "AutomaticActionsProcessing")
         {
@@ -55,7 +51,7 @@ namespace Comet.Game.World.Threading
         {
             for (int a = 0; a < _ACTION_SYSTEM_EVENT_LIMIT; a++)
             {
-                DbAction action = Kernel.EventManager.GetAction((uint)(_ACTION_SYSTEM_EVENT + a));
+                DbAction action = EventManager.GetAction((uint)(_ACTION_SYSTEM_EVENT + a));
                 if (action != null)
                     m_dicActions.TryAdd(action.Identity, action);
             }

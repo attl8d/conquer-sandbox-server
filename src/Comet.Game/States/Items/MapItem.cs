@@ -30,6 +30,7 @@ using Comet.Game.Database.Models;
 using Comet.Game.Packets;
 using Comet.Game.States.BaseEntities;
 using Comet.Game.World;
+using Comet.Game.World.Managers;
 using Comet.Game.World.Maps;
 using Comet.Shared;
 using Microsoft.VisualStudio.Threading;
@@ -66,7 +67,7 @@ namespace Comet.Game.States.Items
         public bool Create(GameMap map, Point pos, uint idType, uint idOwner, byte nPlus, byte nDmg,
             short nDura)
         {
-            m_itemtype = Kernel.ItemManager.GetItemtype(idType);
+            m_itemtype = ItemManager.GetItemtype(idType);
             return m_itemtype != null && Create(map, pos, m_itemtype, idOwner, nPlus, nDmg, nDura);
         }
 
@@ -362,7 +363,7 @@ namespace Comet.Game.States.Items
 
         public override async Task EnterMapAsync()
         {
-            Map = Kernel.MapManager.GetMap(MapIdentity);
+            Map = MapManager.GetMap(MapIdentity);
             if (Map != null)
                 await Map.AddAsync(this);
         }
@@ -382,7 +383,7 @@ namespace Comet.Game.States.Items
                 };
                 await Map.BroadcastRoomMsgAsync(MapX, MapY, msg);
                 await Map.RemoveAsync(Identity);
-                Kernel.RoleManager.RemoveRole(Identity);
+                RoleManager.RemoveRole(Identity);
             }
             Map = null;
         }

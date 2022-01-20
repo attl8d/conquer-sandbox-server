@@ -28,6 +28,7 @@ using Comet.Game.Database.Repositories;
 using Comet.Game.States;
 using Comet.Game.States.BaseEntities;
 using Comet.Game.States.Syndicates;
+using Comet.Game.World.Managers;
 using Comet.Network.Packets;
 
 #endregion
@@ -100,7 +101,7 @@ namespace Comet.Game.Packets
             switch (Action)
             {
                 case StringAction.QueryMate:
-                    targetUser = Kernel.RoleManager.GetUser(Identity);
+                    targetUser = RoleManager.GetUser(Identity);
                     if (targetUser == null)
                         return;
 
@@ -109,7 +110,7 @@ namespace Comet.Game.Packets
                     break;
 
                 case StringAction.Guild:
-                    Syndicate syndicate = Kernel.SyndicateManager.GetSyndicate((int) Identity);
+                    Syndicate syndicate = SyndicateManager.GetSyndicate((int) Identity);
                     if (syndicate == null)
                         return;
 
@@ -131,7 +132,7 @@ namespace Comet.Game.Packets
                         return;
                     }
 
-                    targetUser = Kernel.RoleManager.GetUser(Strings[0]);
+                    targetUser = RoleManager.GetUser(Strings[0]);
                     if (targetUser == null)
                     {
                         await client.SendAsync(this);

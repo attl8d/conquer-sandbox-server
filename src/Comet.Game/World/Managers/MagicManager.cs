@@ -31,11 +31,11 @@ using Comet.Game.Database.Repositories;
 
 namespace Comet.Game.World.Managers
 {
-    public sealed class MagicManager
+    public static class MagicManager
     {
-        private ConcurrentDictionary<uint, DbMagictype> m_magicType  = new ConcurrentDictionary<uint, DbMagictype>();
+        private static ConcurrentDictionary<uint, DbMagictype> m_magicType  = new ConcurrentDictionary<uint, DbMagictype>();
 
-        public async Task InitializeAsync()
+        public static async Task InitializeAsync()
         {
             foreach (var magicType in await MagictypeRepository.GetAsync())
             {
@@ -43,12 +43,12 @@ namespace Comet.Game.World.Managers
             }
         }
 
-        public byte GetMaxLevel(uint idType)
+        public static byte GetMaxLevel(uint idType)
         {
             return (byte) (m_magicType.Values.Where(x => x.Type == idType).OrderByDescending(x => x.Level).FirstOrDefault()?.Level ?? 0);
         }
 
-        public DbMagictype GetMagictype(uint idType, ushort level)
+        public static DbMagictype GetMagictype(uint idType, ushort level)
         {
             return m_magicType.Values.FirstOrDefault(x => x.Type == idType && x.Level == level);
         }

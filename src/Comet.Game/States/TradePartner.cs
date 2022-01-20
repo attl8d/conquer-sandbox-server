@@ -26,6 +26,7 @@ using System.Threading.Tasks;
 using Comet.Game.Database;
 using Comet.Game.Database.Models;
 using Comet.Game.Packets;
+using Comet.Game.World.Managers;
 
 #endregion
 
@@ -45,7 +46,7 @@ namespace Comet.Game.States
         public Character Owner { get; }
 
         public Character Target =>
-            Kernel.RoleManager.GetUser(m_dbBusiness.UserId == Owner.Identity
+            RoleManager.GetUser(m_dbBusiness.UserId == Owner.Identity
                 ? m_dbBusiness.BusinessId
                 : m_dbBusiness.UserId);
 

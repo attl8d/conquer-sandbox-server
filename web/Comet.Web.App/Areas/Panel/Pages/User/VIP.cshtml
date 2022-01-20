@@ -1,4 +1,49 @@
 ﻿@page
+@using Comet.Web.App.Services
+@inject LanguageService Language
 @model Comet.Web.App.Areas.Panel.Pages.User.VIPModel
 @{
+    ViewData["Title"] = Language.GetString("UserCPBindVipTitle");
 }
+
+<div class="row">
+    <div class="col-12">
+        <p>
+            ATENÇÃO! O VIP uma vez vinculado NÃO pode ser transferido! Escolha com atenção o personagem que deseja
+            vincular, pois o sistema não permite a alteração ou reversão desse processo.
+        </p>
+        <p>Algumas regras importantes:</p>
+        <ul>
+            <li>
+                O personagem selecionado DEVE estar desconectado na hora da atribuição! Vincular o VIP com o personagem logado pode
+                ocasionar em erros irreversíveis! Nós da FTW Masters não nos responsabilizamos pelas perdas causadas pela
+                sua falta de leitura ou negligência para com as regras.
+            </li>
+            <li>Você pode ter várias contas ativas com VIP.</li>
+            <li>Você pode estender o VIP de uma conta adicionando outro cartão com o MESMO nível de VIP.</li>
+            <li>Você não pode fazer o upgrade de VIP de uma conta. Uma vez adicionado deve-se aguardar o término do tempo.</li>
+            <li>Você não pode fazer o downgrade de VIP de uma conta. Uma vez adicionado deve-se aguardar o término do tempo.</li>
+            <li>Você não pode remover o VIP de uma conta para pausar a progressão do tempo.</li>
+        </ul>
+    </div>
+    <div asp-validation-summary="All" class="text-danger"></div>
+    @if (VIPModel.Mode == VIPModel.VipSystemMode.Card)
+    {
+
+    }
+    else
+    {
+        <div class="col-12">
+            <p>
+                O sistema de contribuições está ativo, portanto, ao contribuir para o servidor todas as suas contas recebem o VIP
+                para usufruir dos sistemas. Caso você tenha criado uma nova conta após a ativação do VIP, ative-o no menu abaixo.
+            </p>
+            <p>
+                ATENÇÂO! O compartilhamento de conta com outros usuários é desencorajado, pois o VIP por contribuição é pessoal e
+                intransferível. Criar personagens em seu e-mail para outros jogadores acarretará na suspensão do benefício.
+                Lembre-se, o VIP não é comprado, é uma recompensa por colaborar com a sobrevivência do servidor. A reincidência
+                do caso pode acarretar no banimento das contas envolvidas.
+            </p>
+        </div>
+    }
+</div>

@@ -30,6 +30,7 @@ using Comet.Game.Database.Models;
 using Comet.Game.Database.Repositories;
 using Comet.Game.States;
 using Comet.Game.States.Items;
+using Comet.Game.World.Managers;
 using Comet.Network.Packets;
 using Comet.Shared;
 using Comet.Shared.Models;
@@ -141,7 +142,7 @@ namespace Comet.Game.Packets
                 return;
             }
 
-            DbPointAllot allot = Kernel.RoleManager.GetPointAllot((ushort) (Class / 10), 1) ?? new DbPointAllot
+            DbPointAllot allot = RoleManager.GetPointAllot((ushort) (Class / 10), 1) ?? new DbPointAllot
             {
                 Strength = 4,
                 Agility = 6,

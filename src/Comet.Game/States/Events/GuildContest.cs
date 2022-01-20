@@ -35,6 +35,7 @@ using Comet.Game.States.BaseEntities;
 using Comet.Game.States.Magics;
 using Comet.Game.States.NPCs;
 using Comet.Game.States.Syndicates;
+using Comet.Game.World.Managers;
 using Comet.Game.World.Maps;
 using Comet.Shared;
 
@@ -89,7 +90,7 @@ namespace Comet.Game.States.Events
 
         private ContestPlayerData GetPlayerData(uint idPlayer)
         {
-            Character player = Kernel.RoleManager.GetUser(idPlayer);
+            Character player = RoleManager.GetUser(idPlayer);
             if (player == null)
                 return null;
 
@@ -161,14 +162,14 @@ namespace Comet.Game.States.Events
 
         public override async Task<bool> CreateAsync()
         {
-            Map = Kernel.MapManager.GetMap(MAP_ID);
+            Map = MapManager.GetMap(MAP_ID);
             if (Map == null)
             {
                 await Log.WriteLogAsync(LogLevel.Error, $"Could not start GuildContest, invalid mapid {MAP_ID}");
                 return false;
             }
 
-            mNpc = Kernel.RoleManager.FindRole<Npc>(NPC_ID_U);
+            mNpc = RoleManager.FindRole<Npc>(NPC_ID_U);
             if (mNpc == null)
             {
                 await Log.WriteLogAsync(LogLevel.Error, $"Could not start GuildContest, invalid npcid {NPC_ID_U}");
@@ -270,7 +271,7 @@ namespace Comet.Game.States.Events
                     if (data.Deaths > MAX_DEATHS_PER_PLAYER)
                     {
                         await sender.FlyMapAsync(sender.RecordMapIdentity, sender.RecordMapX, sender.RecordMapY);
-                        await Kernel.RoleManager.BroadcastMsgAsync(string.Format(Language.StrSyndicateContestElimination, 
+                        await RoleManager.BroadcastMsgAsync(string.Format(Language.StrSyndicateContestElimination, 
                             sender.Name, sender.SyndicateName, data.Deaths));
                     }
                 }
@@ -288,7 +289,7 @@ namespace Comet.Game.States.Events
             }
             else if (mNpc.Data0 == 2) // running
             {
-                foreach (var data in Kernel.RoleManager.QueryRoleByMap<Character>(MAP_ID))
+                foreach (var data in RoleManager.QueryRoleByMap<Character>(MAP_ID))
                 {
                     if (data.SyndicateIdentity == 0)
                         await data.FlyMapAsync(data.RecordMapIdentity, data.RecordMapX, data.RecordMapY);
@@ -300,7 +301,7 @@ namespace Comet.Game.States.Events
                     int idx = 0;
                     foreach (var data in mSyndicateData.Values.Where(x => x.Points > 0).OrderByDescending(x => x.Points))
                     {
-                        Syndicate syndicate = Kernel.SyndicateManager.GetSyndicate((int)data.Identity);
+                        Syndicate syndicate = SyndicateManager.GetSyndicate((int)data.Identity);
                         if (syndicate == null)
                             continue;
 
@@ -321,7 +322,7 @@ namespace Comet.Game.States.Events
 
                     await Log.GmLogAsync("syndicate_contest_rewards", $"{data.Identity:00000},{data.Name:-16},{data.Points},{moneyReward},{emoneyReward}");
 
-                    Syndicate syndicate = Kernel.SyndicateManager.GetSyndicate((int)data.Identity);
+                    Syndicate syndicate = SyndicateManager.GetSyndicate((int)data.Identity);
                     if (syndicate == null)
                         continue;
 
@@ -335,7 +336,7 @@ namespace Comet.Game.States.Events
                         int userMoneyReward = (int)(moneyReward * delta);
                         int userEmoneyReward = (int)(emoneyReward * delta);
 
-                        Character user = Kernel.RoleManager.GetUser(memberData.Identity);
+                        Character user = RoleManager.GetUser(memberData.Identity);
                         if (user != null)
                         {
                             await user.AwardMoneyAsync(userMoneyReward);

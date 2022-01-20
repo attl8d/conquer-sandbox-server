@@ -1,14 +1,17 @@
-﻿using System.Collections.Concurrent;
+﻿using Comet.Game.Database.Models;
+using System.Collections.Generic;
 using System.Threading.Tasks;
 
 namespace Comet.Game.World.Managers
 {
-    public sealed class AstProfManager
+    public static class AstProfManager
     {
-        private ConcurrentDictionary<uint, object> mDictAstProfs = new ConcurrentDictionary<uint, object>();
+        private static List<DbAstProfInaugurationCondition> mDictAstProfInit = new List<DbAstProfInaugurationCondition>();
+        private static List<DbAstProfPromoteCondition> mDictAstProfPromote = new List<DbAstProfPromoteCondition> ();
 
-        public async Task<bool> InitializeAsync()
+        public static async Task<bool> InitializeAsync()
         {
+
             return true;
         }
     }

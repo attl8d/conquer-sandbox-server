@@ -28,6 +28,7 @@ using Comet.Game.States.BaseEntities;
 using Comet.Game.States.Events;
 using Comet.Game.States.Items;
 using Comet.Game.States.NPCs;
+using Comet.Game.World.Managers;
 using Comet.Game.World.Maps;
 
 namespace Comet.Game.States
@@ -588,7 +589,7 @@ namespace Comet.Game.States
                     damage *= 3;
             }
 
-            var disdain = Kernel.RoleManager.GetDisdain(attacker.BattlePower - target.BattlePower);
+            var disdain = RoleManager.GetDisdain(attacker.BattlePower - target.BattlePower);
             int factor = disdain.MaxAtk;
 
             if (attacker.IsOnXpSkill())
@@ -625,7 +626,7 @@ namespace Comet.Game.States
 
         public static int CalcDamageUser2User(Character attacker, Character target, int damage)
         {
-            var disdain = Kernel.RoleManager.GetDisdain(attacker.BattlePower - target.BattlePower);
+            var disdain = RoleManager.GetDisdain(attacker.BattlePower - target.BattlePower);
 
             int min, max, overAdjust;
 

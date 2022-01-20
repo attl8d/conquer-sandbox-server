@@ -27,6 +27,7 @@ using System.Threading.Tasks;
 using Comet.Game.Database.Models;
 using Comet.Game.Packets;
 using Comet.Game.States.BaseEntities;
+using Comet.Game.World.Managers;
 using Comet.Game.World.Maps;
 using Comet.Network.Packets;
 
@@ -274,7 +275,7 @@ namespace Comet.Game.States
                 if (user.GetDistance(killer) > Screen.VIEW_SIZE * 2)
                     continue;
 
-                DbLevelExperience dbExp = Kernel.RoleManager.GetLevelExperience(user.Level);
+                DbLevelExperience dbExp = RoleManager.GetLevelExperience(user.Level);
                 if (dbExp == null)
                     continue;
 
@@ -308,7 +309,7 @@ namespace Comet.Game.States
             if (clanMember == null || clanMember.PureBattlePower <= user.PureBattlePower)
                 return 0;
 
-            var limit = Kernel.FamilyManager.GetSharedBattlePowerLimit(user.PureBattlePower);
+            var limit = FamilyManager.GetSharedBattlePowerLimit(user.PureBattlePower);
             if (limit == null)
                 return 0;
 

@@ -33,11 +33,11 @@ using Comet.Game.States;
 
 namespace Comet.Game.World.Managers
 {
-    public sealed class PeerageManager
+    public static class PeerageManager
     {
-        private ConcurrentDictionary<uint, DbPeerage> PeerageSet = new ConcurrentDictionary<uint, DbPeerage>();
+        private static ConcurrentDictionary<uint, DbPeerage> PeerageSet = new ConcurrentDictionary<uint, DbPeerage>();
 
-        public async Task InitializeAsync()
+        public static async Task InitializeAsync()
         {
             List<DbPeerage> dbPeerages = await PeerageRepository.GetAsync();
             foreach (var peerage in dbPeerages)
@@ -46,7 +46,7 @@ namespace Comet.Game.World.Managers
             }
         }
 
-        public async Task DonateAsync(Character user, ulong amount)
+        public static async Task DonateAsync(Character user, ulong amount)
         {
             int oldPosition = GetPosition(user.Identity);
             NobilityRank oldRank = GetRanking(user.Identity);
@@ -82,7 +82,7 @@ namespace Comet.Game.World.Managers
                 foreach (var peer in PeerageSet.Values.OrderByDescending(z => z.Donation)
                     .ThenBy(y => y.FirstDonation))
                 {
-                    Character targetUser = Kernel.RoleManager.GetUser(peer.UserIdentity);
+                    Character targetUser = RoleManager.GetUser(peer.UserIdentity);
                     if (targetUser != null)
                         await targetUser.SendNobilityInfoAsync(true);
                 }
@@ -125,11 +125,11 @@ namespace Comet.Game.World.Managers
                 if (user.ApprenticeCount > 0)
                     await user.SynchroApprenticesSharedBattlePowerAsync();
 
-                await Kernel.RoleManager.BroadcastMsgAsync(message, MsgTalk.TalkChannel.Center, Color.Red);
+                await RoleManager.BroadcastMsgAsync(message, MsgTalk.TalkChannel.Center, Color.Red);
             }
         }
 
-        public NobilityRank GetRanking(uint idUser)
+        public static NobilityRank GetRanking(uint idUser)
         {
             int position = GetPosition(idUser);
             if (position >= 0 && position < 3)
@@ -147,7 +147,7 @@ namespace Comet.Game.World.Managers
             }
             else
             {
-                Character user = Kernel.RoleManager.GetUser(idUser);
+                Character user = RoleManager.GetUser(idUser);
                 if (user != null)
                 {
                     donation = user.NobilityDonation;
@@ -163,7 +163,7 @@ namespace Comet.Game.World.Managers
             return NobilityRank.Serf;
         }
 
-        public int GetPosition(uint idUser)
+        public static int GetPosition(uint idUser)
         {
             bool found = false;
             int idx = -1;
@@ -184,7 +184,7 @@ namespace Comet.Game.World.Managers
             return found ? idx : -1;
         }
 
-        public async Task SendRankingAsync(Character target, int page)
+        public static async Task SendRankingAsync(Character target, int page)
         {
             if (target == null)
                 return;
@@ -215,7 +215,7 @@ namespace Comet.Game.World.Managers
                 if (current >= max)
                     break;
 
-                Character peerageUser = Kernel.RoleManager.GetUser(peerage.UserIdentity);
+                Character peerageUser = RoleManager.GetUser(peerage.UserIdentity);
                 uint lookface = peerageUser?.Mesh ?? 0;
                 rank.Add(new MsgPeerage.NobilityStruct
                 {
@@ -235,12 +235,12 @@ namespace Comet.Game.World.Managers
             await target.SendAsync(msg);
         }
 
-        public DbPeerage GetUser(uint idUser)
+        public static DbPeerage GetUser(uint idUser)
         {
             return PeerageSet.TryGetValue(idUser, out var peerage) ? peerage : null;
         }
 
-        public ulong GetNextRankSilver(NobilityRank rank, ulong donation)
+        public static ulong GetNextRankSilver(NobilityRank rank, ulong donation)
         {
             switch (rank)
             {
@@ -254,7 +254,7 @@ namespace Comet.Game.World.Managers
             }
         }
 
-        public ulong GetDonation(int position)
+        public static ulong GetDonation(int position)
         {
             int ranking = 1;
             ulong donation = 0;
@@ -267,13 +267,13 @@ namespace Comet.Game.World.Managers
             return Math.Max(3000000, donation);
         }
 
-        public async Task SaveAsync()
+        public static async Task SaveAsync()
         {
             foreach (var peerage in PeerageSet.Values)
                 await SaveAsync(peerage);
         }
 
-        public async Task SaveAsync(DbPeerage peerage)
+        public static async Task SaveAsync(DbPeerage peerage)
         {
             await using ServerDbContext context = new ServerDbContext();
             if (peerage.Identity == 0)

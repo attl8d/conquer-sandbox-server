@@ -32,6 +32,7 @@ using Comet.Game.Packets;
 using Comet.Game.States.BaseEntities;
 using Comet.Game.States.Items;
 using Comet.Game.States.NPCs;
+using Comet.Game.World.Managers;
 using Comet.Game.World.Maps;
 using Comet.Shared;
 
@@ -1478,7 +1479,7 @@ namespace Comet.Game.States.Magics
                 if (m_pOwner is Character owner)
                 {
                     await owner.SendAsync(Language.StrInvalidMsg);
-                    await Kernel.RoleManager.KickOutAsync(owner.Identity, "INVALID COORDINATES ProcessCollideFail");
+                    await RoleManager.KickOutAsync(owner.Identity, "INVALID COORDINATES ProcessCollideFail");
                 }
                 return false;
             }

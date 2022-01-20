@@ -22,7 +22,10 @@
 #region References
 
 using Comet.Account.Database.Models;
+using Comet.Shared;
 using Microsoft.EntityFrameworkCore;
+using System;
+using System.Threading.Tasks;
 
 #endregion
 
@@ -47,8 +50,6 @@ namespace Comet.Account.Database
         // Table Definitions
         public virtual DbSet<DbAccount> Accounts { get; set; }
         public virtual DbSet<DbAccountAuthority> AccountAuthorities { get; set; }
-        public virtual DbSet<DbAccountStatus> AccountStatuses { get; set; }
-        public virtual DbSet<DbLogin> Logins { get; set; }
         public virtual DbSet<DbRealm> Realms { get; set; }
         public virtual DbSet<DbRecordUser> RecordUsers { get; set; }
 
@@ -76,11 +77,6 @@ namespace Comet.Account.Database
         /// <param name="builder">Builder for creating models in the context</param>
         protected override void OnModelCreating(ModelBuilder builder)
         {
-            builder.Entity<DbAccount>(e => e.HasKey(x => x.AccountID));
-            builder.Entity<DbAccountAuthority>(e => e.HasKey(x => x.AuthorityID));
-            builder.Entity<DbAccountStatus>(e => e.HasKey(x => x.StatusID));
-            builder.Entity<DbLogin>(e => e.HasKey(x => new {x.AccountID, x.Timestamp}));
-            builder.Entity<DbRealm>(e => e.HasKey(x => x.RealmID));
             builder.Entity<DbRealm>().Property(x => x.Status).HasConversion<byte>();
             builder.Entity<DbRealmStatus>().Property(x => x.NewStatus).HasConversion<byte>();
             builder.Entity<DbRealmStatus>().Property(x => x.OldStatus).HasConversion<byte>();
@@ -89,15 +85,16 @@ namespace Comet.Account.Database
         /// <summary>
         ///     Tests that the database connection is alive and configured.
         /// </summary>
-        public static bool Ping()
+        public static async Task<bool> PingAsync()
         {
             try
             {
-                using (ServerDbContext ctx = new ServerDbContext())
-                    return ctx.Database.CanConnect();
+                using ServerDbContext ctx = new ServerDbContext();
+                return await ctx.Database.CanConnectAsync();
             }
-            catch
+            catch (Exception e)
             {
+                await Log.WriteLogAsync(LogLevel.Exception, e.ToString());
                 return false;
             }
         }

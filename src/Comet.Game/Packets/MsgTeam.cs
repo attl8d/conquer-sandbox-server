@@ -24,6 +24,7 @@
 using System.Threading.Tasks;
 using Comet.Game.States;
 using Comet.Game.States.BaseEntities;
+using Comet.Game.World.Managers;
 using Comet.Game.World.Maps;
 using Comet.Network.Packets;
 using Comet.Shared;
@@ -78,7 +79,7 @@ namespace Comet.Game.Packets
         public override async Task ProcessAsync(Client client)
         {
             Character user = client.Character;
-            Character target = Kernel.RoleManager.GetUser(Identity);
+            Character target = RoleManager.GetUser(Identity);
             if (target == null && Identity != 0)
             {
                 await Log.WriteLogAsync(LogLevel.Error, $"Team no target");

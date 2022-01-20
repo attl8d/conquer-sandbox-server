@@ -22,6 +22,7 @@
 #region References
 
 using System.Collections.Generic;
+using System.ComponentModel.DataAnnotations;
 using System.ComponentModel.DataAnnotations.Schema;
 
 #endregion
@@ -46,6 +47,7 @@ namespace Comet.Account.Database.Models
         }
 
         // Column Properties
+        [Key]
         public ushort AuthorityID { get; set; }
         public string AuthorityName { get; set; }
 

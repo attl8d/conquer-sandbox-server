@@ -47,41 +47,36 @@ using Microsoft.VisualStudio.Threading;
 
 namespace Comet.Game.World.Managers
 {
-    public sealed class RoleManager
+    public static class RoleManager
     {
-        private readonly ConcurrentDictionary<uint, Character> m_userSet = new ConcurrentDictionary<uint, Character>();
-        private readonly ConcurrentDictionary<uint, Role> m_roleSet = new ConcurrentDictionary<uint, Role>();
-        private readonly ConcurrentDictionary<uint, MapItem> m_mapItemSet = new ConcurrentDictionary<uint, MapItem>();
+        private static readonly ConcurrentDictionary<uint, Character> m_userSet = new ConcurrentDictionary<uint, Character>();
+        private static readonly ConcurrentDictionary<uint, Role> m_roleSet = new ConcurrentDictionary<uint, Role>();
+        private static readonly ConcurrentDictionary<uint, MapItem> m_mapItemSet = new ConcurrentDictionary<uint, MapItem>();
 
-        private readonly Dictionary<byte, DbLevelExperience> m_dicLevExp = new Dictionary<byte, DbLevelExperience>();
-        private readonly Dictionary<uint, DbPointAllot> m_dicPointAllot = new Dictionary<uint, DbPointAllot>();
-        private readonly Dictionary<uint, DbMonstertype> m_dicMonstertype = new Dictionary<uint, DbMonstertype>();
-        private readonly Dictionary<uint, List<DbMonsterMagic>> m_dicMonsterMagics = new Dictionary<uint, List<DbMonsterMagic>>();
-        private Dictionary<uint, DbSuperman> m_superman = new Dictionary<uint, DbSuperman>();
-        private readonly Dictionary<uint, DbAchievementType> m_achievements = new Dictionary<uint, DbAchievementType>();
+        private static readonly Dictionary<byte, DbLevelExperience> m_dicLevExp = new Dictionary<byte, DbLevelExperience>();
+        private static readonly Dictionary<uint, DbPointAllot> m_dicPointAllot = new Dictionary<uint, DbPointAllot>();
+        private static readonly Dictionary<uint, DbMonstertype> m_dicMonstertype = new Dictionary<uint, DbMonstertype>();
+        private static readonly Dictionary<uint, List<DbMonsterMagic>> m_dicMonsterMagics = new Dictionary<uint, List<DbMonsterMagic>>();
+        private static readonly Dictionary<uint, DbSuperman> m_superman = new Dictionary<uint, DbSuperman>();
+        private static readonly Dictionary<uint, DbAchievementType> m_achievements = new Dictionary<uint, DbAchievementType>();
 
-        private readonly List<DbRebirth> m_dicRebirths = new List<DbRebirth>();
-        private readonly List<MagicTypeOp> m_magicOps = new List<MagicTypeOp>();
-        private readonly List<DbDisdain> m_disdains = new List<DbDisdain>();
-        private readonly List<DbTutorType> m_tutorType = new List<DbTutorType>();
-        private readonly List<DbTutorBattleLimitType> m_tutorBattleLimitTypes = new List<DbTutorBattleLimitType>();
+        private static readonly List<DbRebirth> m_dicRebirths = new List<DbRebirth>();
+        private static readonly List<MagicTypeOp> m_magicOps = new List<MagicTypeOp>();
+        private static readonly List<DbDisdain> m_disdains = new List<DbDisdain>();
+        private static readonly List<DbTutorType> m_tutorType = new List<DbTutorType>();
+        private static readonly List<DbTutorBattleLimitType> m_tutorBattleLimitTypes = new List<DbTutorBattleLimitType>();
 
-        private TimeOutMS m_userUpdate = new TimeOutMS(500);
+        private static TimeOutMS m_userUpdate = new TimeOutMS(500);
 
-        private bool m_isShutdown = false;
+        private static bool m_isShutdown = false;
 
-        public RoleManager()
-        {
+        public static int OnlineUniquePlayers => m_userSet.Values.Select(x => x.Client.IPAddress).Distinct().Count();
+        public static int OnlinePlayers => m_userSet.Count;
+        public static int RolesCount => m_roleSet.Count;
 
-        }
+        public static int MaxOnlinePlayers { get; private set; }
 
-        public int OnlineUniquePlayers => m_userSet.Values.Select(x => x.Client.IPAddress).Distinct().Count();
-        public int OnlinePlayers => m_userSet.Count;
-        public int RolesCount => m_roleSet.Count;
-
-        public int MaxOnlinePlayers { get; private set; }
-
-        public async Task InitializeAsync()
+        public static async Task InitializeAsync()
         {
             foreach (var auto in await PointAllotRepository.GetAsync())
             {
@@ -112,7 +107,12 @@ namespace Comet.Game.World.Managers
                 m_dicMonsterMagics[magic.OwnerIdentity].Add(magic);
             }
 
-            m_superman = (await DbSuperman.GetAsync()).ToDictionary(superman => superman.UserIdentity);
+            var superman = (await DbSuperman.GetAsync()).ToDictionary(superman => superman.UserIdentity);
+            foreach (var sm in superman)
+            {
+                if (!m_superman.ContainsKey(sm.Key))
+                    m_superman.Add(sm.Key, sm.Value);
+            }
 
             m_disdains.AddRange(await DbDisdain.GetAsync());
 
@@ -129,7 +129,7 @@ namespace Comet.Game.World.Managers
             m_userUpdate.Update();
         }
 
-        public async Task<bool> LoginUserAsync(Client user)
+        public static async Task<bool> LoginUserAsync(Client user)
         {
             if (m_isShutdown)
             {
@@ -197,13 +197,13 @@ namespace Comet.Game.World.Managers
             return true;
         }
 
-        public void ForceLogoutUser(uint idUser)
+        public static void ForceLogoutUser(uint idUser)
         {
             m_userSet.TryRemove(idUser, out _);
             m_roleSet.TryRemove(idUser, out _);
         }
 
-        public async Task KickOutAsync(uint idUser, string reason = "")
+        public static async Task KickOutAsync(uint idUser, string reason = "")
         {
             if (m_userSet.TryGetValue(idUser, out var user))
             {
@@ -213,7 +213,7 @@ namespace Comet.Game.World.Managers
             }
         }
 
-        public async Task KickOutAllAsync(string reason = "", bool isShutdown = false)
+        public static async Task KickOutAllAsync(string reason = "", bool isShutdown = false)
         {
             if (isShutdown)
                 m_isShutdown = true;
@@ -227,27 +227,27 @@ namespace Comet.Game.World.Managers
             }
         }
 
-        public Character GetUserByAccount(uint idAccount)
+        public static Character GetUserByAccount(uint idAccount)
         {
             return m_userSet.Values.FirstOrDefault(x => x.Client.AccountIdentity == idAccount);
         }
 
-        public Character GetUser(uint idUser)
+        public static Character GetUser(uint idUser)
         {
             return m_userSet.TryGetValue(idUser, out var client) ? client : null;
         }
 
-        public Character GetUser(string name)
+        public static Character GetUser(string name)
         {
             return m_userSet.Values.FirstOrDefault(x => x.Name == name);
         }
 
-        public List<Character> QueryUserSetByMap(uint idMap)
+        public static List<Character> QueryUserSetByMap(uint idMap)
         {
             return m_userSet.Values.Where(x => x.MapIdentity == idMap).ToList();
         }
 
-        public List<Character> QueryUserSet()
+        public static List<Character> QueryUserSet()
         {
             return m_userSet.Values.ToList();
         }
@@ -255,24 +255,24 @@ namespace Comet.Game.World.Managers
         /// <summary>
         ///     Attention, DO NOT USE to add <see cref="Character" />.
         /// </summary>
-        public bool AddRole(Role role)
+        public static bool AddRole(Role role)
         {
             if (role is MapItem item)
                 m_mapItemSet.TryAdd(role.Identity, item);
             return m_roleSet.TryAdd(role.Identity, role);
         }
 
-        public Role GetRole(uint idRole)
+        public static Role GetRole(uint idRole)
         {
             return m_roleSet.TryGetValue(idRole, out var role) ? role : null;
         }
 
-        public T GetRole<T>(uint idRole) where T : Role
+        public static T GetRole<T>(uint idRole) where T : Role
         {
             return m_roleSet.TryGetValue(idRole, out var role) ? role as T : null;
         }
 
-        public T GetRole<T>(Func<T, bool> predicate) where T : Role
+        public static T GetRole<T>(Func<T, bool> predicate) where T : Role
         {
             return m_roleSet.Values
                 .Where(x => x is T)
@@ -280,9 +280,9 @@ namespace Comet.Game.World.Managers
                 .FirstOrDefault(x => predicate != null && predicate(x));
         }
 
-        public T FindRole<T>(uint idRole) where T : Role
+        public static T FindRole<T>(uint idRole) where T : Role
         {
-            foreach (var map in Kernel.MapManager.GameMaps.Values)
+            foreach (var map in MapManager.GameMaps.Values)
             {
                 T result = map.QueryRole<T>(idRole);
                 if (result != null)
@@ -291,9 +291,9 @@ namespace Comet.Game.World.Managers
             return null;
         }
 
-        public T FindRole<T>(Func<T, bool> predicate) where T : Role
+        public static T FindRole<T>(Func<T, bool> predicate) where T : Role
         {
-            foreach (var map in Kernel.MapManager.GameMaps.Values)
+            foreach (var map in MapManager.GameMaps.Values)
             {
                 T result = map.QueryRole(predicate);
                 if (result != null)
@@ -305,13 +305,13 @@ namespace Comet.Game.World.Managers
         /// <summary>
         ///     Attention, DO NOT USE to remove <see cref="Character" />.
         /// </summary>
-        public bool RemoveRole(uint idRole)
+        public static bool RemoveRole(uint idRole)
         {
             m_mapItemSet.TryRemove(idRole, out _);
             return m_roleSet.TryRemove(idRole, out _);
         }
         
-        public async Task OnUserTimerAsync()
+        public static async Task OnUserTimerAsync()
         {
             bool updateUser = m_userUpdate.ToNextTime();
             foreach (var (_, value) in m_userSet)
@@ -332,7 +332,7 @@ namespace Comet.Game.World.Managers
             }
         }
 
-        public async Task OnRoleTimerAsync()
+        public static async Task OnRoleTimerAsync()
         {
             foreach (var item in m_mapItemSet.Values)
             {
@@ -352,7 +352,7 @@ namespace Comet.Game.World.Managers
             }
         }
 
-        public async Task OnAiTimerAsync()
+        public static async Task OnAiTimerAsync()
         {
             foreach (var ai in m_roleSet.Values.Where(x => x is IRoleAi))
             {
@@ -362,7 +362,7 @@ namespace Comet.Game.World.Managers
             }
         }
         
-        public Task BroadcastMsgAsync(string message, MsgTalk.TalkChannel channel = MsgTalk.TalkChannel.System,
+        public static Task BroadcastMsgAsync(string message, MsgTalk.TalkChannel channel = MsgTalk.TalkChannel.System,
             Color? color = null)
         {
             foreach (var user in m_userSet.Values)
@@ -372,7 +372,7 @@ namespace Comet.Game.World.Managers
             return Task.CompletedTask;
         }
 
-        public Task BroadcastMsgAsync(IPacket msg, uint ignore = 0)
+        public static Task BroadcastMsgAsync(IPacket msg, uint ignore = 0)
         {
             foreach (var user in m_userSet.Values)
             {
@@ -382,59 +382,59 @@ namespace Comet.Game.World.Managers
             return Task.CompletedTask;
         }
 
-        public DbPointAllot GetPointAllot(ushort profession, ushort level)
+        public static DbPointAllot GetPointAllot(ushort profession, ushort level)
         {
             return m_dicPointAllot.TryGetValue(AllotIndex(profession, level), out var point) ? point : null;
         }
 
-        private uint AllotIndex(ushort prof, ushort level)
+        private static uint AllotIndex(ushort prof, ushort level)
         {
             return (uint) ((prof << 16) + level);
         }
 
-        public DbMonstertype GetMonstertype(uint type)
+        public static DbMonstertype GetMonstertype(uint type)
         {
             return m_dicMonstertype.TryGetValue(type, out var mob) ? mob : null;
         }
 
-        public DbLevelExperience GetLevelExperience(byte level)
+        public static DbLevelExperience GetLevelExperience(byte level)
         {
             return m_dicLevExp.TryGetValue(level, out var value) ? value : null;
         }
 
-        public int GetLevelLimit()
+        public static int GetLevelLimit()
         {
             return m_dicLevExp.Count + 1;
         }
 
-        public DbRebirth GetRebirth(int profNow, int profNext, int currMete)
+        public static DbRebirth GetRebirth(int profNow, int profNext, int currMete)
         {
             profNow = (profNow / 10 * 1000) + profNow % 10;
             profNext = (profNext / 10 * 1000) + profNext % 10;
             return m_dicRebirths.FirstOrDefault(x => x.NeedProfession == profNow && x.NewProfession == profNext && x.Metempsychosis == currMete);
         }
 
-        public MagicTypeOp GetMagictypeOp(MagicTypeOp.MagictypeOperation op, int profNow, int profNext, int metempsychosis)
+        public static MagicTypeOp GetMagictypeOp(MagicTypeOp.MagictypeOperation op, int profNow, int profNext, int metempsychosis)
         {
             return m_magicOps.FirstOrDefault(x => x.ProfessionAgo == profNow && x.ProfessionNow == profNext && x.RebirthTime == metempsychosis && x.Operation == op);
         }
 
-        public List<T> QueryRoleByMap<T>(uint idMap) where T : Role
+        public static List<T> QueryRoleByMap<T>(uint idMap) where T : Role
         {
             return m_roleSet.Values.Where(x => x.MapIdentity == idMap && x is T).Cast<T>().ToList();
         }
 
-        public List<T> QueryRoleByType<T>() where T : Role
+        public static List<T> QueryRoleByType<T>() where T : Role
         {
             return m_roleSet.Values.Where(x => x is T).Cast<T>().ToList();
         }
 
-        public List<DbMonsterMagic> GetMonsterMagics(uint roleType)
+        public static List<DbMonsterMagic> GetMonsterMagics(uint roleType)
         {
             return m_dicMonsterMagics.TryGetValue(roleType, out var result) ? result : new List<DbMonsterMagic>();
         }
 
-        public Task AddOrUpdateSupermanAsync(uint idUser, int amount)
+        public static Task AddOrUpdateSupermanAsync(uint idUser, int amount)
         {
             if (!m_superman.TryGetValue(idUser, out var superman))
             {
@@ -448,12 +448,12 @@ namespace Comet.Game.World.Managers
             return BaseRepository.SaveAsync(superman);
         }
 
-        public int GetSupermanPoints(uint idUser)
+        public static int GetSupermanPoints(uint idUser)
         {
             return (int) (m_superman.TryGetValue(idUser, out var value) ? value.Amount : 0);
         }
 
-        public int GetSupermanRank(uint idUser)
+        public static int GetSupermanRank(uint idUser)
         {
             int result = 1;
             foreach (var super in m_superman.Values.OrderByDescending(x => x.Amount))
@@ -466,22 +466,22 @@ namespace Comet.Game.World.Managers
             return result;
         }
 
-        public DbDisdain GetDisdain(int delta)
+        public static DbDisdain GetDisdain(int delta)
         {
             return m_disdains.Aggregate((x, y) => Math.Abs(x.DeltaLev - delta) < Math.Abs(y.DeltaLev - delta) ? x : y);
         }
 
-        public DbTutorBattleLimitType GetTutorBattleLimitType(int delta)
+        public static DbTutorBattleLimitType GetTutorBattleLimitType(int delta)
         {
             return m_tutorBattleLimitTypes.Aggregate((x, y) => Math.Abs(x.Id - delta) < Math.Abs(y.Id - delta) ? x : y);
         }
 
-        public DbTutorType GetTutorType(int level)
+        public static DbTutorType GetTutorType(int level)
         {
             return m_tutorType.FirstOrDefault(x => level >= x.UserMinLevel && level <= x.UserMaxLevel);
         }
 
-        public DbAchievementType GetAchievementType(int type)
+        public static DbAchievementType GetAchievementType(int type)
         {
             return m_achievements.Values.FirstOrDefault(x => x.Position == type);
         }

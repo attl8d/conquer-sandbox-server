@@ -26,6 +26,7 @@ using System.Threading.Tasks;
 using Comet.Game.States;
 using Comet.Game.States.Items;
 using Comet.Game.States.NPCs;
+using Comet.Game.World.Managers;
 using Comet.Game.World.Maps;
 using Comet.Network.Packets;
 
@@ -155,7 +156,7 @@ namespace Comet.Game.Packets
             Item storageItem = null;
             if (Mode == StorageType.Storage || Mode == StorageType.Trunk)
             {
-                npc = Kernel.RoleManager.GetRole(Identity) as BaseNpc;
+                npc = RoleManager.GetRole(Identity) as BaseNpc;
                 
                 if (npc == null)
                 {
@@ -164,7 +165,7 @@ namespace Comet.Game.Packets
                     return;
                 }
 
-                BaseNpc interacting = Kernel.RoleManager.GetRole<BaseNpc>(user.InteractingNpc);
+                BaseNpc interacting = RoleManager.GetRole<BaseNpc>(user.InteractingNpc);
 
                 if (interacting == null || interacting.Type != BaseNpc.STORAGE_NPC)
                 {

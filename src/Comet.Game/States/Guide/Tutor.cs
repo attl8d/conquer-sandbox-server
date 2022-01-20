@@ -28,6 +28,7 @@ using Comet.Game.Database.Models;
 using Comet.Game.Database.Repositories;
 using Comet.Game.Packets;
 using Comet.Game.States.Syndicates;
+using Comet.Game.World.Managers;
 using Comet.Shared;
 
 namespace Comet.Game.States.Guide
@@ -82,14 +83,14 @@ namespace Comet.Game.States.Guide
         public bool Betrayed => m_tutor.BetrayalFlag != 0;
         public bool BetrayalCheck => Betrayed && m_betrayCheck.IsActive() && m_betrayCheck.ToNextTime();
 
-        public Character Guide => Kernel.RoleManager.GetUser(m_tutor.GuideId);
-        public Character Student => Kernel.RoleManager.GetUser(m_tutor.StudentId);
+        public Character Guide => RoleManager.GetUser(m_tutor.GuideId);
+        public Character Student => RoleManager.GetUser(m_tutor.StudentId);
 
         public async Task<bool> AwardTutorExperienceAsync(uint addExpTime)
         {
             m_access.Experience += addExpTime;
 
-            Character user = Kernel.RoleManager.GetUser(m_access.TutorIdentity);
+            Character user = RoleManager.GetUser(m_access.TutorIdentity);
             if (user != null)
             {
                 user.MentorExpTime += addExpTime;
@@ -111,7 +112,7 @@ namespace Comet.Game.States.Guide
         {
             m_access.GodTime += addGodTime;
 
-            Character user = Kernel.RoleManager.GetUser(m_access.TutorIdentity);
+            Character user = RoleManager.GetUser(m_access.TutorIdentity);
             if (user != null)
             {
                 user.MentorGodTime += addGodTime;
@@ -133,7 +134,7 @@ namespace Comet.Game.States.Guide
         {
             m_access.PlusStone += addTime;
 
-            Character user = Kernel.RoleManager.GetUser(m_access.TutorIdentity);
+            Character user = RoleManager.GetUser(m_access.TutorIdentity);
             if (user != null)
             {
                 user.MentorAddLevexp += addTime;
@@ -162,11 +163,11 @@ namespace Comet.Game.States.Guide
                 if (mentor.PureBattlePower < student.PureBattlePower)
                     return 0;
 
-                var limit = Kernel.RoleManager.GetTutorBattleLimitType(student.PureBattlePower);
+                var limit = RoleManager.GetTutorBattleLimitType(student.PureBattlePower);
                 if (limit == null)
                     return 0;
 
-                var type = Kernel.RoleManager.GetTutorType(mentor.Level);
+                var type = RoleManager.GetTutorType(mentor.Level);
                 if (type == null)
                     return 0;
                 

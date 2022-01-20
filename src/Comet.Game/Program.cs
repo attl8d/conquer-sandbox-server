@@ -34,6 +34,7 @@ using Comet.Game.Internal;
 using Comet.Game.Packets;
 using Comet.Game.States.Items;
 using Comet.Game.World;
+using Comet.Game.World.Managers;
 using Comet.Network.RPC;
 using Comet.Network.Security;
 using Comet.Shared;
@@ -162,7 +163,7 @@ namespace Comet.Game
                         string[] bc = text.Split(new[] {" "}, 2, StringSplitOptions.RemoveEmptyEntries);
                         if (bc.Length < 2)
                             break;
-                        await Kernel.RoleManager.BroadcastMsgAsync(bc[1], MsgTalk.TalkChannel.Center);
+                        await RoleManager.BroadcastMsgAsync(bc[1], MsgTalk.TalkChannel.Center);
                         break;
                     }
 
@@ -179,7 +180,7 @@ namespace Comet.Game
                             int prof = 40;
                             uint mesh = 11003;
 
-                            DbPointAllot allot = Kernel.RoleManager.GetPointAllot((ushort) (prof / 10), 1) ??
+                            DbPointAllot allot = RoleManager.GetPointAllot((ushort) (prof / 10), 1) ??
                                                  new DbPointAllot
                                                  {
                                                      Strength = 4,

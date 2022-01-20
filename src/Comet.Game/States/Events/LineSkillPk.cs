@@ -30,6 +30,7 @@ using Comet.Game.Packets;
 using Comet.Game.States.BaseEntities;
 using Comet.Game.States.Items;
 using Comet.Game.States.Magics;
+using Comet.Game.World.Managers;
 using Comet.Shared;
 
 namespace Comet.Game.States.Events
@@ -68,7 +69,7 @@ namespace Comet.Game.States.Events
 
         public override async Task<bool> CreateAsync()
         {
-            Map = Kernel.MapManager.GetMap(MAP_ID_I);
+            Map = MapManager.GetMap(MAP_ID_I);
             if (Map == null)
             {
                 _ = Log.WriteLogAsync(LogLevel.Error, $"LineSkillPK init error map not found").ConfigureAwait(false);
@@ -85,7 +86,7 @@ namespace Comet.Game.States.Events
 
             foreach (var participant in m_participants.Values)
             {
-                Character player = Kernel.RoleManager.GetUser(participant.Identity);
+                Character player = RoleManager.GetUser(participant.Identity);
                 if (player.Client.MacAddress.Equals(user.Client.MacAddress))
                     return false;
             }
@@ -210,7 +211,7 @@ namespace Comet.Game.States.Events
 
                     foreach (var user in m_participants.Values)
                     {
-                        Character player = Kernel.RoleManager.GetUser(user.Identity);
+                        Character player = RoleManager.GetUser(user.Identity);
                         if (player == null)
                             continue;
 
@@ -229,7 +230,7 @@ namespace Comet.Game.States.Events
                 {
                     foreach (var player in m_participants.Values)
                     {
-                        Character user = Kernel.RoleManager.GetUser(player.Identity);
+                        Character user = RoleManager.GetUser(player.Identity);
                         if (user != null)
                             await user.FlyMapAsync(user.RecordMapIdentity, user.RecordMapX, user.RecordMapY);
                     }
@@ -263,7 +264,7 @@ namespace Comet.Game.States.Events
                 if (idReward == 0)
                     continue;
 
-                Character user = Kernel.RoleManager.GetUser(player.Identity);
+                Character user = RoleManager.GetUser(player.Identity);
                 if (user != null)
                 {
                     _ = GameAction.ExecuteActionAsync(idReward, user, null, null, "");

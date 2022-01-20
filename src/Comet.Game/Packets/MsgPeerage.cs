@@ -24,6 +24,7 @@
 using System.Collections.Generic;
 using System.Threading.Tasks;
 using Comet.Game.States;
+using Comet.Game.World.Managers;
 using Comet.Network.Packets;
 
 #endregion
@@ -202,13 +203,13 @@ namespace Comet.Game.Packets
                             return;
                     }
 
-                    await Kernel.PeerageManager.DonateAsync(user, Data);
+                    await PeerageManager.DonateAsync(user, Data);
                     break;
                 case NobilityAction.List:
-                    await Kernel.PeerageManager.SendRankingAsync(user, DataLow1);
+                    await PeerageManager.SendRankingAsync(user, DataLow1);
                     break;
                 case NobilityAction.QueryRemainingSilver:
-                    Data = (uint) Kernel.PeerageManager.GetNextRankSilver((NobilityRank) DataLow1, user.NobilityDonation);
+                    Data = (uint) PeerageManager.GetNextRankSilver((NobilityRank) DataLow1, user.NobilityDonation);
                     Data2 = 60;
                     Data3 = (uint) user.NobilityPosition;
                     await user.SendAsync(this);

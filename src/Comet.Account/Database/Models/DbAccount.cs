@@ -23,6 +23,7 @@
 
 using System;
 using System.Collections.Generic;
+using System.ComponentModel.DataAnnotations;
 using System.ComponentModel.DataAnnotations.Schema;
 
 #endregion
@@ -38,14 +39,17 @@ namespace Comet.Account.Database.Models
     public class DbAccount
     {
         // Column Properties
-        public uint AccountID { get; set; }
-        public string Username { get; set; }
-        public string Password { get; set; }
-        public string Salt { get; set; }
-        public ushort AuthorityID { get; set; }
-        public ushort StatusID { get; set; }
-        public string IPAddress { get; set; }
-        public string MacAddress { get; set; }
-        public DateTime Registered { get; set; }
+        [Key]
+        public virtual uint AccountID { get; set; }
+        public virtual string Username { get; set; }
+        public virtual string Password { get; set; }
+        public virtual string Salt { get; set; }
+        public virtual ushort AuthorityID { get; set; }
+        public virtual ushort StatusID { get; set; }
+        public virtual string IPAddress { get; set; }
+        public virtual string MacAddress { get; set; }
+        public virtual DateTime Registered { get; set; }
+
+        public virtual DbAccountAuthority Authority { get; set; }
     }
 }

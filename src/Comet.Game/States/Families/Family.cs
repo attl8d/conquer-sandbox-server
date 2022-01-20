@@ -30,6 +30,7 @@ using System.Threading.Tasks;
 using Comet.Game.Database;
 using Comet.Game.Database.Models;
 using Comet.Game.Packets;
+using Comet.Game.World.Managers;
 using Comet.Network.Packets;
 
 #endregion
@@ -99,12 +100,12 @@ namespace Comet.Game.States.Families
             }
 
             family.m_members.TryAdd(fmLeader.Identity, fmLeader);
-            Kernel.FamilyManager.AddFamily(family);
+            FamilyManager.AddFamily(family);
 
             await leader.SendFamilyAsync();
             await family.SendRelationsAsync(leader);
 
-            await Kernel.RoleManager.BroadcastMsgAsync(string.Format(Language.StrFamilyCreate, leader.Name, family.Name));
+            await RoleManager.BroadcastMsgAsync(string.Format(Language.StrFamilyCreate, leader.Name, family.Name));
             return family;
         }
 
@@ -282,7 +283,7 @@ namespace Comet.Game.States.Families
 
             if (rank != FamilyRank.Spouse)
             {
-                Character mateCharacter = Kernel.RoleManager.GetUser(target.MateIdentity);
+                Character mateCharacter = RoleManager.GetUser(target.MateIdentity);
                 if (mateCharacter != null)
                     await AppendMemberAsync(caller, mateCharacter, FamilyRank.Spouse);
             }
@@ -385,7 +386,7 @@ namespace Comet.Game.States.Families
             await target.User.Screen.SynchroScreenAsync();
             await caller.Screen.SynchroScreenAsync();
 
-            await Kernel.RoleManager.BroadcastMsgAsync(string.Format(Language.StrFamilyAbdicate, caller.Name, target.Name), MsgTalk.TalkChannel.Family);
+            await RoleManager.BroadcastMsgAsync(string.Format(Language.StrFamilyAbdicate, caller.Name, target.Name), MsgTalk.TalkChannel.Family);
             return true;
         }
 
@@ -396,53 +397,53 @@ namespace Comet.Game.States.Families
         public void LoadRelations()
         {
             // Ally
-            var family = Kernel.FamilyManager.GetFamily(m_family.AllyFamily0);
+            var family = FamilyManager.GetFamily(m_family.AllyFamily0);
             if (family != null)
                 m_allies.TryAdd(family.Identity, family);
             else m_family.AllyFamily0 = 0;
 
-            family = Kernel.FamilyManager.GetFamily(m_family.AllyFamily1);
+            family = FamilyManager.GetFamily(m_family.AllyFamily1);
             if (family != null)
                 m_allies.TryAdd(family.Identity, family);
             else m_family.AllyFamily1 = 0;
 
-            family = Kernel.FamilyManager.GetFamily(m_family.AllyFamily2);
+            family = FamilyManager.GetFamily(m_family.AllyFamily2);
             if (family != null)
                 m_allies.TryAdd(family.Identity, family);
             else m_family.AllyFamily2 = 0;
 
-            family = Kernel.FamilyManager.GetFamily(m_family.AllyFamily3);
+            family = FamilyManager.GetFamily(m_family.AllyFamily3);
             if (family != null)
                 m_allies.TryAdd(family.Identity, family);
             else m_family.AllyFamily3 = 0;
 
-            family = Kernel.FamilyManager.GetFamily(m_family.AllyFamily4);
+            family = FamilyManager.GetFamily(m_family.AllyFamily4);
             if (family != null)
                 m_allies.TryAdd(family.Identity, family);
             else m_family.AllyFamily4 = 0;
 
             // Enemies
-            family = Kernel.FamilyManager.GetFamily(m_family.EnemyFamily0);
+            family = FamilyManager.GetFamily(m_family.EnemyFamily0);
             if (family != null)
                 m_allies.TryAdd(family.Identity, family);
             else m_family.EnemyFamily0 = 0;
 
-            family = Kernel.FamilyManager.GetFamily(m_family.EnemyFamily1);
+            family = FamilyManager.GetFamily(m_family.EnemyFamily1);
             if (family != null)
                 m_allies.TryAdd(family.Identity, family);
             else m_family.EnemyFamily1 = 0;
 
-            family = Kernel.FamilyManager.GetFamily(m_family.EnemyFamily2);
+            family = FamilyManager.GetFamily(m_family.EnemyFamily2);
             if (family != null)
                 m_allies.TryAdd(family.Identity, family);
             else m_family.EnemyFamily2 = 0;
 
-            family = Kernel.FamilyManager.GetFamily(m_family.EnemyFamily3);
+            family = FamilyManager.GetFamily(m_family.EnemyFamily3);
             if (family != null)
                 m_allies.TryAdd(family.Identity, family);
             else m_family.EnemyFamily3 = 0;
 
-            family = Kernel.FamilyManager.GetFamily(m_family.EnemyFamily4);
+            family = FamilyManager.GetFamily(m_family.EnemyFamily4);
             if (family != null)
                 m_allies.TryAdd(family.Identity, family);
             else m_family.EnemyFamily4 = 0;

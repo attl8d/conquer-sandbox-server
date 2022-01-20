@@ -71,9 +71,9 @@ namespace Comet.Web.App.Services
         {
             get
             {
-                if (mCurrentCulture == null)
+                if (mCurrentCulture == null && mHttpContextAccessor != null)
                 {
-                    string locale = ""; //= Thread.CurrentThread.CurrentCulture.Name;
+                    string locale = "";
                     if (!mHttpContextAccessor.HttpContext.User.Identity.IsAuthenticated)
                     {
                         if (mHttpContextAccessor.HttpContext.Request.Cookies.ContainsKey("Locale"))
@@ -87,7 +87,7 @@ namespace Comet.Web.App.Services
                     }
                     else
                     {
-                        locale = mHttpContextAccessor.HttpContext.User.FindFirst(PersonalInfoType.Language.ToClaimString()).Value;
+                        locale = mHttpContextAccessor.HttpContext.User.FindFirst(PersonalInfoType.Language.ToClaimString())?.Value;
                     }
 
                     if (!AvailableLanguages.Any(x => x.LanguageCultureName.Equals(locale)))
@@ -95,13 +95,17 @@ namespace Comet.Web.App.Services
 
                     mCurrentCulture = AvailableLanguages.FirstOrDefault(x => x.LanguageCultureName.Equals(locale));
                 }
+                else
+                {
+                    mCurrentCulture = AvailableLanguages.FirstOrDefault(x => x.LanguageCultureName.Equals(GetDefaultLanguage()));
+                }
                 return mCurrentCulture;
             }
         }
 
         public string GetString(string name, params object[] args)
         {
-            string locale = CurrentCulture.LanguageCultureName;
+            string locale = CurrentCulture?.LanguageCultureName ?? GetDefaultLanguage();
             if (!ResourceManager.ContainsKey(locale))
                 locale = GetDefaultLanguage();
             string result = ResourceManager[locale].GetString(name);

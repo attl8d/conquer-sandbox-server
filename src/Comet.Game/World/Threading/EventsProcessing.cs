@@ -32,6 +32,7 @@ using Comet.Game.States.BaseEntities;
 using Comet.Game.States.Events;
 using Comet.Game.States.Items;
 using Comet.Game.States.NPCs;
+using Comet.Game.World.Managers;
 using Comet.Shared;
 using Comet.Shared.Comet.Shared;
 
@@ -43,7 +44,6 @@ namespace Comet.Game.World.Threading
     {
         private TimeOut m_rankingBroadcast = new TimeOut(10);
         private ConcurrentDictionary<GameEvent.EventType, GameEvent> m_events = new ConcurrentDictionary<GameEvent.EventType, GameEvent>();
-        //private ConcurrentDictionary<uint, QueuedAction> m_queuedActions = new ConcurrentDictionary<uint, QueuedAction>();
         private List<QueuedAction> m_queuedActions = new List<QueuedAction>();
 
         public EventsProcessing()
@@ -54,10 +54,10 @@ namespace Comet.Game.World.Threading
 
         protected override async Task<bool> OnElapseAsync()
         {
-            await Kernel.PigeonManager.OnTimerAsync();
+            await PigeonManager.OnTimerAsync();
 
             bool ranking = m_rankingBroadcast.ToNextTime();
-            foreach (var dynaNpc in Kernel.RoleManager.QueryRoleByType<DynamicNpc>())
+            foreach (var dynaNpc in RoleManager.QueryRoleByType<DynamicNpc>())
             {
                 if (dynaNpc.IsGoal())
                     continue;
@@ -74,20 +74,10 @@ namespace Comet.Game.World.Threading
                     await @event.OnTimerAsync();
             }
 
-            //foreach (var action in m_queuedActions.Values)
-            //{
-            //    Character user = Kernel.RoleManager.GetUser(action.UserIdentity);
-            //    if (action.CanBeExecuted && user != null)
-            //    {
-            //        await GameAction.ExecuteActionAsync(action.Action, user, null, null, "");
-            //        m_queuedActions.TryRemove(user.Identity, out _);
-            //    }
-            //}
-
             for (int i = m_queuedActions.Count - 1; i >= 0; i--)
             {
                 var action = m_queuedActions[i];
-                Character user = Kernel.RoleManager.GetUser(action.UserIdentity);
+                Character user = RoleManager.GetUser(action.UserIdentity);
                 if (action.CanBeExecuted && user != null)
                 {
                     Item item = null;
@@ -98,7 +88,7 @@ namespace Comet.Game.World.Threading
                     Role role = null;
                     if (user.InteractingNpc != 0)
                     {
-                        role = Kernel.RoleManager.GetRole(user.InteractingNpc);
+                        role = RoleManager.GetRole(user.InteractingNpc);
                     }
 
                     await GameAction.ExecuteActionAsync(action.Action, user, role, item, "");

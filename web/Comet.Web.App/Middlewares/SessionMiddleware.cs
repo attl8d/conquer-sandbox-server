@@ -26,7 +26,7 @@ namespace Comet.Web.App.Middlewares
                     Secure = true,
                     IsEssential = true,
                     MaxAge = TimeSpan.FromHours(12),
-                    SameSite = SameSiteMode.None
+                    SameSite = SameSiteMode.Strict
                 });
             }
 

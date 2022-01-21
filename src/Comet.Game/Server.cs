@@ -396,6 +396,10 @@ namespace Comet.Game
                         msg = new MsgNationality();
                         break;
 
+                    case PacketType.MsgSubPro:
+                        msg = new MsgSubPro();
+                        break;
+
                     default:
                         await Log.WriteLogAsync(LogLevel.Warning, "Missing packet {0}, Length {1}\n{2}", type, length, PacketDump.Hex(packet));
                         if (actor.Character?.IsGm() == true)

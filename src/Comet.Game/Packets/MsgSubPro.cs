@@ -1,5 +1,10 @@
-﻿using Comet.Game.States;
+﻿using Comet.Game.Database;
+using Comet.Game.Database.Models;
+using Comet.Game.States;
+using Comet.Game.World.Managers;
 using Comet.Network.Packets;
+using Comet.Shared;
+using System;
 using System.Collections.Generic;
 using System.Threading.Tasks;
 
@@ -15,23 +20,34 @@ namespace Comet.Game.Packets
             get => (AstProfType)Points;
             set => Points = (ulong)value; 
         }
+        public byte Level
+        {
+            get => BitConverter.GetBytes(Points)[1];
+            set
+            {
+                byte[] val = BitConverter.GetBytes(Points);
+                val[1] = value;
+                Points = BitConverter.ToUInt64(val);
+            }
+        }
         public ulong Study { get; set; }
-        public byte Count { get; set; }
-        public List<AstProf> Professions { get; set; } = new List<AstProf>();
+        public ulong AwardedStudy { get; set; }
+        public int Count { get; set; }
+        public List<AstProfStruct> Professions { get; set; } = new List<AstProfStruct>();
 
         public override void Decode(byte[] bytes)
         {
             PacketReader reader = new PacketReader(bytes);
             Length = reader.ReadUInt16();
             Type = (PacketType)reader.ReadUInt16();
-            Timestamp = reader.ReadInt32();
-            Action = (AstProfAction)reader.ReadUInt16();
-            Points = reader.ReadUInt64();
-            Study = reader.ReadUInt64();
-            Count = reader.ReadByte();
+            Timestamp = reader.ReadInt32(); // 4
+            Action = (AstProfAction)reader.ReadUInt16(); // 8
+            Points = reader.ReadUInt64(); // 10
+            Study = reader.ReadUInt64(); // 18
+            Count = reader.ReadByte(); // 26
             for (int i = 0; i < Count; i++)
             {
-                Professions.Add(new AstProf
+                Professions.Add(new AstProfStruct 
                 {
                     Class = (AstProfType)reader.ReadByte(),
                     Level = reader.ReadByte(),
@@ -44,11 +60,11 @@ namespace Comet.Game.Packets
         {
             PacketWriter writer = new PacketWriter();
             writer.Write((ushort) PacketType.MsgSubPro);
-            writer.Write(Timestamp);
-            writer.Write((ushort) Action);
-            writer.Write(Points);
-            writer.Write(Study);
-            writer.Write(Count = (byte) Professions.Count);
+            writer.Write(Timestamp); // 4
+            writer.Write((ushort) Action); // 8
+            writer.Write(Points); // 10
+            writer.Write(Study); // 18
+            writer.Write(Count = Professions.Count); // 26
             for (int i = 0; i < Professions.Count; i++)
             {
                 writer.Write((byte)Professions[i].Class);
@@ -60,14 +76,49 @@ namespace Comet.Game.Packets
 
         public override Task ProcessAsync(Client client)
         {
-            return base.ProcessAsync(client);
+            switch (Action)
+            {
+                case AstProfAction.Switch: return client.Character.AstProf.ActivateAsync(Class);
+                case AstProfAction.RequestUplev: return client.Character.AstProf.UpLevAsync(Class);
+                case AstProfAction.MartialPromoted: return client.Character.AstProf.PromoteAsync(Class);
+                case AstProfAction.Info: return client.Character.AstProf.SendAsync();
+                case AstProfAction.LearnRemote: return client.Character.AstProf.LearnAsync(Class);
+                case AstProfAction.PromoteRemote: return client.Character.AstProf.PromoteAsync(Class);
+                default: return Log.WriteLogAsync(LogLevel.Socket, $"MsgSubPro Unhandled action [{Action}].\r\n\t{PacketDump.Hex(Encode())}");
+            }
         }
 
-        public class AstProf
+        public struct AstProfStruct
         {
             public AstProfType Class { get; set; }
             public byte Level { get; set; }
             public byte Rank { get; set; }
+        }
+
+        public class AstProf
+        {
+            public AstProf(AstProfType type, uint owner)
+            {
+                mDb = new DbAstProfLevel
+                {
+                    AstProf = (byte)type,
+                    Level = 1,
+                    UserIdentity = owner
+                };
+            }
+
+            public AstProf(DbAstProfLevel db)
+            {
+                mDb = db;
+            }
+
+            public AstProfType Class { get => (AstProfType)mDb.AstProf; }
+            public byte Level { get => mDb.Level; set => mDb.Level = value; }
+
+            private DbAstProfLevel mDb;
+
+            public Task SaveAsync() => BaseRepository.SaveAsync(mDb);
+            public Task DeleteAsync() => BaseRepository.DeleteAsync(mDb);
         }
 
         public enum AstProfAction : ushort
@@ -81,7 +132,8 @@ namespace Comet.Game.Packets
             Info = 6,
             ShowGui = 7,
             UpdateStudy = 8,
-            LearnRemote = 9
+            LearnRemote = 9,
+            PromoteRemote = 10
         }
 
         public enum AstProfType : byte

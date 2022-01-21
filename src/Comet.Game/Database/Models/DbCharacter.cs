@@ -129,6 +129,9 @@ namespace Comet.Game.Database.Models
         [Column("strength_value")] public uint StrengthValue { get; set; } // ChiPoints
         [Column("day_reset_date")] public uint DayResetDate { get; set; }
 
+        [Column("current_ast_prof")] public byte AstProfCurrent { get; set; }
+        [Column("ast_prof_rank")] public ulong AstProfRank{ get; set; }
+
         public static async Task<List<DbCharacter>> GetAthletePointRankAsync(int from, int limit)
         {
             await using var ctx = new ServerDbContext();

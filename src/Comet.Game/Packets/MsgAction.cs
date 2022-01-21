@@ -263,6 +263,7 @@ namespace Comet.Game.Packets
                 case ActionType.LoginProficiencies: // 77
                     await client.Character.WeaponSkill.InitializeAsync();
                     await client.Character.WeaponSkill.SendAsync();
+                    await client.Character.AstProf.InitializeAsync();
                     await client.SendAsync(this);
                     break;
 

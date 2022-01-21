@@ -168,93 +168,95 @@ namespace Comet.Game.Packets
             switch (Action)
             {
                 case ItemActionType.ShopPurchase:
-                    npc = RoleManager.GetRole<BaseNpc>(Identity);
-                    if (npc == null)
-                        return;
-                    if (npc.MapIdentity != 5000 && npc.MapIdentity != user.MapIdentity)
-                        return;
-                    if (npc.MapIdentity != 5000 && npc.GetDistance(user) > Screen.VIEW_SIZE)
-                        return;
-
-                    DbGoods goods = npc.ShopGoods.FirstOrDefault(x => x.Itemtype == Command);
-                    if (goods == null)
                     {
-                        await Log.WriteLogAsync(LogLevel.Cheat, $"Invalid goods itemtype {Command} for Shop {Identity}");
-                        return;
-                    }
+                        npc = RoleManager.GetRole<BaseNpc>(Identity);
+                        if (npc == null)
+                            return;
+                        if (npc.MapIdentity != 5000 && npc.MapIdentity != user.MapIdentity)
+                            return;
+                        if (npc.MapIdentity != 5000 && npc.GetDistance(user) > Screen.VIEW_SIZE)
+                            return;
 
-                    DbItemtype itemtype = ItemManager.GetItemtype(Command);
-                    if (itemtype == null)
-                    {
-                        await Log.WriteLogAsync(LogLevel.Cheat,
-                            $"Invalid goods itemtype (not existent) {Command} for Shop {Identity}");
-                        return;
-                    }
+                        DbGoods goods = npc.ShopGoods.FirstOrDefault(x => x.Itemtype == Command);
+                        if (goods == null)
+                        {
+                            await Log.WriteLogAsync(LogLevel.Cheat, $"Invalid goods itemtype {Command} for Shop {Identity}");
+                            return;
+                        }
 
-                    int amount = (int)Math.Max(1, Argument);
-                    if (!user.UserPackage.IsPackSpare(amount))
-                    {
-                        await user.SendAsync(Language.StrYourBagIsFull);
-                        return;
-                    }
-
-                    const byte MONOPOLY_NONE_B = 0;
-                    const byte MONOPOLY_BOUND_B = Item.ITEM_MONOPOLY_MASK;
-                    byte monopoly = MONOPOLY_NONE_B;
-                    switch ((Moneytype)Argument3)
-                    {
-                        case Moneytype.Silver:
-                            if ((Moneytype)goods.Moneytype != Moneytype.Silver)
-                                return;
-
-                            if (itemtype.Price == 0)
-                                return;
-
-                            if (!await user.SpendMoneyAsync((int)(itemtype.Price * amount), true))
-                                return;
-                            break;
-                        case Moneytype.ConquerPoints:
-                            if ((Moneytype)goods.Moneytype != Moneytype.ConquerPoints)
-                                return;
-
-                            if (itemtype.EmoneyPrice == 0)
-                                return;
-
-                            if (!await user.SpendConquerPointsAsync((int)(itemtype.EmoneyPrice * amount), true))
-                                return;
-                            break;
-                        case Moneytype.ConquerPointsMono:
-                            if ((Moneytype)goods.Moneytype != Moneytype.ConquerPoints)
-                                return;
-
-                            if (itemtype.BoundEmoneyPrice == 0)
-                                return;
-
-                            if (!await user.SpendBoundConquerPointsAsync((int)(itemtype.BoundEmoneyPrice * amount), true))
-                                return;
-
-                            monopoly = MONOPOLY_BOUND_B;
-                            break;
-                        default:
+                        DbItemtype itemtype = ItemManager.GetItemtype(Command);
+                        if (itemtype == null)
+                        {
                             await Log.WriteLogAsync(LogLevel.Cheat,
-                                $"Invalid moneytype {(Moneytype)Argument}/{Identity}/{Command} - {user.Identity}({user.Name})");
+                                $"Invalid goods itemtype (not existent) {Command} for Shop {Identity}");
                             return;
+                        }
+
+                        int amount = (int)Math.Max(1, Argument);
+                        if (!user.UserPackage.IsPackSpare(amount))
+                        {
+                            await user.SendAsync(Language.StrYourBagIsFull);
+                            return;
+                        }
+
+                        const byte MONOPOLY_NONE_B = 0;
+                        const byte MONOPOLY_BOUND_B = Item.ITEM_MONOPOLY_MASK;
+                        byte monopoly = MONOPOLY_NONE_B;
+                        switch ((Moneytype)Argument3)
+                        {
+                            case Moneytype.Silver:
+                                if ((Moneytype)goods.Moneytype != Moneytype.Silver)
+                                    return;
+
+                                if (itemtype.Price == 0)
+                                    return;
+
+                                if (!await user.SpendMoneyAsync((int)(itemtype.Price * amount), true))
+                                    return;
+                                break;
+                            case Moneytype.ConquerPoints:
+                                if ((Moneytype)goods.Moneytype != Moneytype.ConquerPoints)
+                                    return;
+
+                                if (itemtype.EmoneyPrice == 0)
+                                    return;
+
+                                if (!await user.SpendConquerPointsAsync((int)(itemtype.EmoneyPrice * amount), true))
+                                    return;
+                                break;
+                            case Moneytype.ConquerPointsMono:
+                                if ((Moneytype)goods.Moneytype != Moneytype.ConquerPoints)
+                                    return;
+
+                                if (itemtype.BoundEmoneyPrice == 0)
+                                    return;
+
+                                if (!await user.SpendBoundConquerPointsAsync((int)(itemtype.BoundEmoneyPrice * amount), true))
+                                    return;
+
+                                monopoly = MONOPOLY_BOUND_B;
+                                break;
+                            default:
+                                await Log.WriteLogAsync(LogLevel.Cheat,
+                                    $"Invalid moneytype {(Moneytype)Argument}/{Identity}/{Command} - {user.Identity}({user.Name})");
+                                return;
+                        }
+
+                        for (int i = 0; i < amount; i++)
+                        {
+                            DbItem dbItem = Item.CreateEntity(itemtype.Type, monopoly != 0);
+                            if (dbItem == null)
+                                return;
+
+                            item = new Item(user);
+                            if (!await item.CreateAsync(dbItem))
+                                return;
+
+                            await user.UserPackage.AddItemAsync(item);
+                        }
+
+                        break;
                     }
-
-                    for (int i = 0; i < amount; i++)
-                    {
-                        DbItem dbItem = Item.CreateEntity(itemtype.Type, monopoly != 0);
-                        if (dbItem == null)
-                            return;
-
-                        item = new Item(user);
-                        if (!await item.CreateAsync(dbItem))
-                            return;
-
-                        await user.UserPackage.AddItemAsync(item);
-                    }
-
-                    break;
 
                 case ItemActionType.ShopSell:
                     {
@@ -285,23 +287,31 @@ namespace Comet.Game.Packets
 
                 case ItemActionType.InventoryDropItem:
                 case ItemActionType.InventoryRemove:
-                    await user.DropItemAsync(Identity, user.MapX, user.MapY);
-                    break;
+                    {
+                        await user.DropItemAsync(Identity, user.MapX, user.MapY);
+                        break;
+                    }
 
                 case ItemActionType.InventoryDropSilver:
-                    await user.DropSilverAsync(Identity);
-                    break;
+                    {
+                        await user.DropSilverAsync(Identity);
+                        break;
+                    }
 
                 case ItemActionType.InventoryEquip:
                 case ItemActionType.EquipmentWear:
-                    if (!await user.UserPackage.UseItemAsync(Identity, (Item.ItemPosition)Command))
-                        await user.SendAsync(Language.StrUnableToUseItem, MsgTalk.TalkChannel.TopLeft, Color.Red);
-                    break;
+                    {
+                        if (!await user.UserPackage.UseItemAsync(Identity, (Item.ItemPosition)Command))
+                            await user.SendAsync(Language.StrUnableToUseItem, MsgTalk.TalkChannel.TopLeft, Color.Red);
+                        break;
+                    }
 
                 case ItemActionType.EquipmentRemove:
-                    if (!await user.UserPackage.UnEquipAsync((Item.ItemPosition)Command))
-                        await user.SendAsync(Language.StrYourBagIsFull, MsgTalk.TalkChannel.TopLeft, Color.Red);
-                    break;
+                    {
+                        if (!await user.UserPackage.UnEquipAsync((Item.ItemPosition)Command))
+                            await user.SendAsync(Language.StrYourBagIsFull, MsgTalk.TalkChannel.TopLeft, Color.Red);
+                        break;
+                    }
 
                 case ItemActionType.EquipmentCombine:
                     {
@@ -312,70 +322,80 @@ namespace Comet.Game.Packets
                     }
 
                 case ItemActionType.BankQuery:
-                    Command = user.StorageMoney;
-                    await user.SendAsync(this);
-                    break;
+                    {
+                        Command = user.StorageMoney;
+                        await user.SendAsync(this);
+                        break;
+                    }
 
                 case ItemActionType.BankDeposit:
-                    if (user.Silvers < Command)
-                        return;
-
-                    if (Command + user.StorageMoney > Role.MAX_STORAGE_MONEY)
                     {
-                        await user.SendAsync(string.Format(Language.StrSilversExceedAmount, int.MaxValue));
-                        return;
+                        if (user.Silvers < Command)
+                            return;
+
+                        if (Command + user.StorageMoney > Role.MAX_STORAGE_MONEY)
+                        {
+                            await user.SendAsync(string.Format(Language.StrSilversExceedAmount, int.MaxValue));
+                            return;
+                        }
+
+                        if (!await user.SpendMoneyAsync((int)Command, true))
+                            return;
+
+                        user.StorageMoney += Command;
+
+                        Action = ItemActionType.BankQuery;
+                        Command = user.StorageMoney;
+                        await user.SendAsync(this);
+                        await user.SaveAsync();
+                        break;
                     }
-
-                    if (!await user.SpendMoneyAsync((int)Command, true))
-                        return;
-
-                    user.StorageMoney += Command;
-
-                    Action = ItemActionType.BankQuery;
-                    Command = user.StorageMoney;
-                    await user.SendAsync(this);
-                    await user.SaveAsync();
-                    break;
 
                 case ItemActionType.BankWithdraw:
-                    if (Command > user.StorageMoney)
-                        return;
-
-                    if (Command + user.Silvers > int.MaxValue)
                     {
-                        await user.SendAsync(string.Format(Language.StrSilversExceedAmount, int.MaxValue));
-                        return;
+                        if (Command > user.StorageMoney)
+                            return;
+
+                        if (Command + user.Silvers > int.MaxValue)
+                        {
+                            await user.SendAsync(string.Format(Language.StrSilversExceedAmount, int.MaxValue));
+                            return;
+                        }
+
+                        user.StorageMoney -= Command;
+
+                        await user.AwardMoneyAsync((int)Command);
+
+                        Action = ItemActionType.BankQuery;
+                        Command = user.StorageMoney;
+                        await user.SendAsync(this);
+                        await user.SaveAsync();
+                        break;
                     }
-
-                    user.StorageMoney -= Command;
-
-                    await user.AwardMoneyAsync((int)Command);
-
-                    Action = ItemActionType.BankQuery;
-                    Command = user.StorageMoney;
-                    await user.SendAsync(this);
-                    await user.SaveAsync();
-                    break;
 
                 case ItemActionType.EquipmentRepair:
-                    item = user.UserPackage[Identity];
-                    if (item != null && item.Position == Item.ItemPosition.Inventory)
-                        await item.RepairItemAsync();
-                    break;
-
-                case ItemActionType.EquipmentRepairAll:
-                    if (user.VipLevel < 2)
-                        return;
-
-                    for (Item.ItemPosition pos = Item.ItemPosition.EquipmentBegin;
-                        pos <= Item.ItemPosition.EquipmentEnd;
-                        pos++)
                     {
-                        if (user.UserPackage[pos] != null)
-                            await user.UserPackage[pos].RepairItemAsync();
+                        item = user.UserPackage[Identity];
+                        if (item != null && item.Position == Item.ItemPosition.Inventory)
+                            await item.RepairItemAsync();
+                        break;
                     }
 
-                    break;
+                case ItemActionType.EquipmentRepairAll:
+                    {
+                        if (user.VipLevel < 2)
+                            return;
+
+                        for (Item.ItemPosition pos = Item.ItemPosition.EquipmentBegin;
+                            pos <= Item.ItemPosition.EquipmentEnd;
+                            pos++)
+                        {
+                            if (user.UserPackage[pos] != null)
+                                await user.UserPackage[pos].RepairItemAsync();
+                        }
+
+                        break;
+                    }
 
                 case ItemActionType.EquipmentImprove:
                     {

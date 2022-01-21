@@ -72,6 +72,7 @@ namespace Comet.Game.Packets
             CompositionProgress = item.CompositionProgress;
             Inscribed = item.SyndicateIdentity != 0;
             AntiMonster = item.AntiMonster;
+            PackageAmount = (ushort)item.AccumulateNum;
         }
 
         public uint Identity { get; set; }

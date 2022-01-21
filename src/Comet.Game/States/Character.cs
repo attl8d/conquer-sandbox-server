@@ -49,6 +49,7 @@ using Comet.Game.World.Maps;
 using Comet.Network.Packets;
 using Comet.Network.Packets.Internal;
 using Comet.Shared;
+using static Comet.Game.Packets.MsgSubPro;
 
 #endregion
 
@@ -120,6 +121,7 @@ namespace Comet.Game.States
             UserPackage = new UserPackage(this);
             Statistic = new UserStatistic(this);
             TaskDetail = new TaskDetail(this);
+            AstProf = new SubClass(this);
 
             if (m_dbObject.LuckyTime != null)
                 m_luckyTimeCount = (int) Math.Max(0, (m_dbObject.LuckyTime.Value - DateTime.Now).TotalSeconds);
@@ -1103,7 +1105,13 @@ namespace Comet.Game.States
         {
             StudyPoints = (uint)(StudyPoints + amount);
             await SaveAsync();
-            
+
+            await SendAsync(new MsgSubPro
+            {
+                Action = AstProfAction.UpdateStudy,
+                Points = StudyPoints,
+                Study = (ulong)amount
+            });
         }
 
         public async Task<bool> SpendCultivationAsync(int amount)
@@ -5723,6 +5731,24 @@ namespace Comet.Game.States
             get => (PlayerCountry)m_dbObject.Nationality;
             set => m_dbObject.Nationality = (ushort)value;
         }
+
+        #endregion
+
+        #region AstProf (Sub-classes)
+
+        public ulong AstProfRanks
+        {
+            get => m_dbObject.AstProfRank;
+            set => m_dbObject.AstProfRank = value;
+        }
+
+        public AstProfType AstProfType
+        {
+            get => (AstProfType)m_dbObject.AstProfCurrent;
+            set => m_dbObject.AstProfCurrent = (byte)value;
+        }
+
+        public SubClass AstProf { get; set; }
 
         #endregion
 

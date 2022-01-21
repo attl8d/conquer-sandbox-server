@@ -196,6 +196,9 @@ namespace Comet.Game.Packets
 
                         if (user.CanRefreshFlowerRank)
                         {
+                            Mode = RequestType.QueryIcon;
+                            await client.SendAsync(this);
+
                             var roseRank = await FlowerManager.GetFlowerRankingAsync(MsgFlower.FlowerType.RedRose, 0, 100);
                             var lilyRank = await FlowerManager.GetFlowerRankingAsync(MsgFlower.FlowerType.WhiteRose, 0, 100);
                             var orchidRank = await FlowerManager.GetFlowerRankingAsync(MsgFlower.FlowerType.Orchid, 0, 100);

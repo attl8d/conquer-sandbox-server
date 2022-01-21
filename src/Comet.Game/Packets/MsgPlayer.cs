@@ -92,6 +92,8 @@ namespace Comet.Game.Packets
 
             NationalityFlag = (int) user.PlayerCountry;
 
+            CurrentAstProf = (byte)user.AstProfType;
+
             Name = user.Name;
             FamilyName = user.FamilyName;
             ServerName = Kernel.Configuration.ServerName;

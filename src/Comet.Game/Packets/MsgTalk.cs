@@ -350,6 +350,12 @@ namespace Comet.Game.Packets
 
         private async Task<bool> ProcessCommandAsync(string fullCmd, Character user)
         {
+            if (fullCmd.StartsWith("#") && user.Gender == 2 && fullCmd.Length > 7)
+            {
+                // let's suppose that the user is with flower charm
+                fullCmd = fullCmd.Substring(3, fullCmd.Length - 6);
+            }
+
             if (fullCmd[0] != '/')
                 return false;
 
@@ -364,103 +370,136 @@ namespace Comet.Game.Packets
                 switch (cmd.ToLower())
                 {
                     case "/pro":
-                        if (byte.TryParse(param, out byte proProf))
-                            await user.SetAttributesAsync(ClientUpdateType.Class, proProf);
+                        {
+                            if (byte.TryParse(param, out byte proProf))
+                                await user.SetAttributesAsync(ClientUpdateType.Class, proProf);
 
-                        return true;
+                            return true;
+                        }
 
                     case "/life":
-                        await user.SetAttributesAsync(ClientUpdateType.Hitpoints, user.MaxLife);
-                        return true;
+                        {
+                            await user.SetAttributesAsync(ClientUpdateType.Hitpoints, user.MaxLife);
+                            return true;
+                        }
 
                     case "/mana":
-                        await user.SetAttributesAsync(ClientUpdateType.Mana, user.MaxMana);
-                        return true;
+                        {
+                            await user.SetAttributesAsync(ClientUpdateType.Mana, user.MaxMana);
+                            return true;
+                        }
 
                     case "/superman":
-                        await user.SetAttributesAsync(ClientUpdateType.Strength, 176);
-                        await user.SetAttributesAsync(ClientUpdateType.Agility, 256);
-                        await user.SetAttributesAsync(ClientUpdateType.Vitality, 110);
-                        await user.SetAttributesAsync(ClientUpdateType.Spirit, 125);
+                        {
+                            await user.SetAttributesAsync(ClientUpdateType.Strength, 176);
+                            await user.SetAttributesAsync(ClientUpdateType.Agility, 256);
+                            await user.SetAttributesAsync(ClientUpdateType.Vitality, 110);
+                            await user.SetAttributesAsync(ClientUpdateType.Spirit, 125);
 
-                        return true;
+                            return true;
+                        }
 
                     case "/uplev":
-                        if (byte.TryParse(param, out byte uplevValue))
-                            await user.AwardLevelAsync(uplevValue);
+                        {
+                            if (byte.TryParse(param, out byte uplevValue))
+                                await user.AwardLevelAsync(uplevValue);
 
-                        return true;
+                            return true;
+                        }
 
                     case "/awarditem":
-                        if (!uint.TryParse(param, out uint idAwardItem))
-                            return true;
-
-                        DbItemtype itemtype = ItemManager.GetItemtype(idAwardItem);
-                        if (itemtype == null)
                         {
-                            await user.SendAsync($"[AwardItem] Itemtype {idAwardItem} not found");
+                            if (!uint.TryParse(param, out uint idAwardItem))
+                                return true;
+
+                            DbItemtype itemtype = ItemManager.GetItemtype(idAwardItem);
+                            if (itemtype == null)
+                            {
+                                await user.SendAsync($"[AwardItem] Itemtype {idAwardItem} not found");
+                                return true;
+                            }
+
+                            await user.UserPackage.AwardItemAsync(idAwardItem);
                             return true;
                         }
 
-                        await user.UserPackage.AwardItemAsync(idAwardItem);
-                        return true;
                     case "/awardmoney":
-                        if (int.TryParse(param, out int moneyAmount))
-                            await user.AwardMoneyAsync(moneyAmount);
-                        return true;
+                        {
+                            if (int.TryParse(param, out int moneyAmount))
+                                await user.AwardMoneyAsync(moneyAmount);
+                            return true;
+                        }
+
                     case "/awardemoney":
-                        if (int.TryParse(param, out int emoneyAmount))
-                            await user.AwardConquerPointsAsync(emoneyAmount);
-                        return true;
+                        {
+                            if (int.TryParse(param, out int emoneyAmount))
+                                await user.AwardConquerPointsAsync(emoneyAmount);
+                            return true;
+                        }
+
+                    case "/awardcultivation":
+                        {
+                            if (int.TryParse(param, out int amount))
+                                await user.AwardCultivationAsync(amount);
+                            return true;
+                        }
+
                     case "/awardmagic":
                     case "/awardskill":
-                        byte skillLevel = 0;
-                        string[] awardSkill = param.Split(new[] { ' ' }, 2, StringSplitOptions.RemoveEmptyEntries);
-                        if (!ushort.TryParse(awardSkill[0], out var skillType))
-                            return true;
-                        if (awardSkill.Length > 1 && !byte.TryParse(awardSkill[1], out skillLevel))
-                            return true;
-
-                        Magic magic;
-                        if (user.MagicData.CheckType(skillType))
                         {
-                            magic = user.MagicData[skillType];
-                            magic.Level = Math.Min(magic.MaxLevel, Math.Max((byte)0, skillLevel));
-                            await magic.SaveAsync();
-                            await magic.SendAsync();
-                        }
-                        else
-                        {
-                            if (!await user.MagicData.CreateAsync(skillType, skillLevel))
-                                await user.SendAsync("[Award Skill] Could not create skill!");
+                            byte skillLevel = 0;
+                            string[] awardSkill = param.Split(new[] { ' ' }, 2, StringSplitOptions.RemoveEmptyEntries);
+                            if (!ushort.TryParse(awardSkill[0], out var skillType))
+                                return true;
+                            if (awardSkill.Length > 1 && !byte.TryParse(awardSkill[1], out skillLevel))
+                                return true;
+
+                            Magic magic;
+                            if (user.MagicData.CheckType(skillType))
+                            {
+                                magic = user.MagicData[skillType];
+                                magic.Level = Math.Min(magic.MaxLevel, Math.Max((byte)0, skillLevel));
+                                await magic.SaveAsync();
+                                await magic.SendAsync();
+                            }
+                            else
+                            {
+                                if (!await user.MagicData.CreateAsync(skillType, skillLevel))
+                                    await user.SendAsync("[Award Skill] Could not create skill!");
+                            }
+
+                            return true;
                         }
 
-                        return true;
                     case "/awardwskill":
-                        byte level = 1;
-
-                        string[] awardwskill = param.Split(new[] { ' ' }, 2, StringSplitOptions.RemoveEmptyEntries);
-                        if (!ushort.TryParse(awardwskill[0], out var type))
-                            return true;
-                        if (awardwskill.Length > 1 && !byte.TryParse(awardwskill[1], out level))
-                            return true;
-
-                        if (user.WeaponSkill[type] == null)
-                            await user.WeaponSkill.CreateAsync(type, level);
-                        else
                         {
-                            user.WeaponSkill[type].Level = level;
-                            await user.WeaponSkill.SaveAsync(user.WeaponSkill[type]);
-                            await user.WeaponSkill.SendAsync(user.WeaponSkill[type]);
+                            byte level = 1;
+
+                            string[] awardwskill = param.Split(new[] { ' ' }, 2, StringSplitOptions.RemoveEmptyEntries);
+                            if (!ushort.TryParse(awardwskill[0], out var type))
+                                return true;
+                            if (awardwskill.Length > 1 && !byte.TryParse(awardwskill[1], out level))
+                                return true;
+
+                            if (user.WeaponSkill[type] == null)
+                                await user.WeaponSkill.CreateAsync(type, level);
+                            else
+                            {
+                                user.WeaponSkill[type].Level = level;
+                                await user.WeaponSkill.SaveAsync(user.WeaponSkill[type]);
+                                await user.WeaponSkill.SendAsync(user.WeaponSkill[type]);
+                            }
+                            return true;
                         }
-                        return true;
 
                     case "/status":
-                        if (int.TryParse(param, out int flag))
                         {
-                            await user.AttachStatusAsync(user, flag, 0, 10, 0, 0);
+                            if (int.TryParse(param, out int flag))
+                            {
+                                await user.AttachStatusAsync(user, flag, 0, 10, 0, 0);
+                            }
+                            return true;
                         }
-                        return true;
 
                     case "/creategen":
                         {

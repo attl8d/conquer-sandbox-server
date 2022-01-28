@@ -28,6 +28,7 @@ using System.Linq;
 using System.Threading.Tasks;
 using Comet.Game.Database.Models;
 using Comet.Game.States.Families;
+using Comet.Shared;
 
 #endregion
 
@@ -40,6 +41,8 @@ namespace Comet.Game.World.Managers
 
         public static async Task<bool> InitializeAsync()
         {
+            await Log.WriteLogAsync("Initializing Family tables");
+
             var dbFamilies = await DbFamily.GetAsync();
             foreach (var dbFamily in dbFamilies)
             {

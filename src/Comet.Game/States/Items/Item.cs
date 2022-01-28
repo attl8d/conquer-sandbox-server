@@ -815,6 +815,19 @@ namespace Comet.Game.States.Items
             }
         }
 
+        public int CriticalStrike => (int)(m_dbItemtype?.CriticalStrike ?? 0);
+        public int SkillCriticalStrike => (int)(m_dbItemtype?.SkillCritStrike ?? 0);
+        public int Immunity => (int)(m_dbItemtype?.Immunity ?? 0);
+        public int Penetration => (int)(m_dbItemtype?.Penetration ?? 0);
+        public int Breakthrough => (int)(m_dbItemtype?.Breakthrough ?? 0);
+        public int Counteraction => (int)(m_dbItemtype?.Counteraction ?? 0);
+        public int Block => (int)(m_dbItemtype?.Block ?? 0);
+        public int FireResistance => (int)(m_dbItemtype?.ResistFire ?? 0);
+        public int WaterResistance => (int)(m_dbItemtype?.ResistWater ?? 0);
+        public int WoodResistance => (int)(m_dbItemtype?.ResistWood ?? 0);
+        public int EarthResistance => (int)(m_dbItemtype?.ResistEarth ?? 0);
+        public int MetalResistance => (int)(m_dbItemtype?.ResistMetal ?? 0);
+
         public int AttackRange => m_dbItemtype?.AtkRange ?? 1;
 
         public int Vigor

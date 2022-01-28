@@ -139,6 +139,11 @@ namespace Comet.Game.States
             return true;
         }
 
+        public int GetPower(AstProfType type)
+        {
+            return AstProfManager.GetPower(type, AstProfManager.GetRank(mOwner, type));
+        }
+
         public Task SendAsync()
         {
             MsgSubPro msg = new MsgSubPro();

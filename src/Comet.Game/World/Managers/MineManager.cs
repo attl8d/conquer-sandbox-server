@@ -27,6 +27,7 @@ using System.Threading.Tasks;
 using Comet.Core;
 using Comet.Game.Database.Models;
 using Comet.Game.States;
+using Comet.Shared;
 
 #endregion
 
@@ -38,6 +39,7 @@ namespace Comet.Game.World.Managers
 
         public static async Task<bool> InitializeAsync()
         {
+            await Log.WriteLogAsync("Initializing Mine rates tables");
             var list = await DbMineRate.GetAsync();
             foreach (var db in list)
             {

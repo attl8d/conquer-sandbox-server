@@ -35,6 +35,8 @@ namespace Comet.Game.World.Managers
 
         public static async Task<bool> InitializeAsync()
         {
+            await Log.WriteLogAsync("Initializing Action tables");
+
             foreach (var task in await TaskRepository.GetAsync())
             {
                 m_dicTasks.TryAdd(task.Id, task);

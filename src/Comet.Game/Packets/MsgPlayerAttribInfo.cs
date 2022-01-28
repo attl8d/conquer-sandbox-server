@@ -17,8 +17,8 @@ namespace Comet.Game.Packets
         {
             Timestamp = Environment.TickCount;
             Identity = user.Identity;
-            Life = (int)user.Life;
-            Mana = (int)user.Mana;
+            Life = (int)user.MaxLife;
+            Mana = (int)user.MaxMana;
             MaxAttack = user.MaxAttack;
             MinAttack = user.MinAttack;
             PhysicalDefense = user.Defense;
@@ -33,7 +33,20 @@ namespace Comet.Game.Packets
             TortoiseGemBonus = user.TortoiseGemBonus;
             Blessing = user.Blessing;
 
-            
+            CriticalStrike = user.CriticalStrike;
+            SkillCriticalStrike = user.SkillCriticalStrike;
+            Immunity = user.Immunity;
+            Counteraction = user.Counteraction;
+            Block = user.Block;
+            Penetration = user.Penetration;
+            Breakthrough = user.Breakthrough;
+            Detoxication = user.Detoxication;
+
+            MetalResistance = user.MetalResistance;
+            WaterResistance = user.WaterResistance;
+            FireResistance = user.FireResistance;
+            EarthResistance = user.EarthResistance;
+            WoodResistance = user.WoodResistance;
 
             FinalPhysicalDamage = user.AddFinalAttack;
             FinalPhysicalDefense = user.AddFinalDefense;
@@ -70,11 +83,11 @@ namespace Comet.Game.Packets
         public int FinalMagicalDamage { get; set; }
         public int FinalPhysicalDefense { get; set; }
         public int FinalMagicalDefense { get; set; }
-        public int MetalDefense { get; set; }
-        public int WoodDefense { get; set; }
-        public int WaterDefense { get; set; }
-        public int FireDefense { get; set; }
-        public int EarthDefense { get; set; }
+        public int MetalResistance { get; set; }
+        public int WoodResistance { get; set; }
+        public int WaterResistance { get; set; }
+        public int FireResistance { get; set; }
+        public int EarthResistance { get; set; }
 
         public override void Decode(byte[] bytes)
         {
@@ -118,11 +131,11 @@ namespace Comet.Game.Packets
             writer.Write(FinalPhysicalDefense); // 108
             writer.Write(FinalMagicalDamage); // 112
             writer.Write(FinalMagicalDefense); // 116
-            writer.Write(MetalDefense); // 120
-            writer.Write(WoodDefense); // 124
-            writer.Write(WaterDefense); // 128
-            writer.Write(FireDefense); // 132
-            writer.Write(EarthDefense); // 136
+            writer.Write(MetalResistance); // 120
+            writer.Write(WoodResistance); // 124
+            writer.Write(WaterResistance); // 128
+            writer.Write(FireResistance); // 132
+            writer.Write(EarthResistance); // 136
             return writer.ToArray();
         }
 

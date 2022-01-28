@@ -47,6 +47,7 @@ namespace Comet.Game.World.Managers
 
         public static async Task<bool> InitializeAsync()
         {
+            await Log.WriteLogAsync("Initializing Generator tables");
             try
             {
                 foreach (var dbGen in await GeneratorRepository.GetAsync())

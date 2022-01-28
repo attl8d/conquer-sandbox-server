@@ -134,6 +134,11 @@ namespace Comet.Game.World
             Interlocked.Decrement(ref m_Partitions[partition].Weight);
         }
 
+        public override string ToString()
+        {
+            return $"ProcessorQueue[{string.Join(',', m_Channels.Select(x => $"{x.Reader.Count:00000}").ToArray())}]";
+        }
+
         protected class Partition
         {
             public uint ID;

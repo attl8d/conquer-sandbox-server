@@ -47,6 +47,8 @@ namespace Comet.Game.World.Managers
 
         public static async Task InitializeAsync()
         {
+            await Log.WriteLogAsync("Initializing Items Tables");
+
             m_dicItemtype = new Dictionary<uint, DbItemtype>();
             foreach (var item in await ItemtypeRepository.GetAsync())
             {

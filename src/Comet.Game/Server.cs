@@ -400,6 +400,10 @@ namespace Comet.Game
                         msg = new MsgSubPro();
                         break;
 
+                    case PacketType.MsgTrainingVitality:
+                        msg = new MsgTrainingVitality();
+                        break;
+
                     default:
                         await Log.WriteLogAsync(LogLevel.Warning, "Missing packet {0}, Length {1}\n{2}", type, length, PacketDump.Hex(packet));
                         if (actor.Character?.IsGm() == true)

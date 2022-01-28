@@ -25,6 +25,7 @@ using System.Linq;
 using System.Threading.Tasks;
 using Comet.Game.Database.Repositories;
 using Comet.Game.States.Syndicates;
+using Comet.Shared;
 
 namespace Comet.Game.World.Managers
 {
@@ -34,6 +35,7 @@ namespace Comet.Game.World.Managers
 
         public static async Task<bool> InitializeAsync()
         {
+            await Log.WriteLogAsync("Initializing syndicate tables");
             var dbSyndicates = await SyndicateRepository.GetAsync();
             foreach (var dbSyn in dbSyndicates)
             {

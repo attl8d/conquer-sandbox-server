@@ -68,10 +68,10 @@ namespace Comet.Game.Packets
             FirstClass = character.PreviousProfession;
             Rebirths = character.Metempsychosis;
             QuizPoints = character.QuizPoints;
-            Flag = (int)character.Flag;
+            Flag = (int)(UserFlagType.CanClaim | UserFlagType.ShowSpecialItems);
             ConquerPointsBound = character.ConquerPointsBound;
-            //EnlightenPoints = 200;
-            //EnlightenExp = 2;
+            EnlightenPoints = 200;
+            EnlightenExp = 2;
             VipLevel = character.BaseVipLevel;
             UserTitle = character.UserTitle;
             Country = (ushort)character.PlayerCountry;

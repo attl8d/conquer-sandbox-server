@@ -722,6 +722,10 @@ namespace Comet.Game.World.Maps
             if (idxPassage < 0)
                 return false;
 
+#if DEBUG
+            _ = Log.WriteLogAsync(LogLevel.Info, $"User has jumped into portal {idxPassage} ({source.X:000}, {source.Y:000})").ConfigureAwait(false);
+#endif
+
             if (IsDynamicMap())
             {
                 idMap = m_dbDynamap.LinkMap;
@@ -733,6 +737,10 @@ namespace Comet.Game.World.Maps
             Passway passway = m_passway.FirstOrDefault(x => x.Index == idxPassage);
             idMap = passway.TargetMap;
             target = new Point(passway.TargetX, passway.TargetY);
+
+            if (!IsValidPoint(passway.TargetX, passway.TargetY))
+                GetRebornMap(ref idMap, ref target);
+
             return true;
         }
 

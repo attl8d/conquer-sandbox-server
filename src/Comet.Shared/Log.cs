@@ -69,6 +69,9 @@ namespace Comet.Shared
             RefreshFolders();
         }
 
+        public static Task WriteLogAsync(Exception e) => WriteLogAsync(LogLevel.Exception, e.ToString());
+        public static Task WriteLogAsync(string message, params object[] values) => WriteLogAsync(LogLevel.Info, message, values);
+
         public static async Task WriteLogAsync(LogLevel level, string message, params object[] values)
         {
             await WriteLogAsync(DefaultFileName, level, message, values);

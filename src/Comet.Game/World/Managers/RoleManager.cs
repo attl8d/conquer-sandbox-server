@@ -78,6 +78,7 @@ namespace Comet.Game.World.Managers
 
         public static async Task InitializeAsync()
         {
+            await Log.WriteLogAsync("Initializing user tables");
             foreach (var auto in await PointAllotRepository.GetAsync())
             {
                 m_dicPointAllot.TryAdd(AllotIndex(auto.Profession, auto.Level), auto);

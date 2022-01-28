@@ -1,5 +1,6 @@
 ﻿using Comet.Game.Database.Models;
 using Comet.Game.States;
+using Comet.Shared;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -41,6 +42,8 @@ namespace Comet.Game.World.Managers
 
         public static async Task<bool> InitializeAsync()
         {
+            await Log.WriteLogAsync("Initializing Subclasses tables");
+
             foreach (var inaug in await DbAstProfInaugurationCondition.GetAsync())
             {
                 mAstProfInit.Add(inaug);
@@ -127,6 +130,22 @@ namespace Comet.Game.World.Managers
             int idx = Math.Max(0, Math.Min(6, (int)type));
             ranks[idx] = value;
             user.AstProfRanks = BitConverter.ToUInt64(ranks);
+        }
+
+        public static int GetPower(AstProfType type, int level)
+        {
+            switch (type)
+            {
+                case AstProfType.ChiMaster:
+                case AstProfType.Sage:
+                case AstProfType.Apothecary:
+                case AstProfType.Performer:
+                case AstProfType.Wrangler:
+                case AstProfType.MartialArtist:
+                case AstProfType.Warlock:
+                    return AstProfPower[(int)type - 1, level];
+                default: return 0;
+            }
         }
     }
 }

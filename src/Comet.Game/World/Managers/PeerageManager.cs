@@ -30,6 +30,7 @@ using Comet.Game.Database.Models;
 using Comet.Game.Database.Repositories;
 using Comet.Game.Packets;
 using Comet.Game.States;
+using Comet.Shared;
 
 namespace Comet.Game.World.Managers
 {
@@ -39,6 +40,7 @@ namespace Comet.Game.World.Managers
 
         public static async Task InitializeAsync()
         {
+            await Log.WriteLogAsync("Initializing Peerage tables");
             List<DbPeerage> dbPeerages = await PeerageRepository.GetAsync();
             foreach (var peerage in dbPeerages)
             {

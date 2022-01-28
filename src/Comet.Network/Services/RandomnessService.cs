@@ -83,6 +83,22 @@ namespace Comet.Network.Services
             return result;
         }
 
+        public async Task<double> NextRateAsync(double range)
+        {
+            int random = await NextAsync(0, 999) + 1;
+            double a = Math.Sin(random * Math.PI / 1000);
+            double b;
+            if (random >= 90)
+            {
+                b = (1.0 + range) - Math.Sqrt(Math.Sqrt(a)) * range;
+            }
+            else
+            {
+                b = (1.0 - range) + Math.Sqrt(Math.Sqrt(a)) * range;
+            }
+            return b;
+        }
+
         /// <summary>Writes random numbers from the generator to a buffer.</summary>
         /// <param name="buffer">Buffer to write bytes to.</param>
         public async Task NextBytesAsync(byte[] buffer)

@@ -431,6 +431,20 @@ namespace Comet.Game.States.BaseEntities
         public virtual int AddFinalDefense { get; } = 0;
         public virtual int AddFinalMDefense { get; } = 0;
 
+        public virtual int CriticalStrike => 0;
+        public virtual int SkillCriticalStrike => 0;
+        public virtual int Immunity => 0;
+        public virtual int Penetration => 0;
+        public virtual int Breakthrough => 0;
+        public virtual int Counteraction => 0;
+        public virtual int Block => 0;
+        public virtual int Detoxication => 0;
+        public virtual int FireResistance => 0;
+        public virtual int WaterResistance => 0;
+        public virtual int WoodResistance => 0;
+        public virtual int EarthResistance => 0;
+        public virtual int MetalResistance => 0;
+
         public virtual int ExtraDamage { get; } = 0;
 
         #endregion

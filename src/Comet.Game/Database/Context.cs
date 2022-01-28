@@ -121,6 +121,13 @@ namespace Comet.Game.Database
         public virtual DbSet<DbAstProfLevel> AstProfLevels { get; set; }
         public virtual DbSet<DbAstProfPromoteCondition> AstProfPromoteConditions { get; set; }
         public virtual DbSet<DbAstProfInaugurationCondition> AstProfInaugurationConditions { get; set; }
+        public virtual DbSet<DbFatePlayer> FatePlayers { get; set; }
+        public virtual DbSet<DbFateProtect> FateProtects { get; set; }
+        public virtual DbSet<DbFateRand> FateRands { get; set; }
+        public virtual DbSet<DbFateRank> FateRanks { get; set; }
+        public virtual DbSet<DbFateRule> FateRules { get; set; }
+        public virtual DbSet<DbInitFateAttrib> InitFateAttribs { get; set; }
+        public virtual DbSet<DbConfig> Configs { get; set; }
 
         public static void Initialize()
         {
@@ -149,7 +156,7 @@ namespace Comet.Game.Database
         /// <param name="builder">Builder for creating models in the context</param>
         protected override void OnModelCreating(ModelBuilder builder)
         {
-            builder.Entity<DbCharacter>(e => e.HasKey(x => x.Identity));
+            builder.Entity<DbFateRand>(e => e.HasNoKey());
         }
 
         /// <summary>

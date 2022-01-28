@@ -26,6 +26,7 @@ using System.Linq;
 using System.Threading.Tasks;
 using Comet.Game.Database.Models;
 using Comet.Game.Database.Repositories;
+using Comet.Shared;
 
 #endregion
 
@@ -37,6 +38,8 @@ namespace Comet.Game.World.Managers
 
         public static async Task InitializeAsync()
         {
+            await Log.WriteLogAsync("Initializing Magic tables");
+
             foreach (var magicType in await MagictypeRepository.GetAsync())
             {
                 m_magicType.TryAdd(magicType.Id, magicType);

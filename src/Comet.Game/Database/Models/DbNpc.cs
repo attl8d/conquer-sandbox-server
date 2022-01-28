@@ -56,6 +56,6 @@ namespace Comet.Game.Database.Models
         [Column("base")] public virtual uint Base { get; set; }
         [Column("sort")] public virtual ushort Sort { get; set; }
         [Column("itemid")] public virtual uint? Itemid { get; set; }
-        [Column("serverid")] public virtual uint ServerId { get; set; }
+        [Column("serverid")] public virtual int ServerId { get; set; }
     }
 }

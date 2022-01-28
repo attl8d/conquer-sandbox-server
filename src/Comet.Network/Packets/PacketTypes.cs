@@ -140,6 +140,16 @@ namespace Comet.Network.Packets
         MsgSubPro = 2320,
         MsgNationality = 2430,
 
+        MsgTrainingVitality = 2533,
+        MsgTrainingVitalityInfo = 2534,
+        MsgTrainingVitalityScore = 2535,
+
+        MsgOwnKongfuBase = 2700,
+        MsgOwnKongfuImproveSummaryInfo = 2701,
+        MsgOwnKongfuImproveFeedback = 2702,
+        MsgOwnKongRank = 2703,
+        MsgOwnKongfuPkSetting = 2704,
+
         MsgWalk = 10005,
         MsgAction = 10010,
         MsgPlayer = 10014,

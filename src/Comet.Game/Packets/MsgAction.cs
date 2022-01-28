@@ -264,6 +264,7 @@ namespace Comet.Game.Packets
                     await client.Character.WeaponSkill.InitializeAsync();
                     await client.Character.WeaponSkill.SendAsync();
                     await client.Character.AstProf.InitializeAsync();
+                    await client.Character.Fate.InitializeAsync();
                     await client.SendAsync(this);
                     break;
 
@@ -473,8 +474,7 @@ namespace Comet.Game.Packets
                         if (await user.CardsCountAsync() > 0)
                             await user.SendAsync(new MsgAction { Action = ActionType.ClientCommand, Command = 1197u, Identity = user.Identity });
 
-                        if (user.Gender == 1 &&
-                            (user.SendFlowerTime == null
+                        if ((user.SendFlowerTime == null
                              || int.Parse(DateTime.Now.ToString("yyyyMMdd")) > int.Parse(user.SendFlowerTime.Value.ToString("yyyyMMdd"))))
                         {
                             await user.SendAsync(new MsgFlower

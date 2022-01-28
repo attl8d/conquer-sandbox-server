@@ -100,9 +100,6 @@ namespace Comet.Game.States
         /// <param name="socket"></param>
         public Character(DbCharacter character, Client socket)
         {
-            /*
-             * Removed the base class because we'll be inheriting role stuff.
-             */
             m_dbObject = character;
 
             if (socket == null)
@@ -122,6 +119,7 @@ namespace Comet.Game.States
             Statistic = new UserStatistic(this);
             TaskDetail = new TaskDetail(this);
             AstProf = new SubClass(this);
+            Fate = new Fate(this);
 
             if (m_dbObject.LuckyTime != null)
                 m_luckyTimeCount = (int) Math.Max(0, (m_dbObject.LuckyTime.Value - DateTime.Now).TotalSeconds);
@@ -399,6 +397,9 @@ namespace Comet.Game.States
                 }
 
                 result += (uint)((Strength + Agility + Spirit) * 3);
+
+                result += (uint)AstProf.GetPower(AstProfType.Wrangler);
+                result += (uint)Fate.GetPower(MsgTrainingVitality.TrainingAttrType.Health);
 
                 for (Item.ItemPosition pos = Item.ItemPosition.EquipmentBegin;
                     pos <= Item.ItemPosition.EquipmentEnd;
@@ -1117,9 +1118,41 @@ namespace Comet.Game.States
         public async Task<bool> SpendCultivationAsync(int amount)
         {
 
-            ConquerPointsBound = (uint)(ConquerPointsBound - amount);
+            StudyPoints = (uint)(StudyPoints - amount);
             await SaveAsync();
-            await SynchroAttributesAsync(ClientUpdateType.BoundConquerPoints, ConquerPointsBound);
+            await SendAsync(new MsgSubPro
+            {
+                Action = AstProfAction.UpdateStudy,
+                Points = StudyPoints
+            });
+            return true;
+        }
+
+        public async Task<bool> ChangeStrengthValueAsync(int amount)
+        {
+            if (amount > 0)
+            {
+                await AwardStrengthValueAsync(amount);
+                return true;
+            }
+            if (amount < 0)
+            {
+                return await SpendStrengthValueAsync(amount * -1);
+            }
+            return false;
+        }
+
+        public async Task AwardStrengthValueAsync(int amount)
+        {
+            ChiPoints = (uint)(ChiPoints + amount);
+            await SaveAsync();
+        }
+
+        public async Task<bool> SpendStrengthValueAsync(int amount)
+        {
+
+            ChiPoints = (uint)(ChiPoints - amount);
+            await SaveAsync();
             return true;
         }
 
@@ -1801,7 +1834,8 @@ namespace Comet.Game.States
                         result += UserPackage[pos]?.MinAttack ?? 0;
                     }
                 }
-
+                result += AstProf.GetPower(AstProfType.Performer);
+                result += Fate.GetPower(MsgTrainingVitality.TrainingAttrType.Attack);
                 result = (int) (result * (1 + (DragonGemBonus / 100d)));
                 return result;
             }
@@ -1826,6 +1860,8 @@ namespace Comet.Game.States
                         result += UserPackage[pos]?.MaxAttack ?? 0;
                 }
 
+                result += AstProf.GetPower(AstProfType.Performer);
+                result += Fate.GetPower(MsgTrainingVitality.TrainingAttrType.Attack);
                 result = (int)(result * (1 + (DragonGemBonus / 100d)));
                 return result;
             }
@@ -1847,6 +1883,8 @@ namespace Comet.Game.States
                     result += UserPackage[pos]?.MagicAttack ?? 0;
                 }
 
+                result += AstProf.GetPower(AstProfType.Performer);
+                result += Fate.GetPower(MsgTrainingVitality.TrainingAttrType.Attack);
                 result = (int)(result * (1 + (PhoenixGemBonus/ 100d)));
                 return result;
             }
@@ -1896,6 +1934,7 @@ namespace Comet.Game.States
                     result += UserPackage[pos]?.MagicDefense ?? 0;
                 }
 
+                result += Fate.GetPower(MsgTrainingVitality.TrainingAttrType.Mdefense);
                 return result;
             }
         }
@@ -1953,6 +1992,7 @@ namespace Comet.Game.States
                     result += UserPackage[pos]?.AddFinalDamage ?? 0;
                 }
 
+                result += Fate.GetPower(MsgTrainingVitality.TrainingAttrType.Finalattack);
                 return result;
             }
         }
@@ -1969,6 +2009,7 @@ namespace Comet.Game.States
                     result += UserPackage[pos]?.AddFinalMagicDamage ?? 0;
                 }
 
+                result += Fate.GetPower(MsgTrainingVitality.TrainingAttrType.Finalmagicattack);
                 return result;
             }
         }
@@ -1984,7 +2025,6 @@ namespace Comet.Game.States
                 {
                     result += UserPackage[pos]?.AddFinalDefense ?? 0;
                 }
-
                 return result;
             }
         }
@@ -1997,6 +2037,182 @@ namespace Comet.Game.States
                 for (Item.ItemPosition pos = Item.ItemPosition.EquipmentBegin; pos <= Item.ItemPosition.EquipmentEnd; pos++)
                 {
                     result += UserPackage[pos]?.AddFinalMagicDefense ?? 0;
+                }
+                return result;
+            }
+        }
+
+        public override int CriticalStrike
+        {
+            get
+            {
+                int result = 0;
+                for (Item.ItemPosition pos = Item.ItemPosition.EquipmentBegin; pos <= Item.ItemPosition.EquipmentEnd; pos++)
+                {
+                    result += UserPackage[pos]?.CriticalStrike ?? 0;
+                }
+                result += AstProf.GetPower(AstProfType.MartialArtist);
+                result += Fate.GetPower(MsgTrainingVitality.TrainingAttrType.Criticalstrike) * 10;
+                return result;
+            }
+        }
+
+        public override int SkillCriticalStrike
+
+        {
+            get
+            {
+                int result = 0;
+                for (Item.ItemPosition pos = Item.ItemPosition.EquipmentBegin; pos <= Item.ItemPosition.EquipmentEnd; pos++)
+                {
+                    result += UserPackage[pos]?.SkillCriticalStrike ?? 0;
+                }
+                result += AstProf.GetPower(AstProfType.Warlock);
+                result += Fate.GetPower(MsgTrainingVitality.TrainingAttrType.Skillcriticalstrike) * 10;
+                return result;
+            }
+        }
+
+        public override int Immunity
+        {
+            get
+            {
+                int result = 0;
+                for (Item.ItemPosition pos = Item.ItemPosition.EquipmentBegin; pos <= Item.ItemPosition.EquipmentEnd; pos++)
+                {
+                    result += UserPackage[pos]?.Immunity ?? 0;
+                }
+                result += AstProf.GetPower(AstProfType.ChiMaster);
+                result += Fate.GetPower(MsgTrainingVitality.TrainingAttrType.Immunity) * 10;
+                return result;
+            }
+        }
+
+        public override int Penetration
+        {
+            get
+            {
+                int result = 0;
+                for (Item.ItemPosition pos = Item.ItemPosition.EquipmentBegin; pos <= Item.ItemPosition.EquipmentEnd; pos++)
+                {
+                    result += UserPackage[pos]?.Penetration ?? 0;
+                }
+                result += AstProf.GetPower(AstProfType.Sage);
+                return result;
+            }
+        }
+
+        public override int Breakthrough
+        {
+            get
+            {
+                int result = 0;
+                for (Item.ItemPosition pos = Item.ItemPosition.EquipmentBegin; pos <= Item.ItemPosition.EquipmentEnd; pos++)
+                {
+                    result += UserPackage[pos]?.Breakthrough ?? 0;
+                }
+                result += Fate.GetPower(MsgTrainingVitality.TrainingAttrType.Breakthrough);
+                return result;
+            }
+        }
+
+        public override int Counteraction
+        {
+            get
+            {
+                int result = 0;
+                for (Item.ItemPosition pos = Item.ItemPosition.EquipmentBegin; pos <= Item.ItemPosition.EquipmentEnd; pos++)
+                {
+                    result += UserPackage[pos]?.Counteraction ?? 0;
+                }
+                result += Fate.GetPower(MsgTrainingVitality.TrainingAttrType.Counteraction);
+                return result;
+            }
+        }
+
+        public override int Block
+        {
+            get
+            {
+                int result = 0;
+                for (Item.ItemPosition pos = Item.ItemPosition.EquipmentBegin; pos <= Item.ItemPosition.EquipmentEnd; pos++)
+                {
+                    result += UserPackage[pos]?.Block ?? 0;
+                }
+                return result;
+            }
+        }
+
+        public override int Detoxication
+        {
+            get
+            {
+                int result = 0;
+                result += AstProf.GetPower(AstProfType.Apothecary);
+                return result;
+            }
+        }
+
+        public override int FireResistance
+        {
+            get
+            {
+                int result = 0;
+                for (Item.ItemPosition pos = Item.ItemPosition.EquipmentBegin; pos <= Item.ItemPosition.EquipmentEnd; pos++)
+                {
+                    result += UserPackage[pos]?.FireResistance ?? 0;
+                }
+                return result;
+            }
+        }
+
+        public override int WaterResistance
+        {
+            get
+            {
+                int result = 0;
+                for (Item.ItemPosition pos = Item.ItemPosition.EquipmentBegin; pos <= Item.ItemPosition.EquipmentEnd; pos++)
+                {
+                    result += UserPackage[pos]?.WaterResistance ?? 0;
+                }
+                return result;
+            }
+        }
+
+        public override int WoodResistance
+        {
+            get
+            {
+                int result = 0;
+                for (Item.ItemPosition pos = Item.ItemPosition.EquipmentBegin; pos <= Item.ItemPosition.EquipmentEnd; pos++)
+                {
+                    result += UserPackage[pos]?.WoodResistance ?? 0;
+                }
+                return result;
+            }
+        }
+
+        public override int EarthResistance
+        {
+            get
+            {
+                int result = 0;
+                for (Item.ItemPosition pos = Item.ItemPosition.EquipmentBegin; pos <= Item.ItemPosition.EquipmentEnd; pos++)
+                {
+                    result += UserPackage[pos]?.EarthResistance ?? 0;
+                }
+                return result;
+            }
+        }
+
+        public override int MetalResistance
+        {
+            get
+            {
+                int result = 0;
+                for (Item.ItemPosition pos = Item.ItemPosition.EquipmentBegin; pos <= Item.ItemPosition.EquipmentEnd; pos++)
+                {
+                    result += UserPackage[pos]?.MetalResistance ?? 0;
                 }
                 return result;
             }
@@ -2111,6 +2327,8 @@ namespace Comet.Game.States
                 return result;
             }
         }
+
+
 
         public int KoCount { get; set; }
 
@@ -5752,6 +5970,12 @@ namespace Comet.Game.States
 
         #endregion
 
+        #region Fate (Chi)
+
+        public Fate Fate { get; set; }
+
+        #endregion
+
         #region Timer
 
         public uint DayResetDate
@@ -6353,12 +6577,12 @@ namespace Comet.Game.States
     [Flags]
     public enum VipFlags
     {
-        VipOne,
-        VipTwo,
-        VipThree,
-        VipFour,
-        VipFive,
-        VipSix,
+        VipOne = 0x0,
+        VipTwo = 0x0,
+        VipThree = 0x0,
+        VipFour = 0x0,
+        VipFive = 0x0,
+        VipSix = FullVip,
 
         PortalTeleport = 0x1,
         Avatar = 0x2,

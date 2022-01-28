@@ -31,6 +31,7 @@ using Comet.Game.Database;
 using Comet.Game.Database.Models;
 using Comet.Game.Packets;
 using Comet.Game.States;
+using Comet.Shared;
 
 #endregion
 
@@ -52,6 +53,7 @@ namespace Comet.Game.World.Managers
 
         public static async Task<bool> InitializeAsync()
         {
+            await Log.WriteLogAsync("Initializing Pigeon Tables");
             m_queue = new List<DbPigeonQueue>((await DbPigeonQueue.GetAsync()).OrderBy(x => x.NextIdentity));
             await SyncAsync();
             return true;

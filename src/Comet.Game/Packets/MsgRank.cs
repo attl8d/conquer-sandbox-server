@@ -56,8 +56,19 @@ namespace Comet.Game.Packets
 
         public RequestType Mode { get; set; }
         public uint Identity { get; set; }
-        public RankType RankMode { get; set; }
-        public byte Subtype { get; set; }
+        public RankType RankMode 
+        {
+            get => (RankType)(Identity & 0xFF);
+            set
+            {
+                Identity = Identity | (byte)value;
+            }
+        }
+        public byte SubType
+        {
+            get => (byte)((Identity >> 8) & 0xFF);
+            set => Identity = (Identity << 8 | value);
+        }
         public ushort Data1 { get; set; }
         public ushort Data2 { get; set; }
         public ushort PageNumber { get; set; }
@@ -73,8 +84,7 @@ namespace Comet.Game.Packets
             Type = (PacketType)reader.ReadUInt16(); // 2
             Mode = (RequestType)reader.ReadUInt32(); // 4
             Identity = reader.ReadUInt32(); // 8
-            RankMode = (RankType)reader.ReadByte(); // 12
-            Subtype = reader.ReadByte(); // 13
+            Data1 = reader.ReadUInt16(); // 12
             PageNumber = reader.ReadUInt16(); // 14
         }
 
@@ -84,8 +94,7 @@ namespace Comet.Game.Packets
             writer.Write((ushort)PacketType.MsgRank);
             writer.Write((uint)Mode); // 4
             writer.Write(Identity); // 8
-            writer.Write((byte)RankMode); // 12
-            writer.Write(Subtype); // 13
+            writer.Write(Data1); // 12
             writer.Write(PageNumber); // 14
             if (Mode == RequestType.QueryInfo || Mode == RequestType.QueryIcon)
             {
@@ -173,6 +182,13 @@ namespace Comet.Game.Packets
                             }
 
                             await user.SendAsync(this);
+                        }
+                        else if (RankMode == RankType.ChiDragon
+                                || RankMode == RankType.ChiPhoenix
+                                || RankMode == RankType.ChiTiger
+                                || RankMode == RankType.ChiTurtle)
+                        {
+                            await FateManager.SendRankAsync(user, this);
                         }
                         break;
                     }
@@ -359,6 +375,14 @@ namespace Comet.Game.Packets
                             }
 
                             Mode = RequestType.QueryIcon;
+                            //Infos.Add(new QueryStruct
+                            //{
+                            //    Type = 1,
+                            //    Amount = amount,
+                            //    Identity = user.Identity,
+                            //    Name = user.Name,
+                            //    Position = rank
+                            //});
                             await client.SendAsync(this);
                         }
                         break;

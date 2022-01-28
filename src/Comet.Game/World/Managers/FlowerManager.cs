@@ -30,6 +30,7 @@ using Comet.Game.Database;
 using Comet.Game.Database.Models;
 using Comet.Game.Packets;
 using Comet.Game.States;
+using Comet.Shared;
 
 #endregion
 
@@ -41,6 +42,8 @@ namespace Comet.Game.World.Managers
 
         public static async Task<bool> InitializeAsync()
         {
+            await Log.WriteLogAsync("Initializing Flower tables");
+
             foreach (var flower in await DbFlower.GetAsync())
             {
                 FlowerRankObject obj = new FlowerRankObject(flower);

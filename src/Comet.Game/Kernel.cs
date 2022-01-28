@@ -74,19 +74,6 @@ namespace Comet.Game
 
         public static ServerConfiguration.GameNetworkConfiguration Configuration;
 
-        //public static MapManager MapManager = new MapManager();
-        //public static RoleManager RoleManager = new RoleManager();
-        //public static ItemManager ItemManager = new ItemManager();
-        //public static PeerageManager PeerageManager = new PeerageManager();
-        //public static MagicManager MagicManager = new MagicManager();
-        //public static EventManager EventManager = new EventManager();
-        //public static SyndicateManager SyndicateManager = new SyndicateManager();
-        //public static MineManager MineManager = new MineManager();
-        //public static PigeonManager PigeonManager = new PigeonManager();
-        //public static FlowerManager FlowerManager = new FlowerManager();
-        //public static FamilyManager FamilyManager = new FamilyManager();
-        //public static AstProfManager SubClassManager = new AstProfManager();
-
         public static NetworkMonitor NetworkMonitor = new NetworkMonitor();
 
         public static SystemProcessor SystemThread = new SystemProcessor();
@@ -108,6 +95,8 @@ namespace Comet.Game
         {
             return NextAsync(0, maxValue);
         }
+
+        public static Task<double> NextRateAsync(double value) => Services.Randomness.NextRateAsync(value);
 
         /// <summary>Writes random numbers from the generator to a buffer.</summary>
         /// <param name="buffer">Buffer to write bytes to.</param>
@@ -140,6 +129,7 @@ namespace Comet.Game
             await PigeonManager.InitializeAsync();
             await FlowerManager.InitializeAsync();
             await AstProfManager.InitializeAsync();
+            await FateManager.InitializeAsync();
             await QuestInfo.InitializeAsync();
 
             await GeneratorManager.InitializeAsync();

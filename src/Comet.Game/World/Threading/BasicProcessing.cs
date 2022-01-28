@@ -36,7 +36,7 @@ namespace Comet.Game.World.Threading
 {
     public sealed class SystemProcessor : TimerBase
     {
-        public const string TITLE_FORMAT_S = @"[{0}] - Conquer Online Game Server [{8}] - {1} - Players: {3} (max:{4}) - {2} - Threads[S:{5:0000},U:{6:0000},A:{7:0000}]ms";
+        public const string TITLE_FORMAT_S = @"[{0}] - Conquer Online Game Server [{5}] - {1} - Players: {3} (max:{4}) - {2} [{6}]";
 
         private TimeOut m_analytics = new TimeOut(300);
         private TimeOut m_accountPing = new TimeOut(5);
@@ -58,9 +58,8 @@ namespace Comet.Game.World.Threading
         protected override async Task<bool> OnElapseAsync()
         {
             Console.Title = string.Format(TITLE_FORMAT_S, Kernel.Configuration.ServerName, DateTime.Now.ToString("G"),
-                Kernel.NetworkMonitor.UpdateStatsAsync(m_interval), RoleManager.OnlinePlayers, RoleManager.MaxOnlinePlayers,
-                Kernel.SystemThread.ElapsedMilliseconds, Kernel.UserThread.ElapsedMilliseconds,
-                Kernel.AiThread.ElapsedMilliseconds, Kernel.Version);
+                Kernel.NetworkMonitor.UpdateStatsAsync(m_interval), RoleManager.OnlinePlayers, RoleManager.MaxOnlinePlayers,Kernel.Version,
+                Kernel.Services.Processor.ToString());
 
             if (m_analytics.ToNextTime())
             {

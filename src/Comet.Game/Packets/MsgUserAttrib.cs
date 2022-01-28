@@ -144,6 +144,8 @@ namespace Comet.Game.Packets
         AzureShield = 49,
         SoulShackleTimer = 54,
 
+        UserSpecialFlag = 70,
+
         Vigor = 10000
     }
 }

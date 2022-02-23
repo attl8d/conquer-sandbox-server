@@ -36,7 +36,7 @@ namespace Comet.Web.App.API
             if (!User.HasPermission(Claims.ViewRoles))
                 return Forbid();
 
-            var result = await mDbContext.Roles.ToListAsync();
+            var result = await mDbContext.Roles.AsQueryable().ToListAsync();
             List<object> resultList = new();
             foreach (var res in result)
             {
@@ -47,7 +47,7 @@ namespace Comet.Web.App.API
                     res.NormalizedName,
                     res.CreationDate,
                     res.ModifiedDate,
-                    Count = await mDbContext.UserRoles.CountAsync(x => x.RoleId == res.Id)
+                    Count = await mDbContext.UserRoles.AsQueryable().CountAsync(x => x.RoleId == res.Id)
                 });
             }
             return Ok(resultList);
@@ -59,8 +59,8 @@ namespace Comet.Web.App.API
             if (!User.HasPermission(Claims.ViewRoles))
                 return Forbid();
 
-            var userRoles = await mDbContext.UserRoles.Where(x => x.RoleId == roleId).Select(x => x.UserId).ToArrayAsync();
-            var result = await mDbContext.Users.Where(x => userRoles.Any(y => y == x.Id))
+            var userRoles = await mDbContext.UserRoles.AsQueryable().Where(x => x.RoleId == roleId).Select(x => x.UserId).ToArrayAsync();
+            var result = await mDbContext.Users.AsQueryable().Where(x => userRoles.Any(y => y == x.Id))
                 .Select(user => new
                 {
                     user.Id,
@@ -79,7 +79,7 @@ namespace Comet.Web.App.API
             if (!User.HasPermission(Claims.ViewClaims))
                 return Forbid();
 
-            var claims = await mDbContext.RoleClaims.Where(x => x.RoleId == roleId).ToListAsync();
+            var claims = await mDbContext.RoleClaims.AsQueryable().Where(x => x.RoleId == roleId).ToListAsync();
 
             var result = new List<object>();
             foreach (var claim in claims)
@@ -105,7 +105,7 @@ namespace Comet.Web.App.API
             if (!Enum.TryParse(model.claimType, out Claims claimType))
                 return BadRequest("Invalid claim type.");
 
-            var roleClaim = await mDbContext.RoleClaims.FirstOrDefaultAsync(x => x.RoleId == model.roleId && x.ClaimType.Equals(claimType.ToPermissionString()));
+            var roleClaim = await mDbContext.RoleClaims.AsQueryable().FirstOrDefaultAsync(x => x.RoleId == model.roleId && x.ClaimType.Equals(claimType.ToPermissionString()));
             if (roleClaim != null)
                 return Ok();
 
@@ -133,7 +133,7 @@ namespace Comet.Web.App.API
             if (!Enum.TryParse(model.claimType, out Claims claimType))
                 return BadRequest("Invalid claim type.");
 
-            var roleClaim = await mDbContext.RoleClaims.FirstOrDefaultAsync(x => x.RoleId == model.roleId && x.ClaimType.Equals(claimType.ToPermissionString()));
+            var roleClaim = await mDbContext.RoleClaims.AsQueryable().FirstOrDefaultAsync(x => x.RoleId == model.roleId && x.ClaimType.Equals(claimType.ToPermissionString()));
             if (roleClaim == null)
                 return NotFound($"Claim '{model.claimType}' not found for the selected role.");
 
@@ -173,7 +173,7 @@ namespace Comet.Web.App.API
             if (roles.Any(x => x.Equals(Roles.SuperAdministrator)) && !User.IsInRole(Roles.SuperAdministrator))
                 return Forbid("The selected user is an Super Administrator and cannot be changed.");
 
-            var selectedRole = await mDbContext.Roles.FirstOrDefaultAsync(x => x.Id == model.roleId);
+            var selectedRole = await mDbContext.Roles.AsQueryable().FirstOrDefaultAsync(x => x.Id == model.roleId);
             if (selectedRole == null)
                 return NotFound("The selected role does not exist.");
 
@@ -227,7 +227,7 @@ namespace Comet.Web.App.API
             if (roles.Any(x => x.Equals(Roles.SuperAdministrator)) && !User.IsInRole(Roles.SuperAdministrator))
                 return Forbid("The selected user is an Super Administrator and cannot be changed.");
 
-            var selectedRole = await mDbContext.Roles.FirstOrDefaultAsync(x => x.Id == model.roleId);
+            var selectedRole = await mDbContext.Roles.AsQueryable().FirstOrDefaultAsync(x => x.Id == model.roleId);
             if (selectedRole == null)
                 return NotFound("The selected role does not exist.");
 

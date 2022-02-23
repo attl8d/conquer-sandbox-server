@@ -2,6 +2,7 @@ using Comet.Web.App.Data;
 using Comet.Web.App.Data.Entities;
 using Comet.Web.App.Middlewares;
 using Comet.Web.App.Services;
+using Comet.Web.App.Services.Discord;
 using Comet.Web.App.Services.Identity;
 using Comet.Web.App.Services.Password;
 using Comet.Web.App.Services.Realms;
@@ -14,7 +15,6 @@ using Microsoft.AspNetCore.Localization;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
-using Microsoft.Extensions.Hosting;
 using System;
 using System.Globalization;
 using System.Linq;
@@ -101,6 +101,8 @@ namespace Comet.Web.App
             services.AddTransient<LanguageService>();
             services.AddTransient<RealmService>();
 
+            services.AddHostedService<DiscordService>();
+
             // Services that must be created once every request
 
             services.AddAuthorization(opt =>
@@ -147,17 +149,20 @@ namespace Comet.Web.App
         // This method gets called by the runtime. Use this method to configure the HTTP request pipeline.
         public void Configure(IApplicationBuilder app, IWebHostEnvironment env)
         {
-            if (env.IsDevelopment())
-            {
-                app.UseDeveloperExceptionPage();
-                app.UseMigrationsEndPoint();
-            }
-            else
-            {
-                app.UseExceptionHandler("/Error");
+#if DEBUG
+            //if (env.IsDevelopment())
+            //{
+            app.UseDeveloperExceptionPage();
+            app.UseMigrationsEndPoint();
+#else
+            //}
+            //else
+            //{
+            app.UseExceptionHandler("/Error");
                 // The default HSTS value is 30 days. You may want to change this for production scenarios, see https://aka.ms/aspnetcore-hsts.
-                app.UseHsts();
-            }
+            app.UseHsts();
+            //}
+#endif
 
             app.UseHttpsRedirection();
             app.UseStaticFiles();

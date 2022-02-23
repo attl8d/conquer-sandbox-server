@@ -69,7 +69,7 @@ namespace Comet.Game.States.Guide
             guide.StudentName = dbMentor.Name;
 
             if (guide.Betrayed)
-                guide.m_betrayCheck.Startup(1);
+                guide.m_betrayCheck.Startup(60);
 
             return guide;
         }

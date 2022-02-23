@@ -38,7 +38,8 @@ namespace Comet.Web.App.Services.Realms
             mDictRealms ??= new Dictionary<uint, RealmData>();
             mDictRealms.Clear();
 
-            var dbRealms = await mDbContext.RealmDatas.ToListAsync();
+            var dbRealms = await mDbContext.RealmDatas
+                .AsQueryable().ToListAsync();
             foreach (var dbRealm in dbRealms)
             {
                 if (!mDictRealms.ContainsKey(dbRealm.RealmID))

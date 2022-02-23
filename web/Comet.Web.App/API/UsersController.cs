@@ -38,6 +38,7 @@ namespace Comet.Web.App.API
                 return Forbid();
 
             var dbResult = await mDbContext.Users
+                .AsQueryable()
                 .Skip(Math.Max(0, (page - 1)) * ipp)
                 .Take(ipp)
                 .ToListAsync();
@@ -69,7 +70,9 @@ namespace Comet.Web.App.API
         [HttpGet(Name = "GetClaimsByUser")]
         public async Task<IActionResult> GetClaimsByUserAsync(int userId)
         {
-            var claims = await mDbContext.UserClaims.Where(x => x.UserId == userId 
+            var claims = await mDbContext.UserClaims
+                .AsQueryable()
+                .Where(x => x.UserId == userId 
                 && x.ClaimType.StartsWith("Permission.")).ToListAsync();
 
             var result = new List<object>();
@@ -93,7 +96,9 @@ namespace Comet.Web.App.API
             if (!Enum.TryParse(model.claimType, out Claims claimType))
                 return BadRequest("Invalid claim type.");
 
-            var userClaim = await mDbContext.UserClaims.FirstOrDefaultAsync(x => x.UserId == model.userId && x.ClaimType.Equals(claimType.ToPermissionString()));
+            var userClaim = await mDbContext.UserClaims
+                .AsQueryable()
+                .FirstOrDefaultAsync(x => x.UserId == model.userId && x.ClaimType.Equals(claimType.ToPermissionString()));
             if (userClaim != null)
                 return Ok();
 
@@ -118,7 +123,9 @@ namespace Comet.Web.App.API
             if (!Enum.TryParse(model.claimType, out Claims claimType))
                 return BadRequest("Invalid claim type.");
 
-            var userClaim = await mDbContext.UserClaims.FirstOrDefaultAsync(x => x.UserId == model.userId && x.ClaimType.Equals(claimType.ToPermissionString()));
+            var userClaim = await mDbContext.UserClaims
+                .AsQueryable()
+                .FirstOrDefaultAsync(x => x.UserId == model.userId && x.ClaimType.Equals(claimType.ToPermissionString()));
             if (userClaim == null)
                 return NotFound($"Claim '{model.claimType}' not found for the selected user.");
 

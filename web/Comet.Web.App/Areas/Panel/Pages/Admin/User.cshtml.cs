@@ -67,7 +67,7 @@ namespace Comet.Web.App.Areas.Panel.Pages.Admin
 
             AccountPrincipal = await mSigninManager.CreateUserPrincipalAsync(Account);
 
-            BanReasons = await mDbContext.ApplicationUserBanReasons.Where(x => x.Type == 0).ToListAsync();
+            BanReasons = await mDbContext.ApplicationUserBanReasons.AsQueryable().Where(x => x.Type == 0).ToListAsync();
 
             BanReport = await mUserManager.GetBanInformationAsync(Account);
 
@@ -104,7 +104,7 @@ namespace Comet.Web.App.Areas.Panel.Pages.Admin
                 InputUser.Name = profile.PersonalInfo[PersonalInfoType.Name];
             }
 
-            var role = await mDbContext.Roles.FirstOrDefaultAsync(x => x.Name.Equals(AccountPrincipal.FindFirstValue(ClaimTypes.Role)));
+            var role = await mDbContext.Roles.AsQueryable().FirstOrDefaultAsync(x => x.Name.Equals(AccountPrincipal.FindFirstValue(ClaimTypes.Role)));
             if (role != null)
                 InputUser.AccountType = role.Id;
         }

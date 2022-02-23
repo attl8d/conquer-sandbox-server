@@ -55,7 +55,7 @@ namespace Comet.Web.App.Areas.Panel.Pages.User
             if (user == null)
                 return Forbid();
 
-            var account = await mContext.GameAccounts.FirstOrDefaultAsync(x => x.AccountID == AccountId);
+            var account = await mContext.GameAccounts.AsQueryable().FirstOrDefaultAsync(x => x.AccountID == AccountId);
 
             if (account == null)
                 return RedirectToPage("./Accounts");
@@ -80,7 +80,7 @@ namespace Comet.Web.App.Areas.Panel.Pages.User
             if (user == null)
                 return Forbid();
 
-            var account = await mContext.GameAccounts.FirstOrDefaultAsync(x => x.AccountID == AccountId);
+            var account = await mContext.GameAccounts.AsQueryable().FirstOrDefaultAsync(x => x.AccountID == AccountId);
 
             if (account == null)
                 return RedirectToPage("./Accounts");

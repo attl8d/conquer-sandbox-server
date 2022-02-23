@@ -44,7 +44,7 @@ namespace Comet.Web.App.Areas.Panel.Pages.Admin.Articles
 
         public async Task LoadAsync()
         {
-            CategoryTypes = await mContext.ArticleCategoryTypes.Where(x => x.Flags == 0).ToListAsync();
+            CategoryTypes = await mContext.ArticleCategoryTypes.AsQueryable().Where(x => x.Flags == 0).ToListAsync();
 
             var article = await mContext.Articles
                 .Include(x => x.User)
@@ -66,7 +66,7 @@ namespace Comet.Web.App.Areas.Panel.Pages.Admin.Articles
 
                 Author = User.FindFirst(PersonalInfoType.Name).Value;
 
-                Categories = await mContext.ArticleCategories.Where(x => x.CategoryTypeId == CategoryTypes.Select(x => x.Id).Min()).ToListAsync();
+                Categories = await mContext.ArticleCategories.AsQueryable().Where(x => x.CategoryTypeId == CategoryTypes.Select(x => x.Id).Min()).ToListAsync();
             }
             else
             {
@@ -93,7 +93,7 @@ namespace Comet.Web.App.Areas.Panel.Pages.Admin.Articles
                     Author = User.FindFirst(PersonalInfoType.Name).Value;
                 }
 
-                Categories = await mContext.ArticleCategories.Where(x => x.CategoryTypeId == Input.ArticleTypeId).ToListAsync();
+                Categories = await mContext.ArticleCategories.AsQueryable().Where(x => x.CategoryTypeId == Input.ArticleTypeId).ToListAsync();
             }
 
             foreach (var language in LanguageService.AvailableLanguages)

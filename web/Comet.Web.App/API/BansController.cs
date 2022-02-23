@@ -48,6 +48,7 @@ namespace Comet.Web.App.API
         {
             page = Math.Max(page - 1, 0);
             var tempResult = await mDbContext.ApplicationUserBans
+                .AsQueryable()
                 .OrderBy(x => x.Flags != 0)
                 .Skip(page * ipp)
                 .Take(ipp)
@@ -56,11 +57,11 @@ namespace Comet.Web.App.API
             List<object> result = new List<object>();
             foreach (var item in tempResult)
             {
-                var reason = await mDbContext.ApplicationUserBanReasons.FirstOrDefaultAsync(x => x.Id == item.ReasonId);
+                var reason = await mDbContext.ApplicationUserBanReasons.AsQueryable().FirstOrDefaultAsync(x => x.Id == item.ReasonId);
                 string userName = mLanguage.GetString("InvalidAccount");
                 if (reason.Type == 0)
                 {
-                    var account = await mDbContext.Users.FirstOrDefaultAsync(x => x.Id == item.AccountId);
+                    var account = await mDbContext.Users.AsQueryable().FirstOrDefaultAsync(x => x.Id == item.AccountId);
                     if (account != null)
                         userName = account.UserName;
                 }
@@ -69,7 +70,7 @@ namespace Comet.Web.App.API
                     userName = "TODO Player Name";
                 }
                 string bannedBy = mLanguage.GetString("FormerModerator");
-                var moderator = await mDbContext.Users.FirstOrDefaultAsync(x => x.Id == item.BannedBy);
+                var moderator = await mDbContext.Users.AsQueryable().FirstOrDefaultAsync(x => x.Id == item.BannedBy);
                 if (moderator != null)
                     bannedBy = moderator.UserName;
 
@@ -124,7 +125,7 @@ namespace Comet.Web.App.API
             if (user == null)
                 return NotFound(mLanguage.GetString("UserNotFound"));
 
-            var reason = await mDbContext.ApplicationUserBanReasons.FirstOrDefaultAsync(x => x.Id == model.reason);
+            var reason = await mDbContext.ApplicationUserBanReasons.AsQueryable().FirstOrDefaultAsync(x => x.Id == model.reason);
             if (reason == null)
             {
                 return StatusCode(500, "Invalid Reason");
@@ -225,7 +226,7 @@ namespace Comet.Web.App.API
             if (admin == null)
                 return Unauthorized();
 
-            var ban = await mDbContext.ApplicationUserBans.FirstOrDefaultAsync(x => x.Id == model.banId);
+            var ban = await mDbContext.ApplicationUserBans.AsQueryable().FirstOrDefaultAsync(x => x.Id == model.banId);
             if (ban == null)
                 return NotFound();
 
@@ -233,7 +234,7 @@ namespace Comet.Web.App.API
             if (user == null)
                 return NotFound(mLanguage.GetString("UserNotFound"));
 
-            var reason = await mDbContext.ApplicationUserBanReasons.FirstOrDefaultAsync(x => x.Id == ban.ReasonId);
+            var reason = await mDbContext.ApplicationUserBanReasons.AsQueryable().FirstOrDefaultAsync(x => x.Id == ban.ReasonId);
             if (reason == null)
             {
                 return StatusCode(500, "Invalid Reason");
@@ -287,7 +288,7 @@ namespace Comet.Web.App.API
             if (admin == null)
                 return Unauthorized();
 
-            var ban = await mDbContext.ApplicationUserBans.FirstOrDefaultAsync(x => x.Id == model.banId);
+            var ban = await mDbContext.ApplicationUserBans.AsQueryable().FirstOrDefaultAsync(x => x.Id == model.banId);
             if (ban == null)
                 return NotFound();
 
@@ -295,7 +296,7 @@ namespace Comet.Web.App.API
             if (user == null)
                 return NotFound(mLanguage.GetString("UserNotFound"));
 
-            var reason = await mDbContext.ApplicationUserBanReasons.FirstOrDefaultAsync(x => x.Id == ban.ReasonId);
+            var reason = await mDbContext.ApplicationUserBanReasons.AsQueryable().FirstOrDefaultAsync(x => x.Id == ban.ReasonId);
             if (reason == null)
             {
                 return StatusCode(500, "Invalid Reason");
@@ -349,7 +350,7 @@ namespace Comet.Web.App.API
             if (admin == null)
                 return Unauthorized();
 
-            var ban = await mDbContext.ApplicationUserBans.FirstOrDefaultAsync(x => x.Id == model.banId);
+            var ban = await mDbContext.ApplicationUserBans.AsQueryable().FirstOrDefaultAsync(x => x.Id == model.banId);
             if (ban == null)
                 return NotFound();
 
@@ -357,7 +358,7 @@ namespace Comet.Web.App.API
             if (user == null)
                 return NotFound(mLanguage.GetString("UserNotFound"));
 
-            var reason = await mDbContext.ApplicationUserBanReasons.FirstOrDefaultAsync(x => x.Id == ban.ReasonId);
+            var reason = await mDbContext.ApplicationUserBanReasons.AsQueryable().FirstOrDefaultAsync(x => x.Id == ban.ReasonId);
             if (reason == null)
             {
                 return StatusCode(500, "Invalid Reason");

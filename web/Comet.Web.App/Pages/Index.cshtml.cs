@@ -31,6 +31,7 @@ namespace Comet.Web.App.Pages
         {
             Articles = await mContext
                 .Articles
+                .AsQueryable()
                 .Where(x => x.PublishDate <= DateTime.Now)
                 .Include(x => x.Category)
                 .Include(x => x.User)

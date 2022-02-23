@@ -108,7 +108,7 @@ namespace Comet.Web.App.Areas.Identity.Pages.Account
         {
             ReturnUrl = returnUrl;
 
-            SecurityQuestions = (await mDbContext.SecurityQuestions.ToListAsync()).ToDictionary(x => x.Id, y => y.Name);
+            SecurityQuestions = (await mDbContext.SecurityQuestions.AsQueryable().ToListAsync()).ToDictionary(x => x.Id, y => y.Name);
             AvailableLanguages = LanguageService.AvailableLanguages.ToDictionary(x => x.LanguageCultureName, y => y.LanguageFullName);
 
             await SetExternalLoginsAsync();
@@ -118,7 +118,7 @@ namespace Comet.Web.App.Areas.Identity.Pages.Account
         {
             returnUrl ??= Url.Content("~/");
 
-            SecurityQuestions = (await mDbContext.SecurityQuestions.ToListAsync()).ToDictionary(x => x.Id, y => y.Name);
+            SecurityQuestions = (await mDbContext.SecurityQuestions.AsQueryable().ToListAsync()).ToDictionary(x => x.Id, y => y.Name);
             AvailableLanguages = LanguageService.AvailableLanguages.ToDictionary(x => x.LanguageCultureName, y => y.LanguageFullName);
 
             await SetExternalLoginsAsync();

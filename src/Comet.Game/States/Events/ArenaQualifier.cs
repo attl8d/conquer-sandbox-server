@@ -160,7 +160,7 @@ namespace Comet.Game.States.Events
 
         public override Task OnBeAttackAsync(Role attacker, Role target, int damage = 0, Magic magic = null)
         {
-            if (!(attacker is Character atkUser) || !(target is Character tgtUser))
+            if (attacker is not Character atkUser || target is not Character tgtUser)
                 return Task.CompletedTask;
 
             if (attacker.MapIdentity - attacker.MapIdentity % BASE_MAP_ID_U != BASE_MAP_ID_U || attacker.MapIdentity != target.MapIdentity)

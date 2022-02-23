@@ -32,7 +32,6 @@ namespace Comet.Web.App.Data
 
         public ApplicationDbContext()
         {
-
         }
 
         public ApplicationDbContext(IConfiguration configuration, 
@@ -74,6 +73,9 @@ namespace Comet.Web.App.Data
         public virtual DbSet<GameAccount> GameAccounts { get; set; }
         public virtual DbSet<CreditCard> CreditCards { get; set; }
         public virtual DbSet<GameAccountVipBind> GameAccountVipBinds { get; set; }
+        public virtual DbSet<DiscordChannel> DiscordChannels { get; set; }
+        public virtual DbSet<DiscordUser> DiscordUsers { get; set; }
+        public virtual DbSet<DiscordMessage> DiscordMessages { get; set; }
 
         #endregion
 

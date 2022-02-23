@@ -22,7 +22,7 @@ namespace Comet.Web.App.Areas.Panel.Pages.Admin.Articles
 
         public async Task<IActionResult> OnGetAsync()
         {
-            ArticleCategorieTypes = await mContext.ArticleCategoryTypes.Where(x => x.Flags == 0).ToListAsync();
+            ArticleCategorieTypes = await mContext.ArticleCategoryTypes.AsQueryable().Where(x => x.Flags == 0).ToListAsync();
             return Page();
         }
     }

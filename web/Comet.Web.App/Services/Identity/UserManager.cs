@@ -45,11 +45,11 @@ namespace Comet.Web.App.Services.Identity
             Dictionary<string, Claim> dictClaims = result.ToDictionary(x => x.Type);
 
             //// get role
-            var roleUser = await mDbContext.UserRoles.FirstOrDefaultAsync(x => x.UserId == user.Id);
+            var roleUser = await mDbContext.UserRoles.AsQueryable().FirstOrDefaultAsync(x => x.UserId == user.Id);
             int idRole = roleUser?.RoleId ?? -1;
 
             // get the claims
-            var roleClaims = await mDbContext.RoleClaims.Where(x => x.RoleId == idRole).ToListAsync();
+            var roleClaims = await mDbContext.RoleClaims.AsQueryable().Where(x => x.RoleId == idRole).ToListAsync();
             foreach (var roleClaim in roleClaims)
             {
                 if (!dictClaims.ContainsKey(roleClaim.ClaimType))
@@ -63,7 +63,7 @@ namespace Comet.Web.App.Services.Identity
             }
 
             // then we get the user claims
-            var userClaims = await mDbContext.UserClaims.Where(x => x.UserId == user.Id).ToListAsync();
+            var userClaims = await mDbContext.UserClaims.AsQueryable().Where(x => x.UserId == user.Id).ToListAsync();
             foreach (var userClaim in userClaims)
             {
                 if (!dictClaims.ContainsKey(userClaim.ClaimType))
@@ -86,10 +86,10 @@ namespace Comet.Web.App.Services.Identity
 
             string title = mLanguage.GetString(Security.Roles.Member.ToString());
 
-            var roleUser = await mDbContext.UserRoles.FirstOrDefaultAsync(x => x.UserId == user.Id, cancellationToken: cancellationToken);
+            var roleUser = await mDbContext.UserRoles.AsQueryable().FirstOrDefaultAsync(x => x.UserId == user.Id, cancellationToken: cancellationToken);
             if (roleUser != null)
             {
-                var role = await mDbContext.Roles.FirstOrDefaultAsync(x => x.Id == roleUser.RoleId, cancellationToken: cancellationToken);
+                var role = await mDbContext.Roles.AsQueryable().FirstOrDefaultAsync(x => x.Id == roleUser.RoleId, cancellationToken: cancellationToken);
                 if (role != null)
                     title = mLanguage.GetString(role.Name);
             }
@@ -105,7 +105,7 @@ namespace Comet.Web.App.Services.Identity
                 TwoFactorEnabled = user.TwoFactorEnabled,
             };
 
-            var userClaims = await mDbContext.UserClaims.Where(x => x.UserId == user.Id).ToListAsync(cancellationToken: cancellationToken);
+            var userClaims = await mDbContext.UserClaims.AsQueryable().Where(x => x.UserId == user.Id).ToListAsync(cancellationToken: cancellationToken);
             foreach (var contact in Enum.GetValues<ContactInfoType>())
             {
                 var claim = userClaims.FirstOrDefault(x => x.ClaimType.Equals(contact.ToClaimString()));
@@ -142,11 +142,11 @@ namespace Comet.Web.App.Services.Identity
             cancellationToken.ThrowIfCancellationRequested();
 
             BanReport banReport = new BanReport();
-            var userBans = await mDbContext.ApplicationUserBans.Where(x => x.AccountId == user.Id).ToListAsync(cancellationToken);
+            var userBans = await mDbContext.ApplicationUserBans.AsQueryable().Where(x => x.AccountId == user.Id).ToListAsync(cancellationToken);
             foreach (var dbBan in userBans)
             {
                 BanReport.BanInformation info = new BanReport.BanInformation();                
-                var banReason = await mDbContext.ApplicationUserBanReasons.FirstOrDefaultAsync(x => x.Id == dbBan.ReasonId, cancellationToken: cancellationToken);
+                var banReason = await mDbContext.ApplicationUserBanReasons.AsQueryable().FirstOrDefaultAsync(x => x.Id == dbBan.ReasonId, cancellationToken: cancellationToken);
                 if (banReason == null)
                     continue;
 
@@ -173,7 +173,7 @@ namespace Comet.Web.App.Services.Identity
                 info.To = dbBan.ExpireTime;
                 info.Flags = (BanFlags)dbBan.Flags;
 
-                var bannedBy = await mDbContext.Users.FirstOrDefaultAsync(x => x.Id == dbBan.BannedBy, cancellationToken: cancellationToken);
+                var bannedBy = await mDbContext.Users.AsQueryable().FirstOrDefaultAsync(x => x.Id == dbBan.BannedBy, cancellationToken: cancellationToken);
                 if (bannedBy == null)
                 {
                     info.BannedBy = mLanguage.GetString("FormerModerator");
@@ -193,7 +193,7 @@ namespace Comet.Web.App.Services.Identity
 
             var report = await GetBanInformationAsync(user, cancellationToken);
             
-            var banType = await mDbContext.ApplicationUserBanReasons.FirstOrDefaultAsync(x => x.Id == type, cancellationToken: cancellationToken);
+            var banType = await mDbContext.ApplicationUserBanReasons.AsQueryable().FirstOrDefaultAsync(x => x.Id == type, cancellationToken: cancellationToken);
             
             if (banType == null)
                 return null;
@@ -208,7 +208,7 @@ namespace Comet.Web.App.Services.Identity
             if (banType.Type == 0)
             {
                 int banCount = report.Account.Count(x => x.ReasonId == type && (x.Flags & BanFlags.Forgiven) == 0);
-                var factors = await mDbContext.ApplicationUserBanReasonsFactors.Where(x => x.ReasonId == banType.Id).ToListAsync();
+                var factors = await mDbContext.ApplicationUserBanReasonsFactors.AsQueryable().Where(x => x.ReasonId == banType.Id).ToListAsync();
                 if (banCount > 0 && factors.All(x => x.Ocurrences != banCount))
                 {
                     if (banCount >= factors.Max(x => x.Ocurrences))
@@ -224,7 +224,7 @@ namespace Comet.Web.App.Services.Identity
             else
             {
                 int banCount = report.Game.Count(x => x.ReasonId == type && (x.Flags & BanFlags.Forgiven) == 0);
-                var factors = await mDbContext.ApplicationUserBanReasonsFactors.Where(x => x.ReasonId == banType.Id).ToListAsync();
+                var factors = await mDbContext.ApplicationUserBanReasonsFactors.AsQueryable().Where(x => x.ReasonId == banType.Id).ToListAsync();
                 if (banCount > 0 && factors.All(x => x.Ocurrences != banCount))
                 {
                     if (banCount >= factors.Max(x => x.Ocurrences))

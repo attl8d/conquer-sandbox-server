@@ -74,6 +74,7 @@ namespace Comet.Web.App.Areas.Read.Pages
             }
             string readToken = Request.Cookies["ReadGuid"];
             var readObj = await mContext.ArticleReadTokens
+                .AsQueryable()
                 .FirstOrDefaultAsync(x => x.ArticleId == ArticleId && x.TokenId.Equals(readToken));
             string userAgent = Request.Headers["User-Agent"];
             if (readObj == null)

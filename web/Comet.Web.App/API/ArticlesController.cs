@@ -33,7 +33,7 @@ namespace Comet.Web.App.API
         [HttpGet(Name = "GetActiveArticleCategoryTypes")]
         public async Task<IActionResult> GetActiveArticleCategoryTypesAsync()
         {
-            var result = await mContext.ArticleCategoryTypes.Where(x => x.Flags == 0).ToListAsync();
+            var result = await mContext.ArticleCategoryTypes.AsQueryable().Where(x => x.Flags == 0).ToListAsync();
             return Ok(result.Select(x => new
             {
                 x.Id,
@@ -44,7 +44,7 @@ namespace Comet.Web.App.API
         [HttpGet(Name = "GetActiveArticleCategoriesByType")]
         public async Task<IActionResult> GetActiveArticleCategoriesByTypeAsync(int type)
         {
-            var result = await mContext.ArticleCategories.Where(x => x.CategoryTypeId == type && x.Flags == 0).ToListAsync();
+            var result = await mContext.ArticleCategories.AsQueryable().Where(x => x.CategoryTypeId == type && x.Flags == 0).ToListAsync();
             return Ok(result.Select(x => new
             {
                 x.Id,
@@ -56,7 +56,7 @@ namespace Comet.Web.App.API
         public async Task<IActionResult> GetByCategoryTypeAsync(int categoryType, int page = 0,
             int ipp = 10)
         {
-            var categories = await mContext.ArticleCategories.Where(x => x.CategoryTypeId == categoryType)
+            var categories = await mContext.ArticleCategories.AsQueryable().Where(x => x.CategoryTypeId == categoryType)
                 .Include(x => x.Articles).ThenInclude(x => x.Content)
                 .Include(x => x.Articles).ThenInclude(x => x.User)
                 .OrderByDescending(x => x.Id)
@@ -100,7 +100,7 @@ namespace Comet.Web.App.API
             if (user == null)
                 return Unauthorized();
 
-            Article article = await mContext.Articles.FirstOrDefaultAsync(x => x.Id == model.PostId);
+            Article article = await mContext.Articles.AsQueryable().FirstOrDefaultAsync(x => x.Id == model.PostId);
             if (article == null)
                 return NoContent();
 

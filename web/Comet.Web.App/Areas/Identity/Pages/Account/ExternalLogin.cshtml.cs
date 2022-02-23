@@ -148,7 +148,7 @@ namespace Comet.Web.App.Areas.Identity.Pages.Account
                 ReturnUrl = returnUrl;
                 ProviderDisplayName = info.ProviderDisplayName;
 
-                SecurityQuestions = (await mDbContext.SecurityQuestions.ToListAsync()).ToDictionary(x => x.Id, y => y.Name);
+                SecurityQuestions = (await mDbContext.SecurityQuestions.AsQueryable().ToListAsync()).ToDictionary(x => x.Id, y => y.Name);
                 AvailableLanguages = LanguageService.AvailableLanguages.ToDictionary(x => x.LanguageCultureName, y => y.LanguageFullName);
 
                 if (info.Principal.HasClaim(c => c.Type == ClaimTypes.Name))
@@ -247,7 +247,7 @@ namespace Comet.Web.App.Areas.Identity.Pages.Account
                 }
             }
 
-            SecurityQuestions = (await mDbContext.SecurityQuestions.ToListAsync()).ToDictionary(x => x.Id, y => y.Name);
+            SecurityQuestions = (await mDbContext.SecurityQuestions.AsQueryable().ToListAsync()).ToDictionary(x => x.Id, y => y.Name);
             AvailableLanguages = LanguageService.AvailableLanguages.ToDictionary(x => x.LanguageCultureName, y => y.LanguageFullName);
 
             ProviderDisplayName = info.ProviderDisplayName;

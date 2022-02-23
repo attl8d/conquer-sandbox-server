@@ -34,6 +34,11 @@ namespace Comet.Web.App
                     services.AddQuartzHostedService(
                         q => q.WaitForJobsToComplete = true);
                 })
+                //.ConfigureServices((hostContext, services) =>
+                //{
+                //    //await new DiscordService().MainAsync().ConfigureAwait(true);
+                //    services.AddHostedService<DiscordService>();
+                //})
                 .ConfigureWebHostDefaults(webBuilder =>
                 {
                     webBuilder.UseStartup<Startup>();

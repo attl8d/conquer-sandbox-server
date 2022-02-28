@@ -1,0 +1,50 @@
+﻿using Comet.AI.Packets;
+using Comet.Shared;
+using Comet.Shared.Comet.Shared;
+using System;
+using System.Threading.Tasks;
+
+namespace Comet.AI.World.Threads
+{
+    internal class CommonThread : TimerBase
+    {
+        TimeOutMS mAiPing = new TimeOutMS();
+        private TimeOut mPingTimeout = new TimeOut();
+
+        private const string APP_TITLE_S = "Comet - Conquer Online NPC Server - {0} - {1}";
+
+        public CommonThread()
+            : base(1000, "Common Thread")
+        {
+            mAiPing.Startup(2000);
+        }
+
+        protected override async Task<bool> OnElapseAsync()
+        {
+            Console.Title = string.Format(APP_TITLE_S, DateTime.Now.ToString("s"), Kernel.NetworkMonitor.UpdateStatsAsync(1000));
+
+            if ((Kernel.GameClient == null || Kernel.GameServer?.Socket.Connected != true) && mAiPing.ToNextTime())
+            {
+                await Log.WriteLogAsync(LogLevel.Info, $"Attempting connection with the account server on [{Client.Configuration.IPAddress}:{Client.Configuration.Port}]...");
+
+                Kernel.GameClient = new ();
+                if (await Kernel.GameClient.ConnectToAsync(Client.Configuration.IPAddress, Client.Configuration.Port))
+                {
+                    mPingTimeout.Startup(15);
+                    await Log.WriteLogAsync(LogLevel.Info, "Connected to the Game server!");
+                }
+            }
+            
+            if (mPingTimeout.ToNextTime() && Kernel.GameClient != null && Kernel.GameServer?.Socket.Connected == true)
+            {
+                await Kernel.GameServer.SendAsync(new MsgAiPing
+                {
+                    Timestamp = Environment.TickCount,
+                    TimestampMs = Environment.TickCount64
+                });
+            }
+
+            return true;
+        }
+    }
+}

@@ -1,0 +1,177 @@
+﻿using Comet.Database.Entities;
+using Comet.Game.Database.Repositories;
+using Comet.Game.States;
+using Comet.Game.States.Events;
+using Comet.Game.States.Npcs;
+using Comet.Shared;
+using System.Collections.Concurrent;
+using System.Collections.Generic;
+using System.Linq;
+using System.Threading.Tasks;
+
+namespace Comet.Game.World.Managers
+{
+    public static class EventManager
+    {
+        private static ConcurrentDictionary<uint, DbAction> mActions = new ConcurrentDictionary<uint, DbAction>();
+        private static ConcurrentDictionary<uint, DbTask> mTasks = new ConcurrentDictionary<uint, DbTask>();
+
+        private static ConcurrentDictionary<GameEvent.EventType, GameEvent> mEvents = new ConcurrentDictionary<GameEvent.EventType, GameEvent>();
+        private static List<QueuedAction> mQueuedActions = new List<QueuedAction>();
+
+        public static async Task<bool> InitializeAsync()
+        {
+            foreach (var task in await TaskRepository.GetAsync())
+            {
+                mTasks.TryAdd(task.Id, task);
+            }
+
+            foreach (var action in await ActionRepository.GetAsync())
+            {
+                if (action.Type == 102)
+                {
+                    string[] response = action.Param.Split(' ');
+                    if (response.Length < 2)
+                    {
+                        await Log.WriteLogAsync(LogLevel.Warning, $"Action [{action.Identity}] Type 102 doesn't set a task [param: {action.Param}]");
+                    }
+                    else if (response[1] != "0")
+                    {
+                        if (!uint.TryParse(response[1], out uint taskId) || !mTasks.ContainsKey(taskId))
+                        {
+                            await Log.WriteLogAsync(LogLevel.Warning, $"Task not found for action {action.Identity}");
+                        }
+                    }
+                }
+
+                mActions.TryAdd(action.Identity, action);
+            }
+
+            foreach (var dbNpc in await NpcRepository.GetAsync())
+            {
+                Npc npc = new Npc(dbNpc);
+
+                if (!await npc.InitializeAsync())
+                {
+                    await Log.WriteLogAsync(LogLevel.Warning, $"Could not load NPC {dbNpc.Id} {dbNpc.Name}");
+                }
+
+                if (npc.Task0 != 0 && !mTasks.ContainsKey(npc.Task0))
+                    await Log.WriteLogAsync(LogLevel.Warning, $"Npc {npc.Identity} {npc.Name} no task found [taskid: {npc.Task0}]");
+            }
+
+            foreach (var dbDynaNpc in await DynaNpcRespository.GetAsync())
+            {
+                DynamicNpc npc = new DynamicNpc(dbDynaNpc);
+                if (!await npc.InitializeAsync())
+                {
+                    await Log.WriteLogAsync(LogLevel.Warning, $"Could not load NPC {dbDynaNpc.Id} {dbDynaNpc.Name}");
+                }
+
+                if (npc.Task0 != 0 && !mTasks.ContainsKey(npc.Task0))
+                    await Log.WriteLogAsync(LogLevel.Warning, $"Npc {npc.Identity} {npc.Name} no task found [taskid: {npc.Task0}]");
+            }
+
+            //await RegisterEventAsync(new TimedGuildWar());
+            //await RegisterEventAsync(new LineSkillPk());
+            await RegisterEventAsync(new ArenaQualifier());
+            await RegisterEventAsync(new QuizShow());
+            await RegisterEventAsync(new FamilyWar());
+            //await RegisterEventAsync(new GuildContest());
+
+            return true;
+        }
+
+        public static async Task ReloadActionTaskAllAsync()
+        {
+            mTasks.Clear();
+            foreach (var task in await TaskRepository.GetAsync())
+            {
+                mTasks.TryAdd(task.Id, task);
+            }
+            await Log.WriteLogAsync(LogLevel.Debug, $"All Tasks has been reloaded. {mTasks.Count} in the server.");
+
+            mActions.Clear();
+            foreach (var action in await ActionRepository.GetAsync())
+            {
+                if (action.Type == 102)
+                {
+                    string[] response = action.Param.Split(' ');
+                    if (response.Length < 2)
+                    {
+                        await Log.WriteLogAsync(LogLevel.Warning, $"Action [{action.Identity}] Type 102 doesn't set a task [param: {action.Param}]");
+                    }
+                    else if (response[1] != "0")
+                    {
+                        if (!uint.TryParse(response[1], out uint taskId) || !mTasks.ContainsKey(taskId))
+                        {
+                            await Log.WriteLogAsync(LogLevel.Warning, $"Task not found for action {action.Identity}");
+                        }
+                    }
+                }
+
+                mActions.TryAdd(action.Identity, action);
+            }
+
+            await Log.WriteLogAsync(LogLevel.Debug, $"All Actions has been reloaded. {mActions.Count} in the server.");
+        }
+
+        public static DbAction GetAction(uint idAction)
+        {
+            return mActions.TryGetValue(idAction, out var result) ? result : null;
+        }
+
+        public static DbTask GetTask(uint idTask)
+        {
+            return mTasks.TryGetValue(idTask, out var result) ? result : null;
+        }
+
+        #region Events
+
+        public static async Task<bool> RegisterEventAsync(GameEvent @event)
+        {
+            if (mEvents.ContainsKey(@event.Identity))
+                return false;
+
+            if (await @event.CreateAsync())
+            {
+                mEvents.TryAdd(@event.Identity, @event);
+                return true;
+            }
+            return false;
+        }
+
+        public static void RemoveEvent(GameEvent.EventType type)
+        {
+            mEvents.TryRemove(type, out _);
+        }
+
+        public static T GetEvent<T>() where T : GameEvent
+        {
+            return mEvents.Values.FirstOrDefault(x => x.GetType() == typeof(T)) as T;
+        }
+
+        public static GameEvent GetEvent(GameEvent.EventType type) => mEvents.TryGetValue(type, out var ev) ? ev : null;
+
+        public static GameEvent GetEvent(uint idMap)
+        {
+            return mEvents.Values.FirstOrDefault(x => x.Map?.Identity == idMap);
+        }
+
+        public static async Task DailyAsync()
+        {
+            foreach (var @event in mEvents.Values)
+            {
+                await @event.DailyAsync();
+            }
+        }
+
+        public static bool QueueAction(QueuedAction action)
+        {
+            mQueuedActions.Add(action);
+            return true;
+        }
+
+        #endregion 
+    }
+}

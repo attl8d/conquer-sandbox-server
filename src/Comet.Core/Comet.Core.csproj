@@ -1,0 +1,38 @@
+﻿<Project Sdk="Microsoft.NET.Sdk">
+
+	<PropertyGroup>
+		<TargetFramework>net6.0</TargetFramework>
+		<LangVersion>latest</LangVersion>
+		<Version>0.2.0.2</Version>
+	</PropertyGroup>
+
+	<ItemGroup>
+		<ProjectReference Include="..\Comet.Shared\Comet.Shared.csproj" />
+	</ItemGroup>
+
+	<ItemGroup>
+		<Compile Update="Language.Designer.cs">
+			<DependentUpon>Language.resx</DependentUpon>
+			<DesignTime>True</DesignTime>
+			<AutoGen>True</AutoGen>
+		</Compile>
+	</ItemGroup>
+
+	<ItemGroup>
+		<EmbeddedResource Update="Language.resx">
+			<LastGenOutput>Language.Designer.cs</LastGenOutput>
+			<Generator>PublicResXFileCodeGenerator</Generator>
+		</EmbeddedResource>
+	</ItemGroup>
+
+	<PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|AnyCPU'">
+		<OutputPath>../Debug</OutputPath>
+		<PlatformTarget>x64</PlatformTarget>
+	</PropertyGroup>
+
+	<PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|AnyCPU'">
+		<OutputPath>../Release</OutputPath>
+		<PlatformTarget>x64</PlatformTarget>
+	</PropertyGroup>
+
+</Project>

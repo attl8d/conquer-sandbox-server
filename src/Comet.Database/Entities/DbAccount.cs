@@ -1,0 +1,28 @@
+﻿using System;
+using System.ComponentModel.DataAnnotations;
+using System.ComponentModel.DataAnnotations.Schema;
+
+namespace Comet.Database.Entities
+{
+    /// <summary>
+    ///     Account information for a registered player. The account server uses this information
+    ///     to authenticate the player on login, and track permissions and player access to the
+    ///     server. Passwords are hashed using a salted SHA-1 for user protection.
+    /// </summary>
+    [Table("account")]
+    public class DbAccount
+    {
+        // Column Properties
+        [Key]
+        public uint AccountID { get; set; }
+        public string Username { get; set; }
+        public string Password { get; set; }
+        public string Salt { get; set; }
+        public ushort AuthorityID { get; set; }
+        public ushort StatusID { get; set; }
+        public string IPAddress { get; set; }
+        public string MacAddress { get; set; }
+        public DateTime Registered { get; set; }
+        public int ParentId { get; set; }
+    }
+}

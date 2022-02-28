@@ -1,0 +1,91 @@
+﻿using Comet.Game.States;
+using Comet.Game.States.Items;
+using Comet.Network.Packets;
+using Comet.Network.Packets.Game;
+using System;
+
+namespace Comet.Game.Packets
+{
+    public sealed class MsgPlayer : MsgPlayer<Client>
+    {
+        public MsgPlayer(Character user)
+        {
+            Identity = user.Identity;
+            Mesh = user.Mesh;
+
+            MapX = user.MapX;
+            MapY = user.MapY;
+
+            Status = (uint)user.StatusFlag;
+
+            Hairstyle = user.Hairstyle;
+            Direction = (byte)user.Direction;
+            Pose = (byte)user.Action;
+            Metempsychosis = user.Metempsychosis;
+            Level = user.Level;
+
+            SyndicateIdentity = user.SyndicateIdentity;
+            SyndicatePosition = (ushort)user.SyndicateRank;
+
+            NobilityRank = (uint)user.NobilityRank;
+
+            Helmet = user.Headgear?.Type ?? 0;
+            HelmetColor = (ushort)(user.Headgear?.Color ?? Item.ItemColor.None);
+            RightHand = user.RightHand?.Type ?? 0;
+            LeftHand = user.LeftHand?.Type ?? 0;
+            LeftHandColor = (ushort)(user.LeftHand?.Color ?? Item.ItemColor.None);
+            Armor = user.Armor?.Type ?? 0;
+            ArmorColor = (ushort)(user.Armor?.Color ?? Item.ItemColor.None);
+            Garment = user.Garment?.Type ?? 0;
+
+            FlowerRanking = user.FlowerCharm;
+            QuizPoints = user.QuizPoints;
+            UserTitle = user.UserTitle;
+
+            EnlightenPoints = (ushort)user.EnlightenPoints;
+            CanBeEnlightened = (ushort)(user.CanBeEnlightened ? 1 : 0);
+
+            Away = user.IsAway;
+
+            if (user.Syndicate != null)
+                SharedBattlePower = (uint)user.Syndicate.GetSharedBattlePower(user.SyndicateRank);
+
+            FamilyIdentity = user.FamilyIdentity;
+            FamilyRank = (uint)user.FamilyPosition;
+            FamilyBattlePower = user.FamilyBattlePower;
+
+            Name = user.Name;
+            FamilyName = user.FamilyName;
+        }
+
+        public MsgPlayer(Monster monster)
+        {
+            Type = PacketType.MsgPlayer;
+
+            Identity = monster.Identity;
+
+            Mesh = monster.Mesh;
+
+            MapX = monster.MapX;
+            MapY = monster.MapY;
+
+            Status = (uint)monster.StatusFlag;
+
+            Direction = (byte)monster.Direction;
+            Pose = (byte)monster.Action;
+
+            MonsterLevel = monster.Level;
+            if (monster.Life > ushort.MaxValue )
+            {
+                MonsterLife = (ushort)(ushort.MaxValue / monster.Life * 100);
+            }
+            else
+            {
+                MonsterLife = (ushort)Math.Min(ushort.MaxValue, monster.Life);
+            }
+
+            Name = monster.Name;
+            FamilyName = "";
+        }
+    }
+}

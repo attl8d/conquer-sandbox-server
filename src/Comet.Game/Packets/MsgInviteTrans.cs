@@ -1,0 +1,39 @@
+﻿using Comet.Game.States;
+using Comet.Network.Packets.Game;
+using System.Threading.Tasks;
+
+namespace Comet.Game.Packets
+{
+    public sealed class MsgInviteTrans : MsgInviteTrans<Client>
+    {
+        public override async Task ProcessAsync(Client client)
+        {
+            Character user = client.Character;
+
+            switch (Mode)
+            {
+                case Action.Accept:
+                    {
+                        if (!(user.MessageBox is EventInviationBox box))
+                            return;
+
+                        if (box.HasExpired)
+                        {
+                            user.MessageBox = null;
+                            return;
+                        }
+
+                        await user.MessageBox.OnAcceptAsync();
+                        await user.SendAsync(new MsgInviteTrans
+                        {
+                            Mode = Action.AcceptMessage,
+                            Message = box.AcceptMsgId
+                        });
+
+                        user.MessageBox = null;
+                        break;
+                    }
+            }
+        }
+    }
+}

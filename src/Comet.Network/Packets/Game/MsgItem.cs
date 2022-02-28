@@ -108,6 +108,7 @@ namespace Comet.Network.Packets.Game
             BoothRemove,
             BoothPurchase,
             EquipmentAmount,
+            Fireworks,
             ClientPing = 27,
             EquipmentEnchant,
             BoothSellPoints,

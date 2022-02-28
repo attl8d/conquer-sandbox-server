@@ -4474,22 +4474,41 @@ namespace Comet.Game.States
                     return false;
                 dbMate.Mate = 0;
                 await ServerDbContext.SaveAsync(dbMate);
-            }
 
-            if (mate == null)
-            {
                 DbItem dbItem = Item.CreateEntity(Item.TYPE_METEORTEAR);
                 dbItem.PlayerId = user.Identity;
                 await ServerDbContext.SaveAsync(dbItem);
             }
             else
             {
+                mate.MateIdentity = 0;
+                mate.MateName = Language.StrNone;
                 await mate.UserPackage.AwardItemAsync(Item.TYPE_METEORTEAR);
+
+                await mate.SendAsync(new MsgName
+                {
+                    Action = StringAction.Mate,
+                    Identity = mate.Identity,
+                    Strings = new List<string>
+                    {
+                        mate.MateName
+                    }
+                });
             }
 
             user.MateIdentity = 0;
             user.MateName = Language.StrNone;
             await user.SaveAsync();
+
+            await user.SendAsync(new MsgName
+            {
+                Action = StringAction.Mate,
+                Identity = user.Identity,
+                Strings = new List<string>
+                    {
+                        user.MateName
+                    }
+            });
             return true;
         }
 

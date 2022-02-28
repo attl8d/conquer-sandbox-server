@@ -260,7 +260,7 @@ namespace Comet.Game.World.Maps
                     else
                     {
                         foreach (var user in m_users.Values.Where(x =>
-                            Calculations.GetDistance(x.MapX, x.MapY, role.MapX, role.MapY) <= Screen.VIEW_SIZE))
+                            Calculations.GetDistance(x.MapX, x.MapY, role.MapX, role.MapY) <= Screen.BROADCAST_SIZE))
                         {
                             await user.Screen.SpawnAsync(role);
                         }
@@ -285,7 +285,7 @@ namespace Comet.Game.World.Maps
 
                 foreach (var user in m_users.Values)
                 {
-                    if (Calculations.GetDistance(role.MapX, role.MapY, user.MapX, user.MapY) > Screen.VIEW_SIZE)
+                    if (Calculations.GetDistance(role.MapX, role.MapY, user.MapX, user.MapY) > Screen.BROADCAST_SIZE)
                         continue;
 
                     await user.Screen.RemoveAsync(idRole, true);

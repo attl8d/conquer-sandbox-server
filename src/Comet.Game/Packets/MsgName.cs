@@ -59,7 +59,7 @@ namespace Comet.Game.Packets
                             return;
                         }
 
-                        Strings.Add($"{targetUser.Identity} {targetUser.Level} {targetUser.BattlePower} #{targetUser.SyndicateName} #None {targetUser.MateName} {(int)targetUser.NobilityRank} {targetUser.Gender}");
+                        Strings.Add($"{targetUser.Identity} {targetUser.Level} {targetUser.BattlePower} #{targetUser.SyndicateName} #{targetUser.FamilyName} {targetUser.MateName} {(int)targetUser.NobilityRank} {targetUser.Gender}");
                         await client.SendAsync(this);
                         break;
                     }

@@ -222,18 +222,29 @@ namespace Comet.Game.Packets
 
                         await user.SendAsync(new MsgName
                         {
-                            Identity = targetUser.Identity,
+                            Identity = user.Identity,
                             Strings = new List<string> { targetUser.Name },
                             Action = StringAction.Mate
                         });
 
                         await targetUser.SendAsync(new MsgName
                         {
-                            Identity = user.Identity,
+                            Identity = targetUser.Identity,
                             Strings = new List<string> { user.Name },
                             Action = StringAction.Mate
                         });
 
+                        await user.BroadcastRoomMsgAsync(new MsgItem
+                        {
+                            Action = MsgItem<Client>.ItemActionType.Fireworks,
+                            Identity = user.Identity
+                        }, false);
+
+                        await targetUser.BroadcastRoomMsgAsync(new MsgItem
+                        {
+                            Action = MsgItem<Client>.ItemActionType.Fireworks,
+                            Identity = targetUser.Identity
+                        }, false);
                         await RoleManager.BroadcastMsgAsync(string.Format(Language.StrMarry, targetUser.Name, user.Name), MsgTalk.TalkChannel.Center, Color.Red);
                         break;
                     }

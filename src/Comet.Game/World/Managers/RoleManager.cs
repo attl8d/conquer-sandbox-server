@@ -44,6 +44,9 @@ namespace Comet.Game.World.Managers
             foreach (var mob in await MonsterypeRepository.GetAsync())
             {
                 mDicMonsterTypes.TryAdd(mob.Id, mob);
+
+                if (mob.Action != 0 && EventManager.GetAction(mob.Action) == null)
+                    mob.Action = 0;
             }
 
             mDisdains.AddRange(await DisdainRepository.GetAsync());
@@ -331,7 +334,8 @@ namespace Comet.Game.World.Managers
 
             foreach (var user in m_userSet.Values)
             {
-                user.QueueAction(async () => {
+                user.QueueAction(async () =>
+                {
                     await DoResetAsync(user, true);
                     await user.SaveAsync();
                 });

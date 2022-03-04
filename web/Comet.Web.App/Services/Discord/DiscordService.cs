@@ -4,10 +4,10 @@ using Comet.Web.App.Data.Entities;
 using Discord;
 using Discord.Commands;
 using Discord.WebSocket;
-using Microsoft.AspNetCore.Hosting;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
+using Microsoft.Extensions.Logging;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -21,7 +21,6 @@ namespace Comet.Web.App.Services.Discord
     {
         private static IServiceProvider _serviceProvider;
 
-        private CancellationToken mCancellationToken = new CancellationToken(false);
         private DiscordSocketClient mClient;
         private CommandService mCommandService;
 
@@ -31,6 +30,8 @@ namespace Comet.Web.App.Services.Discord
 
         private readonly string mDiscordToken;
         private readonly IServiceScopeFactory mServiceScopeFactory;
+        private readonly ILogger<DiscordService> mLogger;
+
         private ApplicationDbContext Context
         {
             get
@@ -41,10 +42,11 @@ namespace Comet.Web.App.Services.Discord
             }
         }
 
-        public DiscordService(IConfiguration config, IServiceScopeFactory service)
+        public DiscordService(IConfiguration config, IServiceScopeFactory service, ILogger<DiscordService> logger)
         {
             mDiscordToken = config["Discord:Token"];
             mServiceScopeFactory = service;
+            mLogger = logger;
         }
 
         public bool IsReady => mClient?.ConnectionState == ConnectionState.Connected;
@@ -67,9 +69,7 @@ namespace Comet.Web.App.Services.Discord
             await mClient.SetGameAsync("World Conquer Online");
             await mClient.SetStatusAsync(UserStatus.DoNotDisturb);
 
-            //MainChannelId = (await DiscordChannel.GetAsync())?.ChannelId ?? 0;
-
-            var context = Context;
+            await using var context = Context;
             MainChannelId = (Context.DiscordChannels.FirstOrDefault(x => x.Default) ?? context.DiscordChannels.FirstOrDefault())?.ChannelId ?? 0;
 
             if (MainChannelId != 0 && mClient.GetChannel(MainChannelId) is SocketTextChannel channel)
@@ -130,7 +130,7 @@ namespace Comet.Web.App.Services.Discord
                 await mCommandService.ExecuteAsync(cmdContext, pos, _serviceProvider);
             }
 
-            var context = Context;
+            await using var context = Context;
             DiscordChannel channel = context.DiscordChannels.FirstOrDefault(x => x.ChannelId == arg.Channel.Id);
             if (channel == null)
             {
@@ -210,21 +210,34 @@ namespace Comet.Web.App.Services.Discord
         public Task LogAsync(LogMessage log)
         {
             if (log.Exception != null)
-                return Log.WriteLogAsync(LogLevel.Exception, log.Exception.ToString());
+                mLogger.LogCritical(log.Exception, log.Exception.Message);
             switch (log.Severity)
             {
                 case LogSeverity.Error:
                 case LogSeverity.Critical:
-                    return Log.WriteLogAsync(LogLevel.Error, log.Message);
+                    {
+                        mLogger.LogError(log.Message);
+                        break;
+                    }
                 case LogSeverity.Warning:
-                    return Log.WriteLogAsync(LogLevel.Warning, log.Message);
+                    {
+                        mLogger.LogWarning(log.Message);
+                        break;
+                    }
                 case LogSeverity.Verbose:
                 case LogSeverity.Debug:
-                    return Log.WriteLogAsync(LogLevel.Debug, log.Message);
+                    {
+                        mLogger.LogDebug(log.Message);
+                        break;
+                    }
                 case LogSeverity.Info:
                 default:
-                    return Log.WriteLogAsync(LogLevel.Info, log.Message);
+                    {
+                        mLogger.LogInformation(log.Message);
+                        break;
+                    }
             }
+            return Task.CompletedTask;
         }
 
         public Task StartAsync(CancellationToken cancellationToken)

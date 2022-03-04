@@ -113,7 +113,7 @@
 {
 <script>
 
-    const cannotInteract = @Model.IsAllowedToComment;
+    const cannotInteract = @(Model.IsAllowedToComment ? "false" : "true");
 
     $("#@formId").submit(function() {
         event.preventDefault();

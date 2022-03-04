@@ -71,8 +71,8 @@ namespace Comet.Web.App
                 // User settings.
                 opt.User.AllowedUserNameCharacters = "abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789-._@+";
                 opt.User.RequireUniqueEmail = true;
-                opt.SignIn.RequireConfirmedEmail = true;
-                opt.SignIn.RequireConfirmedAccount = true;
+                opt.SignIn.RequireConfirmedEmail = false;
+                opt.SignIn.RequireConfirmedAccount = false;
                 opt.SignIn.RequireConfirmedPhoneNumber = false;
             })
                 .AddRoles<ApplicationRole>()
@@ -101,7 +101,7 @@ namespace Comet.Web.App
             services.AddTransient<LanguageService>();
             services.AddTransient<RealmService>();
 
-            services.AddHostedService<DiscordService>();
+            //services.AddHostedService<DiscordService>();
 
             // Services that must be created once every request
 

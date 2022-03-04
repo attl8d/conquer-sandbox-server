@@ -7,6 +7,9 @@
 		<Nullable>disable</Nullable>
 		<LangVersion>latest</LangVersion>
 		<Version>0.2.0.3</Version>
+		<Authors>Felipe Vieira Vendramini</Authors>
+		<Product>Comet - Maintenance Manager</Product>
+		<PackageProjectUrl>https://gitlab.com/world-conquer-online/comet</PackageProjectUrl>
 	</PropertyGroup>
 
 	<ItemGroup>

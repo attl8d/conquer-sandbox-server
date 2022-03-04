@@ -6,7 +6,7 @@
 		<ImplicitUsings>disable</ImplicitUsings>
 		<Nullable>disable</Nullable>
 		<LangVersion>latest</LangVersion>
-		<Version>0.2.0.2</Version>
+		<Version>0.2.0.3</Version>
 	</PropertyGroup>
 
 	<ItemGroup>

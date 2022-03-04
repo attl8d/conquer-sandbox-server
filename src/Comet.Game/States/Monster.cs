@@ -22,6 +22,8 @@ namespace Comet.Game.States
         private TimeOut m_disappear = new TimeOut(5);
         private TimeOut m_leaveMap = new TimeOut(10);
 
+        private uint mIdAction = 0;
+
         public uint GeneratorId { get; private set; }
 
         private AiStage mStage;
@@ -59,6 +61,9 @@ namespace Comet.Game.States
             m_posY = y;
 
             Life = MaxLife;
+
+            if (mDbMonster.Action != 0 && EventManager.GetAction(mDbMonster.Action) != null)
+                mIdAction = mDbMonster.Action;
 
             if (mDbMonster.MagicType > 0)
             {
@@ -400,9 +405,9 @@ namespace Comet.Game.States
             m_disappear.Startup(5);
             m_leaveMap.Startup(NPC_REST_TIME);
 
-            if (mDbMonster.Action > 0)
+            if (mIdAction > 0)
             {
-                await GameAction.ExecuteActionAsync(mDbMonster.Action, user, this, null, string.Empty);
+                await GameAction.ExecuteActionAsync(mIdAction, user, this, null, string.Empty);
             }
 
             if (IsPkKiller() || IsGuard() || IsEvilKiller() || IsDynaNpc() || attacker == null)

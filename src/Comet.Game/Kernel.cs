@@ -128,9 +128,9 @@ namespace Comet.Game
                 await MapManager.LoadMapsAsync().ConfigureAwait(true);
 
                 await MagicManager.InitializeAsync();
-                await RoleManager.InitializeAsync();
                 await PeerageManager.InitializeAsync();
                 await EventManager.InitializeAsync();
+                await RoleManager.InitializeAsync();
                 await ItemManager.InitializeAsync();
                 await PigeonManager.InitializeAsync();
                 await PeerageManager.InitializeAsync();

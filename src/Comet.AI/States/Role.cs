@@ -395,6 +395,10 @@ namespace Comet.AI.States
             return Calculations.MulDiv(damage, Defense2, Calculations.DEFAULT_DEFENCE2);
         }
 
+        public virtual Task<bool> BeAttackAsync(Role attacker)
+        {
+            return Task.FromResult(false);
+        }
 
         public virtual int GetAttackRange(int sizeAdd)
         {

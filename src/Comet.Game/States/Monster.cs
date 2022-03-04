@@ -496,6 +496,12 @@ namespace Comet.Game.States
                 return true;
             }
 
+            await Kernel.BroadcastWorldMsgAsync(new MsgInteract
+            {
+                Action = MsgInteractType.Attack,
+                SenderIdentity = attacker.Identity,
+                TargetIdentity = Identity
+            });
             return true;
         }
 

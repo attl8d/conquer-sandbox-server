@@ -313,12 +313,84 @@ namespace Comet.AI.States
 
         public override bool IsAlive => Life > 0 && QueryStatus(StatusSet.GHOST) == null;
 
+        public override async Task<bool> BeAttackAsync(Role attacker)
+        {
+            if (!IsAlive)
+                return false;
+
+            mIdAtkMe = attacker.Identity;
+
+            if (!IsMoveEnable())
+                return false;
+
+            if (IsEscapeEnable())
+            {
+                if (!IsPassive())
+                {
+                    mActTarget = mMoveTarget = mIdAtkMe;
+                    await ChangeModeAsync(AiStage.Escape);
+                    return true;
+                }
+
+                if (Life < mDbMonster.EscapeLife)
+                {
+                    await ChangeModeAsync(AiStage.Escape);
+                    return true;
+                }
+            }
+
+            int distance = GetDistance(attacker);
+            if (IsFarWeapon() && !attacker.IsFarWeapon() && distance <= SHORTWEAPON_RANGE_LIMIT)
+            {
+                mActTarget = mMoveTarget = mIdAtkMe;
+
+                FindPath(GetAttackRange(attacker.SizeAddition) - distance);
+                await ChangeModeAsync(AiStage.Forward);
+                return true;
+            }
+
+            if (!IsAttackable(attacker))
+                return false;
+
+            if (await Kernel.NextAsync(100) < 80)
+            {
+                if (mStage == AiStage.Escape && await Kernel.NextAsync(100) < 80)
+                    return false;
+
+                mActTarget = mMoveTarget = mIdAtkMe;
+                if (await Kernel.NextAsync(100) < 80)
+                {
+                    await ChangeModeAsync(AiStage.Forward);
+                    FindPath();
+
+                    if (mNextDir != FacingDirection.Invalid)
+                        return true;
+                }
+
+                if (IsEscapeEnable())
+                {
+                    await ChangeModeAsync(AiStage.Escape);
+                    FindPath();
+                }
+            }
+
+            return true;
+        }
+
+        public override bool IsAttackable(Role target)
+        {
+            if (target.IsWing && !IsWing && IsCloseAttack())
+                return false;
+            return true;
+        }
+
         #endregion
 
         #region AI
 
         private uint mMoveTarget;
         private uint mActTarget;
+        private uint mIdAtkMe;
 
         public bool IsMoveEnable()
         {

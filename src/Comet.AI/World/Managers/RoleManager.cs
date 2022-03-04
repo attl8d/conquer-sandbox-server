@@ -41,8 +41,6 @@ namespace Comet.AI.World.Managers
         {
             if (!m_userSet.TryRemove(idUser, out user))
                 return false;
-
-
             return true;
         }
 

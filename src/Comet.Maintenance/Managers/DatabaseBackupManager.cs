@@ -75,11 +75,10 @@ namespace Comet.Maintenance.Managers
             try
             {
                 ProcessStartInfo startInfo = new ProcessStartInfo(Path.Combine(DatabaseExecutableLocation, "mysqldump.exe"), $"{command}");
-                //startInfo.WorkingDirectory = DatabaseExecutableLocation;
                 startInfo.UseShellExecute = false;
                 startInfo.CreateNoWindow = true;
                 startInfo.WorkingDirectory = DatabaseExecutableLocation;
-                startInfo.RedirectStandardOutput = false;
+                startInfo.RedirectStandardOutput = true;
 
                 Process process = new Process();                
                 process.StartInfo = startInfo;

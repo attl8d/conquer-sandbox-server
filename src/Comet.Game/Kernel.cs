@@ -70,7 +70,7 @@ namespace Comet.Game
 
         public readonly static SystemProcessor SystemThread = new SystemProcessor();
         public readonly static UserProcessing UserThread = new UserProcessing();
-        public readonly static AiProcessing AiThread = new AiProcessing();
+        //public readonly static AiProcessing AiThread = new AiProcessing();
         public readonly static RoleProcessing RoleThread = new RoleProcessing();
 
         private static SchedulerFactory schedulerFactory { get; set; }
@@ -143,7 +143,7 @@ namespace Comet.Game
 
                 await SystemThread.StartAsync();
                 await UserThread.StartAsync();
-                await AiThread.StartAsync();
+                //await AiThread.StartAsync();
                 await RoleThread.StartAsync();
 
                 schedulerFactory = new SchedulerFactory();
@@ -164,7 +164,7 @@ namespace Comet.Game
             await schedulerFactory.StopAsync();
 
             await UserThread.CloseAsync();
-            await AiThread.CloseAsync();
+            //await AiThread.CloseAsync();
             await RoleThread.CloseAsync();
 
             await Services.Processor.StopAsync(new CancellationToken(true)).ConfigureAwait(true);

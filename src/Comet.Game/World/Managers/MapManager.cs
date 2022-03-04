@@ -110,7 +110,7 @@ namespace Comet.Game.World.Managers
         {
             foreach (var map in GameMaps.Values.Where(x => x.PlayerCount > 0))
             {
-                foreach (var mob in map.QueryRoles(x => x.IsMonster()))
+                foreach (var mob in map.QueryRoles(x => !x.IsPlayer()))
                 {
                     await mob.OnTimerAsync();
                 }

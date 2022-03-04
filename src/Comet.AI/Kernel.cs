@@ -104,9 +104,9 @@ namespace Comet.AI
         {
             public readonly static RandomnessService Randomness = new RandomnessService();
 #if DEBUG
-            public readonly static ServerProcessor Processor = new ServerProcessor(Environment.ProcessorCount/2);
+            public readonly static ServerProcessor Processor = new ServerProcessor(2);
 #else
-            public readonly static ServerProcessor Processor = new ServerProcessor(Environment.ProcessorCount);
+            public readonly static ServerProcessor Processor = new ServerProcessor(Environment.ProcessorCount/2);
 #endif
         }
     }

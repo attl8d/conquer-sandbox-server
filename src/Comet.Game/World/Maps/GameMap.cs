@@ -229,6 +229,11 @@ namespace Comet.Game.World.Maps
             return m_users.Values.Where(pred).ToList();
         }
 
+        public List<Role> QueryRoles()
+        {
+            return m_roles.Values.ToList();
+        }
+
         public List<Role> QueryRoles(Func<Role, bool> pred)
         {
             return m_roles.Values.Where(pred).ToList();

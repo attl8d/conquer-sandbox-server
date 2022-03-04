@@ -181,8 +181,8 @@ namespace Comet.AI.World
 
             if (m_dicMonsters.TryGetValue(role, out var mob))
             {
-                var tm = new TimeOut(RestSeconds);
-                tm.Update();
+                var tm = new TimeOut();
+                tm.Startup(RestSeconds);
                 m_dicAwaitingToRebirth.TryAdd(role, tm);
             }
         }

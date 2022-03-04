@@ -13,7 +13,8 @@ namespace Comet.Game.World.Threading
 
         protected override async Task<bool> OnElapseAsync()
         {
-            await RoleManager.OnRoleTimerAsync();
+            //await RoleManager.OnRoleTimerAsync();
+            await MapManager.OnTimerAsync();
             return true;
         }
     }

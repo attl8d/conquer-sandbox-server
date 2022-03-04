@@ -311,13 +311,13 @@ namespace Comet.Game.World.Managers
                 await role.OnTimerAsync();
             }
 
-            if (mFloorItemCheckMs.ToNextTime())
-            {
-                foreach (var item in m_mapItemSet.Values)
-                {
-                    await item.OnTimerAsync();
-                }
-            }
+            //if (mFloorItemCheckMs.ToNextTime())
+            //{
+            //    foreach (var item in m_mapItemSet.Values)
+            //    {
+            //        await item.OnTimerAsync();
+            //    }
+            //}
         }
 
         #endregion

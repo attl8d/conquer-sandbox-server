@@ -6433,6 +6433,12 @@ namespace Comet.Game.States
                 await Log.WriteLogAsync(LogLevel.Error, "Error on saving login rcd");
                 await Log.WriteLogAsync(LogLevel.Exception, ex.ToString());
             }
+
+            Kernel.Services.Processor.Queue(0, () =>
+            {
+                RoleManager.ForceLogoutUser(Identity);
+                return Task.CompletedTask;
+            });
         }
 
         public override Task SendAsync(IPacket msg)

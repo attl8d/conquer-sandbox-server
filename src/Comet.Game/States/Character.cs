@@ -1643,11 +1643,51 @@ namespace Comet.Game.States
             StudyPoints = (uint)(StudyPoints + amount);
             await SaveAsync();
 
+            //await SendAsync(new MsgSubPro
+            //{
+            //    Action = AstProfAction.UpdateStudy,
+            //    Points = StudyPoints,
+            //    Study = (ulong)amount
+            //});
         }
 
         public async Task<bool> SpendCultivationAsync(int amount)
         {
+
             StudyPoints = (uint)(StudyPoints - amount);
+            await SaveAsync();
+            //await SendAsync(new MsgSubPro
+            //{
+            //    Action = AstProfAction.UpdateStudy,
+            //    Points = StudyPoints
+            //});
+            return true;
+        }
+
+        public async Task<bool> ChangeStrengthValueAsync(int amount)
+        {
+            if (amount > 0)
+            {
+                await AwardStrengthValueAsync(amount);
+                return true;
+            }
+            if (amount < 0)
+            {
+                return await SpendStrengthValueAsync(amount * -1);
+            }
+            return false;
+        }
+
+        public async Task AwardStrengthValueAsync(int amount)
+        {
+            ChiPoints = (uint)(ChiPoints + amount);
+            await SaveAsync();
+        }
+
+        public async Task<bool> SpendStrengthValueAsync(int amount)
+        {
+
+            ChiPoints = (uint)(ChiPoints - amount);
             await SaveAsync();
             return true;
         }

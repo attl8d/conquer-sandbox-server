@@ -64,6 +64,14 @@ namespace Comet.Game.Packets
                             return;
 
                         Identity = client.Character.Identity;
+
+                        if (user.IsOfflineTraining)
+                        {
+                            client.Character.MapIdentity = 601;
+                            client.Character.MapX = 61;
+                            client.Character.MapY = 54;
+                        }
+
                         GameMap targetMap = MapManager.GetMap(client.Character.MapIdentity);
                         if (targetMap == null)
                         {

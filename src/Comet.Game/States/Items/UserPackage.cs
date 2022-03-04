@@ -141,10 +141,12 @@ namespace Comet.Game.States.Items
 
             if (item.Type == Item.TYPE_EXP_BALL)
             {
-                if (!m_user.CanUseExpBall())
+                if (!m_user.CanUseExpBall() && !item.IsBound)
                     return false;
 
-                await m_user.IncrementExpBallAsync();
+                if (!item.IsBound)
+                    await m_user.IncrementExpBallAsync();
+
                 await m_user.AwardExperienceAsync(m_user.CalculateExpBall());
                 await SpendItemAsync(item);
                 return true;
@@ -190,7 +192,7 @@ namespace Comet.Game.States.Items
                 m_user.InteractingItem = item.Identity;
 
                 bool result = await GameAction.ExecuteActionAsync(item.Itemtype.IdAction, m_user, null, item, "") &&
-                         item.GetItemSort() == Item.ItemSort.ItemsortUsable2 && type != 8 && item.Itemtype.IdAction > 0;
+                         (item.GetItemSort() == Item.ItemSort.ItemsortUsable || item.GetItemSort() == Item.ItemSort.ItemsortUsable2) && type != 8 && item.Itemtype.IdAction > 0;
 
                 // todo validate auto
                 if (item.GetItemSubType() == 106)

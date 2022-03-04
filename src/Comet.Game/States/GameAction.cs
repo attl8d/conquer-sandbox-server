@@ -3534,29 +3534,31 @@ namespace Comet.Game.States
 
                 case "money":
                 case "silver":
-                    int moneyValue = int.Parse(value);
-                    if (opt.Equals(">"))
-                        return user.Silvers > moneyValue;
-                    if (opt.Equals(">="))
-                        return user.Silvers >= moneyValue;
-                    if (opt.Equals("<"))
-                        return user.Silvers < moneyValue;
-                    if (opt.Equals("<="))
-                        return user.Silvers <= moneyValue;
-                    if (opt.Equals("=") || opt.Equals("=="))
-                        return user.Silvers == moneyValue;
-                    if (opt.Equals("+="))
                     {
-                        return await user.ChangeMoneyAsync(moneyValue);
-                    }
+                        int moneyValue = int.Parse(value);
+                        if (opt.Equals(">"))
+                            return user.Silvers > moneyValue;
+                        if (opt.Equals(">="))
+                            return user.Silvers >= moneyValue;
+                        if (opt.Equals("<"))
+                            return user.Silvers < moneyValue;
+                        if (opt.Equals("<="))
+                            return user.Silvers <= moneyValue;
+                        if (opt.Equals("=") || opt.Equals("=="))
+                            return user.Silvers == moneyValue;
+                        if (opt.Equals("+="))
+                        {
+                            return await user.ChangeMoneyAsync(moneyValue);
+                        }
 
-                    if (opt.Equals("set"))
-                    {
-                        await user.SetAttributesAsync(ClientUpdateType.Money, (ulong)moneyValue);
-                        return true;
-                    }
+                        if (opt.Equals("set"))
+                        {
+                            await user.SetAttributesAsync(ClientUpdateType.Money, (ulong)moneyValue);
+                            return true;
+                        }
 
-                    break;
+                        break;
+                    }
 
                 #endregion
 
@@ -4122,7 +4124,102 @@ namespace Comet.Game.States
                         return false;
                     }
 
-                    #endregion
+                #endregion
+
+                #region Cultivation
+
+                case "cultivation":
+                    {
+                        int cultivationValue = int.Parse(value);
+                        if (opt.Equals(">"))
+                            return user.StudyPoints > cultivationValue;
+                        if (opt.Equals(">="))
+                            return user.StudyPoints >= cultivationValue;
+                        if (opt.Equals("<"))
+                            return user.StudyPoints < cultivationValue;
+                        if (opt.Equals("<="))
+                            return user.StudyPoints <= cultivationValue;
+                        if (opt.Equals("=") || opt.Equals("=="))
+                            return user.StudyPoints == cultivationValue;
+                        if (opt.Equals("+="))
+                        {
+                            return await user.ChangeCultivationAsync(cultivationValue);
+                        }
+                        break;
+                    }
+
+                #endregion
+
+                #region Strength Value
+
+                case "strengthvalue":
+                    {
+                        int strengthValue = int.Parse(value);
+                        if (opt.Equals(">"))
+                            return user.ChiPoints > strengthValue;
+                        if (opt.Equals(">="))
+                            return user.ChiPoints >= strengthValue;
+                        if (opt.Equals("<"))
+                            return user.ChiPoints < strengthValue;
+                        if (opt.Equals("<="))
+                            return user.ChiPoints <= strengthValue;
+                        if (opt.Equals("=") || opt.Equals("=="))
+                            return user.ChiPoints == strengthValue;
+                        if (opt.Equals("+="))
+                        {
+                            return await user.ChangeStrengthValueAsync(strengthValue);
+                        }
+                        break;
+                    }
+
+                #endregion
+
+                #region Mentor
+
+                case "mentor":
+                    {
+                        int mentorValue = int.Parse(value);
+                        if (opt.Equals(">"))
+                            return user.EnlightenPoints > mentorValue;
+                        if (opt.Equals(">="))
+                            return user.EnlightenPoints >= mentorValue;
+                        if (opt.Equals("<"))
+                            return user.EnlightenPoints < mentorValue;
+                        if (opt.Equals("<="))
+                            return user.EnlightenPoints <= mentorValue;
+                        if (opt.Equals("=") || opt.Equals("=="))
+                            return user.EnlightenPoints == mentorValue;
+                        
+                        if (opt.Equals("+="))
+                        {
+                            if (mentorValue > 0)
+                            {
+                                user.EnlightenPoints += (uint)mentorValue;
+                            }
+                            else if (mentorValue < 0)
+                            {
+                                if (mentorValue > user.EnlightenPoints)
+                                    return false;
+
+                                user.EnlightenPoints -= (uint)mentorValue;
+                            }
+                            else
+                            {
+                                break;
+                            }
+
+                            await user.SynchroAttributesAsync(ClientUpdateType.EnlightenPoints, user.EnlightenPoints, true);
+                        }
+                        break;
+                    }
+
+                #endregion
+
+                default:
+                    {
+                        await Log.WriteLogAsync(LogLevel.Warning, $"Unhandled {type} to ExecuteUserAttrAsync [{action.Identity}]");
+                        break;
+                    }
             }
 
             return false;
@@ -5309,6 +5406,9 @@ namespace Comet.Game.States
         private static async Task<bool> ExecuteActionUserStcCompareAsync(DbAction action, string param, Character user,
             Role role, Item item, string input)
         {
+            if (user == null)
+                return false;
+
             string[] pszParam = SplitParam(param);
             if (pszParam.Length < 3)
                 return false;

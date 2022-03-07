@@ -1,5 +1,6 @@
 ﻿using Comet.Core;
 using Comet.Game.States;
+using Comet.Game.World.Managers;
 using Comet.Network.Packets.Game;
 using Comet.Shared;
 using System;
@@ -38,9 +39,15 @@ namespace Comet.Game.Packets
                 case Mode.RequestRewardInfo:
                     {
                         var currData = client.Character.GetCurrentOnlineTGExp();
+
+                        var expInfo = ExperienceManager.GetLevelExperience((byte)currData.Level);
+                        if (expInfo == null)
+                            return;
+
+                        int exp = (int)((currData.Experience / (double) expInfo.Exp) * 10000000);
                         await client.Character.SendAsync(new MsgTrainingInfo
                         {
-                            Experience = (int)currData.Experience,
+                            Experience = exp,
                             Level = currData.Level,
                             TimeRemaining = (ushort)(client.Character.CurrentTrainingTime - Math.Min(client.Character.CurrentOfflineTrainingTime, client.Character.CurrentTrainingTime)),
                             TimeUsed = Math.Min(client.Character.CurrentOfflineTrainingTime, client.Character.CurrentTrainingTime)

@@ -570,7 +570,13 @@ namespace Comet.Game.Packets
                             msg.SendAmount = 1;
                             await user.SendAsync(msg);
 
-                            Console.WriteLine("MsgFlower: " + PacketDump.Hex(msg.Encode()));
+                            //Console.WriteLine("MsgFlower: " + PacketDump.Hex(msg.Encode()));
+                            return true;
+                        }
+
+                    case "/toggleaction":
+                        {
+                            user.ShowAction = !user.ShowAction;
                             return true;
                         }
                 }

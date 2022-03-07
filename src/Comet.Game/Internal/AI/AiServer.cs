@@ -1,5 +1,4 @@
 ﻿using Comet.Game.Packets.Ai;
-using Comet.Game.World.Managers;
 using Comet.Network.Packets;
 using Comet.Network.Sockets;
 using Comet.Shared;

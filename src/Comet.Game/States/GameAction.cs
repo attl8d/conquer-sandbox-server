@@ -65,10 +65,10 @@ namespace Comet.Game.States
                 string param = await FormatParamAsync(action, user, role, item, input);
 
 #if !DEBUG_FELIPE
-                if (user?.IsPm() == true)
+                if (user?.IsPm() == true && user?.ShowAction == true)
                 {
 #else 
-                if (user != null)
+                if (user != null && user.ShowAction)
                 {
 #endif
                     await user.SendAsync(

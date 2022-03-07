@@ -132,6 +132,8 @@ namespace Comet.Network.Sockets
                     }
                 }
             }
+
+            await Log.WriteLogAsync("Server has stopped listening!");
         }
 
         /// <summary>
@@ -169,17 +171,17 @@ namespace Comet.Network.Sockets
                 catch (Exception e)
                 {
                     await Log.WriteLogAsync(e);
-                    //if (e is SocketException)
-                    //{
-                    //    SocketException socketEx = e as SocketException;
-                    //    if (socketEx.SocketErrorCode < SocketError.ConnectionAborted ||
-                    //        socketEx.SocketErrorCode > SocketError.Shutdown)
-                    //        await Log.WriteLogAsync(e);
-                    //}
-                    //else
-                    //{
-                    //    await Log.WriteLogAsync(e);
-                    //}
+                    if (e is SocketException)
+                    {
+                        SocketException socketEx = e as SocketException;
+                        if (socketEx.SocketErrorCode < SocketError.ConnectionAborted ||
+                            socketEx.SocketErrorCode > SocketError.Shutdown)
+                            await Log.WriteLogAsync(e);
+                    }
+                    else
+                    {
+                        await Log.WriteLogAsync(e);
+                    }
 
                     actor.Disconnect();
                     Disconnecting(actor);
@@ -201,11 +203,11 @@ namespace Comet.Network.Sockets
                 }
 
                 actor.Cipher?.Decrypt(
-                    actor.Buffer.Slice(9, consumed - 9).Span,
-                    actor.Buffer.Slice(9, consumed - 9).Span);
+                    actor.Buffer[9..consumed].Span,
+                    actor.Buffer[9..consumed].Span);
 
                 // Process the exchange now that bytes are decrypted
-                if (!Exchanged(actor, actor.Buffer.Slice(0, consumed).Span))
+                if (!Exchanged(actor, actor.Buffer[..consumed].Span))
                 {
                     await Log.WriteLogAsync($"Exchange error for [IP: {actor.IPAddress}]");
                     actor.Disconnect();

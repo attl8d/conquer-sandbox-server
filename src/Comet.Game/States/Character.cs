@@ -159,6 +159,8 @@ namespace Comet.Game.States
             return IsPm() || Name.Contains("[GM]");
         }
 
+        public bool ShowAction { get; set; } = false;
+
         #endregion
 
         #region Appearence
@@ -979,7 +981,6 @@ namespace Comet.Game.States
 
         public async Task UplevelEventAsync()
         {
-            // TODO check which magics should be automatically learnt
             await GameAction.ExecuteActionAsync(USER_UPLEV_ACTION, this, this, null, string.Empty);
 
             if (Team != null)
@@ -1025,9 +1026,9 @@ namespace Comet.Game.States
 
         public (int Level, ulong Experience) PreviewExpBallUsage(int amount = EXPBALL_AMOUNT)
         {
-            long expBallExp = CalculateExpBall(amount);
+            long expBallExp = ((long) Experience + CalculateExpBall(amount));
             byte newLevel = Level;
-            while (newLevel < MAX_UPLEV && amount >= (long)ExperienceManager.GetLevelExperience(newLevel).Exp)
+            while (newLevel < MAX_UPLEV && expBallExp >= (long)ExperienceManager.GetLevelExperience(newLevel).Exp)
             {
                 DbLevelExperience dbExp = ExperienceManager.GetLevelExperience(newLevel);
                 expBallExp -= (long)dbExp.Exp;

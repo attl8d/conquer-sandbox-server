@@ -195,7 +195,7 @@ namespace Comet.Game.States.Items
                          (item.GetItemSort() == Item.ItemSort.ItemsortUsable || item.GetItemSort() == Item.ItemSort.ItemsortUsable2) && type != 8 && item.Itemtype.IdAction > 0;
 
                 // todo validate auto
-                if (item.GetItemSubType() == 106)
+                if (item.Type / 1000 == 1060)
                     await SpendItemAsync(item);
 
                 return result;

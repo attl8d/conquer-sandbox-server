@@ -56,6 +56,11 @@ namespace Comet.Network.Sockets
                 ReceiveTask = (new TaskFactory().StartNew(ReceivingAsync, actor, ShutdownToken.Token)).ConfigureAwait(false);
                 return Socket.Connected;
             }
+            catch (SocketException ex)
+            {
+                await Log.WriteLogAsync(LogLevel.Error, ex.Message);
+                return false;
+            }
             catch (Exception ex)
             {
                 await Log.WriteLogAsync(ex);

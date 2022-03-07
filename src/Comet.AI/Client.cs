@@ -103,6 +103,12 @@ namespace Comet.AI
                             break;
                         }
 
+                    case PacketType.MsgAiPing:
+                        {
+                            msg = new MsgAiPing();
+                            break;
+                        }
+
                     case PacketType.MsgInteract:
                         {
                             msg = new MsgInteract();

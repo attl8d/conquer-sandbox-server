@@ -21,7 +21,7 @@ namespace Comet.Game.Packets.Ai
             int ping = (Environment.TickCount - Timestamp) / 2;
             long pingMs = (Environment.TickCount64 - TimestampMs) / 2;
 
-            if (ping > 2 || pingMs > 2000)
+            if (ping > 2000 || pingMs > 2000)
             {
                 return Log.WriteLogAsync($"Inter server network lag detected! Ping: {ping}s ({pingMs}ms)");
             }

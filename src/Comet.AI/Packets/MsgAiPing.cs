@@ -22,7 +22,7 @@ namespace Comet.AI.Packets
                 RecvTimestampMs = Environment.TickCount64;
                 await client.SendAsync(this);
 
-                if (ping > 2 || pingMs > 2000)
+                if (ping > 1000 || pingMs > 1000)
                 {
                     await Log.WriteLogAsync($"Inter server network lag detected! Ping: {ping}s ({pingMs}ms)");
                 }

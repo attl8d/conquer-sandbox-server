@@ -10,7 +10,7 @@ namespace Comet.Shared
         /// <summary>
         ///     The title of the console.
         /// </summary>
-        private const string FORMAT_S = "(↑{0:F2} kbps [{2}], ↓{1:F2} kbps [{3}])";
+        private const string FORMAT_S = "(↑{0:F2} kbps [{2:0000}], ↓{1:F2} kbps [{3:0000}])";
 
         private long m_TotalRecvBytes = 0;
         /// <summary>

@@ -1,15 +1,32 @@
 ﻿using Comet.AI.States;
 using Comet.Network.Packets.Ai;
+using Comet.Shared;
+using System;
 using System.Threading.Tasks;
 
 namespace Comet.AI.Packets
 {
     public sealed class MsgAiPing : MsgAiPing<Server>
     {
-        public override Task ProcessAsync(Server client)
+        public override async Task ProcessAsync(Server client)
         {
             // Keep alive
-            return Task.CompletedTask;
+            if (RecvTimestamp != 0 && RecvTimestampMs != 0)
+            {
+                int ping = (Environment.TickCount - RecvTimestamp) / 2;
+                long pingMs = (Environment.TickCount64 - RecvTimestampMs) / 2;
+
+                Timestamp = RecvTimestamp;
+                TimestampMs = RecvTimestampMs;
+                RecvTimestamp = Environment.TickCount;
+                RecvTimestampMs = Environment.TickCount64;
+                await client.SendAsync(this);
+
+                if (ping > 2 || pingMs > 2000)
+                {
+                    await Log.WriteLogAsync($"Inter server network lag detected! Ping: {ping}s ({pingMs}ms)");
+                }
+            }
         }
     }
 }

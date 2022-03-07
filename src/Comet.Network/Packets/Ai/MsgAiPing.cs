@@ -4,6 +4,8 @@
     {
         public int Timestamp { get; set; }
         public long TimestampMs { get; set; }
+        public int RecvTimestamp { get; set; }
+        public long RecvTimestampMs { get; set; }
 
         public override void Decode(byte[] bytes)
         {
@@ -12,6 +14,8 @@
             Type = (PacketType)reader.ReadUInt16();
             Timestamp = reader.ReadInt32();
             TimestampMs = reader.ReadInt64();
+            RecvTimestamp = reader.ReadInt32();
+            RecvTimestampMs = reader.ReadInt64();
         }
 
         public override byte[] Encode()
@@ -20,6 +24,8 @@
             writer.Write((ushort)PacketType.MsgAiPing);
             writer.Write(Timestamp);
             writer.Write(TimestampMs);
+            writer.Write(RecvTimestamp);
+            writer.Write(RecvTimestampMs);
             return writer.ToArray();
         }
     }

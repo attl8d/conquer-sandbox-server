@@ -80,9 +80,9 @@ namespace Comet.Game
         {
             public readonly static RandomnessService Randomness = new RandomnessService();
 #if DEBUG
-            public readonly static ServerProcessor Processor = new ServerProcessor(Math.Min(Environment.ProcessorCount, 4));
+            public readonly static ServerProcessor Processor = new ServerProcessor();
 #else
-            public readonly static ServerProcessor Processor = new ServerProcessor(Environment.ProcessorCount);
+            public readonly static ServerProcessor Processor = new ServerProcessor();
 #endif
         }
 

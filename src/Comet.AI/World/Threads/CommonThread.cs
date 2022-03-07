@@ -2,6 +2,7 @@
 using Comet.Shared;
 using Comet.Shared.Comet.Shared;
 using System;
+using System.Net.Sockets;
 using System.Threading.Tasks;
 
 namespace Comet.AI.World.Threads
@@ -16,7 +17,7 @@ namespace Comet.AI.World.Threads
         public CommonThread()
             : base(1000, "Common Thread")
         {
-            mAiPing.Startup(2000);
+            mAiPing.Startup(5000);
         }
 
         protected override async Task<bool> OnElapseAsync()
@@ -27,14 +28,28 @@ namespace Comet.AI.World.Threads
             {
                 await Log.WriteLogAsync(LogLevel.Info, $"Attempting connection with the account server on [{Client.Configuration.IPAddress}:{Client.Configuration.Port}]...");
 
-                Kernel.GameClient = new ();
-                if (await Kernel.GameClient.ConnectToAsync(Client.Configuration.IPAddress, Client.Configuration.Port))
+                try
                 {
-                    mPingTimeout.Startup(15);
-                    await Log.WriteLogAsync(LogLevel.Info, "Connected to the Game server!");
+                    Kernel.GameClient = new();
+                    if (await Kernel.GameClient.ConnectToAsync(Client.Configuration.IPAddress, Client.Configuration.Port))
+                    {
+                        mPingTimeout.Startup(15);
+                        await Log.WriteLogAsync(LogLevel.Info, "Connected to the Game server!");
+                    }
+                }
+                catch (SocketException ex)
+                {
+                    await Log.WriteLogAsync(LogLevel.Error, ex.Message);
+                    Kernel.GameClient = null;
+                }
+                catch (Exception ex)
+                {
+                    await Log.WriteLogAsync(ex);
+                    Kernel.GameClient = null;
                 }
             }
-            
+
+
             if (mPingTimeout.ToNextTime() && Kernel.GameClient != null && Kernel.GameServer?.Socket.Connected == true)
             {
                 await Kernel.GameServer.SendAsync(new MsgAiPing

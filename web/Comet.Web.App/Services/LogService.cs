@@ -38,7 +38,7 @@ namespace Comet.Web.App.Services
             int accountId = 0, 
             long data = 0)
         {
-            if (accountId == 0 && mHttpContextAcessor.HttpContext.User.Identity.IsAuthenticated)
+            if (accountId == 0 && mHttpContextAcessor.HttpContext?.User?.Identity?.IsAuthenticated == true)
             {
                 var user = await mUserManager.GetUserAsync(mHttpContextAcessor.HttpContext.User);
                 if (user != null)

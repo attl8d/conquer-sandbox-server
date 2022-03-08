@@ -24,5 +24,6 @@ namespace Comet.Web.App.Data.Entities
         public virtual string DatabasePass { get; set; }
         public virtual string DatabaseSchema { get; set; }
         public virtual string DatabasePort { get; set; }
+        public virtual bool Active { get; set; }
     }
 }

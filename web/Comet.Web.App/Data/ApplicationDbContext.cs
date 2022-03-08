@@ -9,7 +9,9 @@ using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
 using System;
+using System.Collections.Generic;
 using System.Data;
+using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
 
@@ -76,6 +78,9 @@ namespace Comet.Web.App.Data
         public virtual DbSet<DiscordChannel> DiscordChannels { get; set; }
         public virtual DbSet<DiscordUser> DiscordUsers { get; set; }
         public virtual DbSet<DiscordMessage> DiscordMessages { get; set; }
+        public virtual DbSet<RecordFamily> RecordFamilies { get; set; }
+        public virtual DbSet<RecordSyndicate> RecordSyndicates { get; set; }
+        public virtual DbSet<RecordUser> RecordUsers { get; set; }
 
         #endregion
 
@@ -112,7 +117,7 @@ namespace Comet.Web.App.Data
 
         #region CRUDOP
 
-        public async Task<bool> SaveAsync<T>(T entity, CancellationToken cancellationToken = default)
+        public async Task<bool> SaveAsync<T>(T entity, CancellationToken cancellationToken = default) where T : class
         {
             try
             {
@@ -127,11 +132,41 @@ namespace Comet.Web.App.Data
             }
         }
 
-        public async Task<bool> DeleteAsync<T>(T entity, CancellationToken cancellationToken = default)
+        public async Task<bool> SaveAsync<T>(List<T> entity, CancellationToken cancellationToken = default) where T : class
+        {
+            try
+            {
+                UpdateRange(entity);
+                await SaveChangesAsync(cancellationToken);
+                return true;
+            }
+            catch (Exception ex)
+            {
+                mLog.LogError(ex.ToString());
+                return false;
+            }
+        }
+
+        public async Task<bool> DeleteAsync<T>(T entity, CancellationToken cancellationToken = default) where T : class
         {
             try
             {
                 Remove(entity);
+                await SaveChangesAsync(cancellationToken);
+                return true;
+            }
+            catch (Exception ex)
+            {
+                mLog.LogError(ex.ToString());
+                return false;
+            }
+        }
+
+        public async Task<bool> DeleteAsync<T>(List<T> entity, CancellationToken cancellationToken = default) where T : class
+        {
+            try
+            {
+                RemoveRange(entity);
                 await SaveChangesAsync(cancellationToken);
                 return true;
             }

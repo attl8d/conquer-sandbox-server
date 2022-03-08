@@ -33,6 +33,7 @@ namespace Comet.Web.App.Data.Entities
             LogIn,
             LogOut,
             GameAccountCreation,
+            DailyUpdate,
         }
     }
 }

@@ -66,7 +66,8 @@ namespace Comet.Web.App.Services.Realms
                 {
                     RealmID = x.RealmID,
                     RealmName = x.Name,
-                    RealmStatus = x.Status
+                    RealmStatus = x.Status,
+                    Active = x.Active
                 };
             }).ToList();
         }
@@ -183,6 +184,7 @@ namespace Comet.Web.App.Services.Realms
             public uint RealmID { get; set; }
             public string RealmName { get; set; }
             public int RealmStatus { get; set; }
+            public bool Active { get; set; }
         }
 
         public struct RealmPublicData

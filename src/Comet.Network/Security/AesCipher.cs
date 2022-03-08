@@ -2,7 +2,7 @@
 using System.IO;
 using System.Security.Cryptography;
 
-namespace Comet.Account.Security
+namespace Comet.Network.Security
 {
     public static class AesCipher
     {

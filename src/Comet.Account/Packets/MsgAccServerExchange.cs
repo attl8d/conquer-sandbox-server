@@ -5,9 +5,8 @@ using System.Linq;
 using System.Threading.Tasks;
 using Comet.Shared;
 using Comet.Database.Entities;
-using Comet.Database;
-using Comet.Account.Security;
 using Comet.Account.Database;
+using Comet.Network.Security;
 
 namespace Comet.Account.Packets
 {

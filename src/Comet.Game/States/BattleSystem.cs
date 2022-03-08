@@ -335,8 +335,8 @@ namespace Comet.Game.States
             }
             else
             {
-                if (attacker is Character && target is Character)
-                    damage = CalcDamageUser2User((Character)attacker, (Character)target, damage);
+                if (attacker is Character characterSnd && target is Character characterTgt)
+                    damage = CalcDamageUser2User(characterSnd, characterTgt, damage);
 
                 damage = target.AdjustWeaponDamage(damage);
             }
@@ -445,7 +445,7 @@ namespace Comet.Game.States
 
             int hitRate = attacker.Accuracy;
 
-            if (attacker is Character user && !(target is Character))
+            if (attacker is Character user && target is not Character)
                 hitRate += 60;
 
             if (attacker.QueryStatus(StatusSet.STAR_OF_ACCURACY) != null)
@@ -468,7 +468,7 @@ namespace Comet.Game.States
 
             hitRate = Math.Min(MAX_HITRATE, Math.Max(minHitRate, minHitRate + hitRate - dodge));
 
-#if DEBUG
+#if DEBUG && DEBUG_HITRATE
             if (attacker is Character atkUser && atkUser.IsPm())
                 await atkUser.SendAsync($"Attacker({attacker.Name}), Target({target.Name}), Hit Rate: {hitRate}, Target Dodge: {dodge}");
 
@@ -686,7 +686,7 @@ namespace Comet.Game.States
             int nMinDamage = 1;
             nMinDamage += pAtker.Level / 10;
 
-            if (!(pAtker is Character))
+            if (pAtker is not Character)
                 return Calculations.CutTrail(nMinDamage, nDamage);
 
             var pUser = (Character)pAtker;
@@ -704,7 +704,7 @@ namespace Comet.Game.States
                 || pTarget.Level <= 15)
                 return nDamage;
 
-            if (!(pTarget is Character pUser))
+            if (pTarget is not Character pUser)
                 return Calculations.CutTrail(nMinDamage, nDamage);
 
             for (Item.ItemPosition pos = Item.ItemPosition.EquipmentBegin; pos <= Item.ItemPosition.EquipmentEnd; pos++)

@@ -35,7 +35,9 @@ Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "client", "client", "{D880B3
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Comet.Web", "web\Comet.Web\Comet.Web.csproj", "{AC570F84-8687-48B5-9411-6A092F01AAB5}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Comet.Maintenance", "src\Comet.Maintenance\Comet.Maintenance.csproj", "{92EC0A59-DEBC-459F-B004-D05227BA3E63}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Comet.Maintenance", "src\Comet.Maintenance\Comet.Maintenance.csproj", "{92EC0A59-DEBC-459F-B004-D05227BA3E63}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Comet.Web.Shared", "web\Comet.Web.Shared\Comet.Web.Shared.csproj", "{2BB0112E-8743-4DC2-8B45-C2B24E6DE5D0}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
@@ -155,6 +157,18 @@ Global
 		{92EC0A59-DEBC-459F-B004-D05227BA3E63}.Release|x64.Build.0 = Release|Any CPU
 		{92EC0A59-DEBC-459F-B004-D05227BA3E63}.Release|x86.ActiveCfg = Release|Any CPU
 		{92EC0A59-DEBC-459F-B004-D05227BA3E63}.Release|x86.Build.0 = Release|Any CPU
+		{2BB0112E-8743-4DC2-8B45-C2B24E6DE5D0}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{2BB0112E-8743-4DC2-8B45-C2B24E6DE5D0}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{2BB0112E-8743-4DC2-8B45-C2B24E6DE5D0}.Debug|x64.ActiveCfg = Debug|Any CPU
+		{2BB0112E-8743-4DC2-8B45-C2B24E6DE5D0}.Debug|x64.Build.0 = Debug|Any CPU
+		{2BB0112E-8743-4DC2-8B45-C2B24E6DE5D0}.Debug|x86.ActiveCfg = Debug|Any CPU
+		{2BB0112E-8743-4DC2-8B45-C2B24E6DE5D0}.Debug|x86.Build.0 = Debug|Any CPU
+		{2BB0112E-8743-4DC2-8B45-C2B24E6DE5D0}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{2BB0112E-8743-4DC2-8B45-C2B24E6DE5D0}.Release|Any CPU.Build.0 = Release|Any CPU
+		{2BB0112E-8743-4DC2-8B45-C2B24E6DE5D0}.Release|x64.ActiveCfg = Release|Any CPU
+		{2BB0112E-8743-4DC2-8B45-C2B24E6DE5D0}.Release|x64.Build.0 = Release|Any CPU
+		{2BB0112E-8743-4DC2-8B45-C2B24E6DE5D0}.Release|x86.ActiveCfg = Release|Any CPU
+		{2BB0112E-8743-4DC2-8B45-C2B24E6DE5D0}.Release|x86.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
@@ -169,6 +183,7 @@ Global
 		{A0315879-597D-4C69-9A1F-C8BF8A74B3F4} = {8D777D02-43F8-4139-BFF4-96C5D61A49A8}
 		{AC570F84-8687-48B5-9411-6A092F01AAB5} = {F946D332-3E95-4AB1-A24B-A64D5FF6785B}
 		{92EC0A59-DEBC-459F-B004-D05227BA3E63} = {8D777D02-43F8-4139-BFF4-96C5D61A49A8}
+		{2BB0112E-8743-4DC2-8B45-C2B24E6DE5D0} = {F946D332-3E95-4AB1-A24B-A64D5FF6785B}
 	EndGlobalSection
 	GlobalSection(ExtensibilityGlobals) = postSolution
 		SolutionGuid = {C7FB4131-E3D9-47FA-8F60-C50A4011F50D}

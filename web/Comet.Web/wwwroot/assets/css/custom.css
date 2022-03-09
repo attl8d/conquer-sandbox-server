@@ -1,0 +1,33 @@
+/* PLACE YOUR CUSTOM STYLES IN THIS FILE */
+
+.validation-summary-errors:not(:empty) {
+    position: relative;
+    border: none;
+    border-color: transparent;
+    border-radius: 0;
+    z-index: 1;
+    background: #d92b4c;
+
+    padding: 15px;
+    margin: 10px 0;
+}
+
+.validation-summary-errors ul {
+    margin-top: 10px;
+    padding-left: 15px;
+}
+
+.validation-summary-errors li {
+    list-style: none;
+    margin-bottom: 10px;
+}
+
+.dropup > .dropdown-menu {
+    background: rgba(8, 3, 37, 0.8);
+    border: none;
+}
+
+.dropup > .dropdown-menu ul > li {
+    list-style: none;
+    margin: 10px 0;
+}

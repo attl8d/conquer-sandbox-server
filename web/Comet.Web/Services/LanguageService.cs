@@ -35,7 +35,7 @@ namespace Comet.Web.Services
 
         private void Initialize()
         {
-            const string location = "Comet.Web.App.Localization.{0}";
+            const string location = "Comet.Web.Localization.{0}";
             ResourceManager.Add("pt-BR", new ResourceManager(string.Format(location, "Language"), Assembly.GetExecutingAssembly()));
             foreach (var lang in AvailableLanguages)
             {

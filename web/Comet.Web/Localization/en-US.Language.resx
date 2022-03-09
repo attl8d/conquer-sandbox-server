@@ -1,0 +1,1155 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<root>
+  <xsd:schema id="root" xmlns="" xmlns:xsd="http://www.w3.org/2001/XMLSchema" xmlns:msdata="urn:schemas-microsoft-com:xml-msdata">
+    <xsd:import namespace="http://www.w3.org/XML/1998/namespace" />
+    <xsd:element name="root" msdata:IsDataSet="true">
+      <xsd:complexType>
+        <xsd:choice maxOccurs="unbounded">
+          <xsd:element name="metadata">
+            <xsd:complexType>
+              <xsd:sequence>
+                <xsd:element name="value" type="xsd:string" minOccurs="0" />
+              </xsd:sequence>
+              <xsd:attribute name="name" use="required" type="xsd:string" />
+              <xsd:attribute name="type" type="xsd:string" />
+              <xsd:attribute name="mimetype" type="xsd:string" />
+              <xsd:attribute ref="xml:space" />
+            </xsd:complexType>
+          </xsd:element>
+          <xsd:element name="assembly">
+            <xsd:complexType>
+              <xsd:attribute name="alias" type="xsd:string" />
+              <xsd:attribute name="name" type="xsd:string" />
+            </xsd:complexType>
+          </xsd:element>
+          <xsd:element name="data">
+            <xsd:complexType>
+              <xsd:sequence>
+                <xsd:element name="value" type="xsd:string" minOccurs="0" msdata:Ordinal="1" />
+                <xsd:element name="comment" type="xsd:string" minOccurs="0" msdata:Ordinal="2" />
+              </xsd:sequence>
+              <xsd:attribute name="name" type="xsd:string" use="required" msdata:Ordinal="1" />
+              <xsd:attribute name="type" type="xsd:string" msdata:Ordinal="3" />
+              <xsd:attribute name="mimetype" type="xsd:string" msdata:Ordinal="4" />
+              <xsd:attribute ref="xml:space" />
+            </xsd:complexType>
+          </xsd:element>
+          <xsd:element name="resheader">
+            <xsd:complexType>
+              <xsd:sequence>
+                <xsd:element name="value" type="xsd:string" minOccurs="0" msdata:Ordinal="1" />
+              </xsd:sequence>
+              <xsd:attribute name="name" type="xsd:string" use="required" />
+            </xsd:complexType>
+          </xsd:element>
+        </xsd:choice>
+      </xsd:complexType>
+    </xsd:element>
+  </xsd:schema>
+  <resheader name="resmimetype">
+    <value>text/microsoft-resx</value>
+  </resheader>
+  <resheader name="version">
+    <value>2.0</value>
+  </resheader>
+  <resheader name="reader">
+    <value>System.Resources.ResXResourceReader, System.Windows.Forms, Version=5.0.11.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
+  </resheader>
+  <resheader name="writer">
+    <value>System.Resources.ResXResourceWriter, System.Windows.Forms, Version=5.0.11.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
+  </resheader>
+  <data name="AboutMe" xml:space="preserve">
+    <value>About Me</value>
+  </data>
+  <data name="AccessDenied" xml:space="preserve">
+    <value>Access Denied</value>
+  </data>
+  <data name="AccessDeniedMessage" xml:space="preserve">
+    <value>You do not have access to the required resource.</value>
+  </data>
+  <data name="Account" xml:space="preserve">
+    <value>Account</value>
+  </data>
+  <data name="AccountActivatedSuccessfully" xml:space="preserve">
+    <value>Your account has been activated successfully.</value>
+  </data>
+  <data name="AccountInformation" xml:space="preserve">
+    <value>Account Information</value>
+  </data>
+  <data name="AccountType" xml:space="preserve">
+    <value>Account Type</value>
+  </data>
+  <data name="Activity" xml:space="preserve">
+    <value>Activity</value>
+  </data>
+  <data name="AddAnotherLoginService" xml:space="preserve">
+    <value>Add another sign in service</value>
+  </data>
+  <data name="AddAuthenticatorApp" xml:space="preserve">
+    <value>Add two factor authentication application</value>
+  </data>
+  <data name="AddFriend" xml:space="preserve">
+    <value>&lt;i class="fa fa-user-plus"&gt;&lt;/i&gt; Friend</value>
+  </data>
+  <data name="AddPhone" xml:space="preserve">
+    <value>AddPhone</value>
+  </data>
+  <data name="AddUser" xml:space="preserve">
+    <value>Add User</value>
+  </data>
+  <data name="AddUserToRoleFromEmail" xml:space="preserve">
+    <value>Search by the registered e-mail</value>
+  </data>
+  <data name="AddUserToRoleFromIdentity" xml:space="preserve">
+    <value>Search by ID</value>
+  </data>
+  <data name="AddUserToRoleFromUserName" xml:space="preserve">
+    <value>Search by Username</value>
+  </data>
+  <data name="AdminDashboard" xml:space="preserve">
+    <value>Administrative Dashboard</value>
+  </data>
+  <data name="Administrator" xml:space="preserve">
+    <value>Administrator</value>
+  </data>
+  <data name="AdminPanel" xml:space="preserve">
+    <value>Administration</value>
+  </data>
+  <data name="AdmPanelEmailAlert" xml:space="preserve">
+    <value>Fill the user email to change it but the user will still need to confirm the new e-mail address before signing in with the new address.</value>
+  </data>
+  <data name="AdmPanelPasswordAlert" xml:space="preserve">
+    <value>Fill the password fill with anything and the user will receive an e-mail to update his password.</value>
+  </data>
+  <data name="ArticleCategory" xml:space="preserve">
+    <value>Category</value>
+  </data>
+  <data name="ArticleCategoryType" xml:space="preserve">
+    <value>Article Type</value>
+  </data>
+  <data name="ArticleManagementTitle" xml:space="preserve">
+    <value>Article List</value>
+  </data>
+  <data name="ArticleManageTitle" xml:space="preserve">
+    <value>Article: {0}</value>
+  </data>
+  <data name="Articles" xml:space="preserve">
+    <value>Articles</value>
+  </data>
+  <data name="AuthenticationApp" xml:space="preserve">
+    <value>Authentication Application</value>
+  </data>
+  <data name="Author" xml:space="preserve">
+    <value>Author</value>
+  </data>
+  <data name="BanDescriptionAndObservations" xml:space="preserve">
+    <value>&lt;p&gt;
+             Banning this user here will also ban all of his accounts from games. If you want to ban any game account
+             specific go to the game accounts area.
+         &lt;/p&gt;
+
+         &lt;p&gt;Remarks: &lt;/p&gt;
+         &lt;ul&gt;
+             &lt;li&gt;
+                 Cancellation: If the ban requires user activity to get your account back, then it may be
+                 called off. This does NOT clear the user's file, the next ban for the same reason will result in a more severe punishment.
+             &lt;/li&gt;
+             &lt;li&gt;
+                 Pardon: Pardon is given when the ban has been unfairly granted, however, it will remain on the user's list but
+                 will not count on the list of relapses.
+             &lt;/li&gt;
+             &lt;li&gt;Permanent Bans cannot be canceled, but some can be forgiven.&lt;/li&gt;
+         &lt;/ul&gt; </value>
+  </data>
+  <data name="BanDetailsTitle" xml:space="preserve">
+    <value>[#{0}] {1} -Ban Details</value>
+  </data>
+  <data name="BanHistory" xml:space="preserve">
+    <value>Ban History</value>
+  </data>
+  <data name="Banned" xml:space="preserve">
+    <value>Banned</value>
+  </data>
+  <data name="BannedBy" xml:space="preserve">
+    <value>Banned by</value>
+  </data>
+  <data name="BansManagement" xml:space="preserve">
+    <value>Bans Management</value>
+  </data>
+  <data name="BanTermsAdmDisplay" xml:space="preserve">
+    <value>&lt;h4 class="alert-heading"&gt;{3}&lt;/h4&gt;
+&lt;p&gt;This banishment will last for {2}.&lt;/p&gt;&lt;ul&gt;&lt;li&gt;Banishment can be cancelled: {0}&lt;/li&gt;&lt;li&gt;Banishment can be forgiven: {1}&lt;/li&gt;&lt;/ul&gt;</value>
+  </data>
+  <data name="BanTermsAdmDisplayPermanent" xml:space="preserve">
+    <value>&lt;h4 class="alert-heading"&gt;{2}&lt;/h4&gt;
+&lt;p&gt;This banishment will be permanent.&lt;/p&gt;&lt;ul&gt;&lt;li&gt;Banishment can be cancelled: {0}&lt;/li&gt;&lt;li&gt;Banishment can be forgiven: {1}&lt;/li&gt;&lt;/ul&gt;</value>
+  </data>
+  <data name="BanTermsTimeDisplay" xml:space="preserve">
+    <value>{0} days and {1:00} minutes and {2:00} seconds</value>
+  </data>
+  <data name="BanType" xml:space="preserve">
+    <value>Banishment Type</value>
+  </data>
+  <data name="BanTypeWindowTitle" xml:space="preserve">
+    <value>Account Banishment - {0}</value>
+  </data>
+  <data name="BestChildMemory" xml:space="preserve">
+    <value>Best childish memory</value>
+  </data>
+  <data name="BillingInformation" xml:space="preserve">
+    <value>Billing Information</value>
+  </data>
+  <data name="BindVip" xml:space="preserve">
+    <value>Bind VIP</value>
+  </data>
+  <data name="BirthDate" xml:space="preserve">
+    <value>Birthdate</value>
+  </data>
+  <data name="Birthday" xml:space="preserve">
+    <value>Birthday</value>
+  </data>
+  <data name="BugAbuse" xml:space="preserve">
+    <value>Abuse of Bugs and Irregularities </value>
+  </data>
+  <data name="Change" xml:space="preserve">
+    <value>Alter</value>
+  </data>
+  <data name="ChangeCookiesPreference" xml:space="preserve">
+    <value>Modify Cookies Settings</value>
+  </data>
+  <data name="ChangeEmail" xml:space="preserve">
+    <value>Change E-mail</value>
+  </data>
+  <data name="ChangePassword" xml:space="preserve">
+    <value>Change Password</value>
+  </data>
+  <data name="ConfigureAuthenticatorApp" xml:space="preserve">
+    <value>Configure Two-factor Authentication</value>
+  </data>
+  <data name="ConfirmEmailChange" xml:space="preserve">
+    <value>Confirm e-mail change</value>
+  </data>
+  <data name="ConfirmNewPassword" xml:space="preserve">
+    <value>Confirm the new password</value>
+  </data>
+  <data name="ConfirmPassword" xml:space="preserve">
+    <value>Password Confirmation</value>
+  </data>
+  <data name="ConfirmQrCode" xml:space="preserve">
+    <value>As soon as you scan the QR Code or enter the key above, your two-factor authentication app will provide you with a unique code. Enter the code in the confirmation box below. </value>
+  </data>
+  <data name="ContactInformation" xml:space="preserve">
+    <value>Contact Information</value>
+  </data>
+  <data name="Content" xml:space="preserve">
+    <value>Content</value>
+  </data>
+  <data name="CouldNotActivateAccount" xml:space="preserve">
+    <value>Unable to activate account. </value>
+  </data>
+  <data name="CouldNotDisable2fa" xml:space="preserve">
+    <value>An error occurred while disabling two-factor authentication. </value>
+  </data>
+  <data name="CouldNotFindAccountToActivate" xml:space="preserve">
+    <value>Could not find account ID: {0} for activation. </value>
+  </data>
+  <data name="CouldNotInsertRealm" xml:space="preserve">
+    <value>Unable to insert record. </value>
+  </data>
+  <data name="CouldNotUpdateRealm" xml:space="preserve">
+    <value>Unable to update record. </value>
+  </data>
+  <data name="Create" xml:space="preserve">
+    <value>Create</value>
+  </data>
+  <data name="CreationDate" xml:space="preserve">
+    <value>Creation Date</value>
+  </data>
+  <data name="CurrentEmail" xml:space="preserve">
+    <value>Current E-mail</value>
+  </data>
+  <data name="CurrentPassword" xml:space="preserve">
+    <value>Current Password</value>
+  </data>
+  <data name="DatabaseHostname" xml:space="preserve">
+    <value>MySQL Hostname</value>
+  </data>
+  <data name="DatabasePassword" xml:space="preserve">
+    <value>MySQL Password</value>
+  </data>
+  <data name="DatabasePort" xml:space="preserve">
+    <value>MySQL Port</value>
+  </data>
+  <data name="DatabaseSchema" xml:space="preserve">
+    <value>MySQL Schema</value>
+  </data>
+  <data name="DatabaseUsername" xml:space="preserve">
+    <value>MySQL Username</value>
+  </data>
+  <data name="Days" xml:space="preserve">
+    <value>days</value>
+  </data>
+  <data name="Description" xml:space="preserve">
+    <value>Description</value>
+  </data>
+  <data name="Disable2fa" xml:space="preserve">
+    <value>Disable Two-Factor Authentication </value>
+  </data>
+  <data name="Disable2faAlert" xml:space="preserve">
+    <value>&lt;p&gt;
+         &lt;span class="glyphicon glyphicon-warning-sign"&gt;&lt;/span&gt;
+         &lt;strong&gt;This action only disables two-factor authentication.&lt;/strong&gt;
+     &lt;/p&gt;
+     &lt;p&gt;
+         Disabling two-factor authentication does not change the keys used in the authentication application. If you want to change keys you must &lt;a asp-page="./ResetAuthenticator"&gt;Reset your authentication keys.&lt;/a&gt;
+     &lt;/p&gt;</value>
+  </data>
+  <data name="DisableAuthenticator" xml:space="preserve">
+    <value>Disable Two-Factor Authentication </value>
+  </data>
+  <data name="Discrimination" xml:space="preserve">
+    <value>Discrimination</value>
+  </data>
+  <data name="DoBan" xml:space="preserve">
+    <value>Ban</value>
+  </data>
+  <data name="Download2faApplication" xml:space="preserve">
+    <value>Download a two-factor authentication application like Microsoft Authenticator for
+                     &lt;a href="https://go.microsoft.com/fwlink/?Linkid=825072"&gt;Android&lt;/a&gt; and
+                     &lt;a href="https://go.microsoft.com/fwlink/?Linkid=825073"&gt;iOS&lt;/a&gt; or
+                     Google Authenticator for
+                     &lt;a href="https://play.google.com/store/apps/details?id=com.google.android.apps.authenticator2&amp;amp;hl=en"&gt;Android&lt;/a&gt; and
+                     &lt;a href="https://itunes.apple.com/us/app/google-authenticator/id388497605?mt=8"&gt;iOS&lt;/a&gt;.</value>
+  </data>
+  <data name="Email" xml:space="preserve">
+    <value>E-mail Address</value>
+  </data>
+  <data name="EmailChangedSuccessfully" xml:space="preserve">
+    <value>Your email has been successfully changed. </value>
+  </data>
+  <data name="EnableAuthenticator" xml:space="preserve">
+    <value>Enable Two-Factor Authentication</value>
+  </data>
+  <data name="EndBan" xml:space="preserve">
+    <value>End Banishment</value>
+  </data>
+  <data name="EndBanDesc" xml:space="preserve">
+    <value>Ending the ban does not remove it from the ban list. This ban will increment the counter and the next time the user is banned for the same reason he may receive a higher punishment.</value>
+  </data>
+  <data name="EndDate" xml:space="preserve">
+    <value>End</value>
+  </data>
+  <data name="ErrorChangingEmail" xml:space="preserve">
+    <value>We were unable to change your email address. The code is no longer valid or you have already validated it with this code.</value>
+  </data>
+  <data name="ExclusiveWindowsRelease" xml:space="preserve">
+    <value>Exclusive release for Windows</value>
+  </data>
+  <data name="Expired" xml:space="preserve">
+    <value>Expired</value>
+  </data>
+  <data name="FalsePositive" xml:space="preserve">
+    <value>False Positive</value>
+  </data>
+  <data name="FirstLoveName" xml:space="preserve">
+    <value>First love's name</value>
+  </data>
+  <data name="Flood" xml:space="preserve">
+    <value>Flood and Spam</value>
+  </data>
+  <data name="FooterDiscord" xml:space="preserve">
+    <value>Join our &lt;a href="{0}"&gt;Discord&lt;/a&gt; channel.</value>
+  </data>
+  <data name="FooterGameDesc" xml:space="preserve">
+    <value>&lt;p&gt;World Conquer is an unofficial server for the popular MMORPG Conquer Online (registered at 99.com).&lt;/p&gt;
+&lt;p&gt;The Server is developed using C# with .NET 5.&lt;/p&gt;</value>
+  </data>
+  <data name="FooterMailTo" xml:space="preserve">
+    <value>Email: &lt;a href="mailto:{0}"&gt;{1}&lt;/a&gt;</value>
+  </data>
+  <data name="FooterSomeRightsReserved" xml:space="preserve">
+    <value>Some rights reserved</value>
+  </data>
+  <data name="ForgetThisBrowser" xml:space="preserve">
+    <value>Forget about this browser</value>
+  </data>
+  <data name="ForgiveBan" xml:space="preserve">
+    <value>Forgive Banishment</value>
+  </data>
+  <data name="ForgiveBanDesc" xml:space="preserve">
+    <value>Forgiving the Ban will leave the ban listed, however, it will not count towards the next one. This ban will be "forgotten".</value>
+  </data>
+  <data name="Forgiven" xml:space="preserve">
+    <value>Forgiven</value>
+  </data>
+  <data name="ForgotPasswordConfirmation" xml:space="preserve">
+    <value>&lt;p&gt;An email has been sent to your registered address. Don't forget to check the spam box.&lt;/p&gt;</value>
+  </data>
+  <data name="ForgotPasswordInstructions" xml:space="preserve">
+    <value>&lt;p&gt;You will receive an email if an account registered at this address is found.&lt;/p&gt;
+                         &lt;p&gt;The message may take up to 15 minutes to deliver.&lt;/p&gt;
+                         &lt;p&gt;Don't forget to check your Junk E-mail folders.&lt;/p&gt;
+                         &lt;p&gt;Enter your email address&lt;/p&gt;</value>
+  </data>
+  <data name="ForgotYourPassword" xml:space="preserve">
+    <value>Forgot password?</value>
+  </data>
+  <data name="FormerModerator" xml:space="preserve">
+    <value>Disabled member</value>
+  </data>
+  <data name="Forums" xml:space="preserve">
+    <value>Forums</value>
+  </data>
+  <data name="From" xml:space="preserve">
+    <value>From</value>
+  </data>
+  <data name="Game" xml:space="preserve">
+    <value>Game</value>
+  </data>
+  <data name="GameIpAddress" xml:space="preserve">
+    <value>Ip Address</value>
+  </data>
+  <data name="GameIpPort" xml:space="preserve">
+    <value>Server Port</value>
+  </data>
+  <data name="GameMaster" xml:space="preserve">
+    <value>Support [GM]</value>
+  </data>
+  <data name="GameName" xml:space="preserve">
+    <value>World Conquer Online</value>
+  </data>
+  <data name="GameNameVersion" xml:space="preserve">
+    <value>World Conquer Online - Version 5187</value>
+  </data>
+  <data name="Gender" xml:space="preserve">
+    <value>Gender</value>
+  </data>
+  <data name="General" xml:space="preserve">
+    <value>General</value>
+  </data>
+  <data name="GeneralBadConduct" xml:space="preserve">
+    <value>General misconduct</value>
+  </data>
+  <data name="GenerateRecoveryCodes" xml:space="preserve">
+    <value>Generate Recovery Codes</value>
+  </data>
+  <data name="GenerateRecoveryCodesAlert" xml:space="preserve">
+    <value>&lt;p&gt;
+             &lt;span class="glyphicon glyphicon-warning-sign"&gt;&lt;/span&gt;
+             &lt;strong&gt;Store these codes in a safe place!&lt;/strong&gt;
+         &lt;/p&gt;
+         &lt;p&gt;
+             If you lose your device and you don't have recovery codes, you will lose access to your account.
+         &lt;/p&gt;
+&lt;p&gt;
+         Generating new recovery codes for two-factor authentication does not change the keys used in the authentication application. If you want to change keys you must &lt;a asp-page="./ResetAuthenticator"&gt;Reset your authentication keys.&lt;/a&gt;
+     &lt;/p&gt;</value>
+  </data>
+  <data name="GenerateRecoveryCodeSteps" xml:space="preserve">
+    <value>To use a two-factor authentication application follow these steps:</value>
+  </data>
+  <data name="GoBack" xml:space="preserve">
+    <value>Return</value>
+  </data>
+  <data name="Groups" xml:space="preserve">
+    <value>Groups</value>
+  </data>
+  <data name="Guides" xml:space="preserve">
+    <value>Guides</value>
+  </data>
+  <data name="HeaderDescription" xml:space="preserve">
+    <value>World Conquer is an unofficial server for the popular MMORPG Conquer Online (registered at 99.com).</value>
+  </data>
+  <data name="Hometown" xml:space="preserve">
+    <value>Hometown</value>
+  </data>
+  <data name="InappropriateName" xml:space="preserve">
+    <value>Inappropriate name</value>
+  </data>
+  <data name="InappropriateSyndicateName" xml:space="preserve">
+    <value>Inappropriate Trade Union Name</value>
+  </data>
+  <data name="Interviews" xml:space="preserve">
+    <value>Interviews</value>
+  </data>
+  <data name="InvalidBanType" xml:space="preserve">
+    <value>Invalid ban type.</value>
+  </data>
+  <data name="InvalidLoginAttempt" xml:space="preserve">
+    <value>Invalid username or password.</value>
+  </data>
+  <data name="InvalidLoginAttempt2" xml:space="preserve">
+    <value>Invalid username or password. Have you activated your account?</value>
+  </data>
+  <data name="Language" xml:space="preserve">
+    <value>Language</value>
+  </data>
+  <data name="LatestNews" xml:space="preserve">
+    <value>Latest News</value>
+  </data>
+  <data name="Location" xml:space="preserve">
+    <value>Location</value>
+  </data>
+  <data name="LockedOut" xml:space="preserve">
+    <value>Account blocked</value>
+  </data>
+  <data name="LockoutMessage" xml:space="preserve">
+    <value>&lt;p&gt;Your account has been blocked by many successive invalid login attempts. Please wait 15 minutes and try again.&lt;/p&gt;</value>
+  </data>
+  <data name="Login" xml:space="preserve">
+    <value>Connect</value>
+  </data>
+  <data name="LogInWithRecoveryCode" xml:space="preserve">
+    <value>Don't have access to your authentication device? You can &lt;a href="{0}?returnUrl={1}"&gt;enter a recovery code&lt;/a&gt;.</value>
+  </data>
+  <data name="LoginWithRecoveryCodeAlert" xml:space="preserve">
+    <value>You requested entry with a recovery code. This login will not be remembered until you log in using the authenticator app or disable two-factor authentication and log in again.</value>
+  </data>
+  <data name="Logout" xml:space="preserve">
+    <value>Logout</value>
+  </data>
+  <data name="Member" xml:space="preserve">
+    <value>Member</value>
+  </data>
+  <data name="MemberAmount" xml:space="preserve">
+    <value>Members</value>
+  </data>
+  <data name="MenuAboutUs" xml:space="preserve">
+    <value>About Us</value>
+  </data>
+  <data name="MenuAccounts" xml:space="preserve">
+    <value>Accounts</value>
+  </data>
+  <data name="MenuCart" xml:space="preserve">
+    <value>Cart</value>
+  </data>
+  <data name="MenuContactUs" xml:space="preserve">
+    <value>Contact Us</value>
+  </data>
+  <data name="MenuDownloads" xml:space="preserve">
+    <value>Download</value>
+  </data>
+  <data name="MenuForum" xml:space="preserve">
+    <value>Forum</value>
+  </data>
+  <data name="MenuGuides" xml:space="preserve">
+    <value>Guides</value>
+  </data>
+  <data name="MenuHelp" xml:space="preserve">
+    <value>Help</value>
+  </data>
+  <data name="MenuHelpDesc" xml:space="preserve">
+    <value>Do you need help?</value>
+  </data>
+  <data name="MenuHelpDesk" xml:space="preserve">
+    <value>Help Desk</value>
+  </data>
+  <data name="MenuHome" xml:space="preserve">
+    <value>Start</value>
+  </data>
+  <data name="MenuHomeDesc" xml:space="preserve">
+    <value>download and register</value>
+  </data>
+  <data name="MenuNews" xml:space="preserve">
+    <value>News</value>
+  </data>
+  <data name="MenuPurchases" xml:space="preserve">
+    <value>My Purchases</value>
+  </data>
+  <data name="MenuRegister" xml:space="preserve">
+    <value>Register</value>
+  </data>
+  <data name="MenuRewards" xml:space="preserve">
+    <value>Rewards</value>
+  </data>
+  <data name="MenuShop" xml:space="preserve">
+    <value>Shop</value>
+  </data>
+  <data name="MenuShopSales" xml:space="preserve">
+    <value>Commerce</value>
+  </data>
+  <data name="MenuShopSalesDesc" xml:space="preserve">
+    <value>shop and gifts</value>
+  </data>
+  <data name="MenuSpendCredits" xml:space="preserve">
+    <value>Spend Credits</value>
+  </data>
+  <data name="MenuStatistics" xml:space="preserve">
+    <value>Statistics</value>
+  </data>
+  <data name="MenuStatisticsDesc" xml:space="preserve">
+    <value>rankings</value>
+  </data>
+  <data name="MenuTickets" xml:space="preserve">
+    <value>Ticket</value>
+  </data>
+  <data name="MenuUser" xml:space="preserve">
+    <value>User</value>
+  </data>
+  <data name="MenuUserDesc" xml:space="preserve">
+    <value>control panel</value>
+  </data>
+  <data name="Messages" xml:space="preserve">
+    <value>Messages</value>
+  </data>
+  <data name="Moderator" xml:space="preserve">
+    <value>Moderator</value>
+  </data>
+  <data name="ModeratorPanel" xml:space="preserve">
+    <value>Moderation</value>
+  </data>
+  <data name="ModifiedDate" xml:space="preserve">
+    <value>Modification Date</value>
+  </data>
+  <data name="MoreNews" xml:space="preserve">
+    <value>More news</value>
+  </data>
+  <data name="MostLikedAnimal" xml:space="preserve">
+    <value>Favorite pet</value>
+  </data>
+  <data name="Name" xml:space="preserve">
+    <value>Name</value>
+  </data>
+  <data name="Never" xml:space="preserve">
+    <value>Never</value>
+  </data>
+  <data name="NewEmail" xml:space="preserve">
+    <value>New E-mail</value>
+  </data>
+  <data name="NewPassword" xml:space="preserve">
+    <value>New Password</value>
+  </data>
+  <data name="NewPhoneNumber" xml:space="preserve">
+    <value>New Telephone Number</value>
+  </data>
+  <data name="NewRealm" xml:space="preserve">
+    <value>New Server</value>
+  </data>
+  <data name="News" xml:space="preserve">
+    <value>News</value>
+  </data>
+  <data name="NewVerificationEmailSent" xml:space="preserve">
+    <value>An email has been sent to confirm the change. The email address will only be changed after confirmation.</value>
+  </data>
+  <data name="NextBan" xml:space="preserve">
+    <value>Next Banishment</value>
+  </data>
+  <data name="No" xml:space="preserve">
+    <value>No</value>
+  </data>
+  <data name="NoData" xml:space="preserve">
+    <value>No Data.</value>
+  </data>
+  <data name="NoPermission" xml:space="preserve">
+    <value>You do not have permission to perform this action.</value>
+  </data>
+  <data name="NormalizedName" xml:space="preserve">
+    <value>Standard Name</value>
+  </data>
+  <data name="NothingToShare" xml:space="preserve">
+    <value>Nothing to share</value>
+  </data>
+  <data name="Notifications" xml:space="preserve">
+    <value>Notifications</value>
+  </data>
+  <data name="NotificationSettings" xml:space="preserve">
+    <value>Notification Settings</value>
+  </data>
+  <data name="NotPublished" xml:space="preserve">
+    <value>Not published</value>
+  </data>
+  <data name="NoUserData" xml:space="preserve">
+    <value>User data not found.</value>
+  </data>
+  <data name="OfensiveLanguage" xml:space="preserve">
+    <value>Offensive Language</value>
+  </data>
+  <data name="ParentStaffRepresentation" xml:space="preserve">
+    <value>Team Relative Representation</value>
+  </data>
+  <data name="Password" xml:space="preserve">
+    <value>Password</value>
+  </data>
+  <data name="PasswordChangeSuccess" xml:space="preserve">
+    <value>Your password has been changed successfully.</value>
+  </data>
+  <data name="PasswordReseted" xml:space="preserve">
+    <value>Your password has been reset. Please &lt;a href="/Login"&gt;click here to login&lt;/a&gt;.</value>
+  </data>
+  <data name="PatchNotes" xml:space="preserve">
+    <value>Update Notes</value>
+  </data>
+  <data name="Permission.BanAccount" xml:space="preserve">
+    <value>Ban FTW Account</value>
+  </data>
+  <data name="Permission.BanGameAccount" xml:space="preserve">
+    <value>Ban Game Account</value>
+  </data>
+  <data name="Permission.CancelAccountBan" xml:space="preserve">
+    <value>Cancel FTW Account Ban</value>
+  </data>
+  <data name="Permission.CancelGameBan" xml:space="preserve">
+    <value>Cancel Game Account Ban</value>
+  </data>
+  <data name="Permission.CannotBeBanned" xml:space="preserve">
+    <value>Cannot be banned</value>
+  </data>
+  <data name="Permission.CreateRoles" xml:space="preserve">
+    <value>Create Roles</value>
+  </data>
+  <data name="Permission.CreateUsers" xml:space="preserve">
+    <value>Create Users</value>
+  </data>
+  <data name="Permission.DeleteRoles" xml:space="preserve">
+    <value>Delete Roles</value>
+  </data>
+  <data name="Permission.DeleteUsers" xml:space="preserve">
+    <value>Delete Users</value>
+  </data>
+  <data name="Permission.EditRoleClaims" xml:space="preserve">
+    <value>Change Role Permissions</value>
+  </data>
+  <data name="Permission.EditUserClaims" xml:space="preserve">
+    <value>Change User Permissions</value>
+  </data>
+  <data name="Permission.EditUsers" xml:space="preserve">
+    <value>Edit Users</value>
+  </data>
+  <data name="Permission.ForgiveAccountBan" xml:space="preserve">
+    <value>Forgive FTW Account Ban</value>
+  </data>
+  <data name="Permission.ForgiveGameBan" xml:space="preserve">
+    <value>Forgive Game Account Ban</value>
+  </data>
+  <data name="Permission.UpdateRoles" xml:space="preserve">
+    <value>Update Roles</value>
+  </data>
+  <data name="Permission.ViewBans" xml:space="preserve">
+    <value>View Bans</value>
+  </data>
+  <data name="Permission.ViewClaims" xml:space="preserve">
+    <value>View Permissions</value>
+  </data>
+  <data name="Permission.ViewRoles" xml:space="preserve">
+    <value>View Roles</value>
+  </data>
+  <data name="Permission.ViewUsers" xml:space="preserve">
+    <value>View Users</value>
+  </data>
+  <data name="PersonalInformation" xml:space="preserve">
+    <value>Personal information</value>
+  </data>
+  <data name="Phone" xml:space="preserve">
+    <value>Phone</value>
+  </data>
+  <data name="PhoneNumber" xml:space="preserve">
+    <value>Phone</value>
+  </data>
+  <data name="Posts" xml:space="preserve">
+    <value>Posts</value>
+  </data>
+  <data name="PreferedCar" xml:space="preserve">
+    <value>Favorite car</value>
+  </data>
+  <data name="Privacy" xml:space="preserve">
+    <value>Privacy</value>
+  </data>
+  <data name="PrivacySettings" xml:space="preserve">
+    <value>Privacy Settings</value>
+  </data>
+  <data name="PrivateMessage" xml:space="preserve">
+    <value>&lt;i class="fa fa-envelope"&gt;&lt;/i&gt; Send Message</value>
+  </data>
+  <data name="Profile" xml:space="preserve">
+    <value>Profile</value>
+  </data>
+  <data name="ProfileDisclaimer" xml:space="preserve">
+    <value>The profile information defined here is public (Except for your email address), so if you don't want to make it visible just don't fill it out. The FTW! Masters undertakes not to sell your data, however, it is not responsible if search engines collect them through your profile page.</value>
+  </data>
+  <data name="ProfileSettings" xml:space="preserve">
+    <value>User Settings</value>
+  </data>
+  <data name="ProfileTitle" xml:space="preserve">
+    <value>{0}'s profile</value>
+  </data>
+  <data name="Pronoun" xml:space="preserve">
+    <value>What do you want to be called</value>
+  </data>
+  <data name="PublishDate" xml:space="preserve">
+    <value>Publication date</value>
+  </data>
+  <data name="RealmDataTitle" xml:space="preserve">
+    <value>Server {0}</value>
+  </data>
+  <data name="RealmID" xml:space="preserve">
+    <value>Code</value>
+  </data>
+  <data name="RealmManagement" xml:space="preserve">
+    <value>Server Management</value>
+  </data>
+  <data name="RealmName" xml:space="preserve">
+    <value>Server Name</value>
+  </data>
+  <data name="RealmPassword" xml:space="preserve">
+    <value>Password</value>
+  </data>
+  <data name="RealmStatus" xml:space="preserve">
+    <value>Status</value>
+  </data>
+  <data name="RealmUsername" xml:space="preserve">
+    <value>Username</value>
+  </data>
+  <data name="RealName" xml:space="preserve">
+    <value>Real Name</value>
+  </data>
+  <data name="Reason" xml:space="preserve">
+    <value>Reason</value>
+  </data>
+  <data name="RecoveryCodesLeft0Alert" xml:space="preserve">
+    <value>&lt;div class="alert alert-danger"&gt;
+                 &lt;strong&gt;You have no recovery codes available.&lt;/strong&gt;
+                 &lt;p&gt;You MUST &lt;a asp-page="./GenerateRecoveryCodes"&gt;generate a new set of recovery codes&lt;/a&gt; before logging in again with a
+                     recovery code.&lt;/p&gt;
+             &lt;/div&gt;</value>
+  </data>
+  <data name="RecoveryCodesLeft1Alert" xml:space="preserve">
+    <value>&lt;div class="alert alert-danger"&gt;
+                 &lt;strong&gt;You have 1 recovery code remaining.&lt;/strong&gt;
+                 &lt;p&gt;You can &lt;a href="{0}"&gt;generate a new set of recovery codes&lt;/a&gt;.&lt;/p&gt;
+             &lt;/div&gt;</value>
+  </data>
+  <data name="RecoveryCodesLeft3Alert" xml:space="preserve">
+    <value>&lt;div class="alert alert-warning"&gt;
+                 &lt;strong&gt;You have {0} recovery codes left.&lt;/strong&gt;
+                 &lt;p&gt;You can &lt;a href="{1}"&gt;generate a new set of recovery codes&lt;/a&gt;.&lt;/p&gt;
+             &lt;/div&gt;</value>
+  </data>
+  <data name="RecoveryCodeVerification" xml:space="preserve">
+    <value>SignIn with Recovery Code</value>
+  </data>
+  <data name="RefundPolicy" xml:space="preserve">
+    <value>Refund Policy</value>
+  </data>
+  <data name="RegionalSettings" xml:space="preserve">
+    <value>Regional Options</value>
+  </data>
+  <data name="Register" xml:space="preserve">
+    <value>Register</value>
+  </data>
+  <data name="RegisterAsNewUser" xml:space="preserve">
+    <value>Register as a new user</value>
+  </data>
+  <data name="RegisteredLogins" xml:space="preserve">
+    <value>Registered Logins</value>
+  </data>
+  <data name="RegisterPage" xml:space="preserve">
+    <value>Register</value>
+  </data>
+  <data name="RegisterUnderage" xml:space="preserve">
+    <value>You must be at least 12 years old to register.</value>
+  </data>
+  <data name="RelationshipStatus" xml:space="preserve">
+    <value>Marital status</value>
+  </data>
+  <data name="RememberMe" xml:space="preserve">
+    <value>Keep me Connected</value>
+  </data>
+  <data name="Removed" xml:space="preserve">
+    <value>Removed</value>
+  </data>
+  <data name="RemoveExpiredBan" xml:space="preserve">
+    <value>Remove Ban Status</value>
+  </data>
+  <data name="RemoveFriend" xml:space="preserve">
+    <value>&lt;i class="fa fa-user-minus"&gt;&lt;/i&gt; Friend</value>
+  </data>
+  <data name="ReportPlayer" xml:space="preserve">
+    <value>&lt;i class="fa fa-flag"&gt;&lt;/i&gt; Report</value>
+  </data>
+  <data name="Reputation" xml:space="preserve">
+    <value>Reputation</value>
+  </data>
+  <data name="Resend" xml:space="preserve">
+    <value>Resend</value>
+  </data>
+  <data name="ResendConfirmationEmail" xml:space="preserve">
+    <value>Resend confirmation email</value>
+  </data>
+  <data name="ResendEmailConfirmation" xml:space="preserve">
+    <value>Resend confirmation email</value>
+  </data>
+  <data name="ResendEmailConfirmationDescription" xml:space="preserve">
+    <value>Fill in the email where the account is registered to receive the confirmation email, if an account is registered in this email you will receive a message with instructions. Remember the email can take up to 15 minutes to arrive.</value>
+  </data>
+  <data name="ResetAuthentication2faAlert" xml:space="preserve">
+    <value>&lt;p&gt;
+             &lt;span class="glyphicon glyphicon-warning-sign"&gt;&lt;/span&gt;
+             &lt;strong&gt;If you reset your authenticator key, your app will not work until you reset it with the new key.&lt;/strong&gt;
+         &lt;/p&gt;
+         &lt;p&gt;
+             This process disables two-factor authentication until you verify it in your authentication application.
+             If you don't complete the setup you may end up losing access to your account.
+         &lt;/p&gt;</value>
+  </data>
+  <data name="ResetAuthenticatorApp" xml:space="preserve">
+    <value>Reset Two-Factor Application</value>
+  </data>
+  <data name="ResetAuthenticatorKey" xml:space="preserve">
+    <value>Reset Authentication Key</value>
+  </data>
+  <data name="ResetPassword" xml:space="preserve">
+    <value>Reset Password</value>
+  </data>
+  <data name="ResetPasswordConfirmation" xml:space="preserve">
+    <value>Password Change Confirmation</value>
+  </data>
+  <data name="ResetRecoveryCodes" xml:space="preserve">
+    <value>Reset Recovery Codes</value>
+  </data>
+  <data name="RestoreCharacters" xml:space="preserve">
+    <value>Restore Deleted Characters</value>
+  </data>
+  <data name="RoleAdministration" xml:space="preserve">
+    <value>{0} - Manage Role</value>
+  </data>
+  <data name="RoleClaims" xml:space="preserve">
+    <value>Permissions</value>
+  </data>
+  <data name="RoleManagement" xml:space="preserve">
+    <value>Role Management</value>
+  </data>
+  <data name="RoleName" xml:space="preserve">
+    <value>Role</value>
+  </data>
+  <data name="RoleNormalizedName" xml:space="preserve">
+    <value>Standard Name</value>
+  </data>
+  <data name="RoleUsers" xml:space="preserve">
+    <value>Users</value>
+  </data>
+  <data name="RpcIpAddress" xml:space="preserve">
+    <value>RPC Address</value>
+  </data>
+  <data name="RpcPort" xml:space="preserve">
+    <value>RPC Port</value>
+  </data>
+  <data name="Save" xml:space="preserve">
+    <value>Save</value>
+  </data>
+  <data name="SaveRegionalSettings" xml:space="preserve">
+    <value>Save Regional Options</value>
+  </data>
+  <data name="SaveSettings" xml:space="preserve">
+    <value>Save</value>
+  </data>
+  <data name="ScanQrCode" xml:space="preserve">
+    <value>&lt;p&gt;Scan the QR Code below or enter this &lt;kbd&gt;{0}&lt;/kbd&gt; key into your two-factor authentication app. Spaces and uppercase or lowercase letters do not matter.&lt;/p&gt;</value>
+  </data>
+  <data name="Security" xml:space="preserve">
+    <value>Security</value>
+  </data>
+  <data name="SecurityAnswer" xml:space="preserve">
+    <value>Security answer</value>
+  </data>
+  <data name="SecurityCode" xml:space="preserve">
+    <value>Security Code (Numeric only)</value>
+  </data>
+  <data name="SecurityCodeInteger" xml:space="preserve">
+    <value>The Security Code must be a numeric value.</value>
+  </data>
+  <data name="SecurityRecoveryAccount" xml:space="preserve">
+    <value>Account Security and Recovery</value>
+  </data>
+  <data name="SendVerificationEmail" xml:space="preserve">
+    <value>Send verification email</value>
+  </data>
+  <data name="ServerAdvertisement" xml:space="preserve">
+    <value>Disclosure of Third Party Servers</value>
+  </data>
+  <data name="SetPassword" xml:space="preserve">
+    <value>Set Password</value>
+  </data>
+  <data name="SetPasswordSuccess" xml:space="preserve">
+    <value>Your new password has been successfully set.</value>
+  </data>
+  <data name="Settings" xml:space="preserve">
+    <value>Settings</value>
+  </data>
+  <data name="SetupAuthenticatorApp" xml:space="preserve">
+    <value>Configure Two-Factor Application</value>
+  </data>
+  <data name="ShowRecoveryCodesAlert" xml:space="preserve">
+    <value>&lt;p&gt;
+             &lt;span class="glyphicon glyphicon-warning-sign"&gt;&lt;/span&gt;
+             &lt;strong&gt;Store these codes in a safe place!&lt;/strong&gt;
+         &lt;/p&gt;
+         &lt;p&gt;
+             If you lose your device and you don't have recovery codes, you will lose access to your account.
+         &lt;/p&gt;</value>
+  </data>
+  <data name="Sigin3rdPartyAccount" xml:space="preserve">
+    <value>Sign in using your {0} account.</value>
+  </data>
+  <data name="SignalFalsePositive" xml:space="preserve">
+    <value>False positive</value>
+  </data>
+  <data name="SignalFalsePositiveDesc" xml:space="preserve">
+    <value>Will flag ban as false positive, should be flagged when ban was given unfairly.</value>
+  </data>
+  <data name="SignIn" xml:space="preserve">
+    <value>Log In</value>
+  </data>
+  <data name="StaffDisrespect" xml:space="preserve">
+    <value>Disrespect to Staff</value>
+  </data>
+  <data name="StaffRepresentation" xml:space="preserve">
+    <value>Administrative Staff Representation</value>
+  </data>
+  <data name="StartDate" xml:space="preserve">
+    <value>Start</value>
+  </data>
+  <data name="StudiedAt" xml:space="preserve">
+    <value>Studied At</value>
+  </data>
+  <data name="Super Administrator" xml:space="preserve">
+    <value>Founder</value>
+  </data>
+  <data name="TargetUserName" xml:space="preserve">
+    <value>Banned User</value>
+  </data>
+  <data name="TermsOfPrivacy" xml:space="preserve">
+    <value>Privacy Terms</value>
+  </data>
+  <data name="TermsOfUse" xml:space="preserve">
+    <value>Service Terms</value>
+  </data>
+  <data name="Title" xml:space="preserve">
+    <value>Title</value>
+  </data>
+  <data name="To" xml:space="preserve">
+    <value>To</value>
+  </data>
+  <data name="Today" xml:space="preserve">
+    <value>Today</value>
+  </data>
+  <data name="Tomorrow" xml:space="preserve">
+    <value>Tomorrow</value>
+  </data>
+  <data name="TopArcher" xml:space="preserve">
+    <value>Greatest Archers</value>
+  </data>
+  <data name="TopFireTaoist" xml:space="preserve">
+    <value>Greatest Fire Taoists</value>
+  </data>
+  <data name="TopGuildWarWinners" xml:space="preserve">
+    <value>Top Winners of Guild Wars</value>
+  </data>
+  <data name="TopMoneybag" xml:space="preserve">
+    <value>Greatest Riches</value>
+  </data>
+  <data name="TopMonk" xml:space="preserve">
+    <value>Greatest Monks/Saints</value>
+  </data>
+  <data name="TopNinja" xml:space="preserve">
+    <value>Greatest Ninjas</value>
+  </data>
+  <data name="TopNoble" xml:space="preserve">
+    <value>Greatest Nobles</value>
+  </data>
+  <data name="TopPirate" xml:space="preserve">
+    <value>Greatest Pirates</value>
+  </data>
+  <data name="TopPlayers" xml:space="preserve">
+    <value>Greatest Players</value>
+  </data>
+  <data name="TopSuperman" xml:space="preserve">
+    <value>Greater XP Sequences</value>
+  </data>
+  <data name="TopSyndicate" xml:space="preserve">
+    <value>Greatest Guilds</value>
+  </data>
+  <data name="TopTrojan" xml:space="preserve">
+    <value>Greatest Trojans</value>
+  </data>
+  <data name="TopWarrior" xml:space="preserve">
+    <value>Greatest Warriors</value>
+  </data>
+  <data name="TopWaterTaoist" xml:space="preserve">
+    <value>Greatest Water Taoists</value>
+  </data>
+  <data name="TwoFactorAuthentication" xml:space="preserve">
+    <value>Two-Factor Authentication</value>
+  </data>
+  <data name="TwoFactorCode" xml:space="preserve">
+    <value>Two-Factor Code</value>
+  </data>
+  <data name="TwoFactorDisableAlert" xml:space="preserve">
+    <value>Disabling two-factor authentication will remove the extra factor of security on the user's account. Only disable it under the express authorization of the user and validation of the security data.</value>
+  </data>
+  <data name="TwoFactorEnabled" xml:space="preserve">
+    <value>Two-factor authentication enabled</value>
+  </data>
+  <data name="Unbanned" xml:space="preserve">
+    <value>Unbanned</value>
+  </data>
+  <data name="UseAnotherRegistrationProvider" xml:space="preserve">
+    <value>Use another provider to connect.</value>
+  </data>
+  <data name="UserAdministration" xml:space="preserve">
+    <value>{0} - Manage User</value>
+  </data>
+  <data name="UserAlreadyBanned" xml:space="preserve">
+    <value>The selected user is already banned. Wait for the ban to end or cancel the current ban.</value>
+  </data>
+  <data name="UserBans" xml:space="preserve">
+    <value>Bans</value>
+  </data>
+  <data name="UserCannotBeBanned" xml:space="preserve">
+    <value>User is in a protected group and cannot be banned.</value>
+  </data>
+  <data name="UserClaims" xml:space="preserve">
+    <value>Individual Permissions</value>
+  </data>
+  <data name="UserIdentity" xml:space="preserve">
+    <value>Identity</value>
+  </data>
+  <data name="UserIsBannedProfileMessage" xml:space="preserve">
+    <value>This user is currently banned by "{0}". Ban expires on: {1}.</value>
+  </data>
+  <data name="UserIsCurrentlyBanned" xml:space="preserve">
+    <value>Banned User</value>
+  </data>
+  <data name="UserManagement" xml:space="preserve">
+    <value>User Management</value>
+  </data>
+  <data name="UserName" xml:space="preserve">
+    <value>User name</value>
+  </data>
+  <data name="UserNotFound" xml:space="preserve">
+    <value>User not found.</value>
+  </data>
+  <data name="VerificationCode" xml:space="preserve">
+    <value>Verification code</value>
+  </data>
+  <data name="VerificationEmailFail" xml:space="preserve">
+    <value>Your email has not been changed.</value>
+  </data>
+  <data name="VerificationEmailSent" xml:space="preserve">
+    <value>If the e-mail informed is registered in our database, a message with activation instructions was sent.</value>
+  </data>
+  <data name="Verify" xml:space="preserve">
+    <value>To check</value>
+  </data>
+  <data name="WatchTrailer" xml:space="preserve">
+    <value>Watch the trailer</value>
+  </data>
+  <data name="Writer" xml:space="preserve">
+    <value>Writer</value>
+  </data>
+  <data name="Yes" xml:space="preserve">
+    <value>Yes</value>
+  </data>
+  <data name="Yesterday" xml:space="preserve">
+    <value>Yesterday</value>
+  </data>
+</root>

@@ -4,10 +4,15 @@
 		<TargetFramework>net6.0</TargetFramework>
 		<Nullable>disable</Nullable>
 		<ImplicitUsings>false</ImplicitUsings>
+		<UserSecretsId>26f1c52f-5146-432f-964f-d9a79e716fe7</UserSecretsId>
+		<Version>1.0.0.1</Version>
+		<NoWarn>$(NoWarn);1591</NoWarn>
+		<GenerateDocumentationFile>true</GenerateDocumentationFile>
 	</PropertyGroup>
 
 	<ItemGroup>
 		<PackageReference Include="BouncyCastle.NetCore" Version="1.8.10" />
+		<PackageReference Include="Microsoft.AspNetCore.Mvc.Versioning" Version="5.0.0" />
 		<PackageReference Include="Swashbuckle.AspNetCore" Version="6.3.0" />
 		<PackageReference Include="HtmlAgilityPack" Version="1.11.42" />
 		<PackageReference Include="IdentityServer4.EntityFramework.Storage" Version="4.1.2" />
@@ -33,12 +38,11 @@
 	</ItemGroup>
 
 	<ItemGroup>
-	  <ProjectReference Include="..\..\src\Comet.Database\Comet.Database.csproj" />
+		<ProjectReference Include="..\..\src\Comet.Database\Comet.Database.csproj" />
 	</ItemGroup>
 
 	<ItemGroup>
-	  <Folder Include="Areas\Profile\Models\" />
-	  <Folder Include="Areas\Profile\Pages\" />
+		<Folder Include="Areas\Profile\Pages\" />
 	</ItemGroup>
 
 </Project>

@@ -101,7 +101,8 @@ namespace Comet.Web.Data
             builder.Entity<LogHistory>().Property(x => x.Type).HasConversion<int>();
             builder.Entity<Article>().Property(x => x.Flags).HasConversion<ulong>();
 
-            builder.ConfigurePersistedGrantContext(mOperationalStoreOptions.Value);
+            if (mOperationalStoreOptions != null)
+                builder.ConfigurePersistedGrantContext(mOperationalStoreOptions.Value);
         }
 
         protected override void OnConfiguring(DbContextOptionsBuilder optionsBuilder)

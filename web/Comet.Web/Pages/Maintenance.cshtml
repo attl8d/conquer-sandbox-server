@@ -1,0 +1,55 @@
+﻿@page
+@using Comet.Web.Services
+@inject LanguageService Language
+@model Comet.Web.Pages.MaintenanceModel
+@{
+    ViewData["Title"] = Language.GetString("MaintenanceTitle");
+}
+
+<section class="youplay-banner banner-top youplay-banner-parallax full">
+    <div class="image" data-speed="0.4">
+        <img src="/assets/images/parallax/shaolin_1920x1200.jpg" alt="" class="jarallax-img">
+    </div>
+    <div class="info">
+        <div>
+            <div class="container">
+                <div class="text-center">
+                    <img src="/assets/images/logo-light.png" alt="">
+                    
+                    @if (!string.IsNullOrEmpty(Model.Message)) 
+                    {
+                        @Html.Raw(Model.Message)
+                    }
+                    else
+                    {
+                        @Html.Raw(Language.GetString("MaintenanceDefaultMessage"))
+                    }
+
+                    @if (Model.HasTimer)
+                    {
+                        <br>
+                        <div class="countdown h2" data-end="@(Model.MaintenanceEndTime.ToString("yyyy-MM-dd HH:mm"))" data-timezone="GMT-3"></div>
+                        <br>
+                    }
+                </div>
+            </div>
+        </div>
+    </div>
+</section>
+
+@section Scripts
+{
+    <script>
+        $(".countdown").each(function()
+        {
+            var tz = $(this).attr('data-timezone');
+            var end = $(this).attr('data-end');
+            end = moment.tz(end, tz).toDate();
+            $(this).countdown(end, function(event)
+            {
+                $(this).html(event.strftime(['<div class="countdown-item">', '<span>@Language.GetString("Days")</span>', '<span><span>%D</span></span>', '</div>', '<div class="countdown-item">', '<span>@Language.GetString("Hours")</span>', '<span><span>%H</span></span>', '</div>', '<div class="countdown-item">', '<span>@Language.GetString("Minutes")</span>', '<span><span>%M</span></span>', '</div>', '<div class="countdown-item">', '<span>@Language.GetString("Seconds")</span>', '<span><span>%S</span></span>', '</div>'].join('')));
+            });
+        });
+    </script>
+
+}

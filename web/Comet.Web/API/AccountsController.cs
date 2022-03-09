@@ -1,0 +1,12 @@
+﻿using Microsoft.AspNetCore.Http;
+using Microsoft.AspNetCore.Mvc;
+
+namespace Comet.Web.API
+{
+    [ApiVersion("1")]
+    [Route("api/[controller]/[action]")]
+    [ApiController]
+    public class AccountsController : ControllerBase
+    {
+    }
+}

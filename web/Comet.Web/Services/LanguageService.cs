@@ -1,4 +1,5 @@
-﻿using Microsoft.AspNetCore.Http;
+﻿using Comet.Web.Model.Identity;
+using Microsoft.AspNetCore.Http;
 using Microsoft.Extensions.Logging;
 using System;
 using System.Collections.Generic;
@@ -39,7 +40,7 @@ namespace Comet.Web.Services
             ResourceManager.Add("pt-BR", new ResourceManager(string.Format(location, "Language"), Assembly.GetExecutingAssembly()));
             foreach (var lang in AvailableLanguages)
             {
-                mLogger.LogDebug($"Language {lang.LanguageFullName} has been loaded.");
+                // mLogger.LogDebug($"Language {lang.LanguageFullName} has been loaded.");
                 try
                 {
                     if (!ResourceManager.ContainsKey(lang.LanguageCultureName))
@@ -84,7 +85,7 @@ namespace Comet.Web.Services
                     }
                     else
                     {
-                        locale = mHttpContextAccessor.HttpContext.User.FindFirst("Language")?.Value;
+                        locale = mHttpContextAccessor.HttpContext.User.FindFirst(CustomClaimTypes.Language)?.Value;
                     }
 
                     if (!AvailableLanguages.Any(x => x.LanguageCultureName.Equals(locale)))
@@ -92,7 +93,7 @@ namespace Comet.Web.Services
 
                     mCurrentCulture = AvailableLanguages.FirstOrDefault(x => x.LanguageCultureName.Equals(locale));
                 }
-                else
+                else if (mCurrentCulture == null)
                 {
                     mCurrentCulture = AvailableLanguages.FirstOrDefault(x => x.LanguageCultureName.Equals(GetDefaultLanguage()));
                 }

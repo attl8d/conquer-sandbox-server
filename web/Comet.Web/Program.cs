@@ -1,3 +1,4 @@
+using Comet.Web;
 using Comet.Web.Data;
 using Comet.Web.Data.Entities;
 using Comet.Web.Middlewares;
@@ -120,7 +121,7 @@ builder.Services.AddSwaggerGen(opt =>
     {
         Title = "World Conquer Web API",
         Description = "Web API for querying data from game servers or web server.",
-        Version = "v1",
+        Version = Constants.Version,
         Contact = new OpenApiContact
         {
             Email = "service@ftwmasters.com.br",

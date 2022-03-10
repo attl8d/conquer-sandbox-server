@@ -31,6 +31,12 @@ namespace Comet.Game.Packets
             if (sender == null || (user != null && user.Identity != SenderIdentity))
                 return;
 
+            if (user != null && SenderIdentity == user.Identity && !user.IsAlive)
+            {
+                await user.SendAsync(Language.StrDead);
+                return;
+            }
+
             if (sender.QueryStatus(StatusSet.FREEZE) != null
                 || sender.QueryStatus(StatusSet.ICE_BLOCK) != null
                 || sender.QueryStatus(StatusSet.DAZED) != null
@@ -38,19 +44,26 @@ namespace Comet.Game.Packets
                 || sender.QueryStatus(StatusSet.CONFUSED) != null)
                 return;
 
-            if (Action != (MsgInteractType)38 && Action != MsgInteractType.AcceptGuildMember)
-                sender.BattleSystem.ResetBattle();
+            switch (Action)
+            {
+                case MsgInteractType.Attack:
+                case MsgInteractType.Shoot:
+                case MsgInteractType.MagicAttack:
+                case MsgInteractType.AbortMagic:
+                case MsgInteractType.Court:
+                case MsgInteractType.Marry:
+                    {
+                        sender.BattleSystem.ResetBattle();
+                        if (sender.MagicData.QueryMagic != null)
+                            await sender.MagicData.AbortMagicAsync(true);
+                        break;
+                    }
+            }
 
             Role target = sender?.Map.QueryAroundRole(sender, TargetIdentity);
 
             if (target == null && Action != MsgInteractType.MagicAttack)
                 return;
-
-            if (user != null && !user.IsAlive)
-            {
-                await user.SendAsync(Language.StrDead);
-                return;
-            }
 
             switch (Action)
             {

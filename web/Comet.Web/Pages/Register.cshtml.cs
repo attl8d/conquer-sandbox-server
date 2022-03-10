@@ -148,9 +148,9 @@ namespace Comet.Web.Pages
                     var code = await mUserManager.GenerateEmailConfirmationTokenAsync(user);
                     code = WebEncoders.Base64UrlEncode(Encoding.UTF8.GetBytes(code));
                     var callbackUrl = Url.Page(
-                        "/Account/ConfirmEmail",
+                        "/ConfirmEmail",
                         pageHandler: null,
-                        values: new { area = "Identity", userId = user.Id, code, returnUrl },
+                        values: new { userId = user.Id, code, returnUrl },
                         protocol: Request.Scheme);
 
                     await mEmailSender.SendEmailAsync(Input.Email, "Confirm your email",

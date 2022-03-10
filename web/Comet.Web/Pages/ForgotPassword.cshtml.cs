@@ -50,9 +50,9 @@ namespace Comet.Web.Pages
                 var code = await mUserManager.GeneratePasswordResetTokenAsync(user);
                 code = WebEncoders.Base64UrlEncode(Encoding.UTF8.GetBytes(code));
                 var callbackUrl = Url.Page(
-                    "/Account/ResetPassword",
+                    "/ResetPassword",
                     pageHandler: null,
-                    values: new { area = "Identity", code },
+                    values: new { code },
                     protocol: Request.Scheme);
 
                 await mEmailSender.SendEmailAsync(

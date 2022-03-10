@@ -4,6 +4,7 @@ using Comet.Web.Services;
 using Comet.Web.Services.Identity;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Http;
+using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc;
 using System;
 using System.Collections.Generic;
@@ -15,7 +16,7 @@ using static Comet.Web.Services.Security;
 namespace Comet.Web.API
 {
     [ApiVersion("1")]
-    [Route("api/[controller]/[action]")]
+    [Route("[controller]/[action]")]
     [ApiController]
     [Authorize(Policy = Administrator)]
     public class RolesController : ControllerBase
@@ -162,7 +163,7 @@ namespace Comet.Web.API
         [ProducesResponseType(StatusCodes.Status400BadRequest)]
         [ProducesResponseType(StatusCodes.Status401Unauthorized)]        
         [ProducesResponseType(StatusCodes.Status500InternalServerError)]
-        public async Task<IActionResult> SetClaimToRoleAsync([FromBody] RoleClaimModel model)
+        public async Task<IActionResult> SetClaimToRoleV1Async([FromBody] RoleClaimModel model)
         {
             if (!User.HasPermission(Claims.EditRoleClaims))
                 return Unauthorized();
@@ -202,7 +203,7 @@ namespace Comet.Web.API
         [ProducesResponseType(StatusCodes.Status200OK)]
         [ProducesResponseType(StatusCodes.Status401Unauthorized)]
         [ProducesResponseType(StatusCodes.Status500InternalServerError)]
-        public async Task<IActionResult> DeleteClaimFromRoleAsync([FromBody] RoleClaimModel model)
+        public async Task<IActionResult> DeleteClaimFromRoleV1Async([FromBody] RoleClaimModel model)
         {
             if (!User.HasPermission(Claims.EditRoleClaims))
                 return Unauthorized();
@@ -225,6 +226,126 @@ namespace Comet.Web.API
             if ((await mRoleManager.RemoveClaimAsync(role, claim)).Succeeded)
                 return Ok();
             return StatusCode(500);
+        }
+
+        /// <summary>
+        /// Define a new role for the user.
+        /// </summary>
+        /// <remarks>
+        /// This will add a role for the selected user.
+        /// </remarks>
+        /// <response code="200">The claim has been added.</response>
+        /// <response code="401">User has no permission.</response>
+        /// <response code="404">Target or Role not found.</response>
+        /// <response code="500">Internal server error.</response>
+        [ActionName("SetUserOnRole")]
+        [HttpPut, MapToApiVersion("1")]
+        [ProducesResponseType(StatusCodes.Status200OK)]
+        [ProducesResponseType(StatusCodes.Status401Unauthorized)]
+        [ProducesResponseType(StatusCodes.Status404NotFound)]
+        [ProducesResponseType(StatusCodes.Status500InternalServerError)]
+        public async Task<IActionResult> SetUserOnRoleV1Async([FromBody] RoleUserModel model)
+        {
+            if (!User.HasPermission(Claims.EditUserClaims))
+                return Unauthorized();
+
+            ApplicationUser user = null;
+            if (!string.IsNullOrEmpty(model.userName))
+            {
+                user = await mUserManager.FindByNameAsync(model.userName);
+            }
+            else if (!string.IsNullOrEmpty(model.email))
+            {
+                user = await mUserManager.FindByEmailAsync(model.userName);
+            }
+            else
+            {
+                user = await mUserManager.FindByIdAsync(model.userId.ToString());
+            }
+
+            if (user == null)
+                return NotFound("The selected user could not be found.");
+
+            var roles = await mUserManager.GetRolesAsync(user);
+            if (roles.Any(x => x.Equals(SuperAdministrator)) && !User.IsInRole(SuperAdministrator))
+                return Forbid("The selected user is an Super Administrator and cannot be changed.");
+
+            var selectedRole = await mRoleManager.FindByIdAsync(model.roleId.ToString());
+            if (selectedRole == null)
+                return NotFound("The selected role does not exist.");
+
+            if (selectedRole.Name.Equals(SuperAdministrator) && !User.IsInRole(SuperAdministrator))
+                return Forbid("You cannot set users on Super Administrator level.");
+
+            if (roles.Any(x => x.Equals(selectedRole.Name)))
+                return Conflict("You are trying to add the user on it's own role.");
+
+            if (roles.Count > 0)
+            {
+                await mUserManager.RemoveFromRolesAsync(user, roles);
+            }
+
+            if ((await mUserManager.AddToRoleAsync(user, selectedRole.Name)) == IdentityResult.Success)
+                return Ok(new
+                {
+                    user.Id,
+                    user.UserName,
+                    user.Email
+                });
+
+            return BadRequest();
+        }
+
+        /// <summary>
+        /// Removes an user from a role.
+        /// </summary>
+        /// <remarks>
+        /// This will remove the selected user from the role.
+        /// </remarks>
+        /// <response code="200">The role has been removed.</response>
+        /// <response code="401">User has no permission.</response>
+        /// <response code="404">Target or Role not found.</response>
+        /// <response code="500">Internal server error.</response>
+        [ActionName("DeleteUserFromRole")]
+        [HttpDelete, MapToApiVersion("1")]
+        [ProducesResponseType(StatusCodes.Status200OK)]
+        [ProducesResponseType(StatusCodes.Status401Unauthorized)]
+        [ProducesResponseType(StatusCodes.Status404NotFound)]
+        [ProducesResponseType(StatusCodes.Status500InternalServerError)]
+        public async Task<IActionResult> DeleteUserFromRoleV1Async([FromBody] RoleUserModel model)
+        {
+            if (!User.HasPermission(Claims.EditUserClaims))
+                return Unauthorized();
+
+            ApplicationUser user = null;
+            if (!string.IsNullOrEmpty(model.userName))
+            {
+                user = await mUserManager.FindByNameAsync(model.userName);
+            }
+            else if (!string.IsNullOrEmpty(model.email))
+            {
+                user = await mUserManager.FindByEmailAsync(model.userName);
+            }
+            else
+            {
+                user = await mUserManager.FindByIdAsync(model.userId.ToString());
+            }
+
+            if (user == null)
+                return NotFound("The selected user could not be found.");
+
+            var roles = await mUserManager.GetRolesAsync(user);
+            if (roles.Any(x => x.Equals(SuperAdministrator)) && !User.IsInRole(SuperAdministrator))
+                return Forbid("The selected user is an Super Administrator and cannot be changed.");
+
+            var selectedRole = await mRoleManager.FindByIdAsync(model.roleId.ToString());
+            if (selectedRole == null)
+                return NotFound("The selected role does not exist.");
+
+            if (await mUserManager.RemoveFromRoleAsync(user, selectedRole.Name) == IdentityResult.Success)
+                return Ok();
+
+            return BadRequest();
         }
 
         public class RoleUserModel

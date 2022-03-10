@@ -7,11 +7,14 @@ using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Identity.UI.Services;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.RazorPages;
+using Microsoft.AspNetCore.WebUtilities;
 using System;
 using System.Collections.Generic;
 using System.ComponentModel.DataAnnotations;
 using System.Linq;
 using System.Security.Claims;
+using System.Text;
+using System.Text.Encodings.Web;
 using System.Threading.Tasks;
 using static Comet.Web.Services.Security;
 
@@ -90,7 +93,7 @@ namespace Comet.Web.Areas.Panel.Pages.Administration
 
             if (!string.IsNullOrEmpty(profile.SocialName))
             {
-                InputUser.Pronoun = profile.SocialName;
+                InputUser.SocialName = profile.SocialName;
             }
 
             if (!string.IsNullOrEmpty(profile.Name))
@@ -111,6 +114,148 @@ namespace Comet.Web.Areas.Panel.Pages.Administration
                 return NotFound();
 
             return Page();
+        }
+
+        public async Task<IActionResult> OnPostAsync()
+        {
+            await LoadAsync();
+
+            if (!User.HasPermission(Security.Claims.EditUsers))
+            {
+                ModelState.Clear();
+                ModelState.AddModelError("NoPermission", mLanguage.GetString("NoPermission"));
+                await LoadAsync();
+                return Page();
+            }
+
+            if (Account == null)
+                return NotFound();
+
+            ModelState.Clear();
+            await TryUpdateModelAsync(InputUser);
+
+            if (!ModelState.IsValid)
+            {
+                return Page();
+            }
+
+            var currentUser = await mUserManager.GetUserAsync(User);
+            if (currentUser.Id == Account.Id)
+            {
+                ModelState.AddModelError("NoPermission", mLanguage.GetString("CannotUpdateSelf"));
+                return Page();
+            }
+
+            bool changeUsername = false;
+            if (!InputUser.UserName.Equals(Account.UserName))
+            {
+                var tempUser = await mUserManager.FindByNameAsync(InputUser.UserName);
+                if (tempUser != null)
+                {
+                    ModelState.AddModelError("UserNameInvalid", mLanguage.GetString("UserNameInUse"));
+                    return Page();
+                }
+
+                changeUsername = true;
+            }
+
+            bool changeEmail = false;
+            if (!InputUser.Email.Equals(Account.Email))
+            {
+                var tempUser = await mUserManager.FindByEmailAsync(InputUser.Email);
+                if (tempUser != null)
+                {
+                    ModelState.AddModelError("EmailInvalid", mLanguage.GetString("EmailInUse"));
+                    return Page();
+                }
+
+                changeEmail = true;
+            }
+
+            if (changeUsername)
+                await mUserManager.SetUserNameAsync(Account, InputUser.UserName);
+
+            if (changeEmail)
+            {
+                var userId = await mUserManager.GetUserIdAsync(Account);
+                var code = await mUserManager.GenerateChangeEmailTokenAsync(Account, InputUser.Email);
+                var callbackUrl =
+                    Url.Page(
+                    "/ConfirmEmailChange",
+                    pageHandler: null,
+                    values: new { userId = userId, email = InputUser.Email, code = code },
+                    protocol: Request.Scheme);
+                await mEmailSender.SendEmailAsync(
+                    InputUser.Email,
+                    "Confirm your email",
+                    $"Please confirm your account by <a href='{HtmlEncoder.Default.Encode(callbackUrl)}'>clicking here</a>.");
+            }
+
+            if (InputUser.Password)
+            {
+                // reset password ...
+                var code = await mUserManager.GeneratePasswordResetTokenAsync(Account);
+                code = WebEncoders.Base64UrlEncode(Encoding.UTF8.GetBytes(code));
+                var callbackUrl = Url.Page(
+                    "/ResetPassword",
+                    pageHandler: null,
+                    values: new { code },
+                    protocol: Request.Scheme);
+
+                await mEmailSender.SendEmailAsync(
+                    Account.Email,
+                    "Reset Password",
+                    $"Please reset your password by <a href='{HtmlEncoder.Default.Encode(callbackUrl)}'>clicking here</a>.");
+            }
+
+            if ((InputUser.Password && Account.TwoFactorEnabled) || (!InputUser.TwoFactorEnabled && Account.TwoFactorEnabled))
+            {
+                if (Account.Id != 1 && !(AccountPrincipal.IsInRole(SuperAdministrator) && !User.IsInRole(SuperAdministrator)))
+                {
+                    // remove two factor
+                    var disable2faResult = await mUserManager.SetTwoFactorEnabledAsync(Account, false);
+                    if (!disable2faResult.Succeeded)
+                    {
+                        ModelState.AddModelError("TwoFactorError", mLanguage.GetString("CouldNotDisable2fa"));
+                    }
+                }
+            }
+
+            Dictionary<string, string> claimsPairs = new();
+            claimsPairs.Add(ClaimTypes.DateOfBirth, InputUser.BirthDate?.ToString("s"));
+            claimsPairs.Add(ClaimTypes.Gender, InputUser.Gender);
+            claimsPairs.Add(CustomClaimTypes.Pronoum, InputUser.Pronoun);
+            claimsPairs.Add(CustomClaimTypes.SocialName, InputUser.SocialName);
+            claimsPairs.Add(ClaimTypes.Locality, InputUser.Locality);
+            claimsPairs.Add(ClaimTypes.Name, InputUser.Name);
+
+            foreach (var claim in claimsPairs)
+            {
+                Claim temp = User.FindFirst(claim.Key);
+
+                if (string.IsNullOrEmpty(claim.Value))
+                {
+                    if (temp != null)
+                        await mUserManager.RemoveClaimAsync(Account, temp);
+                    continue;
+                }
+
+                Claim now = new(claim.Key, claim.Value);
+
+                if (!string.IsNullOrEmpty(claim.Value))
+                {
+                    if (temp != null)
+                    {
+                        await mUserManager.ReplaceClaimAsync(Account, temp, now);
+                    }
+                    else
+                    {
+                        await mUserManager.AddClaimAsync(Account, now);
+                    }
+                }
+            }
+
+            return RedirectToPage();
         }
 
         public class UserBanModel

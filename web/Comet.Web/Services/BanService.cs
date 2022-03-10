@@ -33,31 +33,45 @@ namespace Comet.Web.Services
             mEmailSender = emailSender;
         }
 
+        public Task<ApplicationUserBan> GetUserBanByIdAsync(int id, CancellationToken cancellationToken = default)
+        {
+            cancellationToken.ThrowIfCancellationRequested();
+            return mContext.ApplicationUserBans.FirstOrDefaultAsync(x => x.Id == id, cancellationToken);
+        }
+
         public Task<List<ApplicationUserBanReason>> GetBanReasonsAsync(int type, CancellationToken cancellationToken = default)
         {
             cancellationToken.ThrowIfCancellationRequested();
-            return mContext.ApplicationUserBanReasons.Where(x => x.Type == type).ToListAsync();
+            return mContext.ApplicationUserBanReasons.Where(x => x.Type == type).ToListAsync(cancellationToken);
+        }
+
+        public Task<ApplicationUserBanReason> GetBanReasonAsync(int id, CancellationToken cancellationToken = default)
+        {
+            cancellationToken.ThrowIfCancellationRequested();
+            return mContext.ApplicationUserBanReasons.FirstOrDefaultAsync(x => x.Id == id, cancellationToken);
         }
 
         public async Task<List<AdminBanListModel>> GetAsync(int page, int ipp = 25, CancellationToken cancellationToken = default)
         {
             cancellationToken.ThrowIfCancellationRequested();
 
+            page = Math.Max(page - 1, 0);
+
             var tempResult = await mContext.ApplicationUserBans
                 .OrderBy(x => x.Flags != 0)
                 .Skip(page * ipp)
                 .Take(ipp)
-                .ToListAsync();
+                .ToListAsync(cancellationToken);
 
             var result = new List<AdminBanListModel>();
 
             foreach (var item in tempResult)
             {
-                var reason = await mContext.ApplicationUserBanReasons.AsQueryable().FirstOrDefaultAsync(x => x.Id == item.ReasonId);
+                var reason = await mContext.ApplicationUserBanReasons.FirstOrDefaultAsync(x => x.Id == item.ReasonId, cancellationToken);
                 string userName = mLanguage.GetString("InvalidAccount");
                 if (reason.Type == 0)
                 {
-                    var account = await mContext.Users.AsQueryable().FirstOrDefaultAsync(x => x.Id == item.AccountId);
+                    var account = await mContext.Users.AsQueryable().FirstOrDefaultAsync(x => x.Id == item.AccountId, cancellationToken);
                     if (account != null)
                         userName = account.UserName;
                 }
@@ -65,8 +79,9 @@ namespace Comet.Web.Services
                 {
                     userName = "TODO Player Name";
                 }
+
                 string bannedBy = mLanguage.GetString("FormerModerator");
-                var moderator = await mContext.Users.AsQueryable().FirstOrDefaultAsync(x => x.Id == item.BannedBy);
+                var moderator = await mContext.Users.FirstOrDefaultAsync(x => x.Id == item.BannedBy, cancellationToken);
                 if (moderator != null)
                     bannedBy = moderator.UserName;
 
@@ -78,7 +93,8 @@ namespace Comet.Web.Services
                     BannedBy = bannedBy,
                     Reason = mLanguage.GetString(reason.Name),
                     From = item.BanTime,
-                    To = item.ExpireTime
+                    To = item.ExpireTime,
+                    Flags = item.Flags
                 });
             }
 
@@ -87,7 +103,7 @@ namespace Comet.Web.Services
 
         public async Task<int> BanAccountAsync(ApplicationUser admin, ApplicationUser target, int reasonId, string description)
         {
-            var reason = await mContext.ApplicationUserBanReasons.AsQueryable().FirstOrDefaultAsync(x => x.Id == reasonId);
+            var reason = await mContext.ApplicationUserBanReasons.FirstOrDefaultAsync(x => x.Id == reasonId);
             if (reason == null)
                 return StatusCodes.Status500InternalServerError;
 

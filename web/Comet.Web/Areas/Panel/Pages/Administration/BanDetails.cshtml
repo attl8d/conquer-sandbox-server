@@ -1,0 +1,253 @@
+﻿@page "{BanId:int=0}"
+@using Comet.Web.Model.Identity
+@using Comet.Web.Services
+@inject LanguageService Language
+@model Comet.Web.Areas.Panel.Pages.Administration.BanDetailsModel
+@{
+    ViewData["Title"] = Language.GetString("BanDetailsTitle", Model.BanId, Model.Data.TargetName);
+}
+
+<a class="btn btn-sm btn-primary" asp-area="Panel" asp-page="/Admin/Bans">@Language.GetString("GoBack")</a>
+<h2>@Language.GetString("BanTypeWindowTitle", Model.IsGame ? Language.GetString("Game") : Language.GetString("Account"))</h2>
+<div class="row">
+    <div class="col">
+        <div class="form-group">
+            <label class="control-label col-sm-4">#:</label>
+            <div class="col-sm-8">
+                <div class="youplay-input">
+                    <input type="number" value="@Model.BanId" readonly>
+                </div>
+            </div>
+        </div>
+
+        <div class="form-group">
+            <label class="control-label col-sm-4">@Language.GetString("TargetName"):</label>
+            <div class="col-sm-8">
+                <div class="youplay-input">
+                    <input type="text" value="@Model.Data.TargetName" readonly>
+                </div>
+            </div>
+        </div>
+
+        <div class="form-group">
+            <label class="control-label col-sm-4">@Language.GetString("BannedBy"):</label>
+            <div class="col-sm-8">
+                <div class="youplay-input">
+                    <input type="text" value="@Model.Data.BannedBy" readonly>
+                </div>
+            </div>
+        </div>
+
+        <div class="form-group">
+            <label class="control-label col-sm-4">@Language.GetString("From"):</label>
+            <div class="col-sm-8">
+                <div class="youplay-input">
+                    <input type="datetime" value="@Model.Data.From.ToString("yyyy-MM-ddTHH:mm:ss")" readonly>
+                </div>
+            </div>
+        </div>
+
+        <div class="form-group">
+            <label class="control-label col-sm-4">@Language.GetString("To"):</label>
+            <div class="col-sm-8">
+                <div class="youplay-input">
+                    <input type="datetime" value="@Model.Data.To.ToString("yyyy-MM-ddTHH:mm:ss")" readonly>
+                </div>
+            </div>
+        </div>
+
+        <div class="form-group">
+            <label class="control-label col-sm-4">@Language.GetString("Reason"):</label>
+            <div class="col-sm-8">
+                <div class="youplay-input">
+                    <input type="text" value="@Model.Data.Reason" readonly>
+                </div>
+            </div>
+        </div>
+
+        <div class="form-group">
+            <label class="control-label col-sm-4">@Language.GetString("Description"):</label>
+            <div class="col-sm-8">
+                <div class="youplay-textarea">
+                    <textarea readonly>@Model.Data.Description</textarea>
+                </div>
+            </div>
+        </div>
+
+        <div class="form-group">
+            <label class="control-label col-sm-4">@Language.GetString("Status"):</label>
+            <div class="col-sm-8">
+                @Html.Raw(Model.Data.FlagMessage)
+                @if (Model.Data.IsExpired)
+                {
+                    <button class="btn btn-success">@Language.GetString("RemoveExpiredBan")</button>
+                }
+            </div>
+        </div>
+    </div>
+</div>
+
+<div class="row">    
+    <div class="col">
+        <h2>@Language.GetString("NextBan")</h2>
+        <div class="alert alert-warning">
+            @Html.Raw(Model.Data.BanTermMessage)
+        </div>
+    </div>
+</div>
+
+<div class="row">
+    <div class="col">
+        <h2>@Language.GetString("BanHistory")</h2>
+
+        <div class="table-responsive">
+            <table id="tblBanHistory" class="table table-striped">
+                <thead>
+                    <tr>
+                        <td>#</td>
+                        <td>@Language.GetString("BannedBy")</td>
+                        <td>@Language.GetString("Reason")</td>
+                        <td>@Language.GetString("From")</td>
+                        <td>@Language.GetString("To")</td>
+                        <td></td>
+                    </tr>
+                </thead>
+                <tbody>
+
+                </tbody>
+            </table>
+        </div>
+    </div>
+</div>
+
+<div class="row">
+    <div class="col">
+        <div class="form-group">
+            <div class="col-sm-4">
+                <p>
+                    <button class="btn btn-sm btn-primary" id="btnCancelBan"
+                    @(User.HasPermission(Security.Claims.CancelAccountBan) || Model.Data.Flags != BanFlags.None || Model.Data.IsExpired ? "" : "disabled")>
+                        @Language.GetString("EndBan")
+                    </button>
+                </p>
+                <small class="form-text text-muted">@Language.GetString("EndBanDesc")</small>
+            </div>
+
+            <div class="col-sm-4">
+                <p>
+                    <button class="btn btn-sm btn-primary" id="btnForgiveBan"
+                    @(User.HasPermission(Security.Claims.ForgiveAccountBan) || Model.Data.Flags != BanFlags.None || Model.Data.IsExpired ? "" : "disabled")>
+                        @Language.GetString("ForgiveBan")
+                    </button>
+                </p>
+                <small class="form-text text-muted">@Language.GetString("ForgiveBanDesc")</small>
+            </div>
+
+            <div class="col-sm-4">
+                <p>
+                    <button class="btn btn-sm btn-primary" id="btnSignalFalsePositive"
+                        @(User.HasPermission(Security.Claims.SignalFalsePositiveAccountBan) || Model.Data.Flags.HasFlag(BanFlags.FalsePositive) || Model.Data.IsExpired ? "" : "disabled")>
+                        @Language.GetString("SignalFalsePositive")
+                    </button>
+                </p>
+                
+                <small class="form-text text-muted">@Language.GetString("SignalFalsePositiveDesc")</small>
+            </div>
+        </div>
+    </div>
+</div>
+
+@section Scripts
+{
+<script>
+
+    $('#btnCancelBan').click(function() {
+        $.ajax({
+            url: '@Url.Action("CancelBan", "Bans", new { version = "1" })',
+            type: 'POST',
+            headers: {
+                'Content-Type': 'application/json'
+            },
+            data: JSON.stringify({
+                userId: @Model.Data.AccountId,
+                banId: @Model.BanId
+            }),
+            success: function(result) {
+                window.location.reload();
+            },
+            error: function(result) {
+                console.log(result);
+            }
+        });
+    });
+
+    $('#btnForgiveBan').click(function() {
+        $.ajax({
+            url: '@Url.Action("ForgiveBan", "Bans", new { version = "1" })',
+            type: 'POST',
+            headers: {
+                'Content-Type': 'application/json'
+            },
+            data: JSON.stringify({
+                userId: @Model.Data.AccountId,
+                banId: @Model.BanId
+            }),
+            success: function(result) {
+                window.location.reload();
+            },
+            error: function(result) {
+                console.log(result);
+            }
+        });
+    });
+
+    $('#btnSignalFalsePositive').click(function() {
+        $.ajax({
+            url: '@Url.Action("FalsePositiveBan", "Bans", new { version = "1" })',
+            type: 'POST',
+            headers: {
+                'Content-Type': 'application/json'
+            },
+            data: JSON.stringify({
+                userId: @Model.Data.AccountId,
+                banId: @Model.BanId
+            }),
+            success: function(result) {
+                window.location.reload();
+            },
+            error: function(result) {
+                console.log(result);
+            }
+        });
+    });
+
+    $.ajax({
+        url: `@Url.Action("QueryAccountBans", "Bans", new { version = "1" })?userId=@Model.Data.AccountId`,
+        method: 'GET',
+        success: function(result) {
+
+            let table = document.getElementById('tblBanHistory');
+            let body = table.tBodies[0];
+
+            $(body).empty();
+
+            if (result.length) {
+
+                for (let idx = 0; idx < result.length; idx++) {
+                    let row = body.insertRow();
+
+                    $(row.insertCell()).html(`${result[idx].banIdentity}`);
+                    $(row.insertCell()).html(`${result[idx].reason}`);
+                    $(row.insertCell()).html(`${result[idx].bannedBy}`);
+                    let date = new Date(result[idx].from);
+                    $(row.insertCell()).html(date.toLocaleDateString('pt-BR') + ' ' + date.toLocaleTimeString('pt-BR'));
+                    date = new Date(result[idx].to);
+                    $(row.insertCell()).html(date.toLocaleDateString('pt-BR') + ' ' + date.toLocaleTimeString('pt-BR'));
+                    $(row.insertCell()).html(`<a href="/Panel/Admin/BanDetails/${result[idx].banIdentity}"><i class="fa fa-edit"></i></a>`);
+                }
+
+            }
+        }
+    });
+</script>
+}

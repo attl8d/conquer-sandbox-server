@@ -210,8 +210,10 @@ namespace Comet.Game.States
                     await user.AddAttributesAsync(ClientUpdateType.Mana, magic.UseMana * -1);
                 if (magic.UseStamina > 0)
                     await user.AddAttributesAsync(ClientUpdateType.Stamina, magic.UseStamina * -1);
-                if (magic.UseItem > 0)
-                    await user.SpendEquipItemAsync(magic.UseItem, Math.Max(magic.UseItemNum, 1), true);
+                if (magic.UseItemNum > 0)
+                    await user.SpendEquipItemAsync(magic.WeaponSubtype, magic.UseItemNum, true);
+                if (magic.UseItemNum > 0 && user.UserPackage[Item.ItemPosition.RightHand]?.IsBow() == true)
+                    await user.SpendEquipItemAsync(50, magic.UseItemNum, true);
             }
 
             if (magic.UseXp == BattleSystem.MagicType.Normal && user != null)

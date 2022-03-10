@@ -118,6 +118,11 @@ namespace Comet.Game.States
                 return false;
             }
 
+            if (user != null)
+            {
+                await user.DecEquipmentDurabilityAsync(true, 0, 1);
+            }
+
             int adjustAtk = 0;
             if (mOwner.QueryStatus(StatusSet.FATAL_STRIKE) != null)
                 adjustAtk = mOwner.QueryStatus(StatusSet.FATAL_STRIKE).Power;

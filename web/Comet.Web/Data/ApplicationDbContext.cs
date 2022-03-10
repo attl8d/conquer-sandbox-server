@@ -89,12 +89,12 @@ namespace Comet.Web.Data
 
         protected override void OnModelCreating(ModelBuilder builder)
         {
-            builder.Entity<ApplicationUserToken>()
-                .HasKey(x => new { x.UserId, x.LoginProvider, x.Name });
-            builder.Entity<ApplicationUserRole>()
-                .HasKey(x => new { x.UserId, x.RoleId });
-            builder.Entity<ApplicationUserLogin>()
-                .HasKey(x => new { x.LoginProvider, x.ProviderKey });
+            builder.Entity<ApplicationUserToken>().HasKey(x => new { x.UserId, x.LoginProvider, x.Name });
+            builder.Entity<ApplicationUserRole>().HasKey(x => new { x.UserId, x.RoleId });
+            builder.Entity<ApplicationUserLogin>().HasKey(x => new { x.LoginProvider, x.ProviderKey });
+
+            builder.Entity<ApplicationUserBanReasonFactor>().HasKey(x => new { x.ReasonId, x.Ocurrences });
+
             builder.Entity<DeviceFlowCodes>().HasKey(x => x.UserCode);
             builder.Entity<PersistedGrant>().HasKey(x => x.Key);
 

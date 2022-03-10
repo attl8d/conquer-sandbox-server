@@ -5148,104 +5148,110 @@ namespace Comet.Game.States
                 await SendAsync(Language.StrYourBagIsFull);
                 return;
             }
-
-            try
+            else
             {
-                uint idItem = 0;
-                float nChance = 30f + ((float)(WeaponSkill[562]?.Level ?? 0) / 2);
-                if (await Kernel.ChanceCalcAsync(nChance))
+
+                try
                 {
-                    const int EuxiniteOre = 1072031;
-                    const int IronOre = 1072010;
-                    const int CopperOre = 1072020;
-                    const int SilverOre = 1072040;
-                    const int GoldOre = 1072050;
-                    int oreRate = await Kernel.NextAsync(100);
-                    int oreLevel = (await Kernel.NextAsync(10) % 10);
-                    switch (Map.ResLev) // TODO gems
+                    uint idItem = 0;
+                    float nChance = 30f + ((float)(WeaponSkill[562]?.Level ?? 0) / 2);
+                    if (await Kernel.ChanceCalcAsync(nChance))
                     {
-                        case 1:
-                            {
-                                if (oreRate < 4) // 4% Euxinite
+                        const int EuxiniteOre = 1072031;
+                        const int IronOre = 1072010;
+                        const int CopperOre = 1072020;
+                        const int SilverOre = 1072040;
+                        const int GoldOre = 1072050;
+                        int oreRate = await Kernel.NextAsync(100);
+                        int oreLevel = (await Kernel.NextAsync(10) % 10);
+                        switch (Map.ResLev) // TODO gems
+                        {
+                            case 1:
                                 {
-                                    idItem = EuxiniteOre;
+                                    if (oreRate < 4) // 4% Euxinite
+                                    {
+                                        idItem = EuxiniteOre;
+                                    }
+                                    else if (oreRate < 6) // 6% Gold Ore
+                                    {
+                                        idItem = (uint)(GoldOre + oreLevel);
+                                    }
+                                    else if (oreRate < 50) // 40% Iron Ore
+                                    {
+                                        idItem = (uint)(IronOre + oreLevel);
+                                    } // 60% nothing
+                                    break;
                                 }
-                                else if (oreRate < 6) // 6% Gold Ore
+                            case 2:
                                 {
-                                    idItem = (uint)(GoldOre + oreLevel);
+                                    if (oreRate < 5) // 5% Gold Ore
+                                    {
+                                        idItem = (uint)(GoldOre + oreLevel);
+                                    }
+                                    else if (oreRate < 15) // 10% Copper Ore
+                                    {
+                                        idItem = (uint)(CopperOre + oreLevel);
+                                    }
+                                    else if (oreRate < 50) // 35% Iron Ore
+                                    {
+                                        idItem = (uint)(IronOre + oreLevel);
+                                    }
+                                    break;
                                 }
-                                else if (oreRate < 50) // 40% Iron Ore
+                            case 3:
                                 {
-                                    idItem = (uint)(IronOre + oreLevel);
-                                } // 60% nothing
-                                break;
-                            }
-                        case 2:
-                            {
-                                if (oreRate < 5) // 5% Gold Ore
-                                {
-                                    idItem = (uint)(GoldOre + oreLevel);
+                                    if (oreRate < 5) // 5% Gold Ore
+                                    {
+                                        idItem = (uint)(GoldOre + oreLevel);
+                                    }
+                                    else if (oreRate < 12) // 7% Silver Ore
+                                    {
+                                        idItem = (uint)(SilverOre + oreLevel);
+                                    }
+                                    else if (oreRate < 25) // 13% Copper Ore
+                                    {
+                                        idItem = (uint)(CopperOre + oreLevel);
+                                    }
+                                    else if (oreRate < 50) // 25% Iron Ore
+                                    {
+                                        idItem = (uint)(IronOre + oreLevel);
+                                    }
+                                    break;
                                 }
-                                else if (oreRate < 15) // 10% Copper Ore
-                                {
-                                    idItem = (uint)(CopperOre + oreLevel);
-                                }
-                                else if (oreRate < 50) // 35% Iron Ore
-                                {
-                                    idItem = (uint)(IronOre + oreLevel);
-                                }
-                                break;
-                            }
-                        case 3:
-                            {
-                                if (oreRate < 5) // 5% Gold Ore
-                                {
-                                    idItem = (uint)(GoldOre + oreLevel);
-                                }
-                                else if (oreRate < 12) // 7% Silver Ore
-                                {
-                                    idItem = (uint)(SilverOre + oreLevel);
-                                }
-                                else if (oreRate < 25) // 13% Copper Ore
-                                {
-                                    idItem = (uint)(CopperOre + oreLevel);
-                                }
-                                else if (oreRate < 50) // 25% Iron Ore
-                                {
-                                    idItem = (uint)(IronOre + oreLevel);
-                                }
-                                break;
-                            }
+                        }
                     }
+                    else
+                    {
+                        idItem = await MineManager.MineAsync(MapIdentity, this);
+                    }
+
+                    DbItemtype itemtype = ItemManager.GetItemtype(idItem);
+                    if (itemtype == null)
+                        return;
+
+                    if (await UserPackage.AwardItemAsync(idItem))
+                    {
+                        await SendAsync(string.Format(Language.StrMineItemFound, itemtype.Name));
+                        await Log.GmLogAsync($"mine_drop", $"{Identity},{Name},{idItem},{MapIdentity},{Map?.Name},{MapX},{MapY}");
+                    }
+
+                    m_mineCount++;
                 }
-                else
+                catch (Exception ex)
                 {
-                    idItem = await MineManager.MineAsync(MapIdentity, this);
+                    await Log.WriteLogAsync(LogLevel.Error, "Mining error");
+                    await Log.WriteLogAsync(ex);
                 }
-
-                DbItemtype itemtype = ItemManager.GetItemtype(idItem);
-                if (itemtype == null)
-                    return;
-
-                if (await UserPackage.AwardItemAsync(idItem))
-                {
-                    await SendAsync(string.Format(Language.StrMineItemFound, itemtype.Name));
-                    await Log.GmLogAsync($"mine_drop", $"{Identity},{Name},{idItem},{MapIdentity},{Map?.Name},{MapX},{MapY}");
-                }
-
-                m_mineCount++;
             }
-            finally
+
+            await BroadcastRoomMsgAsync(new MsgAction
             {
-                await BroadcastRoomMsgAsync(new MsgAction
-                {
-                    Identity = Identity,
-                    Command = 0,
-                    ArgumentX = MapX,
-                    ArgumentY = MapY,
-                    Action = MsgAction.ActionType.MapMine
-                }, true);
-            }
+                Identity = Identity,
+                Command = 0,
+                ArgumentX = MapX,
+                ArgumentY = MapY,
+                Action = MsgAction.ActionType.MapMine
+            }, true);
         }
 
         #endregion

@@ -397,13 +397,13 @@
                             @if (User.IsInRole(Security.Administrator)
                             || User.IsInRole(Security.SuperAdministrator))
                             {
-                                <text> | <a asp-area="Panel" asp-page="/Admin/Index">@LanguageManager.GetString("AdminPanel")</a></text>
+                                <text> | <a asp-area="Panel" asp-page="/Administration/Index">@LanguageManager.GetString("AdminPanel")</a></text>
                             }
                             @if (User.IsInRole(Security.Moderator)
                             || User.IsInRole(Security.Administrator)
                             || User.IsInRole(Security.SuperAdministrator))
                             {
-                                <text> | <a asp-area="Panel" asp-page="/Moderator/Index">@LanguageManager.GetString("ModeratorPanel")</a></text>
+                                <text> | <a asp-area="Panel" asp-page="/Moderation/Index">@LanguageManager.GetString("ModeratorPanel")</a></text>
                             }
                         </p>
                         <span class="dropup dropdown-hover">

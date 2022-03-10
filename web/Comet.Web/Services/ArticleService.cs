@@ -160,5 +160,16 @@ namespace Comet.Web.Services
                 StatusCode = StatusCodes.Status201Created
             };
         }
+
+        public async Task<int> RemoveCommentAsync(int commentId)
+        {
+            var comment = await mContext.ArticleComments.FirstOrDefaultAsync(x => x.Id == commentId);
+            if (comment == null || (comment.Flag & 0x1) != 0)
+                return StatusCodes.Status204NoContent;
+
+            comment.Flag |= 1;
+            await mContext.SaveAsync(comment);
+            return StatusCodes.Status200OK;
+        }
     }
 }

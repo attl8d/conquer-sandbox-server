@@ -19,6 +19,7 @@ namespace Comet.Web.Services
             service.AddTransient<IPasswordHasher<ApplicationUser>, WhirlpoolPasswordService<ApplicationUser>>();
             service.AddTransient<RealmService>();
             service.AddTransient<MaintenanceService>();
+            service.AddTransient<BanService>();
             return service;
         }
     }

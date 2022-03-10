@@ -876,6 +876,9 @@
   <data name="Permission.ForgiveGameBan" xml:space="preserve">
     <value>Perdoar Banimento de Conta de Jogo</value>
   </data>
+  <data name="Permission.Super" xml:space="preserve">
+    <value>Super Usuário</value>
+  </data>
   <data name="Permission.UpdateRoles" xml:space="preserve">
     <value>Atualizar Funções</value>
   </data>
@@ -928,7 +931,7 @@
     <value>Perfil de {0}</value>
   </data>
   <data name="Pronoun" xml:space="preserve">
-    <value>Como deseja ser chamado</value>
+    <value>Pronome</value>
   </data>
   <data name="PublishDate" xml:space="preserve">
     <value>Data de Publicação</value>
@@ -1169,6 +1172,9 @@
   </data>
   <data name="SignIn" xml:space="preserve">
     <value>Conecte-se</value>
+  </data>
+  <data name="SocialName" xml:space="preserve">
+    <value>Como deseja ser chamado</value>
   </data>
   <data name="StaffDisrespect" xml:space="preserve">
     <value>Desrespeito a Staff</value>

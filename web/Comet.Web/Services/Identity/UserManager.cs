@@ -18,7 +18,7 @@ namespace Comet.Web.Services.Identity
 {
     public class UserManager : UserManager<ApplicationUser>
     {
-        private readonly ApplicationDbContext mDbContext;
+        private readonly ApplicationDbContext mContext;
         private readonly IServiceProvider mServices;
         private readonly LanguageService mLanguage;
 
@@ -34,7 +34,7 @@ namespace Comet.Web.Services.Identity
             LanguageService language)
             : base(store, optionsAccessor, passwordHasher, userValidators, passwordValidators, keyNormalizer, errors, services, logger)
         {
-            mDbContext = dbContext;
+            mContext = dbContext;
             mServices = services;
             mLanguage = language;
         }
@@ -45,11 +45,11 @@ namespace Comet.Web.Services.Identity
 
             Dictionary<string, Claim> dictClaims = result.ToDictionary(x => x.Type);
             // get role
-            var roleUser = await mDbContext.UserRoles.AsQueryable().FirstOrDefaultAsync(x => x.UserId == user.Id);
+            var roleUser = await mContext.UserRoles.AsQueryable().FirstOrDefaultAsync(x => x.UserId == user.Id);
             int idRole = roleUser?.RoleId ?? -1;
 
             // get the claims
-            var roleClaims = await mDbContext.RoleClaims.AsQueryable().Where(x => x.RoleId == idRole).ToListAsync();
+            var roleClaims = await mContext.RoleClaims.AsQueryable().Where(x => x.RoleId == idRole).ToListAsync();
             foreach (var roleClaim in roleClaims)
             {
                 if (!dictClaims.ContainsKey(roleClaim.ClaimType))
@@ -63,7 +63,7 @@ namespace Comet.Web.Services.Identity
             }
 
             // then we get the user claims
-            var userClaims = await mDbContext.UserClaims.AsQueryable().Where(x => x.UserId == user.Id).ToListAsync();
+            var userClaims = await mContext.UserClaims.AsQueryable().Where(x => x.UserId == user.Id).ToListAsync();
             foreach (var userClaim in userClaims)
             {
                 if (!dictClaims.ContainsKey(userClaim.ClaimType))
@@ -86,10 +86,10 @@ namespace Comet.Web.Services.Identity
 
             string title = mLanguage.GetString(Security.Member.ToString());
 
-            var roleUser = await mDbContext.UserRoles.AsQueryable().FirstOrDefaultAsync(x => x.UserId == user.Id, cancellationToken: cancellationToken);
+            var roleUser = await mContext.UserRoles.AsQueryable().FirstOrDefaultAsync(x => x.UserId == user.Id, cancellationToken: cancellationToken);
             if (roleUser != null)
             {
-                var role = await mDbContext.Roles.AsQueryable().FirstOrDefaultAsync(x => x.Id == roleUser.RoleId, cancellationToken: cancellationToken);
+                var role = await mContext.Roles.AsQueryable().FirstOrDefaultAsync(x => x.Id == roleUser.RoleId, cancellationToken: cancellationToken);
                 if (role != null)
                     title = mLanguage.GetString(role.Name);
             }
@@ -111,6 +111,15 @@ namespace Comet.Web.Services.Identity
                 profile.Name += $" ({principal.FindFirstValue(CustomClaimTypes.SocialName)})";
             }
             profile.AboutMe = principal.FindFirst(CustomClaimTypes.SelfDescription)?.Value ?? string.Empty;
+
+            profile.Gender = principal.FindFirstValue(ClaimTypes.Gender) ?? string.Empty;
+            profile.SocialName = principal.FindFirstValue(CustomClaimTypes.SocialName) ?? string.Empty;
+            profile.Pronoun = principal.FindFirstValue(CustomClaimTypes.Pronoum) ?? string.Empty;
+
+            if (DateTime.TryParse(principal.FindFirstValue(ClaimTypes.DateOfBirth), out var dob))
+                profile.DateOfBirth = dob;
+
+            profile.Locality = principal.FindFirstValue(ClaimTypes.Locality) ?? string.Empty;
             return profile;
         }
 
@@ -120,11 +129,11 @@ namespace Comet.Web.Services.Identity
             cancellationToken.ThrowIfCancellationRequested();
 
             BanReport banReport = new BanReport();
-            var userBans = await mDbContext.ApplicationUserBans.AsQueryable().Where(x => x.AccountId == user.Id).ToListAsync(cancellationToken);
+            var userBans = await mContext.ApplicationUserBans.AsQueryable().Where(x => x.AccountId == user.Id).ToListAsync(cancellationToken);
             foreach (var dbBan in userBans)
             {
                 BanReport.BanInformation info = new BanReport.BanInformation();
-                var banReason = await mDbContext.ApplicationUserBanReasons.AsQueryable().FirstOrDefaultAsync(x => x.Id == dbBan.ReasonId, cancellationToken: cancellationToken);
+                var banReason = await mContext.ApplicationUserBanReasons.AsQueryable().FirstOrDefaultAsync(x => x.Id == dbBan.ReasonId, cancellationToken: cancellationToken);
                 if (banReason == null)
                     continue;
 
@@ -151,7 +160,7 @@ namespace Comet.Web.Services.Identity
                 info.To = dbBan.ExpireTime;
                 info.Flags = (BanFlags)dbBan.Flags;
 
-                var bannedBy = await mDbContext.Users.AsQueryable().FirstOrDefaultAsync(x => x.Id == dbBan.BannedBy, cancellationToken: cancellationToken);
+                var bannedBy = await mContext.Users.AsQueryable().FirstOrDefaultAsync(x => x.Id == dbBan.BannedBy, cancellationToken: cancellationToken);
                 if (bannedBy == null)
                 {
                     info.BannedBy = mLanguage.GetString("FormerModerator");
@@ -171,7 +180,7 @@ namespace Comet.Web.Services.Identity
 
             var report = await GetBanInformationAsync(user, cancellationToken);
 
-            var banType = await mDbContext.ApplicationUserBanReasons.AsQueryable().FirstOrDefaultAsync(x => x.Id == type, cancellationToken: cancellationToken);
+            var banType = await mContext.ApplicationUserBanReasons.FirstOrDefaultAsync(x => x.Id == type, cancellationToken: cancellationToken);
 
             if (banType == null)
                 return null;
@@ -186,7 +195,7 @@ namespace Comet.Web.Services.Identity
             if (banType.Type == 0)
             {
                 int banCount = report.Account.Count(x => x.ReasonId == type && (x.Flags & BanFlags.Forgiven) == 0);
-                var factors = await mDbContext.ApplicationUserBanReasonsFactors.AsQueryable().Where(x => x.ReasonId == banType.Id).ToListAsync();
+                var factors = await mContext.ApplicationUserBanReasonsFactors.Where(x => x.ReasonId == banType.Id).ToListAsync();
                 if (banCount > 0 && factors.All(x => x.Ocurrences != banCount))
                 {
                     if (banCount >= factors.Max(x => x.Ocurrences))
@@ -202,7 +211,7 @@ namespace Comet.Web.Services.Identity
             else
             {
                 int banCount = report.Game.Count(x => x.ReasonId == type && (x.Flags & BanFlags.Forgiven) == 0);
-                var factors = await mDbContext.ApplicationUserBanReasonsFactors.AsQueryable().Where(x => x.ReasonId == banType.Id).ToListAsync();
+                var factors = await mContext.ApplicationUserBanReasonsFactors.Where(x => x.ReasonId == banType.Id).ToListAsync();
                 if (banCount > 0 && factors.All(x => x.Ocurrences != banCount))
                 {
                     if (banCount >= factors.Max(x => x.Ocurrences))
@@ -238,7 +247,7 @@ namespace Comet.Web.Services.Identity
             ThrowIfDisposed();
             cancellationToken.ThrowIfCancellationRequested();
 
-            var accounts = await mDbContext.GameAccounts
+            var accounts = await mContext.GameAccounts
                 .Where(x => x.ParentId == user.Id)
                 .ToListAsync(cancellationToken);
             var bans = await GetBanInformationAsync(user, cancellationToken);
@@ -256,6 +265,24 @@ namespace Comet.Web.Services.Identity
             }
 
             return result;
+        }
+
+        public Task<List<ApplicationUser>> GetUsersAsync(int page, int ipp, CancellationToken cancellationToken = default)
+        {
+            ThrowIfDisposed();
+            cancellationToken.ThrowIfCancellationRequested();
+
+            return mContext.Users.Skip(Math.Max(0, (page - 1)) * ipp)
+                .Take(ipp)
+                .ToListAsync(cancellationToken);
+        }
+
+        public async Task<List<ApplicationUser>> GetUsersByRoleAsync(int roleId, int page = 0, int ipp = 10, CancellationToken cancellationToken = default)
+        {
+            ThrowIfDisposed();
+            cancellationToken.ThrowIfCancellationRequested();
+            var userIds = await mContext.UserRoles.Where(x => x.RoleId == roleId).Select(x => x.UserId).ToArrayAsync(cancellationToken);
+            return await mContext.Users.Where(x => userIds.Any(y => y == x.Id)).ToListAsync(cancellationToken);
         }
     }
 }

@@ -6,6 +6,7 @@ using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 using System.Collections.Generic;
 using System.Threading.Tasks;
+using static Comet.Web.Services.Security;
 
 namespace Comet.Web.API
 {
@@ -32,6 +33,7 @@ namespace Comet.Web.API
         /// </remarks>
         /// <response code="200">A list with the article category types.</response>
         /// <response code="500">Internal server error.</response>
+        [ActionName("GetActiveArticleCategoryTypes")]
         [HttpGet(Name = "GetActiveArticleCategoryTypes"), MapToApiVersion("1")]
         [ProducesResponseType(typeof(List<ArticleCategoryTypeModel>), StatusCodes.Status200OK)]
         [ProducesResponseType(StatusCodes.Status500InternalServerError)]
@@ -50,6 +52,7 @@ namespace Comet.Web.API
         /// <param name="type">The category type to be exibhited.</param>
         /// <response code="200">A list with the article categories.</response>
         /// <response code="500">Internal server error.</response>
+        [ActionName("GetActiveArticleCategoriesByType")]
         [HttpGet(Name = "GetActiveArticleCategoriesByType"), MapToApiVersion("1")]
         [ProducesResponseType(typeof(List<ArticleCategoryModel>), StatusCodes.Status200OK)]
         [ProducesResponseType(StatusCodes.Status500InternalServerError)]
@@ -70,7 +73,8 @@ namespace Comet.Web.API
         /// <param name="ipp">Indexes per page.</param>
         /// <response code="200">A list with the articles.</response>
         /// <response code="500">Internal server error.</response>
-        [HttpGet(Name = "GetByCategoryType"), MapToApiVersion("1")]
+        [ActionName("GetArticleByCategoryType")]
+        [HttpGet(Name = "GetArticleByCategoryType"), MapToApiVersion("1")]
         [ProducesResponseType(typeof(List<AdminArticleListModel>), StatusCodes.Status200OK)]
         [ProducesResponseType(StatusCodes.Status500InternalServerError)]
         public async Task<IActionResult> GetByCategoryTypeV1Async(int categoryType, int page = 0, int ipp = 10)
@@ -92,7 +96,8 @@ namespace Comet.Web.API
         /// <response code="401">Access denied.</response>
         /// <response code="500">Something went wrong.</response>
         [Authorize]
-        [HttpPost(Name = "PostComment"), MapToApiVersion("1")]
+        [ActionName("Comment")]
+        [HttpPut(Name = "PostComment"), MapToApiVersion("1")]
         [ProducesResponseType(typeof(ArticleCommentResultModel), StatusCodes.Status200OK)]
         [ProducesResponseType(typeof(ArticleCommentResultModel), StatusCodes.Status204NoContent)]
         [ProducesResponseType(typeof(ArticleCommentResultModel), StatusCodes.Status400BadRequest)]
@@ -109,6 +114,35 @@ namespace Comet.Web.API
 
             var result = await mService.SaveCommentAsync(model.PostId, user.Id, model.Message, HttpContext.Connection.RemoteIpAddress.ToString(), Request.Cookies["ReadGuid"]);
             return StatusCode(result.StatusCode, result);
+        }
+
+        /// <summary>
+        /// Deletes a comment from the given article.
+        /// </summary>
+        /// <remarks>
+        /// This request will remove a comment from an article. The user must be in the Moderator role and have the permission
+        /// to exclude comments.
+        /// </remarks>
+        /// <response code="200">Server will respond if success. No data received.</response>
+        /// <response code="204">An article or comment with the given ID could not be found.</response>
+        /// <response code="400">Something in the request isn't correct. Check the request payload.</response>
+        /// <response code="401">Access denied.</response>
+        /// <response code="500">Something went wrong.</response>
+        [Authorize(Policy = Moderator)]
+        [ActionName("RemoveComment")]
+        [HttpDelete, MapToApiVersion("1")]
+        [ProducesResponseType(typeof(ArticleCommentResultModel), StatusCodes.Status200OK)]
+        [ProducesResponseType(typeof(ArticleCommentResultModel), StatusCodes.Status204NoContent)]
+        [ProducesResponseType(typeof(ArticleCommentResultModel), StatusCodes.Status400BadRequest)]
+        [ProducesResponseType(typeof(ArticleCommentResultModel), StatusCodes.Status401Unauthorized)]
+        [ProducesResponseType(typeof(ArticleCommentResultModel), StatusCodes.Status500InternalServerError)]
+        public async Task<IActionResult> RemoveCommentV1Async(int commentId)
+        {
+            if (!User.HasPermission(Claims.CanModerateComments))
+                return Unauthorized();
+
+            int result = await mService.RemoveCommentAsync(commentId);
+            return Ok(result);
         }
 
         public class PostCommentModel

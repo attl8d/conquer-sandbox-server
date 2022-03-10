@@ -1,0 +1,465 @@
+﻿@page "{UserId:int=0}"
+@using Comet.Web.Services
+@inject LanguageService Language;
+@model Comet.Web.Areas.Panel.Pages.Administration.UserModel
+@{
+    ViewData["title"] = Language.GetString("UserAdministration", Model.Account.UserName);
+}
+
+@if (Model.BanReport.IsAccountBanned && Model.BanReport.CurrentBan != null)
+{
+    <div class="alert alert-warning">
+        <h4 class="alert-heading">@Language.GetString("UserIsCurrentlyBanned")</h4>
+        <p>@Language.GetString("UserIsBannedProfileMessage", Model.BanReport.CurrentBan.Reason, Model.BanReport.CurrentBan.To.ToString("f"))</p>
+        <a asp-area="Panel" asp-page="/Admin/BanDetails" asp-route-BanId="@Model.BanReport.CurrentBan.BanIdentity" class="btn btn-secondary mt-10">Visualizar Banimento</a>
+    </div>
+}
+
+<a class="btn btn-sm btn-primary" asp-area="Panel" asp-page="/Administration/Users">@Language.GetString("GoBack")</a>
+<div class="row">
+    <form method="post">
+        <div class="col-md-6">
+            <h3>@Language.GetString("AccountInformation")</h3>
+            <div class="form-horizontal mt-30 mb-40">
+                <div class="form-group">
+                    <label class="control-label col-sm-4">#:</label>
+                    <div class="col-sm-8">
+                        <div class="youplay-input">
+                            <input type="text" value="@Model.Account.Id" readonly>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="form-group">
+                    <label class="control-label col-sm-4">@Language.GetString("Email")</label>
+                    <div class="col-sm-8">
+                        <div class="youplay-input">
+                            <input asp-for="InputUser.Email">
+                        </div>
+                        <small id="emailHelp" class="form-text text-muted">@Language.GetString("AdmPanelEmailAlert")</small>
+                    </div>
+                </div>
+
+                <div class="form-group">
+                    <label class="control-label col-sm-4">@Language.GetString("UserName")</label>
+                    <div class="col-sm-8">
+                        <div class="youplay-input">
+                            <input asp-for="InputUser.UserName">
+                        </div>
+                    </div>
+                </div>
+
+                <div class="form-group">
+                    <label class="control-label col-sm-4">@Language.GetString("Password")</label>
+                    <div class="col-sm-8">
+                        <div class="youplay-checkbox">
+                            <input type="checkbox" asp-for="InputUser.Password">
+                            <label asp-for="InputUser.Password">@Language.GetString("ResetPassword")</label>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="form-group">
+                    <div class="col-sm-offset-4">
+                        <div class="youplay-checkbox">
+                            <input type="checkbox" asp-for="InputUser.TwoFactorEnabled">
+                            <label asp-for="InputUser.TwoFactorEnabled">@Language.GetString("TwoFactorEnabled")</label>
+                        </div>
+                        <small id="twoFactorHelp" class="form-text text-muted">@Language.GetString("TwoFactorDisableAlert")</small>
+                    </div>
+                </div>
+
+                <div class="form-group">
+                    <label class="control-label col-sm-4">@Language.GetString("AccountType")</label>
+                    <div class="col-sm-8">
+                        <div class="youplay-select">
+                            <select asp-for="InputUser.AccountType">
+                                <option></option>
+                            </select>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="form-group">
+                    <label class="control-label col-sm-4">@Language.GetString("CreationDate")</label>
+                    <div class="col-sm-8">
+                        <div class="youplay-input">
+                            <input type="datetime" value="@Model.Account.CreationDate.ToString("yyyy-MM-ddTHH:mm:ss")" readonly>
+                        </div>
+                    </div>
+                </div>
+
+            </div>
+        </div>
+        <div class="col-md-6">
+            <h3>@Language.GetString("PersonalInformation")</h3>
+
+            <div class="form-horizontal mt-30 mb-40">
+
+                <div class="form-group">
+                    <label class="control-label col-sm-4">@Language.GetString("Name")</label>
+                    <div class="col-sm-8">
+                        <div class="youplay-input">
+                            <input asp-for="InputUser.Name">
+                        </div>
+                    </div>
+                </div>
+
+                <div class="form-group">
+                    <label class="control-label col-sm-4">@Language.GetString("BirthDate")</label>
+                    <div class="col-sm-8">
+                        <div class="youplay-input">
+                            <input asp-for="InputUser.BirthDate">
+                        </div>
+                    </div>
+                </div>
+
+                <div class="form-group">
+                    <label class="control-label col-sm-4">@Language.GetString("Gender")</label>
+                    <div class="col-sm-8">
+                        <div class="youplay-select">
+                            <select asp-for="InputUser.Gender">
+                                <option value=""></option>
+                                <option value="M">Masculino</option>
+                                <option value="F">Feminino</option>
+                                <option value="O">Outro</option>
+                            </select>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="form-group">
+                    <label class="control-label col-sm-4">@Language.GetString("Pronoun")</label>
+                    <div class="col-sm-8">
+                        <div class="youplay-input">
+                            <input asp-for="InputUser.Pronoun" class="youplay-input" />
+                        </div>
+                    </div>
+                </div>
+
+                <div class="form-group">
+                    <label class="control-label col-sm-4">@Language.GetString("SocialName")</label>
+                    <div class="col-sm-8">
+                        <div class="youplay-input">
+                            <input asp-for="InputUser.SocialName" class="youplay-input" />
+                        </div>
+                    </div>
+                </div>
+
+                <div class="form-group">
+                    <label class="control-label col-sm-4">@Language.GetString("Location")</label>
+                    <div class="col-sm-8">
+                        <div class="youplay-input">
+                            <input asp-for="InputUser.Locality" class="youplay-input" />
+                        </div>
+                    </div>
+                </div>
+
+                <button type="submit" class="btn btn-success">@Language.GetString("Save")</button>
+            </div>
+        </div>
+    </form>
+</div>
+<div class="row">
+    <div class="col-md-6 table-responsive">
+        <h2>@Language.GetString("UserClaims")</h2>
+        <div class="youplay-input youplay-select">
+            <select id="claimSelect">
+                <option value=""></option>
+                @foreach (var claim in Model.Claims.Where(x => !x.Key.Equals(Security.Claims.Super.ToString())))
+                {
+                    <option value="@claim.Key">@Language.GetString(claim.Value.ToPermissionString())</option>
+                }
+            </select>
+        </div>
+        <table id="tblUserClaims" class="table table-striped table-hover">
+            <thead>
+                <tr>
+                    <th>@Language.GetString("Name")</th>
+                    <th></th>
+                </tr>
+            </thead>
+            <tbody></tbody>
+        </table>
+    </div>
+
+    <div class="col-md-6">
+        <h2>@Language.GetString("UserBans")</h2>
+
+        @Html.Raw(Language.GetString("BanDescriptionAndObservations"))
+
+        <div id="banResultMessage"></div>
+        <div id="banTermMessage" class="alert alert-warning"></div>
+
+        <div class="form-horizontal mt-30 mb-40">
+            <form id="frmDoBan">
+                <input type="hidden" asp-for="InputBan.UserId" value="@Model.Account.Id" />
+                <div class="form-group">
+                    <label class="control-label col-sm-4">@Language.GetString("BanType")</label>
+                    <div class="col-sm-8">
+                        <div class="youplay-input youplay-select">
+                            <select asp-for="InputBan.ReasonId">
+                                <option value=""></option>
+                                
+                            </select>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="form-group">
+                    <label class="control-label col-sm-4">@Language.GetString("Description")</label>
+                    <div class="col-sm-8">
+                        <div class="youplay-input">
+                            <input asp-for="InputBan.Description" class="youplay-input" />
+                        </div>
+                    </div>
+                </div>
+
+                @if (!Model.BanReport.IsAccountBanned)
+                {
+                    <button type="submit" class="btn btn-danger">@Language.GetString("DoBan")</button>
+                }
+            </form>
+        </div>
+
+        <table id="tblUserBans" class="table table-striped table-hover">
+            <thead>
+                <tr>
+                    <th>@Language.GetString("Reason")</th>
+                    <th>@Language.GetString("StartDate")</th>
+                    <th>@Language.GetString("EndDate")</th>
+                    <th></th>
+                </tr>
+            </thead>
+            <tbody></tbody>
+        </table>
+    </div>
+</div>
+
+@section Scripts
+{
+<script>
+
+    const AccountType = @Model.InputUser.AccountType;
+
+    function loadClaimsForUser() {
+        $.ajax({
+            url: '@Url.Action("GetClaimsByUser", "Accounts", new { version = "1" })',
+            type: 'GET',
+            data: {
+                userId: @Model.UserId
+            },
+            success: function (result) {
+
+                let table = document.getElementById('tblUserClaims');
+                let body = table.tBodies[0];
+
+                $(body).empty();
+
+                if (result.length) {
+                    for (let idx = 0; idx < result.length; idx++)
+                    {
+                        let row = body.insertRow();
+                        row.insertCell().innerHTML = result[idx].claimName;
+                        row.insertCell().innerHTML = `<i onclick="removeClaimFromUser(@Model.Account.Id, '${result[idx].claimType}', $(this).parent().parent());" class="fa fa-close text-danger" title="@Language.GetString("Remove")"></i>`;
+                    }
+                }
+                else {
+                    let cell = body.insertRow().insertCell();
+                    cell.colSpan = 3;
+                    cell.innerHTML = '@Language.GetString("NoData")';
+                }
+
+                enableClaimSelect();
+            }
+        });
+    }
+
+    function enableClaimSelect() {
+        $('#claimSelect>option').each(function() {
+            $(this).show();
+        });
+
+        $('#claimSelect>option').each(function() {
+            if (this.textContent === '')
+                return;
+
+            let option = $(this);
+            let currentClaim = this.textContent;
+
+            $('#tblUserClaims>tbody>tr').each(function() {
+                if (this.cells.length > 1 && this.cells[0].textContent === currentClaim) {
+                    $(option).hide();
+                    return false;
+                }
+            });
+        });
+
+        $("#claimSelect option:selected").prop("selected", false);
+    }
+
+    function removeClaimFromUser(idUser, claimType, row) {
+        $.ajax({
+            url: '@Url.Action("DeleteClaimFromUser", "Accounts", new { version = "1" })',
+            type: 'DELETE',
+            headers: {
+                'Content-Type': 'application/json'
+            },
+            data: JSON.stringify({
+                userId: idUser,
+                claimType: `${claimType}`
+            }),
+            success: function(result) {
+                $(row).remove();
+                enableClaimSelect();
+            },
+            error: function(result) {
+            }
+        });
+    }
+
+    $('#claimSelect').change(function(){
+        if (this.value === '')
+            return;
+
+        $.ajax({
+            url: '@Url.Action("SetClaimToUser", "Accounts", new { version = "1" })',
+            type: 'PUT',
+            headers: {
+                'Content-Type': 'application/json'
+            },
+            data: JSON.stringify({
+                userId: @Model.UserId,
+                claimType: `${this.value}`
+            }),
+            success: function(result) {
+                loadClaimsForUser();
+            },
+            error: function(result) {
+                console.log(result);
+            }
+        });
+    });
+
+    $('#InputBan_ReasonId').change(function() {
+        if (this.value === '') {
+            return;
+        }
+
+        let data = {
+                userId: @Model.UserId,
+                reason: Number(this.value)
+            };
+
+        $.ajax({
+            url: '@Url.Action("GetUserBanFactor", "Bans", new { version = "1" })',
+            type: 'POST',
+            headers: {
+                'Content-Type': 'application/json'
+            },
+            data: JSON.stringify(data),
+            success: function(result) {
+                $('#banTermMessage').html(result.terms);
+                $('#banTermMessage').show();
+            },
+            error: function(result) {
+                console.log(result);
+            }
+        });
+    });
+
+    $('#frmDoBan').submit(function() {
+        event.preventDefault();
+
+        let data = {
+            userId: @Model.Account.Id,
+            reason: Number($('#InputBan_ReasonId').find(":selected").val()),
+            description: $('#InputBan_Description').val()
+        };
+        console.log(data);
+
+        $.ajax({
+            type: 'POST',
+            url: '@Url.Action("DoBanAccount", "Bans", new { version = "1" })',
+             headers: {
+                'Content-Type': 'application/json'
+            },
+            data: JSON.stringify(data),
+            success: function(result) {
+                if (result != '') {
+                    $('#banResultMessage').addClass('alert alert-primary');
+                    $('#banResultMessage').html(result);
+                    $('#banResultMessage').show();
+                }
+                else window.location.reload();
+            },
+            error: function(result) {
+                $('#banResultMessage').addClass('alert alert-danger');
+                $('#banResultMessage').html(`${result.status} - ${result.statusText}`);
+                console.log(result);
+                $('#banResultMessage').show();
+            }
+        });
+    });
+
+    $(document).ready(function() {
+        $('#banResultMessage').hide();
+        $('#banTermMessage').hide();
+
+        $.ajax({
+            url: '@Url.Action("", "Roles", new { version = "1" })',
+            method: 'GET',
+            success: function(result) {
+                for (let idx = 0; idx < result.length; idx++) {
+                    $('#InputUser_AccountType').append(`<option value="${result[idx].id}">${result[idx].name}</option>`);
+                }
+
+                $(`#InputUser_AccountType option[value="${AccountType}"]`).attr('selected', 'selected');
+            },
+            error: function (result) {
+
+            }
+        });
+
+        $.ajax({
+            url: '@Url.Action("QueryBanReasons", "Bans", new { version = "1" })?type=0',
+            method: 'GET',
+            success: function (result) {
+                const select = $('#InputBan_ReasonId');
+                if (typeof select !== 'undefined' && select != null) {
+                    for (let i = 0; i < result.length; i++) {
+                        $(select).append(`<option value="${result[i].id}">${result[i].name}</option>`);
+                    }
+                }
+            }
+        });
+
+        $.ajax({
+            url: '@Url.Action("QueryAccountBans", "Bans", new { version = "1" })?userId=@(Model.Account.Id)',
+            method: 'GET',
+            success: function (result) {
+                let table = document.getElementById('tblUserBans');
+                let body = table.tBodies[0];
+
+                $(body).empty();
+
+                if (result.length) {
+                    for (let idx = 0; idx < result.length; idx++) {
+                        let row = body.insertRow();
+                        row.insertCell().innerHTML = result[idx].reason;
+                        let date = new Date(result[idx].from);
+                        row.insertCell().innerHTML = date.toLocaleDateString('pt-BR') + ' ' + date.toLocaleTimeString('pt-BR');
+                        date = new Date(result[idx].to);
+                        row.insertCell().innerHTML = date.toLocaleDateString('pt-BR') + ' ' + date.toLocaleTimeString('pt-BR');
+                        row.insertCell().innerHTML = `<a href=""><i class="fa fa-edit"></i></a>`;
+                    }
+                }
+            }
+        });
+
+        loadClaimsForUser();
+
+    });
+
+</script>
+}

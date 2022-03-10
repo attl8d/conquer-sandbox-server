@@ -1,0 +1,67 @@
+﻿@using Comet.Web.Services
+@inject LanguageService Language
+@{
+    Layout = "/Pages/Shared/_Layout.cshtml";
+}
+
+@await Html.PartialAsync("../../Pages/Shared/_ViewTitleContainer")
+
+<div class="container youplay-content">
+    <div class="row">
+        <div class="col-md-3">
+            <div class="side-block">
+                <h4 class="block-title">
+                    Usuário
+                </h4>
+                <ul class="block-content">
+                    <li><a asp-area="Panel" asp-page="/Admin/Users">Usuários</a></li>
+                    <li><a asp-area="Panel" asp-page="/Admin/Roles">Grupos de Úsuário</a></li>
+                    <li><a asp-area="Panel" asp-page="/Admin/Bans">Banimentos</a></li>
+                </ul>
+
+                <h4 class="block-title">
+                    Fóruns
+                </h4>
+                <ul class="block-content">
+                    <li><a href="#">Fóruns</a></li>
+                    <li><a href="#">Publicações</a></li>
+                </ul>
+
+                <h4 class="block-title">
+                    Artigos
+                </h4>
+                <ul class="block-content">
+                    <li><a asp-area="Panel" asp-page="/Admin/Articles/Index">Artigos</a></li>
+                </ul>
+
+                <h4 class="block-title">
+                    Loja
+                </h4>
+                <ul class="block-content">
+                    <li><a href="#">Produtos</a></li>
+                </ul>
+
+                @if (User.IsInRole(Security.SuperAdministrator))
+                {
+                    <h4 class="block-title">
+                        Administrativo
+                    </h4>
+                    <ul class="block-content">
+                        <li><a asp-area="Panel" asp-page="/Admin/Realms">Servidores</a></li>
+                    </ul>
+                }
+            </div>
+        </div>
+        <div class="col-md-9">
+            @RenderBody()
+        </div>
+    </div>
+</div>
+
+@section Styles {
+    @await RenderSectionAsync("Styles", false)
+}
+
+@section Scripts {
+    @await RenderSectionAsync("Scripts", false)
+}

@@ -5802,7 +5802,7 @@ namespace Comet.Game.States
                 return false;
             }
 
-            EnlightenPoints -= 100;
+            EnlightenPoints = Math.Max(EnlightenPoints - 100, 0);
 
             if (target.EnlightenedTimes == 0 || !m_enlightTimeExp.IsActive())
             {
@@ -5814,7 +5814,7 @@ namespace Comet.Game.States
 
             // we will send instand 300 uplev exp and 300 will be awarded for 5 minutes later
             await target.AwardExperienceAsync(CalculateExpBall(ENLIGHTENMENT_UPLEV_MAX_EXP / 2), true);
-            await SynchroAttributesAsync(ClientUpdateType.EnlightenPoints, EnlightenPoints, true);
+            //await SynchroAttributesAsync(ClientUpdateType.EnlightenPoints, EnlightenPoints, true);
 
             await SaveAsync();
             await target.SaveAsync();

@@ -793,6 +793,28 @@ namespace Comet.Game.Packets
                             EventManager.RemoveEvent(type);
                             return true;
                         }
+
+                    case "/player":
+                        {
+                            if (param.Equals("all"))
+                            {
+                                await user.SendAsync($"Players Online: {RoleManager.OnlinePlayers}, Unique Online Players: {RoleManager.OnlineUniquePlayers}, Max Online Players: {RoleManager.MaxOnlinePlayers}");
+                            }
+                            else if (param.Equals("map"))
+                            {
+                                await user.SendAsync($"Players Online at [{user.Map.Name}]: {user.Map.PlayerCount}");
+                            }
+                            else if (param.Equals("screen"))
+                            {
+                                await user.SendAsync($"Players around: {user.Screen.Roles.Values.Count(x => x.IsPlayer())}");
+                            }
+                            else if (param.Equals("partition"))
+                            {
+                                int count = RoleManager.QueryUserSet().Count(x => x.Map.Partition == user.Map.Partition);
+                                await user.SendAsync($"Players Online on partition [{user.Map.Partition}]: {count}");
+                            }
+                            return true;
+                        }
                 }
             }
 

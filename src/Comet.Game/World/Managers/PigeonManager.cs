@@ -180,8 +180,9 @@ namespace Comet.Game.World.Managers
             await SyncAsync();
         }
 
-        public static async Task SendListAsync(Character user, MsgPigeon.PigeonMode request)
+        public static async Task SendListAsync(Character user, MsgPigeon.PigeonMode request, int page)
         {
+            const int ipp = 10;
             List<DbPigeonQueue> temp;
             if (request == MsgPigeon.PigeonMode.Query)
             {
@@ -192,17 +193,18 @@ namespace Comet.Game.World.Managers
                 temp = new List<DbPigeonQueue>(m_queue.FindAll(x => x.UserIdentity == user.Identity));
             }
 
-            uint pos = 0;
+            uint pos = (uint)(page * ipp);
             MsgPigeonQuery msg = new MsgPigeonQuery
             {
-                Mode = 0
+                Mode = (uint)page
             };
-            bool sent = false;
-            foreach (var pigeon in temp)
+
+            var queryList = temp.Skip((int)pos).Take(ipp).ToArray();
+            msg.Total = 0;
+            foreach (var pigeon in queryList)
             {
-                if (msg.Messages.Count >= 8)
+                if (msg.Messages.Count >= 5)
                 {
-                    sent = true;
                     await user.SendAsync(msg);
                     msg.Messages.Clear();
                 }
@@ -218,7 +220,8 @@ namespace Comet.Game.World.Managers
                 });
             }
 
-            if (msg.Messages.Count > 0 && !sent)
+            msg.Total = 5;
+            if (msg.Messages.Count > 0)
                 await user.SendAsync(msg);
         }
 

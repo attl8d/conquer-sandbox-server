@@ -15,20 +15,20 @@ namespace Comet.Game.Packets
                 case PigeonMode.Query:
                 case PigeonMode.QueryUser:
                     {
-                        await PigeonManager.SendListAsync(client.Character, Mode);
+                        await PigeonManager.SendListAsync(client.Character, Mode, Param);
                         break;
                     }
                 case PigeonMode.Send:
                     {
                         await PigeonManager.PushAsync(client.Character, Strings.FirstOrDefault());
-                        await PigeonManager.SendListAsync(client.Character, PigeonMode.Query);
+                        await PigeonManager.SendListAsync(client.Character, PigeonMode.Query, 0);
                         break;
                     }
                 case PigeonMode.SuperUrgent:
                 case PigeonMode.Urgent:
                     {
                         await PigeonManager.AdditionAsync(client.Character, this);
-                        await PigeonManager.SendListAsync(client.Character, PigeonMode.Query);
+                        await PigeonManager.SendListAsync(client.Character, PigeonMode.Query, 0);
                         break;
                     }
             }

@@ -1,19 +1,19 @@
 ﻿using Comet.Game.World.Managers;
-using Comet.Shared.Comet.Shared;
+using Comet.Shared;
 using System.Threading.Tasks;
 
 namespace Comet.Game.World.Threading
 {
-    public class AiProcessing : TimerBase
+    public sealed class EventProcessing : TimerBase
     {
-        public AiProcessing()
-            : base(200, "Ai Thread")
+        public EventProcessing()
+            : base(500, "EventsProcessing")
         {
         }
 
         protected override async Task<bool> OnElapseAsync()
         {
-            await MapManager.OnTimerAsync();
+            await EventManager.OnTimerAsync();
             return true;
         }
     }

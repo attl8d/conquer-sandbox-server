@@ -170,8 +170,8 @@ namespace Comet.Game.States.Items
 
             if (item.IsMedicine())
             {
-                if (item.Life > 0 && m_user.Life == m_user.MaxLife ||
-                    item.Mana > 0 && m_user.MaxMana == m_user.Mana)
+                if (item.Life > 0 && m_user.Life == m_user.MaxLife 
+                    || item.Mana > 0 && m_user.MaxMana == m_user.Mana)
                     return false;
 
                 if (!await SpendItemAsync(item))
@@ -186,7 +186,6 @@ namespace Comet.Game.States.Items
             }
 
             var type = item.GetItemtype() / 10000;
-
             if (item.Itemtype.IdAction > 0)
             {
                 m_user.InteractingItem = item.Identity;
@@ -908,7 +907,7 @@ namespace Comet.Game.States.Items
                             break;
                         case 1: // PK
                         case 2: // SYN
-                            if (!item.IsArmor())
+                            if (!item.IsEatEnable() && !item.IsArmor())
                                 continue;
                             break;
                         case 3: // PRISON

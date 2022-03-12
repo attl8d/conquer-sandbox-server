@@ -584,7 +584,7 @@ namespace Comet.Game.Packets
                             return;
 
                         targetUser = RoleManager.GetUser(Command);
-                        if (targetUser == null || !client.Character.IsFriend(Command))
+                        if (targetUser == null)
                             return;
 
                         await targetUser.SendWindowToAsync(user);

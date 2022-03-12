@@ -422,10 +422,10 @@ namespace Comet.Game.States
 
     public sealed class StatusSet
     {
-        public static ulong KEEP_EFFECT_NOT_VIRTUOUS => StatusSet.GetFlag(StatusSet.BLUE_NAME) | StatusSet.GetFlag(StatusSet.RED_NAME) | StatusSet.GetFlag(StatusSet.BLACK_NAME);
+        public static ulong KEEP_EFFECT_NOT_VIRTUOUS => StatusSet.GetFlag(StatusSet.CRIME) | StatusSet.GetFlag(StatusSet.RED_NAME) | StatusSet.GetFlag(StatusSet.BLACK_NAME);
 
         public const int NONE = 0,
-            BLUE_NAME = 1,
+            CRIME = 1,
             POISONED = 2,
             FULL_INVIS = 3,
             FADE = 4,

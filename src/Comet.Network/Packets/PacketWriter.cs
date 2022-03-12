@@ -18,7 +18,7 @@ namespace Comet.Network.Packets
         /// Instantiates a new instance of <see cref="PacketWriter"/> and writes the 
         /// first unsigned short to the stream as a placeholder for the packet length.
         /// </summary>
-        public PacketWriter() : base(new MemoryStream())
+        public PacketWriter() : base(new MemoryStream(), Encoding.UTF8)
         {
             base.Write((ushort)0);
         }
@@ -33,7 +33,7 @@ namespace Comet.Network.Packets
         public void Write(string value, int fixedLength)
         {
             var array = new byte[fixedLength];
-            Encoding.ASCII.GetBytes(value).CopyTo(array, 0);
+            Encoding.UTF8.GetBytes(value).CopyTo(array, 0);
             base.Write(array);
         }
 

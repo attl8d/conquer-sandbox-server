@@ -353,6 +353,50 @@ namespace Comet.Game.States.Npcs
 
         #endregion
 
+        #region Battle
+
+        public override async Task<bool> BeAttackAsync(BattleSystem.MagicType magic, Role attacker, int nPower, bool bReflectEnable)
+        {
+            int decreaseLife = (int)Calculations.CutOverflow(Life, nPower);
+            await AddAttributesAsync(ClientUpdateType.Hitpoints, decreaseLife * -1);
+            if (IsSynNpc() && OwnerIdentity != 0)
+            {
+                Syndicate syn = SyndicateManager.GetSyndicate(OwnerIdentity);
+                if (syn != null && attacker is Character user)
+                {
+                    if (user.SyndicateIdentity != OwnerIdentity)
+                    {
+                        //await user.AwardMoneyAsync();
+                    }
+                }
+            }
+
+            if (!IsAlive)
+                await BeKillAsync(attacker);
+
+            return true;
+        }
+
+        public override Task BeKillAsync(Role attacker)
+        {
+            if (m_dbNpc.Linkid != 0)
+                return GameAction.ExecuteActionAsync(m_dbNpc.Linkid, attacker as Character, this, null, string.Empty);
+            return Task.CompletedTask;
+        }
+
+        public int GetMaxFixMoney()
+        {
+            return (int)Calculations.CutRange(Calculations.MulDiv(MaxLife - 1, 1, 1) + 1, 0, MaxLife);
+        }
+
+        public int GetLostFixMoney()
+        {
+            int nLostLifeTmp = (int)(MaxLife - Life);
+            return (int)Calculations.CutRange(Calculations.MulDiv(nLostLifeTmp - 1, 1, 1) + 1, 0, MaxLife);
+        }
+
+        #endregion
+
         #region Database
 
         public override async Task<bool> SaveAsync()

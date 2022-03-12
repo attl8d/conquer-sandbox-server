@@ -24,6 +24,8 @@ namespace Comet.Network.Sockets
         public readonly uint Partition;
         private readonly object SendLock;
 
+        public int ReceiveTimeOutSeconds = 30;
+
         /// <summary>
         /// Instantiates a new instance of <see cref="TcpServerActor"/> using an accepted
         /// client socket and preallocated buffer from the server listener.

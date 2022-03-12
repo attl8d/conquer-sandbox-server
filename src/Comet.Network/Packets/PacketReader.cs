@@ -19,7 +19,7 @@ namespace Comet.Network.Packets
         /// to read from.
         /// </summary>
         /// <param name="bytes">Packet bytes to be read in</param>
-        public PacketReader(byte[] bytes) : base(new MemoryStream(bytes))
+        public PacketReader(byte[] bytes) : base(new MemoryStream(bytes), Encoding.UTF8)
         {
         }
 

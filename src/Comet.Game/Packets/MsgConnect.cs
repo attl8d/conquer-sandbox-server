@@ -70,6 +70,9 @@ namespace Comet.Game.Packets
             }
             else
             {
+                // The character exists, so we will turn the timeout back.
+                client.ReceiveTimeOutSeconds = 30; // 30 seconds or DC
+
                 // Character already exists
                 client.Character = new Character(character, client);
                 if (await RoleManager.LoginUserAsync(client))

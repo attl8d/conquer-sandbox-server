@@ -72,7 +72,6 @@ namespace Comet.Game.World.Managers
                 Addition = 0,
                 NextIdentity = 0
             };
-
             await ServerDbContext.SaveAsync(pigeon);
 
             m_queue.Add(pigeon);

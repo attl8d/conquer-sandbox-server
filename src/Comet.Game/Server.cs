@@ -91,6 +91,13 @@ namespace Comet.Game
                     actor.DiffieHellman.EncryptionIV);
 
                 actor.DiffieHellman = null;
+
+                // We are setting a higher timeout just because the user may stay for a while in the login screen.
+                // We are doing this here because we don't want the user to hold a connection without exchanging.
+                // After the user receive the exchange data it'll be ready to receive new packets, so we will
+                // make the wait longer here.
+                // We are setting it back if the login is successfull!
+                actor.ReceiveTimeOutSeconds = 900;
                 return true;
             }
             catch (Exception e) { Console.WriteLine(e); }

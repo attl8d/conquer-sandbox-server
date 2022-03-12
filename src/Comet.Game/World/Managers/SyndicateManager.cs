@@ -52,5 +52,10 @@ namespace Comet.Game.World.Managers
         {
             return m_dicSyndicates.Values.FirstOrDefault(x => x.QueryMember(idUser) != null);
         }
+
+        public static Syndicate GetSyndicate(uint ownerIdentity)
+        {
+            return GetSyndicate((ushort)ownerIdentity);
+        }
     }
 }

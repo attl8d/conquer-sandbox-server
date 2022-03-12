@@ -37,6 +37,11 @@ namespace Comet.Web.API
             mBanService = banService;
         }
 
+        /// <summary>
+        /// 
+        /// </summary>
+        /// <param name="page"></param>
+        /// <param name="ipp"></param>
         [ActionName("")]
         [HttpGet, MapToApiVersion("1")]
         [ProducesResponseType(StatusCodes.Status200OK)]
@@ -46,6 +51,10 @@ namespace Comet.Web.API
             return Ok(await mBanService.GetAsync(page, ipp));
         }
 
+        /// <summary>
+        /// 
+        /// </summary>
+        /// <param name="type"></param>
         [ActionName("QueryBanReasons")]
         [HttpGet, MapToApiVersion("1")]
         [ProducesResponseType(StatusCodes.Status200OK)]
@@ -66,6 +75,10 @@ namespace Comet.Web.API
             return Ok(model);
         }
 
+        /// <summary>
+        /// 
+        /// </summary>
+        /// <param name="userId"></param>
         [ActionName("QueryAccountBans")]
         [HttpGet, MapToApiVersion("1")]
         [ProducesResponseType(StatusCodes.Status200OK)]
@@ -81,6 +94,10 @@ namespace Comet.Web.API
             return Ok(bans.Account);
         }
 
+        /// <summary>
+        /// 
+        /// </summary>
+        /// <param name="model"></param>
         [ActionName("GetUserBanFactor")]
         [HttpPost, MapToApiVersion("1")]
         [ProducesResponseType(StatusCodes.Status200OK)]
@@ -100,6 +117,10 @@ namespace Comet.Web.API
             return Ok(factor);
         }
 
+        /// <summary>
+        /// 
+        /// </summary>
+        /// <param name="model"></param>
         [ActionName("DoBanAccount")]
         [HttpPost, MapToApiVersion("1")]
         [ProducesResponseType(StatusCodes.Status200OK)]

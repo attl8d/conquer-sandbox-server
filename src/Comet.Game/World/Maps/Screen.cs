@@ -1,4 +1,6 @@
 ﻿using System.Collections.Concurrent;
+using System.Collections.Generic;
+using System.Drawing;
 using System.Linq;
 using System.Threading.Tasks;
 using Comet.Game.Packets;
@@ -58,12 +60,30 @@ namespace Comet.Game.World.Maps
 
         public async Task UpdateAsync(IPacket msg = null)
         {
+            bool isJmpMsg = false;
+            ushort oldX = 0;
+            ushort oldY = 0;
+            List<Point> dda = new List<Point>();
+            if (msg is MsgAction jump && jump.Action == MsgAction<Client>.ActionType.MapJump)
+            {
+                isJmpMsg = true;
+
+                oldX = jump.X;
+                oldY = jump.Y;
+
+                Calculations.DDALine(oldX, oldY, mRole.MapX, mRole.MapY, VIEW_SIZE, ref dda);
+            }
+            else jump = null;
+
             var targets = mRole.Map.Query9BlocksByPos(mRole.MapX, mRole.MapY);
             targets.AddRange(Roles.Values);
             foreach (Role target in targets.Select(x => x).Distinct())
             {
                 if (target.Identity == mRole.Identity) continue;
 
+                ushort newOldX = oldX;
+                ushort newOldY = oldY;
+                bool isExit = false;
                 Character targetUser = target as Character;
                 if (Calculations.GetDistance(mRole.MapX, mRole.MapY, target.MapX, target.MapY) <= mRole.ViewRange)
                 {
@@ -78,18 +98,53 @@ namespace Comet.Game.World.Maps
                         if (mRole is Character user)
                             await target.SendSpawnToAsync(user);
                         if (targetUser != null)
-                            await mRole.SendSpawnToAsync(targetUser);
+                        {
+                            for (int i = 0; i < dda.Count; i++)
+                            {
+                                if (targetUser.GetDistance(dda[i].X, dda[i].Y) < VIEW_SIZE)
+                                {
+                                    newOldX = (ushort)dda[i].X;
+                                    newOldY = (ushort)dda[i].Y;
+                                    break;
+                                }
+                            }
+
+                            await mRole.SendSpawnToAsync(targetUser, newOldX, newOldY);
+                        }
                     }
                 }
                 else
                 {
+                    isExit = true;
                     await RemoveAsync(target.Identity);
                     if (target.Screen != null)
                     await target.Screen.RemoveAsync(mRole.Identity);
                 }
 
                 if (msg != null && targetUser != null)
-                    await targetUser.SendAsync(msg);
+                {
+                    if (isJmpMsg && !isExit)
+                    {
+                        await targetUser.SendAsync(new MsgAction
+                        {
+                            Action = jump.Action,
+                            Argument = jump.Argument,
+                            X = newOldX,
+                            Y = newOldY,
+                            Command = jump.Command,
+                            Data = jump.Data,
+                            Direction = jump.Direction,
+                            Identity = jump.Identity,
+                            Map = jump.Map,
+                            MapColor = jump.MapColor,
+                            Timestamp = jump.Timestamp
+                        });
+                    }
+                    else
+                    {
+                        await targetUser.SendAsync(msg);
+                    }
+                }
             }
         }
 

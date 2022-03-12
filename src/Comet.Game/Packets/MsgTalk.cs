@@ -236,6 +236,20 @@ namespace Comet.Game.Packets
                             return true;
                         }
 
+                    case "/restore":
+                        {
+                            if (!user.IsAlive)
+                            {
+                                await user.RebornAsync(false, true);
+                            }
+                            else
+                            {
+                                await user.SetAttributesAsync(ClientUpdateType.Hitpoints, user.MaxLife);
+                                await user.SetAttributesAsync(ClientUpdateType.Mana, user.MaxMana);
+                            }
+                            return true;
+                        }
+
                     case "/superman":
                         {
                             await user.SetAttributesAsync(ClientUpdateType.Strength, 176);

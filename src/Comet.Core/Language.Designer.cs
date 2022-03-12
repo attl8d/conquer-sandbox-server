@@ -475,6 +475,15 @@ namespace Comet.Core {
         }
         
         /// <summary>
+        ///   Looks up a localized string similar to The Guild Fund was used to offset your EXP loss ({0})..
+        /// </summary>
+        public static string StrExpLostBySynFund {
+            get {
+                return ResourceManager.GetString("StrExpLostBySynFund", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Looks up a localized string similar to You are already using an EXP Potion with better power than this. Wait for the old one to finish..
         /// </summary>
         public static string StrExpPotionInUse {

@@ -1,7 +1,6 @@
 ﻿using Comet.Game.Internal.Auth;
 using Comet.Game.World.Managers;
 using Comet.Shared;
-using Comet.Shared.Comet.Shared;
 using System;
 using System.Threading.Tasks;
 

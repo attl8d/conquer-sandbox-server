@@ -2,6 +2,7 @@
 using Comet.Game.Database.Repositories;
 using Comet.Game.States;
 using Comet.Game.States.Events;
+using Comet.Game.States.Items;
 using Comet.Game.States.Npcs;
 using Comet.Shared;
 using System.Collections.Concurrent;
@@ -18,6 +19,7 @@ namespace Comet.Game.World.Managers
 
         private static ConcurrentDictionary<GameEvent.EventType, GameEvent> mEvents = new ConcurrentDictionary<GameEvent.EventType, GameEvent>();
         private static List<QueuedAction> mQueuedActions = new List<QueuedAction>();
+        private static TimeOut mRankingBroadcast = new TimeOut(10);
 
         public static async Task<bool> InitializeAsync()
         {
@@ -79,6 +81,7 @@ namespace Comet.Game.World.Managers
             await RegisterEventAsync(new FamilyWar());
             //await RegisterEventAsync(new GuildContest());
 
+            mRankingBroadcast.Update();
             return true;
         }
 
@@ -173,5 +176,50 @@ namespace Comet.Game.World.Managers
         }
 
         #endregion 
+
+        public static async Task OnTimerAsync()
+        {
+            await PigeonManager.OnTimerAsync();
+
+            bool ranking = mRankingBroadcast.ToNextTime();
+            foreach (var dynaNpc in RoleManager.QueryRoleByType<DynamicNpc>())
+            {
+                if (dynaNpc.IsGoal())
+                    continue;
+
+                await dynaNpc.CheckFightTimeAsync();
+
+                if (ranking && mEvents.Values.All(x => x.Map?.Identity != dynaNpc.MapIdentity))
+                    await dynaNpc.BroadcastRankingAsync();
+            }
+
+            foreach (var @event in mEvents.Values)
+            {
+                if (@event.ToNextTime())
+                    await @event.OnTimerAsync();
+            }
+
+            for (int i = mQueuedActions.Count - 1; i >= 0; i--)
+            {
+                var action = mQueuedActions[i];
+                Character user = RoleManager.GetUser(action.UserIdentity);
+                if (action.CanBeExecuted && user != null)
+                {
+                    Item item = null;
+                    if (user.InteractingItem != 0)
+                    {
+                        item = user.UserPackage.FindByIdentity(user.InteractingItem);
+                    }
+                    Role role = null;
+                    if (user.InteractingNpc != 0)
+                    {
+                        role = RoleManager.GetRole(user.InteractingNpc);
+                    }
+
+                    await GameAction.ExecuteActionAsync(action.Action, user, role, item, "");
+                    mQueuedActions.RemoveAt(i);
+                }
+            }
+        }
     }
 }

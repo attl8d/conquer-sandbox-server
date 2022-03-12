@@ -1,6 +1,5 @@
 ﻿using Comet.AI.Packets;
 using Comet.Shared;
-using Comet.Shared.Comet.Shared;
 using System;
 using System.Net.Sockets;
 using System.Threading.Tasks;

@@ -255,6 +255,9 @@
   <data name="StrExpired" xml:space="preserve">
     <value>Expired</value>
   </data>
+  <data name="StrExpLostBySynFund" xml:space="preserve">
+    <value>The Guild Fund was used to offset your EXP loss ({0}).</value>
+  </data>
   <data name="StrExpPotionInUse" xml:space="preserve">
     <value>You are already using an EXP Potion with better power than this. Wait for the old one to finish.</value>
   </data>

@@ -58,6 +58,56 @@ namespace Comet.Game.Packets
             FamilyName = user.FamilyName;
         }
 
+        public MsgPlayer(Character user, ushort x, ushort y)
+        {
+            Identity = user.Identity;
+            Mesh = user.Mesh;
+
+            MapX = x;
+            MapY = y;
+
+            Status = (uint)user.StatusFlag;
+
+            Hairstyle = user.Hairstyle;
+            Direction = (byte)user.Direction;
+            Pose = (byte)user.Action;
+            Metempsychosis = user.Metempsychosis;
+            Level = user.Level;
+
+            SyndicateIdentity = user.SyndicateIdentity;
+            SyndicatePosition = (ushort)user.SyndicateRank;
+
+            NobilityRank = (uint)user.NobilityRank;
+
+            Helmet = user.Headgear?.Type ?? 0;
+            HelmetColor = (ushort)(user.Headgear?.Color ?? Item.ItemColor.None);
+            RightHand = user.RightHand?.Type ?? 0;
+            LeftHand = user.LeftHand?.Type ?? 0;
+            LeftHandColor = (ushort)(user.LeftHand?.Color ?? Item.ItemColor.None);
+            Armor = user.Armor?.Type ?? 0;
+            ArmorColor = (ushort)(user.Armor?.Color ?? Item.ItemColor.None);
+            Garment = user.Garment?.Type ?? 0;
+
+            FlowerRanking = user.FlowerCharm;
+            QuizPoints = user.QuizPoints;
+            UserTitle = user.UserTitle;
+
+            EnlightenPoints = (ushort)user.EnlightenPoints;
+            CanBeEnlightened = (ushort)(user.CanBeEnlightened ? 1 : 0);
+
+            Away = user.IsAway;
+
+            if (user.Syndicate != null)
+                SharedBattlePower = (uint)user.Syndicate.GetSharedBattlePower(user.SyndicateRank);
+
+            FamilyIdentity = user.FamilyIdentity;
+            FamilyRank = (uint)user.FamilyPosition;
+            FamilyBattlePower = user.FamilyBattlePower;
+
+            Name = user.Name;
+            FamilyName = user.FamilyName;
+        }
+
         public MsgPlayer(Monster monster)
         {
             Type = PacketType.MsgPlayer;

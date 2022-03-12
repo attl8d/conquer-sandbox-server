@@ -164,6 +164,18 @@ namespace Comet.Game.States
                     await user.KickbackAsync();
                     return false;
                 }
+
+                if (user.QueryStatus(StatusSet.RIDING) != null)
+                {
+                    int distance = user.GetDistance(x, y);
+                    int vigorConsume = distance;
+                    if (vigorConsume > 0 && vigorConsume > user.Vigor)
+                    {
+                        await user.KickbackAsync();
+                        return false;
+                    }
+                    await AddAttributesAsync(ClientUpdateType.Vigor, vigorConsume * -1);
+                }
             }
 
             Map.EnterBlock(this, x, y, MapX, MapY);
@@ -225,6 +237,17 @@ namespace Comet.Game.States
             //            }
             //#endif
 
+            int vigor = 0;
+            if (user != null && QueryStatus(StatusSet.RIDING) != null)
+            {
+                vigor = GetDistance(newX, newY);
+                if (user.Vigor < vigor)
+                {
+                    await user.KickbackAsync();
+                    return false;
+                }
+            }
+
             if (!IsAlive && user != null && !user.IsGhost())
             {
                 await user.SendAsync(Language.StrDead, MsgTalk.TalkChannel.System, Color.Red);
@@ -236,6 +259,11 @@ namespace Comet.Game.States
                 await user.KickbackAsync();
                 await user.SendAsync(Language.StrInvalidCoordinate, MsgTalk.TalkChannel.System, Color.Red);
                 return false;
+            }
+
+            if (vigor > 0)
+            {
+                await AddAttributesAsync(ClientUpdateType.Vigor, vigor * -1);
             }
 
             Map.EnterBlock(this, newX, newY, MapX, MapY);
@@ -782,7 +810,7 @@ namespace Comet.Game.States
 
         public async Task SetCrimeStatusAsync(int nSecs)
         {
-            await AttachStatusAsync(this, StatusSet.BLUE_NAME, 0, nSecs, 0, 0);
+            await AttachStatusAsync(this, StatusSet.CRIME, 0, nSecs, 0, 0);
         }
 
         public virtual bool IsWing => QueryStatus(StatusSet.FLY) != null;
@@ -793,7 +821,7 @@ namespace Comet.Game.States
 
         public virtual bool IsEvil()
         {
-            return QueryStatus(StatusSet.BLUE_NAME) != null || QueryStatus(StatusSet.BLACK_NAME) != null;
+            return QueryStatus(StatusSet.CRIME) != null || QueryStatus(StatusSet.BLACK_NAME) != null;
         }
 
         public bool IsVirtuous()
@@ -803,7 +831,7 @@ namespace Comet.Game.States
 
         public bool IsCrime()
         {
-            return QueryStatus(StatusSet.BLUE_NAME) != null;
+            return QueryStatus(StatusSet.CRIME) != null;
         }
 
         public bool IsPker()
@@ -948,6 +976,11 @@ namespace Comet.Game.States
             await Log.WriteLogAsync(LogLevel.Warning, $"{GetType().Name} - {Identity} has no SendSpawnToAsync handler");
         }
 
+        public virtual async Task SendSpawnToAsync(Character player, int x, int y)
+        {
+            await Log.WriteLogAsync(LogLevel.Warning, $"{GetType().Name} - {Identity} has no SendSpawnToAsync(player, x, y) handler");
+        }
+
         public virtual async Task BroadcastRoomMsgAsync(IPacket msg, bool self)
         {
             if (Map != null)
@@ -977,7 +1010,7 @@ namespace Comet.Game.States
         public const uint USER_UPLEV_ACTION = 80_000_004;
         public const uint MONSTER_DIE_ACTION = 80_000_010;
 
-        public static ulong KEEP_EFFECT_NOT_VIRTUOUS => StatusSet.GetFlag(StatusSet.BLUE_NAME) | StatusSet.GetFlag(StatusSet.RED_NAME) | StatusSet.GetFlag(StatusSet.BLACK_NAME);
+        public static ulong KEEP_EFFECT_NOT_VIRTUOUS => StatusSet.GetFlag(StatusSet.CRIME) | StatusSet.GetFlag(StatusSet.RED_NAME) | StatusSet.GetFlag(StatusSet.BLACK_NAME);
 
         public const int SCENEID_FIRST = 1;
         public const int SYSNPCID_FIRST = 1;

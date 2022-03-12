@@ -36,7 +36,7 @@ namespace Comet.Game
 
         // State caches
         public readonly static MemoryCache Logins = MemoryCache.Default;
-        public readonly static List<uint> Registration = new List<uint>();
+        public readonly static List<uint> Registration = new();
 
         #region Login
         /// <summary>
@@ -66,23 +66,23 @@ namespace Comet.Game
         public static ServerConfiguration.GameNetworkConfiguration GameConfiguration => Configuration.GameNetwork;
         public static ServerConfiguration Configuration { get; set; }
 
-        public readonly static NetworkMonitor NetworkMonitor = new NetworkMonitor();
+        public readonly static NetworkMonitor NetworkMonitor = new ();
 
-        public readonly static SystemProcessor SystemThread = new SystemProcessor();
-        public readonly static UserProcessing UserThread = new UserProcessing();
-        //public readonly static AiProcessing AiThread = new AiProcessing();
-        public readonly static RoleProcessing RoleThread = new RoleProcessing();
+        public readonly static SystemProcessor SystemThread = new ();
+        public readonly static UserProcessing UserThread = new ();
+        public readonly static EventProcessing EventThread = new ();
+        public readonly static RoleProcessing RoleThread = new ();
 
         private static SchedulerFactory schedulerFactory { get; set; }
 
         // Background services
         public static class Services
         {
-            public readonly static RandomnessService Randomness = new RandomnessService();
+            public readonly static RandomnessService Randomness = new ();
 #if DEBUG
-            public readonly static ServerProcessor Processor = new ServerProcessor();
+            public readonly static ServerProcessor Processor = new ();
 #else
-            public readonly static ServerProcessor Processor = new ServerProcessor();
+            public readonly static ServerProcessor Processor = new ();
 #endif
         }
 
@@ -143,7 +143,7 @@ namespace Comet.Game
 
                 await SystemThread.StartAsync();
                 await UserThread.StartAsync();
-                //await AiThread.StartAsync();
+                await EventThread.StartAsync();
                 await RoleThread.StartAsync();
 
                 schedulerFactory = new SchedulerFactory();
@@ -164,7 +164,7 @@ namespace Comet.Game
             await schedulerFactory.StopAsync();
 
             await UserThread.CloseAsync();
-            //await AiThread.CloseAsync();
+            await EventThread.CloseAsync();
             await RoleThread.CloseAsync();
 
             await Services.Processor.StopAsync(new CancellationToken(true)).ConfigureAwait(true);

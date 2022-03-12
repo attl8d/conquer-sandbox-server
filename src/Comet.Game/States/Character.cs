@@ -1026,7 +1026,7 @@ namespace Comet.Game.States
 
         public (int Level, ulong Experience) PreviewExpBallUsage(int amount = EXPBALL_AMOUNT)
         {
-            long expBallExp = ((long) Experience + CalculateExpBall(amount));
+            long expBallExp = ((long)Experience + CalculateExpBall(amount));
             byte newLevel = Level;
             while (newLevel < MAX_UPLEV && expBallExp >= (long)ExperienceManager.GetLevelExperience(newLevel).Exp)
             {
@@ -1307,6 +1307,11 @@ namespace Comet.Game.States
 
         public override async Task ProcessAfterMoveAsync()
         {
+            if (IsAlive)
+            {
+                UpdateVigorTimer();
+            }
+
             await base.ProcessAfterMoveAsync();
         }
 
@@ -1318,6 +1323,8 @@ namespace Comet.Game.States
                 await CurrentEvent.OnAttackAsync(this);
 
             m_respawn.Clear();
+
+            UpdateVigorTimer();
 
             await base.ProcessOnAttackAsync();
         }
@@ -2319,7 +2326,7 @@ namespace Comet.Game.States
                         return VipFlags.VipThree;
                     case 4:
                         return VipFlags.VipFour;
-                    case 5: 
+                    case 5:
                         return VipFlags.VipFive;
                     case 6:
                         return VipFlags.VipSix;
@@ -2456,6 +2463,17 @@ namespace Comet.Game.States
                         break;
                     }
 
+                case ClientUpdateType.Vigor:
+                    {
+                        Vigor = Math.Max(0, Math.Min(MaxVigor, (int)value + Vigor));
+                        await SendAsync(new MsgData
+                        {
+                            Action = MsgData.DataAction.SetMountMovePoint,
+                            Year = Vigor
+                        });
+                        return true;
+                    }
+
                 default:
                     {
                         bool result = await base.AddAttributesAsync(type, value);
@@ -2540,6 +2558,17 @@ namespace Comet.Game.States
                         if (VipLevel > 0)
                             await AttachStatusAsync(this, StatusSet.ORANGE_HALO_GLOW, 0, (int)(VipExpiration - DateTime.Now).TotalSeconds, 0, 0);
                         break;
+                    }
+
+                case ClientUpdateType.Vigor:
+                    {
+                        Vigor = Math.Max(0, Math.Min(MaxVigor, (int)value));
+                        await SendAsync(new MsgData
+                        {
+                            Action = MsgData.DataAction.SetMountMovePoint,
+                            Year = Vigor
+                        });
+                        return true;
                     }
 
                 default:
@@ -4866,6 +4895,47 @@ namespace Comet.Game.States
             await SendEffectAsync(strEffect, true);
         }
 
+        public async Task<long> CalcExpLostOfDeathAsync(Role killer)
+        {
+            if (killer is not Character)
+                return 0;
+
+            int param = 50;
+            if (QueryStatus(StatusSet.RED_NAME) != null)
+                param = 20;
+            else if (QueryStatus(StatusSet.BLACK_NAME) != null)
+                param = 10;
+
+            int expLost = (int)((long) Experience / param);
+
+            if (SyndicateIdentity != 0)
+            {
+                const int moneyCostPerExp = 100;
+
+                int decPercent = 0;
+                int expPayBySyn = 0;
+                if (Syndicate.Money > 0)
+                {
+                    int fundLost = Calculations.MulDiv(expLost, decPercent, 100 * moneyCostPerExp);
+                    if (fundLost > Syndicate.Money)
+                        fundLost = Syndicate.Money;
+
+                    Syndicate.Money -= fundLost;
+
+                    expPayBySyn = fundLost * moneyCostPerExp;
+                    expLost -= expPayBySyn;
+                }
+
+                if (expPayBySyn > 0)
+                    await SendAsync(string.Format(Language.StrExpLostBySynFund, expPayBySyn));
+            }
+
+            if (expLost > 0 && VipLevel >= 3)
+                expLost /= 2;
+
+            return Math.Max(0, expLost);
+        }
+
         #endregion
 
         #region Rebirth
@@ -4901,7 +4971,7 @@ namespace Comet.Game.States
                     m_dbObject.MeteLevel = MAX_UPLEV * 10000;
             }
 
-            int metempsychosis = Math.Min(Math.Max((byte) 1, Metempsychosis), (byte)2);
+            int metempsychosis = Math.Min(Math.Max((byte)1, Metempsychosis), (byte)2);
             int oldProf = Profession;
             await ResetUserAttributesAsync(Metempsychosis, prof, look, data.NewLevel);
 
@@ -5143,15 +5213,14 @@ namespace Comet.Game.States
                 return;
             }
 
-            if (UserPackage.IsPackFull())
+            try
             {
-                await SendAsync(Language.StrYourBagIsFull);
-                return;
-            }
-            else
-            {
-
-                try
+                if (UserPackage.IsPackFull())
+                {
+                    await SendAsync(Language.StrYourBagIsFull);
+                    return;
+                }
+                else
                 {
                     uint idItem = 0;
                     float nChance = 30f + ((float)(WeaponSkill[562]?.Level ?? 0) / 2);
@@ -5237,21 +5306,25 @@ namespace Comet.Game.States
 
                     m_mineCount++;
                 }
-                catch (Exception ex)
-                {
-                    await Log.WriteLogAsync(LogLevel.Error, "Mining error");
-                    await Log.WriteLogAsync(ex);
-                }
+
             }
 
-            await BroadcastRoomMsgAsync(new MsgAction
+            catch (Exception ex)
             {
-                Identity = Identity,
-                Command = 0,
-                ArgumentX = MapX,
-                ArgumentY = MapY,
-                Action = MsgAction.ActionType.MapMine
-            }, true);
+                await Log.WriteLogAsync(LogLevel.Error, "Mining error");
+                await Log.WriteLogAsync(ex);
+            }
+            finally
+            {
+                await BroadcastRoomMsgAsync(new MsgAction
+                {
+                    Identity = Identity,
+                    Command = 0,
+                    ArgumentX = MapX,
+                    ArgumentY = MapY,
+                    Action = MsgAction.ActionType.MapMine
+                }, true);
+            }
         }
 
         #endregion
@@ -5515,6 +5588,8 @@ namespace Comet.Game.States
                 return;
 
             BattleSystem.ResetBattle();
+            if (MagicData.QueryMagic != null)
+                await MagicData.AbortMagicAsync(false);
 
             TransformationMesh = 0;
             Transformation = null;
@@ -5527,7 +5602,7 @@ namespace Comet.Game.States
 
             await SetAttributesAsync(ClientUpdateType.Mesh, Mesh);
 
-            await DetachStatusAsync(StatusSet.BLUE_NAME);
+            await DetachStatusAsync(StatusSet.CRIME);
             await DetachAllStatusAsync();
 
             //if (Scapegoat)
@@ -5538,15 +5613,15 @@ namespace Comet.Game.States
 
             m_ghost.Startup(4);
 
-            //if (CurrentEvent is ArenaQualifier qualifier)
-            //{
-            //    ArenaQualifier.QualifierMatch match = qualifier.FindMatchByMap(MapIdentity);
-            //    if (match != null)
-            //    {
-            //        await match.FinishAsync(null, this);
-            //        return;
-            //    }
-            //}
+            if (CurrentEvent is ArenaQualifier qualifier)
+            {
+                ArenaQualifier.QualifierMatch match = qualifier.FindMatchByMap(MapIdentity);
+                if (match != null)
+                {
+                    await match.FinishAsync(null, this);
+                    return;
+                }
+            }
 
             uint idMap = 0;
             Point posTarget = new Point();
@@ -5555,6 +5630,8 @@ namespace Comet.Game.States
 
             if (Map.IsPkField() || Map.IsSynMap())
             {
+                if (!Map.IsDeadIsland())
+                    await UserPackage.RandDropItemAsync(1, 30);
                 if (Map.IsSynMap() && !Map.IsWarTime())
                     await SavePositionAsync(1002, 430, 378);
                 return;
@@ -5592,23 +5669,14 @@ namespace Comet.Game.States
                 {
                     await CreateEnemyAsync(atkrUser);
 
+                    if (QueryStatus(StatusSet.CRIME) == null)
+                        await CreateEnemyAsync(atkrUser);
+
                     if (!IsBlessed)
                     {
-                        float nLossPercent;
-                        if (PkPoints < 30)
-                            nLossPercent = 0.01f;
-                        else if (PkPoints < 100)
-                            nLossPercent = 0.02f;
-                        else nLossPercent = 0.03f;
-
-                        long nLevExp = (long)Experience;
-                        long nLostExp = (long)(nLevExp * nLossPercent);
-
-                        if (nLostExp > 0)
-                        {
-                            await AddAttributesAsync(ClientUpdateType.Experience, nLostExp * -1);
-                            await attacker.AddAttributesAsync(ClientUpdateType.Experience, nLostExp / 3);
-                        }
+                        long expLost = await CalcExpLostOfDeathAsync(attacker);
+                        if (expLost > 0)
+                            await AddAttributesAsync(ClientUpdateType.Experience, expLost * -1);
                     }
 
                     if (!atkrUser.IsBlessed && IsBlessed)
@@ -5625,6 +5693,17 @@ namespace Comet.Game.States
                         }
                     }
 
+                    uint moneyDropped;
+                    if (QueryStatus(StatusSet.RED_NAME) != null) // Red name drop
+                        moneyDropped = (uint)(Silvers * (await Kernel.NextAsync(35) + 25) / 100); // 25-60%
+                    else if (QueryStatus(StatusSet.BLACK_NAME) != null) // Black name drop
+                        moneyDropped = (uint)(Silvers * (await Kernel.NextAsync(40) + 40) / 100); // 40-80%
+                    else // normal drop
+                        moneyDropped = (uint)(Silvers * (await Kernel.NextAsync(30) + 10) / 100); // 10-40%
+
+                    if (moneyDropped > 0)
+                        await DropSilverAsync(moneyDropped);
+
                     if (PkPoints >= 300)
                     {
                         await ItemManager.DetainItemAsync(this, atkrUser);
@@ -5632,7 +5711,6 @@ namespace Comet.Game.States
                     }
                     else if (PkPoints >= 100)
                     {
-                        //await UserPackage.RandDropEquipmentAsync(atkrUser);
                         await ItemManager.DetainItemAsync(this, atkrUser);
                     }
                     else if (PkPoints >= 30 && await Kernel.ChanceCalcAsync(40, 100))
@@ -5656,6 +5734,15 @@ namespace Comet.Game.States
             }
             else if (attacker is Monster monster)
             {
+                uint dropMoney = (uint)await Kernel.NextAsync((int)(Silvers / 3));
+                if (dropMoney > 0)
+                    await DropSilverAsync(dropMoney);
+
+                int chance = 33;
+                if (Level < 10)
+                    chance = 5;
+                await UserPackage.RandDropItemAsync(0, chance);
+
                 if (monster.IsGuard() && PkPoints > 99)
                 {
                     await SavePositionAsync(6000, 31, 72);
@@ -6079,11 +6166,14 @@ namespace Comet.Game.States
 
             try
             {
-
+                if (m_tVigor.ToNextTime(1000) && QueryStatus(StatusSet.RIDING) != null && Vigor < MaxVigor)
+                {
+                    await AddAttributesAsync(ClientUpdateType.Vigor, (long)Math.Max(10, Math.Min(200, MaxVigor * 0.01)));
+                }
             }
             catch (Exception ex)
             {
-                await Log.WriteLogAsync($"Character::OnTimerAsync() => {Identity}:{Name} MessageBox.OnTimerAsync(): {ex.Message}");
+                await Log.WriteLogAsync($"Character::OnTimerAsync() => {Identity}:{Name} Vigor Update: {ex.Message}");
                 await Log.WriteLogAsync(ex);
             }
 
@@ -6463,6 +6553,24 @@ namespace Comet.Game.States
         public override async Task SendSpawnToAsync(Character player)
         {
             await player.SendAsync(new MsgPlayer(this));
+
+            if (Syndicate != null)
+                await Syndicate.SendAsync(player);
+
+            if (FairyType != 0)
+            {
+                await player.SendAsync(new MsgSuitStatus
+                {
+                    Action = 1,
+                    Data = (int)FairyType,
+                    Param = (int)Identity
+                });
+            }
+        }
+
+        public override async Task SendSpawnToAsync(Character player, int x, int y)
+        {
+            await player.SendAsync(new MsgPlayer(this, (ushort)x, (ushort) y));
 
             if (Syndicate != null)
                 await Syndicate.SendAsync(player);

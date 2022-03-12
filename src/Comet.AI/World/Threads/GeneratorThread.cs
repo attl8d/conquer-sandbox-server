@@ -1,5 +1,5 @@
 ﻿using Comet.AI.World.Managers;
-using Comet.Shared.Comet.Shared;
+using Comet.Shared;
 using System.Threading.Tasks;
 
 namespace Comet.AI.World.Threads

@@ -1,7 +1,6 @@
 ﻿using Comet.Account.Packets;
 using Comet.Account.States;
 using Comet.Shared;
-using Comet.Shared.Comet.Shared;
 using System;
 using System.Linq;
 using System.Threading.Tasks;

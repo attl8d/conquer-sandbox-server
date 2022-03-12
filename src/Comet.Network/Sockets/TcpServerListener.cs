@@ -42,6 +42,7 @@ namespace Comet.Network.Sockets
         /// <param name="delay">Use Nagel's algorithm to delay sending smaller packets</param>
         /// <param name="exchange">Use a key exchange before receiving packets</param>
         /// <param name="footerLength">Length of the packet footer</param>
+        /// <param name="timeOut">Receive timeout seconds.</param>
         public TcpServerListener(
             int maxConn = 1000, 
             int bufferSize = 4096, 
@@ -154,19 +155,17 @@ namespace Comet.Network.Sockets
             {
                 try
                 {
-                    using (var cancellation = CancellationTokenSource.CreateLinkedTokenSource(
-                        timeout.Token, ShutdownToken.Token))
-                    {
-                        // Receive data from the client socket
-                        var receiveOperation = actor.Socket.ReceiveAsync(
-                            actor.Buffer.Slice(0),
-                            SocketFlags.None,
-                            cancellation.Token);
-                            
-                        timeout.CancelAfter(TimeSpan.FromSeconds(ReceiveTimeoutSeconds));
-                        examined = await receiveOperation;
-                        if (examined < 9) throw new Exception("Invalid length");
-                    }
+                    using var cancellation = CancellationTokenSource.CreateLinkedTokenSource(
+                        timeout.Token, ShutdownToken.Token);
+                    // Receive data from the client socket
+                    var receiveOperation = actor.Socket.ReceiveAsync(
+                        actor.Buffer[..],
+                        SocketFlags.None,
+                        cancellation.Token);
+
+                    timeout.CancelAfter(TimeSpan.FromSeconds(ReceiveTimeoutSeconds));
+                    examined = await receiveOperation;
+                    if (examined < 9) throw new Exception("Invalid length");
                 }
                 catch (Exception e)
                 {
@@ -192,8 +191,8 @@ namespace Comet.Network.Sockets
                 // exchange protocol, then decrypting only what is necessary for the exchange.
                 // This is to prevent the next packet from being decrypted with the wrong key.
                 actor.Cipher.Decrypt(
-                    actor.Buffer.Slice(0, 9).Span,
-                    actor.Buffer.Slice(0, 9).Span);
+                    actor.Buffer[..9].Span,
+                    actor.Buffer[..9].Span);
                 consumed = BitConverter.ToUInt16(actor.Buffer.Span.Slice(7, 2)) + 7;
                 if (consumed > examined)
                 {
@@ -220,8 +219,8 @@ namespace Comet.Network.Sockets
                 if (consumed < examined)
                 {
                     actor.Cipher?.Decrypt(
-                        actor.Buffer.Slice(consumed, examined - consumed).Span,
-                        actor.Buffer.Slice(consumed, examined - consumed).Span);
+                        actor.Buffer[consumed..examined].Span,
+                        actor.Buffer[consumed..examined].Span);
 
                     if (!Splitting(actor, examined, ref consumed))
                     {
@@ -232,7 +231,7 @@ namespace Comet.Network.Sockets
                     }
                     
                     remaining = examined - consumed;
-                    actor.Buffer.Slice(consumed, examined - consumed).CopyTo(actor.Buffer);
+                    actor.Buffer[consumed..examined].CopyTo(actor.Buffer);
                 }
             }
 
@@ -271,19 +270,18 @@ namespace Comet.Network.Sockets
             {
                 try
                 {
-                    using (var cancellation = CancellationTokenSource.CreateLinkedTokenSource(
-                        timeout.Token, ShutdownToken.Token))
-                    {
-                        // Receive data from the client socket
-                        var receiveOperation = actor.Socket.ReceiveAsync(
-                            actor.Buffer.Slice(remaining),
-                            SocketFlags.None,
-                            cancellation.Token);
+                    using var cancellation = CancellationTokenSource.CreateLinkedTokenSource(
+                        timeout.Token, ShutdownToken.Token);
+                    // Receive data from the client socket
+                    var receiveOperation = actor.Socket.ReceiveAsync(
+                        actor.Buffer[remaining..],
+                        SocketFlags.None,
+                        cancellation.Token);
 
-                        timeout.CancelAfter(TimeSpan.FromSeconds(ReceiveTimeoutSeconds));
-                        examined = await receiveOperation;
-                        if (examined == 0) break;
-                    }
+                    int receiveTimeOut = actor.ReceiveTimeOutSeconds > 0 ? actor.ReceiveTimeOutSeconds : ReceiveTimeoutSeconds;
+                    timeout.CancelAfter(TimeSpan.FromSeconds(receiveTimeOut));
+                    examined = await receiveOperation;
+                    if (examined == 0) break;
                 }
                 catch (OperationCanceledException e)
                 {

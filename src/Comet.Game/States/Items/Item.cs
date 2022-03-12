@@ -119,7 +119,7 @@ namespace Comet.Game.States.Items
                 {
                     120, 121
                 };
-                itemSort = necks[await Kernel.NextAsync(necks.Length)%necks.Length];
+                itemSort = necks[await Kernel.NextAsync(necks.Length) % necks.Length];
                 itemLevel = monstertype.DropNecklace;
             }
             else if (rand >= 50 && rand < 100)
@@ -215,7 +215,7 @@ namespace Comet.Game.States.Items
             if (rand < 50) // down one lev
             {
                 int randLev = await Kernel.NextAsync(itemLevel / 2);
-                itemLevel = randLev + itemLevel/3;
+                itemLevel = randLev + itemLevel / 3;
 
                 if (itemLevel >= 1)
                     itemLevel--;
@@ -378,9 +378,9 @@ namespace Comet.Game.States.Items
             return entity;
         }
 
-#endregion
+        #endregion
 
-#region Attributes
+        #region Attributes
 
         public DbItemtype Itemtype => m_dbItemtype;
 
@@ -595,13 +595,13 @@ namespace Comet.Game.States.Items
 
         public uint MaxAccumulateNum => m_dbItemtype?.AccumulateLimit ?? 1u;
 
-#endregion
+        #endregion
 
-#region Requirements
+        #region Requirements
 
         public int RequiredLevel => m_dbItemtype?.ReqLevel ?? 0;
 
-        public int RequiredProfession => (int) (m_dbItemtype?.ReqProfession ?? 0);
+        public int RequiredProfession => (int)(m_dbItemtype?.ReqProfession ?? 0);
 
         public int RequiredGender => m_dbItemtype?.ReqSex ?? 0;
 
@@ -615,9 +615,9 @@ namespace Comet.Game.States.Items
 
         public int RequiredSpirit => m_dbItemtype?.ReqSoul ?? 0;
 
-#endregion
+        #endregion
 
-#region Battle Attributes
+        #region Battle Attributes
 
         public int BattlePower
         {
@@ -1035,9 +1035,9 @@ namespace Comet.Game.States.Items
             }
         }
 
-#endregion
+        #endregion
 
-#region Change Data
+        #region Change Data
 
         public async Task ChangeOwnerAsync(uint idNewOwner, ChangeOwnerType type)
         {
@@ -1091,9 +1091,9 @@ namespace Comet.Game.States.Items
             return true;
         }
 
-#endregion
+        #endregion
 
-#region Update And Upgrade
+        #region Update And Upgrade
 
         public bool GetUpLevelChance(out double chance, out int nextId)
         {
@@ -1591,9 +1591,9 @@ namespace Comet.Game.States.Items
             return true;
         }
 
-#endregion
+        #endregion
 
-#region Durability
+        #region Durability
 
         public async Task RepairItemAsync()
         {
@@ -1633,9 +1633,9 @@ namespace Comet.Game.States.Items
             await Log.GmLogAsync("Repair", string.Format("User [{2}] repaired broken [{0}][{1}] with {3} silvers.", Type, Identity, PlayerIdentity, nRepairCost));
         }
 
-#endregion
+        #endregion
 
-#region Equip Lock
+        #region Equip Lock
 
         public async Task<bool> TryUnlockAsync()
         {
@@ -1696,9 +1696,19 @@ namespace Comet.Game.States.Items
             return m_dbItem.Plunder != null && m_dbItem.Plunder != DateTime.MinValue && m_dbItem.Plunder > DateTime.Now;
         }
 
-#endregion
+        #endregion
 
-#region Query info
+        #region Query info
+
+        public static bool IsEatEnable(uint type)
+        {
+            return IsMedicine(type);
+        }
+
+        public bool IsEatEnable()
+        {
+            return IsEatEnable(Type);
+        }
 
         public uint CalculateSocketProgress()
         {
@@ -1880,7 +1890,7 @@ namespace Comet.Game.States.Items
 
         public static bool IsMedicine(uint type)
         {
-            return type >= 1000000 && type <= 1049999 || type == 725065 || type == 725066;
+            return GetItemtype(type) == ITEMTYPE_PHYSIC;
         }
 
         public bool IsEquipEnable()
@@ -2149,18 +2159,18 @@ namespace Comet.Game.States.Items
             return (int)type % 1000 / 10;
         }
 
-#endregion
+        #endregion
 
-#region Json
+        #region Json
 
         public string ToJson()
         {
             return JsonConvert.SerializeObject(m_dbItem);
         }
 
-#endregion
+        #endregion
 
-#region Database
+        #region Database
 
         public Task<bool> SaveAsync()
         {
@@ -2184,9 +2194,9 @@ namespace Comet.Game.States.Items
             }
         }
 
-#endregion
+        #endregion
 
-#region Socket
+        #region Socket
 
         public async Task SendJarAsync()
         {
@@ -2204,9 +2214,9 @@ namespace Comet.Game.States.Items
             await m_user.SendAsync(msg);
         }
 
-#endregion
+        #endregion
 
-#region Enums
+        #region Enums
 
         public enum ItemSort
         {
@@ -2366,9 +2376,9 @@ namespace Comet.Game.States.Items
             DetainEquipment
         }
 
-#endregion
+        #endregion
 
-#region Constants
+        #region Constants
 
         private readonly uint[] TALISMAN_SOCKET_QUALITY_ADDITION = { 0, 0, 0, 0, 0, 0, 5, 10, 40, 1000 };
 
@@ -2460,6 +2470,16 @@ namespace Comet.Game.States.Items
 
         public const uint TYPE_JAR = 750000;
 
-#endregion
+        const int ITEMTYPE_PHYSIC = 10000;//Ò©Æ·
+        const int ITEMTYPE_MEDICINE_HP = 10000;//²¹ÑªÒ©
+        const int ITEMTYPE_MEDICINE_MP = 11000;//²¹Ä§·¨Ò©
+        const int ITEMTYPE_POISON = 12000;//¶¾Ò©
+        const int ITEMTYPE_SCROLL = 20000;//¾íÖá
+        const int ITEMTYPE_SCROLL_SPECIAL = 20000;//ÌØÊâ¾íÖá£¬Èç£º»Ø³Ç¾í¡¢×£¸£¾íÖáµÈ
+        const int ITEMTYPE_SCROLL_MSKILL = 21000;//Ä§·¨Ê¦¼¼ÄÜ¾íÖá
+        const int ITEMTYPE_SCROLL_SSKILL = 22000;//Õ½Ê¿¼¼ÄÜ¾íÖá
+        const int ITEMTYPE_SCROLL_BSKILL = 23000;//¹­¼ýÊÖ¼¼ÄÜ¾íÖá <== ¸ÄÎªÒìÄÜÕß
+
+        #endregion
     }
 }

@@ -1,6 +1,6 @@
 ﻿@page
-@using Comet.Web.Services
 @inject LanguageService Language
+@using Comet.Web.Services
 @model Comet.Web.Areas.Panel.Pages.Administration.BansModel
 @{
     ViewData["Title"] = Language.GetString("BansManagement");
@@ -9,15 +9,15 @@
 <div class="table-responsive">
     <table id="tblBansManagement" class="table table-striped">
         <thead>
-            <tr>
-                <td>@Language.GetString("BanType")</td>
-                <td>@Language.GetString("TargetUserName")</td>
-                <td>@Language.GetString("Reason")</td>
-                <td>@Language.GetString("Banned")</td>
-                <td>@Language.GetString("From")</td>
-                <td>@Language.GetString("To")</td>
-                <td></td>
-            </tr>
+        <tr>
+            <td>@Language.GetString("BanType")</td>
+            <td>@Language.GetString("TargetUserName")</td>
+            <td>@Language.GetString("Reason")</td>
+            <td>@Language.GetString("Banned")</td>
+            <td>@Language.GetString("From")</td>
+            <td>@Language.GetString("To")</td>
+            <td></td>
+        </tr>
         </thead>
         <tbody>
         </tbody>
@@ -26,49 +26,49 @@
 
 @section Scripts
 {
-<script>
-    const ipp = 25;
+    <script>
+        const ipp = 25;
 
-    function load(page) {
-        $.ajax({
-            url: `@Url.Action("", "Bans", new { version = "1" })?page=1&ipp=${ipp}`,
-            method: 'GET',
-            success: function(result) {
+        function load(page) {
+            $.ajax({
+                url: `@Url.Action("", "Bans", new {version = "1"})?page=1&ipp=${ipp}`,
+                method: 'GET',
+                success: function(result) {
 
-                let table = document.getElementById('tblBansManagement');
-                let body = table.tBodies[0];
+                    const table = document.getElementById('tblBansManagement');
+                    const body = table.tBodies[0];
 
-                $(body).empty();
+                    $(body).empty();
 
-                if (result.length) {
+                    if (result.length) {
 
-                    for (let idx = 0; idx < result.length; idx++) {
+                        for (let idx = 0; idx < result.length; idx++) {
 
-                        console.log(JSON.stringify(result[idx]));
+                            console.log(JSON.stringify(result[idx]));
 
-                        let row = body.insertRow();
+                            const row = body.insertRow();
 
-                        $(row.insertCell()).html(`${result[idx].banType}`);
-                        $(row.insertCell()).html(`${result[idx].userName}`);
-                        $(row.insertCell()).html(`${result[idx].reason}`);
-                        $(row.insertCell()).html(`${(result[idx].flags === 0 ? '@Language.GetString("Banned")' : '@Language.GetString("Unbanned")')}`);
-                        let date = new Date(result[idx].from);
-                        $(row.insertCell()).html(date.toLocaleDateString('pt-BR') + ' ' + date.toLocaleTimeString('pt-BR'));
-                        date = new Date(result[idx].to);
-                        $(row.insertCell()).html(date.toLocaleDateString('pt-BR') + ' ' + date.toLocaleTimeString('pt-BR'));
-                        $(row.insertCell()).html(`<a href="/Panel/Administration/BanDetails/${result[idx].id}"><i class="fa fa-edit"></i></a>`);
+                            $(row.insertCell()).html(`${result[idx].banType}`);
+                            $(row.insertCell()).html(`${result[idx].userName}`);
+                            $(row.insertCell()).html(`${result[idx].reason}`);
+                            $(row.insertCell()).html(`${(result[idx].flags === 0 ? '@Language.GetString("Banned")' : '@Language.GetString("Unbanned")')}`);
+                            let date = new Date(result[idx].from);
+                            $(row.insertCell()).html(date.toLocaleDateString('pt-BR') + ' ' + date.toLocaleTimeString('pt-BR'));
+                            date = new Date(result[idx].to);
+                            $(row.insertCell()).html(date.toLocaleDateString('pt-BR') + ' ' + date.toLocaleTimeString('pt-BR'));
+                            $(row.insertCell()).html(`<a href="/Panel/Administration/BanDetails/${result[idx].id}"><i class="fa fa-edit"></i></a>`);
+                        }
+
                     }
-
                 }
-            }
+            });
+        }
+
+        $(document).ready(function() {
+
+            load(1);
+
         });
-    }
 
-    $(document).ready(function() {
-
-        load(1);
-
-    });
-
-</script>
+    </script>
 }

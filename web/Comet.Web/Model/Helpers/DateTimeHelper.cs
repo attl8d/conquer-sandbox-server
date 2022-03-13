@@ -1,6 +1,6 @@
-﻿using Comet.Web.Services;
-using System;
+﻿using System;
 using System.Globalization;
+using Comet.Web.Services;
 
 namespace Comet.Web.Model.Helpers
 {
@@ -8,13 +8,13 @@ namespace Comet.Web.Model.Helpers
     {
         public static string ToDateString(this DateTime date, LanguageService language)
         {
-            var interval = DateTime.Now - date;
-            return (int)interval.TotalDays switch
+            TimeSpan interval = DateTime.Now - date;
+            return (int) interval.TotalDays switch
             {
                 -1 => $"{language.GetString("Tomorrow")}, {date:t}",
-                0 => $"{language.GetString("Today")}, {date:t}",
-                1 => $"{language.GetString("Yesterday")}, {date:t}",
-                _ => date.ToString("U", new CultureInfo(language.CurrentLocale))
+                0  => $"{language.GetString("Today")}, {date:t}",
+                1  => $"{language.GetString("Yesterday")}, {date:t}",
+                _  => date.ToString("U", new CultureInfo(language.CurrentLocale))
             };
         }
     }

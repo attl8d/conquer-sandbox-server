@@ -1,5 +1,4 @@
 ﻿@page
-@using Comet.Web.Services
 @inject LanguageService Language
 @model Comet.Web.Pages.MaintenanceModel
 @{
@@ -15,8 +14,8 @@
             <div class="container">
                 <div class="text-center">
                     <img src="/assets/images/logo-light.png" alt="">
-                    
-                    @if (!string.IsNullOrEmpty(Model.Message)) 
+
+                    @if (!string.IsNullOrEmpty(Model.Message))
                     {
                         @Html.Raw(Model.Message)
                     }
@@ -40,15 +39,14 @@
 @section Scripts
 {
     <script>
-        $(".countdown").each(function()
-        {
-            var tz = $(this).attr('data-timezone');
+        $(".countdown").each(function() {
+            const tz = $(this).attr('data-timezone');
             var end = $(this).attr('data-end');
             end = moment.tz(end, tz).toDate();
-            $(this).countdown(end, function(event)
-            {
-                $(this).html(event.strftime(['<div class="countdown-item">', '<span>@Language.GetString("Days")</span>', '<span><span>%D</span></span>', '</div>', '<div class="countdown-item">', '<span>@Language.GetString("Hours")</span>', '<span><span>%H</span></span>', '</div>', '<div class="countdown-item">', '<span>@Language.GetString("Minutes")</span>', '<span><span>%M</span></span>', '</div>', '<div class="countdown-item">', '<span>@Language.GetString("Seconds")</span>', '<span><span>%S</span></span>', '</div>'].join('')));
-            });
+            $(this).countdown(end,
+                function(event) {
+                    $(this).html(event.strftime(['<div class="countdown-item">', '<span>@Language.GetString("Days")</span>', '<span><span>%D</span></span>', '</div>', '<div class="countdown-item">', '<span>@Language.GetString("Hours")</span>', '<span><span>%H</span></span>', '</div>', '<div class="countdown-item">', '<span>@Language.GetString("Minutes")</span>', '<span><span>%M</span></span>', '</div>', '<div class="countdown-item">', '<span>@Language.GetString("Seconds")</span>', '<span><span>%S</span></span>', '</div>'].join('')));
+                });
         });
     </script>
 

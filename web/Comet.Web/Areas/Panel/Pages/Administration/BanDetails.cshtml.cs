@@ -1,3 +1,5 @@
+using System;
+using System.Threading.Tasks;
 using Comet.Web.Data.Entities;
 using Comet.Web.Model.Identity;
 using Comet.Web.Services;
@@ -6,8 +8,6 @@ using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Identity.UI.Services;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.RazorPages;
-using System;
-using System.Threading.Tasks;
 using static Comet.Web.Services.Security;
 
 namespace Comet.Web.Areas.Panel.Pages.Administration
@@ -15,17 +15,17 @@ namespace Comet.Web.Areas.Panel.Pages.Administration
     [Authorize(Policy = Moderator)]
     public class BanDetailsModel : PageModel
     {
-        private readonly UserManager mUserManager;
-        private readonly SignInManager mSigninManager;
-        private readonly LanguageService mLanguage;
-        private readonly IEmailSender mEmailSender;
         private readonly BanService mBanService;
+        private readonly IEmailSender mEmailSender;
+        private readonly LanguageService mLanguage;
+        private readonly SignInManager mSigninManager;
+        private readonly UserManager mUserManager;
 
         public BanDetailsModel(UserManager userManager,
-            SignInManager signInManager,
-            LanguageService languageService,
-            BanService banService,
-            IEmailSender emailService)
+                               SignInManager signInManager,
+                               LanguageService languageService,
+                               BanService banService,
+                               IEmailSender emailService)
         {
             mUserManager = userManager;
             mSigninManager = signInManager;
@@ -34,8 +34,7 @@ namespace Comet.Web.Areas.Panel.Pages.Administration
             mBanService = banService;
         }
 
-        [BindProperty(SupportsGet = true)]
-        public int BanId { get; set; }
+        [BindProperty(SupportsGet = true)] public int BanId { get; set; }
 
         public BanData Data { get; private set; }
 
@@ -67,10 +66,7 @@ namespace Comet.Web.Areas.Panel.Pages.Administration
                 Data.TargetName = mLanguage.GetString("TODO Game Account");
             }
 
-            if (userBanData != null)
-            {
-                Data.BanTermMessage = userBanData.Terms;
-            }
+            if (userBanData != null) Data.BanTermMessage = userBanData.Terms;
 
             ApplicationUser bannedBy = await mUserManager.FindByIdAsync(ban.BannedBy.ToString());
             Data.BannedBy = bannedBy?.UserName ?? mLanguage.GetString("FormerModerator");
@@ -81,7 +77,7 @@ namespace Comet.Web.Areas.Panel.Pages.Administration
             Data.From = ban.BanTime;
             Data.To = ban.ExpireTime;
             Data.Id = ban.Id;
-            Data.Flags = (BanFlags)ban.Flags;
+            Data.Flags = (BanFlags) ban.Flags;
             Data.IsBanned = false;
 
             if (Data.Flags.HasFlag(BanFlags.FalsePositive))
@@ -96,7 +92,7 @@ namespace Comet.Web.Areas.Panel.Pages.Administration
             {
                 Data.FlagMessage = $"<span class=\"tx-secondary\">{mLanguage.GetString("Removed")}</span>";
             }
-            
+
             else
             {
                 if (ban.ExpireTime > DateTime.Now)
@@ -106,10 +102,7 @@ namespace Comet.Web.Areas.Panel.Pages.Administration
                 }
                 else
                 {
-                    if (reason.Type == 1)
-                    {
-                        Data.IsExpired = true;
-                    }
+                    if (reason.Type == 1) Data.IsExpired = true;
                     Data.FlagMessage = $"<span class=\"tx-success\">{mLanguage.GetString("Expired")}</span>";
                 }
             }

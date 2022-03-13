@@ -13,8 +13,8 @@ namespace Comet.Web.Pages
     [AllowAnonymous]
     public class ConfirmEmailModel : PageModel
     {
-        private readonly UserManager<ApplicationUser> mUserManager;
         private readonly LanguageService mLanguage;
+        private readonly UserManager<ApplicationUser> mUserManager;
 
         public ConfirmEmailModel(UserManager<ApplicationUser> userManager, LanguageService language)
         {
@@ -22,24 +22,17 @@ namespace Comet.Web.Pages
             mLanguage = language;
         }
 
-        [TempData]
-        public string StatusMessage { get; set; }
+        [TempData] public string StatusMessage { get; set; }
 
         public async Task<IActionResult> OnGetAsync(string userId, string code)
         {
-            if (userId == null || code == null)
-            {
-                return RedirectToPage("/Index");
-            }
+            if (userId == null || code == null) return RedirectToPage("/Index");
 
-            var user = await mUserManager.FindByIdAsync(userId);
-            if (user == null)
-            {
-                return NotFound(mLanguage.GetString("CouldNotFindAccountToActivate"));
-            }
+            ApplicationUser user = await mUserManager.FindByIdAsync(userId);
+            if (user == null) return NotFound(mLanguage.GetString("CouldNotFindAccountToActivate"));
 
             code = Encoding.UTF8.GetString(WebEncoders.Base64UrlDecode(code));
-            var result = await mUserManager.ConfirmEmailAsync(user, code);
+            IdentityResult result = await mUserManager.ConfirmEmailAsync(user, code);
             StatusMessage = result.Succeeded ? "AccountActivatedSuccessfully" : "CouldNotActivateAccount";
             return Page();
         }

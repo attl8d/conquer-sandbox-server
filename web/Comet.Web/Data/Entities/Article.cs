@@ -8,12 +8,13 @@ namespace Comet.Web.Data.Entities
     [Table("article")]
     public class Article
     {
-        [Key]
-        public virtual int Id { get; set; }
-        [ForeignKey("FK_Article_Category")]
-        public virtual int CategoryId { get; set; }
+        [Key] public virtual int Id { get; set; }
+
+        [ForeignKey("FK_Article_Category")] public virtual int CategoryId { get; set; }
+
         [ForeignKey("FK_Article_Creator_Identifier")]
         public virtual int UserId { get; set; }
+
         public virtual ArticleFlags Flags { get; set; }
         public virtual int? ThumbId { get; set; }
         public virtual int Views { get; set; }

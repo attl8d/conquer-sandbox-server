@@ -1,4 +1,9 @@
-﻿using Comet.Web.Areas.Panel.Models;
+﻿using System;
+using System.Collections.Generic;
+using System.Linq;
+using System.Security.Claims;
+using System.Threading.Tasks;
+using Comet.Web.Areas.Panel.Models;
 using Comet.Web.Data.Entities;
 using Comet.Web.Services;
 using Comet.Web.Services.Identity;
@@ -6,11 +11,6 @@ using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc;
-using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Security.Claims;
-using System.Threading.Tasks;
 using static Comet.Web.Services.Security;
 
 namespace Comet.Web.API
@@ -21,15 +21,15 @@ namespace Comet.Web.API
     [Authorize(Policy = Administrator)]
     public class RolesController : ControllerBase
     {
-        private readonly UserManager mUserManager;
         private readonly LanguageService mLanguage;
-        private readonly SignInManager mSigninManager;
         private readonly RoleManager mRoleManager;
+        private readonly SignInManager mSigninManager;
+        private readonly UserManager mUserManager;
 
         public RolesController(UserManager userManager,
-            LanguageService language,
-            SignInManager signinManager,
-            RoleManager roleManager)
+                               LanguageService language,
+                               SignInManager signinManager,
+                               RoleManager roleManager)
         {
             mUserManager = userManager;
             mLanguage = language;
@@ -38,10 +38,10 @@ namespace Comet.Web.API
         }
 
         /// <summary>
-        /// Returns a list of roles.
+        ///     Returns a list of roles.
         /// </summary>
         /// <remarks>
-        /// This will return a paginated query of all registered roles at the moment.
+        ///     This will return a paginated query of all registered roles at the moment.
         /// </remarks>
         /// <param name="page">The index of the page.</param>
         /// <param name="ipp">Indexes per page.</param>
@@ -49,7 +49,8 @@ namespace Comet.Web.API
         /// <response code="401">User has no permission.</response>
         /// <response code="500">Internal server error.</response>
         [ActionName("")]
-        [HttpGet, MapToApiVersion("1")]
+        [HttpGet]
+        [MapToApiVersion("1")]
         [ProducesResponseType(typeof(List<AdminRoleListModel>), StatusCodes.Status200OK)]
         [ProducesResponseType(StatusCodes.Status401Unauthorized)]
         [ProducesResponseType(StatusCodes.Status500InternalServerError)]
@@ -58,10 +59,9 @@ namespace Comet.Web.API
             if (!User.HasPermission(Claims.ViewRoles))
                 return Unauthorized();
 
-            var roles = await mRoleManager.GetRolesAsync(page, ipp);
+            List<ApplicationRole> roles = await mRoleManager.GetRolesAsync(page, ipp);
             var result = new List<AdminRoleListModel>();
-            foreach (var role in roles)
-            {
+            foreach (ApplicationRole role in roles)
                 result.Add(new AdminRoleListModel
                 {
                     Id = role.Id,
@@ -71,15 +71,14 @@ namespace Comet.Web.API
                     NormalizedName = role.NormalizedName,
                     Count = (await mUserManager.GetUsersInRoleAsync(role.Name)).Count
                 });
-            }
             return Ok(result);
         }
 
         /// <summary>
-        /// Returns a list of users.
+        ///     Returns a list of users.
         /// </summary>
         /// <remarks>
-        /// This will return a paginated query of all registered users in specific role at the moment.
+        ///     This will return a paginated query of all registered users in specific role at the moment.
         /// </remarks>
         /// <param name="roleId">The identity of the role.</param>
         /// <param name="page">The index of the page.</param>
@@ -88,7 +87,8 @@ namespace Comet.Web.API
         /// <response code="401">User has no permission.</response>
         /// <response code="500">Internal server error.</response>
         [ActionName("GetUsersByRole")]
-        [HttpGet, MapToApiVersion("1")]
+        [HttpGet]
+        [MapToApiVersion("1")]
         [ProducesResponseType(typeof(List<AdminUserListModel>), StatusCodes.Status200OK)]
         [ProducesResponseType(StatusCodes.Status401Unauthorized)]
         [ProducesResponseType(StatusCodes.Status500InternalServerError)]
@@ -97,8 +97,8 @@ namespace Comet.Web.API
             if (!User.HasPermission(Claims.ViewRoles))
                 return Forbid();
 
-            var users = await mUserManager.GetUsersByRoleAsync(roleId, page, ipp);
-            var result = users.Select(x => new AdminUserListModel
+            List<ApplicationUser> users = await mUserManager.GetUsersByRoleAsync(roleId, page, ipp);
+            List<AdminUserListModel> result = users.Select(x => new AdminUserListModel
             {
                 Id = x.Id,
                 Email = x.Email,
@@ -109,10 +109,10 @@ namespace Comet.Web.API
         }
 
         /// <summary>
-        /// Returns a list of claims.
+        ///     Returns a list of claims.
         /// </summary>
         /// <remarks>
-        /// This will return a list of all registered claims for a specific role at the moment.
+        ///     This will return a list of all registered claims for a specific role at the moment.
         /// </remarks>
         /// <param name="roleId">The identity of the role.</param>
         /// <response code="200">A list with the registered roles.</response>
@@ -120,7 +120,8 @@ namespace Comet.Web.API
         /// <response code="401">User has no permission.</response>
         /// <response code="500">Internal server error.</response>
         [ActionName("GetClaimsByRole")]
-        [HttpGet, MapToApiVersion("1")]
+        [HttpGet]
+        [MapToApiVersion("1")]
         [ProducesResponseType(typeof(List<AdminRoleClaimModel>), StatusCodes.Status200OK)]
         [ProducesResponseType(StatusCodes.Status204NoContent)]
         [ProducesResponseType(StatusCodes.Status401Unauthorized)]
@@ -130,38 +131,39 @@ namespace Comet.Web.API
             if (!User.HasPermission(Claims.ViewClaims))
                 return Unauthorized();
 
-            var role = await mRoleManager.FindByIdAsync(roleId.ToString());
+            ApplicationRole role = await mRoleManager.FindByIdAsync(roleId.ToString());
             if (role == null)
                 return NoContent();
 
-            var claims = await mRoleManager.GetClaimsAsync(role);
+            IList<Claim> claims = await mRoleManager.GetClaimsAsync(role);
             var result = new List<AdminRoleClaimModel>();
-            foreach (var claim in claims)
-            {
+            foreach (Claim claim in claims)
                 result.Add(new AdminRoleClaimModel
                 {
-                    ClaimType = claim.Type.Split(new char[] { '.' }, 2)[1],
+                    ClaimType = claim.Type.Split(new[] {'.'}, 2)[1],
                     ClaimValue = claim.Value,
-                    ClaimName = (Enum.TryParse<Claims>(claim.Type, out var eClaim) ? mLanguage.GetString(eClaim.ToPermissionString()) : mLanguage.GetString(claim.Type))
+                    ClaimName = Enum.TryParse(claim.Type, out Claims eClaim)
+                                    ? mLanguage.GetString(eClaim.ToPermissionString())
+                                    : mLanguage.GetString(claim.Type)
                 });
-            }
             return Ok(result);
         }
 
         /// <summary>
-        /// Insert a new claim.
+        ///     Insert a new claim.
         /// </summary>
         /// <remarks>
-        /// This will insert a new claim for the required role. User claims override role claims.
+        ///     This will insert a new claim for the required role. User claims override role claims.
         /// </remarks>
         /// <response code="200">The claim has been added.</response>
         /// <response code="401">User has no permission.</response>
         /// <response code="500">Internal server error.</response>
         [ActionName("SetClaimToRole")]
-        [HttpPut, MapToApiVersion("1")]
+        [HttpPut]
+        [MapToApiVersion("1")]
         [ProducesResponseType(StatusCodes.Status200OK)]
         [ProducesResponseType(StatusCodes.Status400BadRequest)]
-        [ProducesResponseType(StatusCodes.Status401Unauthorized)]        
+        [ProducesResponseType(StatusCodes.Status401Unauthorized)]
         [ProducesResponseType(StatusCodes.Status500InternalServerError)]
         public async Task<IActionResult> SetClaimToRoleV1Async([FromBody] RoleClaimModel model)
         {
@@ -174,15 +176,16 @@ namespace Comet.Web.API
             if (!Enum.TryParse(model.claimType, out Claims claimType))
                 return BadRequest("Invalid claim type.");
 
-            var role = await mRoleManager.FindByIdAsync(model.roleId.ToString());
+            ApplicationRole role = await mRoleManager.FindByIdAsync(model.roleId.ToString());
             if (role == null)
                 return BadRequest("Unexistent Role.");
 
-            var roleClaim = await mRoleManager.GetRoleClaimAsync(model.roleId, claimType.ToPermissionString());
+            ApplicationRoleClaim roleClaim =
+                await mRoleManager.GetRoleClaimAsync(model.roleId, claimType.ToPermissionString());
             if (roleClaim != null)
                 return Ok("Role already owns claim.");
 
-            Claim claim = new (claimType.ToPermissionString(), "1");            
+            Claim claim = new(claimType.ToPermissionString(), "1");
             if ((await mRoleManager.AddClaimAsync(role, claim)).Succeeded)
                 return Ok(claim);
 
@@ -190,16 +193,17 @@ namespace Comet.Web.API
         }
 
         /// <summary>
-        /// Delete a claim.
+        ///     Delete a claim.
         /// </summary>
         /// <remarks>
-        /// This will remove a claim from a role. User claims override role claims.
+        ///     This will remove a claim from a role. User claims override role claims.
         /// </remarks>
         /// <response code="200">The claim has been removed.</response>
         /// <response code="401">User has no permission.</response>
         /// <response code="500">Internal server error.</response>
         [ActionName("DeleteClaimFromRole")]
-        [HttpDelete, MapToApiVersion("1")]
+        [HttpDelete]
+        [MapToApiVersion("1")]
         [ProducesResponseType(StatusCodes.Status200OK)]
         [ProducesResponseType(StatusCodes.Status401Unauthorized)]
         [ProducesResponseType(StatusCodes.Status500InternalServerError)]
@@ -214,11 +218,12 @@ namespace Comet.Web.API
             if (!Enum.TryParse(model.claimType, out Claims claimType))
                 return BadRequest("Invalid claim type.");
 
-            var role = await mRoleManager.FindByIdAsync(model.roleId.ToString());
+            ApplicationRole role = await mRoleManager.FindByIdAsync(model.roleId.ToString());
             if (role == null)
                 return BadRequest("Unexistent Role.");
 
-            var roleClaim = await mRoleManager.GetRoleClaimAsync(model.roleId, claimType.ToPermissionString());
+            ApplicationRoleClaim roleClaim =
+                await mRoleManager.GetRoleClaimAsync(model.roleId, claimType.ToPermissionString());
             if (roleClaim == null)
                 return Ok("Role doesn't owns claim.");
 
@@ -229,17 +234,18 @@ namespace Comet.Web.API
         }
 
         /// <summary>
-        /// Define a new role for the user.
+        ///     Define a new role for the user.
         /// </summary>
         /// <remarks>
-        /// This will add a role for the selected user.
+        ///     This will add a role for the selected user.
         /// </remarks>
         /// <response code="200">The claim has been added.</response>
         /// <response code="401">User has no permission.</response>
         /// <response code="404">Target or Role not found.</response>
         /// <response code="500">Internal server error.</response>
         [ActionName("SetUserOnRole")]
-        [HttpPut, MapToApiVersion("1")]
+        [HttpPut]
+        [MapToApiVersion("1")]
         [ProducesResponseType(StatusCodes.Status200OK)]
         [ProducesResponseType(StatusCodes.Status401Unauthorized)]
         [ProducesResponseType(StatusCodes.Status404NotFound)]
@@ -251,26 +257,20 @@ namespace Comet.Web.API
 
             ApplicationUser user = null;
             if (!string.IsNullOrEmpty(model.userName))
-            {
                 user = await mUserManager.FindByNameAsync(model.userName);
-            }
             else if (!string.IsNullOrEmpty(model.email))
-            {
                 user = await mUserManager.FindByEmailAsync(model.userName);
-            }
             else
-            {
                 user = await mUserManager.FindByIdAsync(model.userId.ToString());
-            }
 
             if (user == null)
                 return NotFound("The selected user could not be found.");
 
-            var roles = await mUserManager.GetRolesAsync(user);
+            IList<string> roles = await mUserManager.GetRolesAsync(user);
             if (roles.Any(x => x.Equals(SuperAdministrator)) && !User.IsInRole(SuperAdministrator))
                 return Forbid("The selected user is an Super Administrator and cannot be changed.");
 
-            var selectedRole = await mRoleManager.FindByIdAsync(model.roleId.ToString());
+            ApplicationRole selectedRole = await mRoleManager.FindByIdAsync(model.roleId.ToString());
             if (selectedRole == null)
                 return NotFound("The selected role does not exist.");
 
@@ -280,12 +280,9 @@ namespace Comet.Web.API
             if (roles.Any(x => x.Equals(selectedRole.Name)))
                 return Conflict("You are trying to add the user on it's own role.");
 
-            if (roles.Count > 0)
-            {
-                await mUserManager.RemoveFromRolesAsync(user, roles);
-            }
+            if (roles.Count > 0) await mUserManager.RemoveFromRolesAsync(user, roles);
 
-            if ((await mUserManager.AddToRoleAsync(user, selectedRole.Name)) == IdentityResult.Success)
+            if (await mUserManager.AddToRoleAsync(user, selectedRole.Name) == IdentityResult.Success)
                 return Ok(new
                 {
                     user.Id,
@@ -297,17 +294,18 @@ namespace Comet.Web.API
         }
 
         /// <summary>
-        /// Removes an user from a role.
+        ///     Removes an user from a role.
         /// </summary>
         /// <remarks>
-        /// This will remove the selected user from the role.
+        ///     This will remove the selected user from the role.
         /// </remarks>
         /// <response code="200">The role has been removed.</response>
         /// <response code="401">User has no permission.</response>
         /// <response code="404">Target or Role not found.</response>
         /// <response code="500">Internal server error.</response>
         [ActionName("DeleteUserFromRole")]
-        [HttpDelete, MapToApiVersion("1")]
+        [HttpDelete]
+        [MapToApiVersion("1")]
         [ProducesResponseType(StatusCodes.Status200OK)]
         [ProducesResponseType(StatusCodes.Status401Unauthorized)]
         [ProducesResponseType(StatusCodes.Status404NotFound)]
@@ -319,26 +317,20 @@ namespace Comet.Web.API
 
             ApplicationUser user = null;
             if (!string.IsNullOrEmpty(model.userName))
-            {
                 user = await mUserManager.FindByNameAsync(model.userName);
-            }
             else if (!string.IsNullOrEmpty(model.email))
-            {
                 user = await mUserManager.FindByEmailAsync(model.userName);
-            }
             else
-            {
                 user = await mUserManager.FindByIdAsync(model.userId.ToString());
-            }
 
             if (user == null)
                 return NotFound("The selected user could not be found.");
 
-            var roles = await mUserManager.GetRolesAsync(user);
+            IList<string> roles = await mUserManager.GetRolesAsync(user);
             if (roles.Any(x => x.Equals(SuperAdministrator)) && !User.IsInRole(SuperAdministrator))
                 return Forbid("The selected user is an Super Administrator and cannot be changed.");
 
-            var selectedRole = await mRoleManager.FindByIdAsync(model.roleId.ToString());
+            ApplicationRole selectedRole = await mRoleManager.FindByIdAsync(model.roleId.ToString());
             if (selectedRole == null)
                 return NotFound("The selected role does not exist.");
 

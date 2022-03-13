@@ -1,17 +1,17 @@
-﻿using Comet.Web.Data.Entities;
+﻿using System.Collections.Generic;
+using System.Threading.Tasks;
+using Comet.Web.Data.Entities;
 using Comet.Web.Services;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.RazorPages;
 using Microsoft.Extensions.Logging;
-using System.Collections.Generic;
-using System.Threading.Tasks;
 
 namespace Comet.Web.Pages
 {
     public class IndexModel : PageModel
     {
-        private readonly ILogger<IndexModel> mLogger;
         private readonly ArticleService mArticleService;
+        private readonly ILogger<IndexModel> mLogger;
 
         public IndexModel(ILogger<IndexModel> logger, ArticleService articleRepo)
         {
@@ -19,11 +19,11 @@ namespace Comet.Web.Pages
             mArticleService = articleRepo;
         }
 
-        public List<Article> Articles { get; private set; } = new List<Article>();
+        public List<Article> Articles { get; private set; } = new();
 
         public async Task<IActionResult> OnGetAsync()
         {
-            Articles = await mArticleService.GetAsync(0, 5);
+            Articles = await mArticleService.GetAsync();
             return Page();
         }
     }

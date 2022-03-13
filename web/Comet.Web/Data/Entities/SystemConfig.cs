@@ -7,8 +7,8 @@ namespace Comet.Web.Data.Entities
     [Table("system_config")]
     public class SystemConfig
     {
-        [Key]
-        public virtual string Key { get; set; }
+        [Key] public virtual string Key { get; set; }
+
         public virtual string StrData0 { get; set; }
         public virtual string StrData1 { get; set; }
         public virtual string StrData2 { get; set; }
@@ -24,7 +24,7 @@ namespace Comet.Web.Data.Entities
 
         public enum ConfigKey
         {
-            MaintenanceSettings,
+            MaintenanceSettings
         }
     }
 }

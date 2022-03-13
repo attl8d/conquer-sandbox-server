@@ -1,29 +1,28 @@
-﻿using Comet.Web.Data;
+﻿using System.Threading.Tasks;
+using Comet.Web.Data;
 using Comet.Web.Data.Entities;
 using Comet.Web.Services.Identity;
 using Microsoft.AspNetCore.Http;
 using Microsoft.Extensions.Logging;
 using Newtonsoft.Json;
-using System.Threading.Tasks;
 
 namespace Comet.Web.Services
 {
     public interface ILogService<out TParent>
     {
-
     }
 
     public sealed class LogService<TParent> : ILogService<TParent>
     {
-        private readonly ILogger<TParent> mLogger;
         private readonly ApplicationDbContext mDbContext;
         private readonly IHttpContextAccessor mHttpContextAcessor;
+        private readonly ILogger<TParent> mLogger;
         private readonly UserManager mUserManager;
 
         public LogService(ILogger<TParent> logger,
-            ApplicationDbContext context,
-            IHttpContextAccessor httpContextAccessor,
-            UserManager userManager)
+                          ApplicationDbContext context,
+                          IHttpContextAccessor httpContextAccessor,
+                          UserManager userManager)
         {
             mLogger = logger;
             mDbContext = context;
@@ -32,15 +31,15 @@ namespace Comet.Web.Services
         }
 
         public async Task LogAsync(string message,
-            LogHistory.LogType type,
-            LogLevel level = LogLevel.Information,
-            object payload = null,
-            int accountId = 0,
-            long data = 0)
+                                   LogHistory.LogType type,
+                                   LogLevel level = LogLevel.Information,
+                                   object payload = null,
+                                   int accountId = 0,
+                                   long data = 0)
         {
             if (accountId == 0 && mHttpContextAcessor.HttpContext?.User?.Identity?.IsAuthenticated == true)
             {
-                var user = await mUserManager.GetUserAsync(mHttpContextAcessor.HttpContext.User);
+                ApplicationUser user = await mUserManager.GetUserAsync(mHttpContextAcessor.HttpContext.User);
                 if (user != null)
                     accountId = user.Id;
             }

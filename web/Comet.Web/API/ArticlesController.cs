@@ -1,11 +1,12 @@
-﻿using Comet.Web.Model.Articles;
+﻿using System.Collections.Generic;
+using System.Threading.Tasks;
+using Comet.Web.Data.Entities;
+using Comet.Web.Model.Articles;
 using Comet.Web.Services;
 using Comet.Web.Services.Identity;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
-using System.Collections.Generic;
-using System.Threading.Tasks;
 using static Comet.Web.Services.Security;
 
 namespace Comet.Web.API
@@ -25,16 +26,17 @@ namespace Comet.Web.API
         }
 
         /// <summary>
-        /// Returns a list of results.
+        ///     Returns a list of results.
         /// </summary>
         /// <remarks>
-        /// This will return a list with article category types. This should not contain much data, so this isn't
-        /// paginated.
+        ///     This will return a list with article category types. This should not contain much data, so this isn't
+        ///     paginated.
         /// </remarks>
         /// <response code="200">A list with the article category types.</response>
         /// <response code="500">Internal server error.</response>
         [ActionName("GetActiveArticleCategoryTypes")]
-        [HttpGet(Name = "GetActiveArticleCategoryTypes"), MapToApiVersion("1")]
+        [HttpGet(Name = "GetActiveArticleCategoryTypes")]
+        [MapToApiVersion("1")]
         [ProducesResponseType(typeof(List<ArticleCategoryTypeModel>), StatusCodes.Status200OK)]
         [ProducesResponseType(StatusCodes.Status500InternalServerError)]
         public async Task<IActionResult> GetActiveArticleCategoryTypesV1Async()
@@ -43,17 +45,18 @@ namespace Comet.Web.API
         }
 
         /// <summary>
-        /// Returns a list of results.
+        ///     Returns a list of results.
         /// </summary>
         /// <remarks>
-        /// This will return a list with the article categories from a specific type. This should not contain much
-        /// data, so this isn't paginated.
+        ///     This will return a list with the article categories from a specific type. This should not contain much
+        ///     data, so this isn't paginated.
         /// </remarks>
         /// <param name="type">The category type to be exibhited.</param>
         /// <response code="200">A list with the article categories.</response>
         /// <response code="500">Internal server error.</response>
         [ActionName("GetActiveArticleCategoriesByType")]
-        [HttpGet(Name = "GetActiveArticleCategoriesByType"), MapToApiVersion("1")]
+        [HttpGet(Name = "GetActiveArticleCategoriesByType")]
+        [MapToApiVersion("1")]
         [ProducesResponseType(typeof(List<ArticleCategoryModel>), StatusCodes.Status200OK)]
         [ProducesResponseType(StatusCodes.Status500InternalServerError)]
         public async Task<IActionResult> GetActiveArticleCategoriesByTypeV1Async(int type)
@@ -62,11 +65,11 @@ namespace Comet.Web.API
         }
 
         /// <summary>
-        /// Returns a list of results.
+        ///     Returns a list of results.
         /// </summary>
         /// <remarks>
-        /// This request will return a list with the articles for administration. It won't bring article content
-        /// only data to be shown in a list for management.
+        ///     This request will return a list with the articles for administration. It won't bring article content
+        ///     only data to be shown in a list for management.
         /// </remarks>
         /// <param name="categoryType">Article Category Type.</param>
         /// <param name="page">Current page index. [From 0]</param>
@@ -74,20 +77,22 @@ namespace Comet.Web.API
         /// <response code="200">A list with the articles.</response>
         /// <response code="500">Internal server error.</response>
         [ActionName("GetArticleByCategoryType")]
-        [HttpGet(Name = "GetArticleByCategoryType"), MapToApiVersion("1")]
+        [HttpGet(Name = "GetArticleByCategoryType")]
+        [MapToApiVersion("1")]
         [ProducesResponseType(typeof(List<AdminArticleListModel>), StatusCodes.Status200OK)]
         [ProducesResponseType(StatusCodes.Status500InternalServerError)]
         public async Task<IActionResult> GetByCategoryTypeV1Async(int categoryType, int page = 0, int ipp = 10)
-        {            
+        {
             return Ok(await mService.QueryByCategoryTypeAsync(categoryType, page, ipp));
         }
 
         /// <summary>
-        /// Saves a comment for the given article.
+        ///     Saves a comment for the given article.
         /// </summary>
         /// <remarks>
-        /// This request will validate and save a comment for the given article. The user must be logged in and may not be banned.
-        /// Filling the message with less than 6 characters or more than 1024 will return 400.
+        ///     This request will validate and save a comment for the given article. The user must be logged in and may not be
+        ///     banned.
+        ///     Filling the message with less than 6 characters or more than 1024 will return 400.
         /// </remarks>
         /// <returns>An object containing the comment data or error message.</returns>
         /// <response code="200">A payload containing the comment data.</response>
@@ -97,7 +102,8 @@ namespace Comet.Web.API
         /// <response code="500">Something went wrong.</response>
         [Authorize]
         [ActionName("Comment")]
-        [HttpPut(Name = "PostComment"), MapToApiVersion("1")]
+        [HttpPut(Name = "PostComment")]
+        [MapToApiVersion("1")]
         [ProducesResponseType(typeof(ArticleCommentResultModel), StatusCodes.Status200OK)]
         [ProducesResponseType(typeof(ArticleCommentResultModel), StatusCodes.Status204NoContent)]
         [ProducesResponseType(typeof(ArticleCommentResultModel), StatusCodes.Status400BadRequest)]
@@ -108,20 +114,23 @@ namespace Comet.Web.API
             if (!User.Identity.IsAuthenticated)
                 return Unauthorized();
 
-            var user = await mUserManager.GetUserAsync(User);
+            ApplicationUser user = await mUserManager.GetUserAsync(User);
             if (user == null)
                 return Unauthorized();
 
-            var result = await mService.SaveCommentAsync(model.PostId, user.Id, model.Message, HttpContext.Connection.RemoteIpAddress.ToString(), Request.Cookies["ReadGuid"]);
+            ArticleCommentResultModel result = await mService.SaveCommentAsync(
+                                                   model.PostId, user.Id, model.Message,
+                                                   HttpContext.Connection.RemoteIpAddress.ToString(),
+                                                   Request.Cookies["ReadGuid"]);
             return StatusCode(result.StatusCode, result);
         }
 
         /// <summary>
-        /// Deletes a comment from the given article.
+        ///     Deletes a comment from the given article.
         /// </summary>
         /// <remarks>
-        /// This request will remove a comment from an article. The user must be in the Moderator role and have the permission
-        /// to exclude comments.
+        ///     This request will remove a comment from an article. The user must be in the Moderator role and have the permission
+        ///     to exclude comments.
         /// </remarks>
         /// <response code="200">Server will respond if success. No data received.</response>
         /// <response code="204">An article or comment with the given ID could not be found.</response>
@@ -130,7 +139,8 @@ namespace Comet.Web.API
         /// <response code="500">Something went wrong.</response>
         [Authorize(Policy = Moderator)]
         [ActionName("RemoveComment")]
-        [HttpDelete, MapToApiVersion("1")]
+        [HttpDelete]
+        [MapToApiVersion("1")]
         [ProducesResponseType(typeof(ArticleCommentResultModel), StatusCodes.Status200OK)]
         [ProducesResponseType(typeof(ArticleCommentResultModel), StatusCodes.Status204NoContent)]
         [ProducesResponseType(typeof(ArticleCommentResultModel), StatusCodes.Status400BadRequest)]

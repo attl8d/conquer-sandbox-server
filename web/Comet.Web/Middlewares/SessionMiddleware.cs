@@ -1,7 +1,7 @@
-﻿using Microsoft.AspNetCore.Builder;
-using Microsoft.AspNetCore.Http;
-using System;
+﻿using System;
 using System.Threading.Tasks;
+using Microsoft.AspNetCore.Builder;
+using Microsoft.AspNetCore.Http;
 
 namespace Comet.Web.Middlewares
 {
@@ -15,20 +15,19 @@ namespace Comet.Web.Middlewares
         }
 
         public async Task InvokeAsync(HttpContext context,
-            IHttpContextAccessor httpContextAccessor)
+                                      IHttpContextAccessor httpContextAccessor)
         {
-            if (!httpContextAccessor.HttpContext.Request.Cookies.TryGetValue("ReadGuid", out var idSession))
-            {
-                httpContextAccessor.HttpContext.Response.Cookies.Append("ReadGuid", Guid.NewGuid().ToString(), new CookieOptions
-                {
-                    HttpOnly = true,
-                    Expires = DateTimeOffset.Now.AddHours(12),
-                    Secure = true,
-                    IsEssential = true,
-                    MaxAge = TimeSpan.FromHours(12),
-                    SameSite = SameSiteMode.Strict
-                });
-            }
+            if (!httpContextAccessor.HttpContext.Request.Cookies.TryGetValue("ReadGuid", out string idSession))
+                httpContextAccessor.HttpContext.Response.Cookies.Append("ReadGuid", Guid.NewGuid().ToString(),
+                                                                        new CookieOptions
+                                                                        {
+                                                                            HttpOnly = true,
+                                                                            Expires = DateTimeOffset.Now.AddHours(12),
+                                                                            Secure = true,
+                                                                            IsEssential = true,
+                                                                            MaxAge = TimeSpan.FromHours(12),
+                                                                            SameSite = SameSiteMode.Strict
+                                                                        });
 
             await mNext(context);
         }

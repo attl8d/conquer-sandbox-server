@@ -9,8 +9,8 @@ namespace Comet.Web.Model.Identity
         public bool IsAccountBanned => Account.Any(x => x.IsActive);
         public int ActiveBans => Game.Count(x => x.IsActive);
 
-        public List<BanInformation> Account { get; } = new List<BanInformation>();
-        public List<BanInformation> Game { get; } = new List<BanInformation>();
+        public List<BanInformation> Account { get; } = new();
+        public List<BanInformation> Game { get; } = new();
 
         public BanInformation CurrentBan => Account.FirstOrDefault(x => x.IsActive);
 
@@ -51,16 +51,19 @@ namespace Comet.Web.Model.Identity
     public enum BanFlags
     {
         None = 0x0,
+
         /// <summary>
-        /// This ban has been removed before it's completion time, but it still counts.
+        ///     This ban has been removed before it's completion time, but it still counts.
         /// </summary>
         Removed = 0x1,
+
         /// <summary>
-        /// This ban has been forgiven and won't count.
+        ///     This ban has been forgiven and won't count.
         /// </summary>
         Forgiven = 0x2,
+
         /// <summary>
-        /// This ban has been given without a real reason and has been removed.
+        ///     This ban has been given without a real reason and has been removed.
         /// </summary>
         FalsePositive = 0x4
     }

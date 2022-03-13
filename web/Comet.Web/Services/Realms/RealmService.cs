@@ -1,21 +1,22 @@
-﻿using Comet.Network.Security;
+﻿using System;
+using System.Collections.Generic;
+using System.Linq;
+using System.Threading.Tasks;
+using Comet.Network.Security;
 using Comet.Web.Data;
 using Comet.Web.Data.Entities;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Configuration;
-using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Threading.Tasks;
 
 namespace Comet.Web.Services.Realms
 {
     public sealed class RealmService
     {
-        private ApplicationDbContext mDbContext;
-        private IConfiguration mConfiguration;
+        private readonly byte[] CipherKey;
+        private readonly IConfiguration mConfiguration;
+        private readonly ApplicationDbContext mDbContext;
 
-        private Dictionary<uint, RealmData> mDictRealms = new Dictionary<uint, RealmData>();
+        private Dictionary<uint, RealmData> mDictRealms = new();
 
         public RealmService(ApplicationDbContext dbContext, IConfiguration config)
         {
@@ -24,38 +25,33 @@ namespace Comet.Web.Services.Realms
 
             string strKey = mConfiguration["RealmSettings:AesKey"];
             CipherKey = new byte[strKey.Length / 2];
-            for (int index = 0; index < CipherKey.Length; index++)
+            for (var index = 0; index < CipherKey.Length; index++)
             {
                 string byteValue = strKey.Substring(index * 2, 2);
                 CipherKey[index] = Convert.ToByte(byteValue, 16);
             }
         }
 
-        private byte[] CipherKey;
-
         public async Task LoadRealmsAsync()
         {
             mDictRealms ??= new Dictionary<uint, RealmData>();
             mDictRealms.Clear();
 
-            var dbRealms = await mDbContext.RealmDatas
-                .AsQueryable().ToListAsync();
-            foreach (var dbRealm in dbRealms)
-            {
+            List<RealmData> dbRealms = await mDbContext.RealmDatas
+                                                       .AsQueryable().ToListAsync();
+            foreach (RealmData dbRealm in dbRealms)
                 if (!mDictRealms.ContainsKey(dbRealm.RealmID))
-                {
                     mDictRealms.Add(dbRealm.RealmID, dbRealm);
-                }
-            }
         }
 
         public string GetRealmConnectionString(string realmName)
         {
-            var realmData = mDictRealms.Values.FirstOrDefault(x => x.Name.Equals(realmName));
+            RealmData realmData = mDictRealms.Values.FirstOrDefault(x => x.Name.Equals(realmName));
             if (realmData == null)
                 return string.Empty;
-            var realm = GetRealmData(realmData.RealmID);
-            return $"server={realm.DatabaseHostname};database={realm.DatabaseSchema};user={realm.DatabaseUsername};password={AesCipher.Decrypt(CipherKey, realmData.DatabasePass)};port={realm.DatabasePort}";
+            RealmPublicData realm = GetRealmData(realmData.RealmID);
+            return
+                $"server={realm.DatabaseHostname};database={realm.DatabaseSchema};user={realm.DatabaseUsername};password={AesCipher.Decrypt(CipherKey, realmData.DatabasePass)};port={realm.DatabasePort}";
         }
 
         public List<RealmPublicListData> GetRealmList()
@@ -74,8 +70,7 @@ namespace Comet.Web.Services.Realms
 
         public RealmPublicData GetRealmData(uint idRealm)
         {
-            if (mDictRealms.TryGetValue(idRealm, out var realm))
-            {
+            if (mDictRealms.TryGetValue(idRealm, out RealmData realm))
                 return new RealmPublicData
                 {
                     RealmID = realm.RealmID,
@@ -93,7 +88,6 @@ namespace Comet.Web.Services.Realms
                     DatabaseSchema = AesCipher.Decrypt(CipherKey, realm.DatabaseSchema),
                     DatabasePort = int.Parse(AesCipher.Decrypt(CipherKey, realm.DatabasePort))
                 };
-            }
             return default;
         }
 
@@ -119,7 +113,7 @@ namespace Comet.Web.Services.Realms
 
         public async Task<bool> UpdateRealmAsync(AlterRealmModel realm)
         {
-            if (!mDictRealms.TryGetValue(realm.RealmID, out var realmData))
+            if (!mDictRealms.TryGetValue(realm.RealmID, out RealmData realmData))
                 return false;
 
             realmData.Name = realm.RealmName;
@@ -202,7 +196,9 @@ namespace Comet.Web.Services.Realms
             //public string RealmPassword { get; set; }
 
             public string DatabaseHostname { get; set; }
+
             public string DatabaseUsername { get; set; }
+
             //public string DatabasePassword { get; set; }
             public string DatabaseSchema { get; set; }
             public int DatabasePort { get; set; }

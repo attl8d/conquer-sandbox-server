@@ -6,6 +6,12 @@ using System.Security.Claims;
 using System.Text;
 using System.Text.Encodings.Web;
 using System.Threading.Tasks;
+using Comet.Web.Data;
+using Comet.Web.Data.Entities;
+using Comet.Web.Model.Identity;
+using Comet.Web.Services;
+using Comet.Web.Services.Password;
+using Microsoft.AspNetCore.Authentication;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Identity.UI.Services;
@@ -13,24 +19,22 @@ using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.RazorPages;
 using Microsoft.AspNetCore.WebUtilities;
 using Microsoft.Extensions.Logging;
-using Microsoft.EntityFrameworkCore;
-using Comet.Web.Data.Entities;
-using Comet.Web.Data;
-using Comet.Web.Services;
-using Comet.Web.Services.Password;
-using Comet.Web.Model.Identity;
+using SignInResult = Microsoft.AspNetCore.Identity.SignInResult;
 
 namespace Comet.Web.Pages
 {
     [AllowAnonymous]
     public class ExternalLoginModel : PageModel
     {
+        private readonly ApplicationDbContext mDbContext;
+        private readonly IEmailSender mEmailSender;
+        private readonly LanguageService mLanguage;
+        private readonly ILogger<ExternalLoginModel> mLogger;
         private readonly SignInManager<ApplicationUser> mSignInManager;
         private readonly UserManager<ApplicationUser> mUserManager;
-        private readonly IEmailSender mEmailSender;
-        private readonly ILogger<ExternalLoginModel> mLogger;
-        private readonly ApplicationDbContext mDbContext;
-        private readonly LanguageService mLanguage;
+
+        public Dictionary<string, string> AvailableLanguages = new();
+        public Dictionary<int, string> SecurityQuestions = new();
 
         public ExternalLoginModel(
             SignInManager<ApplicationUser> signInManager,
@@ -48,53 +52,13 @@ namespace Comet.Web.Pages
             mLanguage = language;
         }
 
-        [BindProperty]
-        public InputModel Input { get; set; }
+        [BindProperty] public InputModel Input { get; set; }
 
         public string ProviderDisplayName { get; set; }
 
         public string ReturnUrl { get; set; }
 
-        public Dictionary<string, string> AvailableLanguages = new Dictionary<string, string>();
-        public Dictionary<int, string> SecurityQuestions = new Dictionary<int, string>();
-
-        [TempData]
-        public string ErrorMessage { get; set; }
-
-        public class InputModel
-        {
-            [Required]
-            public string UserName { get; set; }
-            [EmailAddress]
-            public string Email { get; set; }
-
-            [Required]
-            [StringLength(32, MinimumLength = 8)]
-            [DataType(DataType.Password)]
-            public string Password { get; set; }
-
-            [DataType(DataType.Password)]
-            [Compare("Password")]
-            public string ConfirmPassword { get; set; }
-
-            [Required]
-            [DataType(DataType.Text)]
-            [StringLength(16, MinimumLength = 6)]
-            public string SecurityCode { get; set; }
-
-            [Required] public string Language { get; set; }
-
-            [Required]
-            [DataType(DataType.Text)]
-            [StringLength(64, MinimumLength = 4)]
-            public string RealName { get; set; }
-
-            [Required][DataType(DataType.Date)] public DateTime Birthday { get; set; }
-
-            [Required]
-            [DataType(DataType.PhoneNumber)]
-            public string Phone { get; set; }
-        }
+        [TempData] public string ErrorMessage { get; set; }
 
         public IActionResult OnGetAsync()
         {
@@ -104,8 +68,9 @@ namespace Comet.Web.Pages
         public IActionResult OnPost(string provider, string returnUrl = null)
         {
             // Request a redirect to the external login provider.
-            var redirectUrl = Url.Page("./ExternalLogin", pageHandler: "Callback", values: new { returnUrl });
-            var properties = mSignInManager.ConfigureExternalAuthenticationProperties(provider, redirectUrl);
+            string redirectUrl = Url.Page("./ExternalLogin", "Callback", new {returnUrl});
+            AuthenticationProperties properties =
+                mSignInManager.ConfigureExternalAuthenticationProperties(provider, redirectUrl);
             return new ChallengeResult(provider, properties);
         }
 
@@ -115,57 +80,58 @@ namespace Comet.Web.Pages
             if (remoteError != null)
             {
                 ErrorMessage = $"Error from external provider: {remoteError}";
-                return RedirectToPage("./Login", new { ReturnUrl = returnUrl });
+                return RedirectToPage("./Login", new {ReturnUrl = returnUrl});
             }
-            var info = await mSignInManager.GetExternalLoginInfoAsync();
+
+            ExternalLoginInfo info = await mSignInManager.GetExternalLoginInfoAsync();
             if (info == null)
             {
                 ErrorMessage = "Error loading external login information.";
-                return RedirectToPage("./Login", new { ReturnUrl = returnUrl });
+                return RedirectToPage("./Login", new {ReturnUrl = returnUrl});
             }
 
             // Sign in the user with this external login provider if the user already has a login.
-            var result = await mSignInManager.ExternalLoginSignInAsync(info.LoginProvider, info.ProviderKey, isPersistent: false, bypassTwoFactor: true);
+            SignInResult result =
+                await mSignInManager.ExternalLoginSignInAsync(info.LoginProvider, info.ProviderKey, false, true);
             if (result.Succeeded)
             {
-                mLogger.LogInformation("{Name} logged in with {LoginProvider} provider.", info.Principal.Identity.Name, info.LoginProvider);
+                mLogger.LogInformation("{Name} logged in with {LoginProvider} provider.", info.Principal.Identity.Name,
+                                       info.LoginProvider);
                 return LocalRedirect(returnUrl);
             }
+
             if (result.IsLockedOut)
             {
                 return RedirectToPage("./Lockout");
             }
-            else
-            {
-                // If the user does not have an account, then ask the user to create an account.
-                ReturnUrl = returnUrl;
-                ProviderDisplayName = info.ProviderDisplayName;
 
-                AvailableLanguages = LanguageService.AvailableLanguages.ToDictionary(x => x.LanguageCultureName, y => y.LanguageFullName);
+            // If the user does not have an account, then ask the user to create an account.
+            ReturnUrl = returnUrl;
+            ProviderDisplayName = info.ProviderDisplayName;
 
-                if (info.Principal.HasClaim(c => c.Type == ClaimTypes.Name))
+            AvailableLanguages =
+                LanguageService.AvailableLanguages.ToDictionary(x => x.LanguageCultureName, y => y.LanguageFullName);
+
+            if (info.Principal.HasClaim(c => c.Type == ClaimTypes.Name))
+                Input = new InputModel
                 {
-                    Input = new InputModel
-                    {
-                        UserName = info.Principal.FindFirstValue(ClaimTypes.Name).Replace(" ", ""),
-                        Email = info.Principal.FindFirstValue(ClaimTypes.Email),
-                        RealName = info.Principal.FindFirstValue(ClaimTypes.Name),
-                        Phone = info.Principal.FindFirstValue(ClaimTypes.HomePhone)
-                    };
-                }
-                return Page();
-            }
+                    UserName = info.Principal.FindFirstValue(ClaimTypes.Name).Replace(" ", ""),
+                    Email = info.Principal.FindFirstValue(ClaimTypes.Email),
+                    RealName = info.Principal.FindFirstValue(ClaimTypes.Name),
+                    Phone = info.Principal.FindFirstValue(ClaimTypes.HomePhone)
+                };
+            return Page();
         }
 
         public async Task<IActionResult> OnPostConfirmationAsync(string returnUrl = null)
         {
             returnUrl = returnUrl ?? Url.Content("~/");
             // Get the information about the user from the external login provider
-            var info = await mSignInManager.GetExternalLoginInfoAsync();
+            ExternalLoginInfo info = await mSignInManager.GetExternalLoginInfoAsync();
             if (info == null)
             {
                 ErrorMessage = "Error loading external login information during confirmation.";
-                return RedirectToPage("./Login", new { ReturnUrl = returnUrl });
+                return RedirectToPage("./Login", new {ReturnUrl = returnUrl});
             }
 
             if (ModelState.IsValid)
@@ -194,53 +160,87 @@ namespace Comet.Web.Pages
                     SecurityCode = securityCode
                 };
 
-                var result = await mUserManager.CreateAsync(user, Input.Password);
+                IdentityResult result = await mUserManager.CreateAsync(user, Input.Password);
                 if (result.Succeeded)
                 {
                     result = await mUserManager.AddLoginAsync(user, info);
 
                     await mUserManager.AddToRoleAsync(user, Security.Member);
                     await mUserManager.AddClaimAsync(user, new Claim(CustomClaimTypes.Language, Input.Language));
-                    await mUserManager.AddClaimAsync(user, new Claim(ClaimTypes.Name, info.Principal.FindFirstValue(ClaimTypes.Name)));
-                    await mUserManager.AddClaimAsync(user, new Claim(ClaimTypes.DateOfBirth, Input.Birthday.ToString("s")));
+                    await mUserManager.AddClaimAsync(
+                        user, new Claim(ClaimTypes.Name, info.Principal.FindFirstValue(ClaimTypes.Name)));
+                    await mUserManager.AddClaimAsync(
+                        user, new Claim(ClaimTypes.DateOfBirth, Input.Birthday.ToString("s")));
 
                     if (result.Succeeded)
                     {
                         mLogger.LogInformation("User created an account using {Name} provider.", info.LoginProvider);
 
-                        var userId = await mUserManager.GetUserIdAsync(user);
-                        var code = await mUserManager.GenerateEmailConfirmationTokenAsync(user);
+                        string userId = await mUserManager.GetUserIdAsync(user);
+                        string code = await mUserManager.GenerateEmailConfirmationTokenAsync(user);
                         code = WebEncoders.Base64UrlEncode(Encoding.UTF8.GetBytes(code));
-                        var callbackUrl = Url.Page(
+                        string callbackUrl = Url.Page(
                             "/Account/ConfirmEmail",
-                            pageHandler: null,
-                            values: new { area = "Identity", userId, code },
-                            protocol: Request.Scheme);
+                            null,
+                            new {area = "Identity", userId, code},
+                            Request.Scheme);
 
                         await mEmailSender.SendEmailAsync(Input.Email, "Confirm your email",
-                            $"Please confirm your account by <a href='{HtmlEncoder.Default.Encode(callbackUrl)}'>clicking here</a>.");
+                                                          $"Please confirm your account by <a href='{HtmlEncoder.Default.Encode(callbackUrl)}'>clicking here</a>.");
 
                         // If account confirmation is required, we need to show the link if we don't have a real email sender
                         if (mUserManager.Options.SignIn.RequireConfirmedAccount)
-                        {
-                            return RedirectToPage("./RegisterConfirmation", new { Input.Email });
-                        }
+                            return RedirectToPage("./RegisterConfirmation", new {Input.Email});
 
-                        await mSignInManager.SignInAsync(user, isPersistent: false, info.LoginProvider);
+                        await mSignInManager.SignInAsync(user, false, info.LoginProvider);
 
                         return LocalRedirect(returnUrl);
                     }
                 }
-                foreach (var error in result.Errors)
-                {
+
+                foreach (IdentityError error in result.Errors)
                     ModelState.AddModelError(string.Empty, error.Description);
-                }
             }
 
-            AvailableLanguages = LanguageService.AvailableLanguages.ToDictionary(x => x.LanguageCultureName, y => y.LanguageFullName);
+            AvailableLanguages =
+                LanguageService.AvailableLanguages.ToDictionary(x => x.LanguageCultureName, y => y.LanguageFullName);
             ProviderDisplayName = info.ProviderDisplayName;
             ReturnUrl = returnUrl;
             return Page();
+        }
+
+        public class InputModel
+        {
+            [Required] public string UserName { get; set; }
+
+            [EmailAddress] public string Email { get; set; }
+
+            [Required]
+            [StringLength(32, MinimumLength = 8)]
+            [DataType(DataType.Password)]
+            public string Password { get; set; }
+
+            [DataType(DataType.Password)]
+            [Compare("Password")]
+            public string ConfirmPassword { get; set; }
+
+            [Required]
+            [DataType(DataType.Text)]
+            [StringLength(16, MinimumLength = 6)]
+            public string SecurityCode { get; set; }
+
+            [Required] public string Language { get; set; }
+
+            [Required]
+            [DataType(DataType.Text)]
+            [StringLength(64, MinimumLength = 4)]
+            public string RealName { get; set; }
+
+            [Required] [DataType(DataType.Date)] public DateTime Birthday { get; set; }
+
+            [Required]
+            [DataType(DataType.PhoneNumber)]
+            public string Phone { get; set; }
         }
     }
 }

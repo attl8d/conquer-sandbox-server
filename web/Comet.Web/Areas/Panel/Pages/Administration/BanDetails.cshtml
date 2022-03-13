@@ -126,7 +126,7 @@
             <div class="col-sm-4">
                 <p>
                     <button class="btn btn-sm btn-primary" id="btnCancelBan"
-                            @((User.HasPermission(Security.Claims.CancelAccountBan) && Model.Data.Flags == BanFlags.None && !Model.Data.IsExpired) ? "" : "disabled")>
+                            @(User.HasPermission(Security.Claims.CancelAccountBan) && Model.Data.Flags == BanFlags.None && !Model.Data.IsExpired ? "" : "disabled")>
                         @Language.GetString("EndBan")
                     </button>
                 </p>

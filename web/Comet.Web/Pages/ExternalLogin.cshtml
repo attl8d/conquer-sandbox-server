@@ -16,14 +16,14 @@
                 <div class="youplay-login">
                     <div class="youplay-form text-center">
                         <h3>@ViewData["Title"]</h3>
-                        <hr />
+                        <hr/>
                         <p id="external-login-description" class="text-info">
                             Você se conectou com sucesso usando o <strong>@Model.ProviderDisplayName</strong>.
                             Por favor, insira um nome de usuário para usar em nossos domínios e clique no botão Registrar abaixo para concluir.
                         </p>
                         <div class="text-danger validation-summary-valid" data-valmsg-summary="true">
                             <ul>
-                                <li style="display:none"></li>
+                                <li style="display: none"></li>
                             </ul>
                         </div>
                         <form asp-page-handler="Confirmation" asp-route-returnUrl="@Model.ReturnUrl" method="post">
@@ -65,7 +65,7 @@
                             </div>
                             <div class="youplay-input youplay-select">
                                 <select asp-for="Input.Language">
-                                    @foreach (var question in Model.AvailableLanguages)
+                                    @foreach (KeyValuePair<string, string> question in Model.AvailableLanguages)
                                     {
                                         <option value="@question.Key">@question.Value</option>
                                     }
@@ -82,5 +82,5 @@
 </section>
 
 @section Scripts {
-<partial name="_ValidationScriptsPartial" />
+    <partial name="_ValidationScriptsPartial"/>
 }

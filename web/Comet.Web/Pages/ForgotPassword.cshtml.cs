@@ -15,8 +15,8 @@ namespace Comet.Web.Pages
     [AllowAnonymous]
     public class ForgotPasswordModel : PageModel
     {
-        private readonly UserManager<ApplicationUser> mUserManager;
         private readonly IEmailSender mEmailSender;
+        private readonly UserManager<ApplicationUser> mUserManager;
 
         public ForgotPasswordModel(UserManager<ApplicationUser> userManager, IEmailSender emailSender)
         {
@@ -24,36 +24,26 @@ namespace Comet.Web.Pages
             mEmailSender = emailSender;
         }
 
-        [BindProperty]
-        public InputModel Input { get; set; }
-
-        public class InputModel
-        {
-            [Required]
-            [EmailAddress]
-            public string Email { get; set; }
-        }
+        [BindProperty] public InputModel Input { get; set; }
 
         public async Task<IActionResult> OnPostAsync()
         {
             if (ModelState.IsValid)
             {
-                var user = await mUserManager.FindByEmailAsync(Input.Email);
+                ApplicationUser user = await mUserManager.FindByEmailAsync(Input.Email);
                 if (user == null || !await mUserManager.IsEmailConfirmedAsync(user))
-                {
                     // Don't reveal that the user does not exist or is not confirmed
                     return RedirectToPage("./ForgotPasswordConfirmation");
-                }
 
                 // For more information on how to enable account confirmation and password reset please 
                 // visit https://go.microsoft.com/fwlink/?LinkID=532713
-                var code = await mUserManager.GeneratePasswordResetTokenAsync(user);
+                string code = await mUserManager.GeneratePasswordResetTokenAsync(user);
                 code = WebEncoders.Base64UrlEncode(Encoding.UTF8.GetBytes(code));
-                var callbackUrl = Url.Page(
+                string callbackUrl = Url.Page(
                     "/ResetPassword",
-                    pageHandler: null,
-                    values: new { code },
-                    protocol: Request.Scheme);
+                    null,
+                    new {code},
+                    Request.Scheme);
 
                 await mEmailSender.SendEmailAsync(
                     Input.Email,
@@ -64,6 +54,11 @@ namespace Comet.Web.Pages
             }
 
             return Page();
+        }
+
+        public class InputModel
+        {
+            [Required] [EmailAddress] public string Email { get; set; }
         }
     }
 }

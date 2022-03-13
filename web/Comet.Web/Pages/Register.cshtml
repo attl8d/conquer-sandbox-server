@@ -1,5 +1,4 @@
 ﻿@page
-@using Comet.Web.Services
 @inject LanguageService LanguageManager
 @model RegisterModel
 @{
@@ -21,17 +20,17 @@
                         <h4>@LanguageManager.GetString("UseAnotherRegistrationProvider")</h4>
                         <div class="btn-group social-list dib">
                             <form id="external-account" asp-page="./ExternalLogin" asp-route-returnUrl="@Model.ReturnUrl" method="post" class="form-horizontal">
-                                @foreach (var provider in Model.ExternalLogins)
+                                @foreach (LoginModel.ExternalLoginSchema provider in Model.ExternalLogins)
                                 {
-                                    <button type="submit" class="btn @provider.Class" name="provider" style="width: 75px; margin-right: 10px;"
-                                        value="@provider.Name" title="@LanguageManager.GetString("Sigin3rdPartyAccount", provider.DisplayName)">
+                                    <button type="submit" class="btn @provider.Class" name="provider" style="margin-right: 10px; width: 75px;"
+                                            value="@provider.Name" title="@LanguageManager.GetString("Sigin3rdPartyAccount", provider.DisplayName)">
                                         <i class="@provider.Icon" aria-hidden="true"></i>
                                     </button>
                                 }
                             </form>
                         </div>
 
-                        <hr />
+                        <hr/>
                         <form asp-route-returnUrl="@Model.ReturnUrl" method="post">
                             <div asp-validation-summary="All" class="text-danger"></div>
                             <h5>Informações de Conexão</h5>
@@ -63,7 +62,7 @@
                             </div>
                             <div class="youplay-input youplay-select">
                                 <select asp-for="Input.Language">
-                                    @foreach (var question in Model.AvailableLanguages)
+                                    @foreach (KeyValuePair<string, string> question in Model.AvailableLanguages)
                                     {
                                         <option value="@question.Key">@question.Value</option>
                                     }
@@ -79,5 +78,5 @@
 </section>
 
 @section Scripts {
-<partial name="_ValidationScriptsPartial" />
+    <partial name="_ValidationScriptsPartial"/>
 }

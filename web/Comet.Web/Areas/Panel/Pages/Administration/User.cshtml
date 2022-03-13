@@ -1,6 +1,6 @@
 ﻿@page "{UserId:int=0}"
-@using Comet.Web.Services
 @inject LanguageService Language;
+@using Comet.Web.Services
 @model Comet.Web.Areas.Panel.Pages.Administration.UserModel
 @{
     ViewData["title"] = Language.GetString("UserAdministration", Model.Account.UserName);
@@ -132,7 +132,7 @@
                     <label class="control-label col-sm-4">@Language.GetString("Pronoun")</label>
                     <div class="col-sm-8">
                         <div class="youplay-input">
-                            <input asp-for="InputUser.Pronoun" class="youplay-input" />
+                            <input asp-for="InputUser.Pronoun" class="youplay-input"/>
                         </div>
                     </div>
                 </div>
@@ -141,7 +141,7 @@
                     <label class="control-label col-sm-4">@Language.GetString("SocialName")</label>
                     <div class="col-sm-8">
                         <div class="youplay-input">
-                            <input asp-for="InputUser.SocialName" class="youplay-input" />
+                            <input asp-for="InputUser.SocialName" class="youplay-input"/>
                         </div>
                     </div>
                 </div>
@@ -150,7 +150,7 @@
                     <label class="control-label col-sm-4">@Language.GetString("Location")</label>
                     <div class="col-sm-8">
                         <div class="youplay-input">
-                            <input asp-for="InputUser.Locality" class="youplay-input" />
+                            <input asp-for="InputUser.Locality" class="youplay-input"/>
                         </div>
                     </div>
                 </div>
@@ -166,7 +166,7 @@
         <div class="youplay-input youplay-select">
             <select id="claimSelect">
                 <option value=""></option>
-                @foreach (var claim in Model.Claims.Where(x => !x.Key.Equals(Security.Claims.Super.ToString())))
+                @foreach (KeyValuePair<string, Security.Claims> claim in Model.Claims.Where(x => !x.Key.Equals(Security.Claims.Super.ToString())))
                 {
                     <option value="@claim.Key">@Language.GetString(claim.Value.ToPermissionString())</option>
                 }
@@ -174,10 +174,10 @@
         </div>
         <table id="tblUserClaims" class="table table-striped table-hover">
             <thead>
-                <tr>
-                    <th>@Language.GetString("Name")</th>
-                    <th></th>
-                </tr>
+            <tr>
+                <th>@Language.GetString("Name")</th>
+                <th></th>
+            </tr>
             </thead>
             <tbody></tbody>
         </table>
@@ -193,14 +193,14 @@
 
         <div class="form-horizontal mt-30 mb-40">
             <form id="frmDoBan">
-                <input type="hidden" asp-for="InputBan.UserId" value="@Model.Account.Id" />
+                <input type="hidden" asp-for="InputBan.UserId" value="@Model.Account.Id"/>
                 <div class="form-group">
                     <label class="control-label col-sm-4">@Language.GetString("BanType")</label>
                     <div class="col-sm-8">
                         <div class="youplay-input youplay-select">
                             <select asp-for="InputBan.ReasonId">
                                 <option value=""></option>
-                                
+
                             </select>
                         </div>
                     </div>
@@ -210,7 +210,7 @@
                     <label class="control-label col-sm-4">@Language.GetString("Description")</label>
                     <div class="col-sm-8">
                         <div class="youplay-input">
-                            <input asp-for="InputBan.Description" class="youplay-input" />
+                            <input asp-for="InputBan.Description" class="youplay-input"/>
                         </div>
                     </div>
                 </div>
@@ -224,12 +224,12 @@
 
         <table id="tblUserBans" class="table table-striped table-hover">
             <thead>
-                <tr>
-                    <th>@Language.GetString("Reason")</th>
-                    <th>@Language.GetString("StartDate")</th>
-                    <th>@Language.GetString("EndDate")</th>
-                    <th></th>
-                </tr>
+            <tr>
+                <th>@Language.GetString("Reason")</th>
+                <th>@Language.GetString("StartDate")</th>
+                <th>@Language.GetString("EndDate")</th>
+                <th></th>
+            </tr>
             </thead>
             <tbody></tbody>
         </table>
@@ -238,228 +238,227 @@
 
 @section Scripts
 {
-<script>
+    <script>
 
-    const AccountType = @Model.InputUser.AccountType;
+        const AccountType = @Model.InputUser.AccountType;
 
-    function loadClaimsForUser() {
-        $.ajax({
-            url: '@Url.Action("GetClaimsByUser", "Accounts", new { version = "1" })',
-            type: 'GET',
-            data: {
-                userId: @Model.UserId
-            },
-            success: function (result) {
+        function loadClaimsForUser() {
+            $.ajax({
+                url: '@Url.Action("GetClaimsByUser", "Accounts", new {version = "1"})',
+                type: 'GET',
+                data: {
+                    userId: @Model.UserId
+                },
+                success: function(result) {
 
-                let table = document.getElementById('tblUserClaims');
-                let body = table.tBodies[0];
+                    const table = document.getElementById('tblUserClaims');
+                    const body = table.tBodies[0];
 
-                $(body).empty();
+                    $(body).empty();
 
-                if (result.length) {
-                    for (let idx = 0; idx < result.length; idx++)
-                    {
-                        let row = body.insertRow();
-                        row.insertCell().innerHTML = result[idx].claimName;
-                        row.insertCell().innerHTML = `<i onclick="removeClaimFromUser(@Model.Account.Id, '${result[idx].claimType}', $(this).parent().parent());" class="fa fa-close text-danger" title="@Language.GetString("Remove")"></i>`;
+                    if (result.length) {
+                        for (let idx = 0; idx < result.length; idx++) {
+                            const row = body.insertRow();
+                            row.insertCell().innerHTML = result[idx].claimName;
+                            row.insertCell().innerHTML = `<i onclick="removeClaimFromUser(@Model.Account.Id, '${result[idx].claimType}', $(this).parent().parent());" class="fa fa-close text-danger" title="@Language.GetString("Remove")"></i>`;
+                        }
+                    } else {
+                        const cell = body.insertRow().insertCell();
+                        cell.colSpan = 3;
+                        cell.innerHTML = '@Language.GetString("NoData")';
                     }
+
+                    enableClaimSelect();
                 }
-                else {
-                    let cell = body.insertRow().insertCell();
-                    cell.colSpan = 3;
-                    cell.innerHTML = '@Language.GetString("NoData")';
+            });
+        }
+
+        function enableClaimSelect() {
+            $('#claimSelect>option').each(function() {
+                $(this).show();
+            });
+
+            $('#claimSelect>option').each(function() {
+                if (this.textContent === '')
+                    return;
+
+                const option = $(this);
+                const currentClaim = this.textContent;
+
+                $('#tblUserClaims>tbody>tr').each(function() {
+                    if (this.cells.length > 1 && this.cells[0].textContent === currentClaim) {
+                        $(option).hide();
+                        return false;
+                    }
+                });
+            });
+
+            $("#claimSelect option:selected").prop("selected", false);
+        }
+
+        function removeClaimFromUser(idUser, claimType, row) {
+            $.ajax({
+                url: '@Url.Action("DeleteClaimFromUser", "Accounts", new {version = "1"})',
+                type: 'DELETE',
+                headers: {
+                    'Content-Type': 'application/json'
+                },
+                data: JSON.stringify({
+                    userId: idUser,
+                    claimType: `${claimType}`
+                }),
+                success: function(result) {
+                    $(row).remove();
+                    enableClaimSelect();
+                },
+                error: function(result) {
                 }
+            });
+        }
 
-                enableClaimSelect();
-            }
-        });
-    }
-
-    function enableClaimSelect() {
-        $('#claimSelect>option').each(function() {
-            $(this).show();
-        });
-
-        $('#claimSelect>option').each(function() {
-            if (this.textContent === '')
+        $('#claimSelect').change(function() {
+            if (this.value === '')
                 return;
 
-            let option = $(this);
-            let currentClaim = this.textContent;
-
-            $('#tblUserClaims>tbody>tr').each(function() {
-                if (this.cells.length > 1 && this.cells[0].textContent === currentClaim) {
-                    $(option).hide();
-                    return false;
+            $.ajax({
+                url: '@Url.Action("SetClaimToUser", "Accounts", new {version = "1"})',
+                type: 'PUT',
+                headers: {
+                    'Content-Type': 'application/json'
+                },
+                data: JSON.stringify({
+                    userId: @Model.UserId,
+                    claimType: `${this.value}`
+                }),
+                success: function(result) {
+                    loadClaimsForUser();
+                },
+                error: function(result) {
+                    console.log(result);
                 }
             });
         });
 
-        $("#claimSelect option:selected").prop("selected", false);
-    }
-
-    function removeClaimFromUser(idUser, claimType, row) {
-        $.ajax({
-            url: '@Url.Action("DeleteClaimFromUser", "Accounts", new { version = "1" })',
-            type: 'DELETE',
-            headers: {
-                'Content-Type': 'application/json'
-            },
-            data: JSON.stringify({
-                userId: idUser,
-                claimType: `${claimType}`
-            }),
-            success: function(result) {
-                $(row).remove();
-                enableClaimSelect();
-            },
-            error: function(result) {
+        $('#InputBan_ReasonId').change(function() {
+            if (this.value === '') {
+                return;
             }
-        });
-    }
 
-    $('#claimSelect').change(function(){
-        if (this.value === '')
-            return;
-
-        $.ajax({
-            url: '@Url.Action("SetClaimToUser", "Accounts", new { version = "1" })',
-            type: 'PUT',
-            headers: {
-                'Content-Type': 'application/json'
-            },
-            data: JSON.stringify({
-                userId: @Model.UserId,
-                claimType: `${this.value}`
-            }),
-            success: function(result) {
-                loadClaimsForUser();
-            },
-            error: function(result) {
-                console.log(result);
-            }
-        });
-    });
-
-    $('#InputBan_ReasonId').change(function() {
-        if (this.value === '') {
-            return;
-        }
-
-        let data = {
+            const data = {
                 userId: @Model.UserId,
                 reason: Number(this.value)
             };
 
-        $.ajax({
-            url: '@Url.Action("GetUserBanFactor", "Bans", new { version = "1" })',
-            type: 'POST',
-            headers: {
-                'Content-Type': 'application/json'
-            },
-            data: JSON.stringify(data),
-            success: function(result) {
-                $('#banTermMessage').html(result.terms);
-                $('#banTermMessage').show();
-            },
-            error: function(result) {
-                console.log(result);
-            }
+            $.ajax({
+                url: '@Url.Action("GetUserBanFactor", "Bans", new {version = "1"})',
+                type: 'POST',
+                headers: {
+                    'Content-Type': 'application/json'
+                },
+                data: JSON.stringify(data),
+                success: function(result) {
+                    $('#banTermMessage').html(result.terms);
+                    $('#banTermMessage').show();
+                },
+                error: function(result) {
+                    console.log(result);
+                }
+            });
         });
-    });
 
-    $('#frmDoBan').submit(function() {
-        event.preventDefault();
+        $('#frmDoBan').submit(function() {
+            event.preventDefault();
 
-        let data = {
-            userId: @Model.Account.Id,
-            reason: Number($('#InputBan_ReasonId').find(":selected").val()),
-            description: $('#InputBan_Description').val()
-        };
-        console.log(data);
+            const data = {
+                userId: @Model.Account.Id,
+                reason: Number($('#InputBan_ReasonId').find(":selected").val()),
+                description: $('#InputBan_Description').val()
+            };
+            console.log(data);
 
-        $.ajax({
-            type: 'POST',
-            url: '@Url.Action("DoBanAccount", "Bans", new { version = "1" })',
-             headers: {
-                'Content-Type': 'application/json'
-            },
-            data: JSON.stringify(data),
-            success: function(result) {
-                if (result != '') {
-                    $('#banResultMessage').addClass('alert alert-primary');
-                    $('#banResultMessage').html(result);
+            $.ajax({
+                type: 'POST',
+                url: '@Url.Action("DoBanAccount", "Bans", new {version = "1"})',
+                headers: {
+                    'Content-Type': 'application/json'
+                },
+                data: JSON.stringify(data),
+                success: function(result) {
+                    if (result != '') {
+                        $('#banResultMessage').addClass('alert alert-primary');
+                        $('#banResultMessage').html(result);
+                        $('#banResultMessage').show();
+                    } else window.location.reload();
+                },
+                error: function(result) {
+                    $('#banResultMessage').addClass('alert alert-danger');
+                    $('#banResultMessage').html(`${result.status} - ${result.statusText}`);
+                    console.log(result);
                     $('#banResultMessage').show();
                 }
-                else window.location.reload();
-            },
-            error: function(result) {
-                $('#banResultMessage').addClass('alert alert-danger');
-                $('#banResultMessage').html(`${result.status} - ${result.statusText}`);
-                console.log(result);
-                $('#banResultMessage').show();
-            }
-        });
-    });
-
-    $(document).ready(function() {
-        $('#banResultMessage').hide();
-        $('#banTermMessage').hide();
-
-        $.ajax({
-            url: '@Url.Action("", "Roles", new { version = "1" })',
-            method: 'GET',
-            success: function(result) {
-                for (let idx = 0; idx < result.length; idx++) {
-                    $('#InputUser_AccountType').append(`<option value="${result[idx].id}">${result[idx].name}</option>`);
-                }
-
-                $(`#InputUser_AccountType option[value="${AccountType}"]`).attr('selected', 'selected');
-            },
-            error: function (result) {
-
-            }
+            });
         });
 
-        $.ajax({
-            url: '@Url.Action("QueryBanReasons", "Bans", new { version = "1" })?type=0',
-            method: 'GET',
-            success: function (result) {
-                const select = $('#InputBan_ReasonId');
-                if (typeof select !== 'undefined' && select != null) {
-                    for (let i = 0; i < result.length; i++) {
-                        $(select).append(`<option value="${result[i].id}">${result[i].name}</option>`);
-                    }
-                }
-            }
-        });
+        $(document).ready(function() {
+            $('#banResultMessage').hide();
+            $('#banTermMessage').hide();
 
-        $.ajax({
-            url: '@Url.Action("QueryAccountBans", "Bans", new { version = "1" })?userId=@(Model.Account.Id)',
-            method: 'GET',
-            success: function (result) {
-                let table = document.getElementById('tblUserBans');
-                let body = table.tBodies[0];
-
-                $(body).empty();
-
-                if (result.length) {
+            $.ajax({
+                url: '@Url.Action("", "Roles", new {version = "1"})',
+                method: 'GET',
+                success: function(result) {
                     for (let idx = 0; idx < result.length; idx++) {
-                        let row = body.insertRow();
-                        row.insertCell().innerHTML = result[idx].reason;
-                        let date = new Date(result[idx].from);
-                        row.insertCell().innerHTML = date.toLocaleDateString('pt-BR') + ' ' + date.toLocaleTimeString('pt-BR');
-                        date = new Date(result[idx].to);
-                        row.insertCell().innerHTML = date.toLocaleDateString('pt-BR') + ' ' + date.toLocaleTimeString('pt-BR');
-                        row.insertCell().innerHTML = `<a href=""><i class="fa fa-edit"></i></a>`;
+                        $('#InputUser_AccountType').append(`<option value="${result[idx].id}">${result[idx].name}</option>`);
+                    }
+
+                    $(`#InputUser_AccountType option[value="${AccountType}"]`).attr('selected', 'selected');
+                },
+                error: function(result) {
+
+                }
+            });
+
+            $.ajax({
+                url: '@Url.Action("QueryBanReasons", "Bans", new {version = "1"})?type=0',
+                method: 'GET',
+                success: function(result) {
+                    const select = $('#InputBan_ReasonId');
+                    if (typeof select !== 'undefined' && select != null) {
+                        for (let i = 0; i < result.length; i++) {
+                            $(select).append(`<option value="${result[i].id}">${result[i].name}</option>`);
+                        }
                     }
                 }
-            }
+            });
+
+            $.ajax({
+                url: '@Url.Action("QueryAccountBans", "Bans", new {version = "1"})?userId=@(Model.Account.Id)',
+                method: 'GET',
+                success: function(result) {
+                    const table = document.getElementById('tblUserBans');
+                    const body = table.tBodies[0];
+
+                    $(body).empty();
+
+                    if (result.length) {
+                        for (let idx = 0; idx < result.length; idx++) {
+                            const row = body.insertRow();
+                            row.insertCell().innerHTML = result[idx].reason;
+                            let date = new Date(result[idx].from);
+                            row.insertCell().innerHTML = date.toLocaleDateString('pt-BR') + ' ' + date.toLocaleTimeString('pt-BR');
+                            date = new Date(result[idx].to);
+                            row.insertCell().innerHTML = date.toLocaleDateString('pt-BR') + ' ' + date.toLocaleTimeString('pt-BR');
+                            row.insertCell().innerHTML = `<a href="">
+                                                          <i class="fa fa-edit"></i>
+                                                      </a>`;
+                        }
+                    }
+                }
+            });
+
+            loadClaimsForUser();
+
         });
 
-        loadClaimsForUser();
-
-    });
-
-</script>
+    </script>
 }

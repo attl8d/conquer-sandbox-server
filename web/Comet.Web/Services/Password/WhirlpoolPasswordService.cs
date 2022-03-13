@@ -1,9 +1,9 @@
-﻿using Comet.Web.Data.Entities;
-using Microsoft.AspNetCore.Identity;
-using Org.BouncyCastle.Crypto.Digests;
-using System;
+﻿using System;
 using System.Security.Cryptography;
 using System.Text;
+using Comet.Web.Data.Entities;
+using Microsoft.AspNetCore.Identity;
+using Org.BouncyCastle.Crypto.Digests;
 
 namespace Comet.Web.Services.Password
 {
@@ -17,7 +17,7 @@ namespace Comet.Web.Services.Password
         }
 
         public override PasswordVerificationResult VerifyHashedPassword(TUser user, string hashedPassword,
-            string providedPassword)
+                                                                        string providedPassword)
         {
             return CheckPassword(providedPassword, hashedPassword, user.Salt);
         }
@@ -35,9 +35,9 @@ namespace Comet.Web.Services.Password
         {
             int version = int.Parse(hash.Substring(0, 2));
             return HashPassword(input, salt, version).Equals(hash)
-                ? version >= 0 && version <= 2 ? PasswordVerificationResult.Success :
-                PasswordVerificationResult.SuccessRehashNeeded
-                : PasswordVerificationResult.Failed;
+                       ? version >= 0 && version <= 2 ? PasswordVerificationResult.Success :
+                                                        PasswordVerificationResult.SuccessRehashNeeded
+                       : PasswordVerificationResult.Failed;
         }
 
         public static string WhirlpoolHashOnce(string message)
@@ -51,7 +51,7 @@ namespace Comet.Web.Services.Password
             whirlpool.Reset();
             whirlpool.BlockUpdate(data, 0, data.Length);
 
-            byte[] ret = new byte[whirlpool.GetDigestSize()];
+            var ret = new byte[whirlpool.GetDigestSize()];
             whirlpool.DoFinal(ret, 0);
             return ByteToString(ret);
         }
@@ -61,17 +61,17 @@ namespace Comet.Web.Services.Password
             if (string.IsNullOrEmpty(password) || string.IsNullOrWhiteSpace(password))
                 return string.Empty;
 
-            string result = "";
+            var result = "";
             switch (version)
             {
                 case 0:
-                    for (int i = 0; i < 64; i++) result = WhirlpoolHashOnce($"{salt}{password}{salt}");
+                    for (var i = 0; i < 64; i++) result = WhirlpoolHashOnce($"{salt}{password}{salt}");
                     break;
                 case 1:
-                    for (int i = 0; i < 64; i++) result = WhirlpoolHashOnce($"{password}{salt}{salt}");
+                    for (var i = 0; i < 64; i++) result = WhirlpoolHashOnce($"{password}{salt}{salt}");
                     break;
                 case 2:
-                    for (int i = 0; i < 64; i++) result = WhirlpoolHashOnce($"{salt}{salt}{password}");
+                    for (var i = 0; i < 64; i++) result = WhirlpoolHashOnce($"{salt}{salt}{password}");
                     break;
             }
 
@@ -87,8 +87,8 @@ namespace Comet.Web.Services.Password
             const string POOL_S = UPPER_S + LOWER_S + NUMBER_S;
             const int SIZE_I = 64;
 
-            string output = "";
-            for (int i = 0; i < SIZE_I; i++)
+            var output = "";
+            for (var i = 0; i < SIZE_I; i++)
                 output += POOL_S[RandomNumberGenerator.GetInt32(POOL_S.Length) % POOL_S.Length];
 
             output = ByteToString(Encoding.UTF8.GetBytes(output));

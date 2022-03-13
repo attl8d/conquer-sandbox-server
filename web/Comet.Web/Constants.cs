@@ -4,6 +4,8 @@ namespace Comet.Web
 {
     public static class Constants
     {
-        public static string Version => Assembly.GetEntryAssembly().GetCustomAttribute<AssemblyInformationalVersionAttribute>().InformationalVersion;
+        public static string Version => Assembly.GetEntryAssembly()
+                                                .GetCustomAttribute<AssemblyInformationalVersionAttribute>()
+                                                .InformationalVersion;
     }
 }

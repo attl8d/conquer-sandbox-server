@@ -7,8 +7,8 @@ namespace Comet.Web.Data.Entities
     [Table("realm")]
     public class RealmData
     {
-        [Key]
-        public virtual uint RealmID { get; set; }
+        [Key] public virtual uint RealmID { get; set; }
+
         public virtual string Name { get; set; }
         public virtual ushort AuthorityID { get; set; }
         public virtual string GameIPAddress { get; set; }

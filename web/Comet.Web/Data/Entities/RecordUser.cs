@@ -49,6 +49,5 @@ namespace Comet.Web.Data.Entities
         public uint Orchid { get; set; }
         public uint Tulip { get; set; }
         public bool Deleted { get; set; }
-
     }
 }

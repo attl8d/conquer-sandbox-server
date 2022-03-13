@@ -1,7 +1,8 @@
-﻿using Comet.Web.Services.Identity;
+﻿using System.Threading.Tasks;
+using Comet.Web.Data.Entities;
+using Comet.Web.Services.Identity;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Http;
-using System.Threading.Tasks;
 
 namespace Comet.Web.Middlewares
 {
@@ -15,15 +16,15 @@ namespace Comet.Web.Middlewares
         }
 
         public async Task InvokeAsync(HttpContext context,
-            UserManager userManager)
+                                      UserManager userManager)
         {
-            bool isBanned = false;
-            if (context.User.Identity.IsAuthenticated)
+            var isBanned = false;
+            if (context.User.Identity?.IsAuthenticated == true)
             {
-                var user = await userManager.GetUserAsync(context.User);
-                //var banState = await userManager.GetBanInformationAsync(user);
-                //if (banState.IsAccountBanned)
-                //    isBanned = true;
+                ApplicationUser user = await userManager.GetUserAsync(context.User);
+                var banState = await userManager.GetBanInformationAsync(user);
+                if (banState.IsAccountBanned)
+                    isBanned = true;
             }
 
             context.Items.Add("Banned", isBanned);

@@ -6,8 +6,8 @@ namespace Comet.Web.Data.Entities
     [Table("article_read_token")]
     public class ArticleReadToken
     {
-        [Key]
-        public virtual long Id { get; set; }
+        [Key] public virtual long Id { get; set; }
+
         public uint ArticleId { get; set; }
         public string Referer { get; set; }
         public string TokenId { get; set; }

@@ -16,26 +16,19 @@ namespace Comet.Web.Pages
     [AllowAnonymous]
     public class ResendEmailConfirmationModel : PageModel
     {
-        private readonly UserManager<ApplicationUser> mUserManager;
         private readonly IEmailSender mEmailSender;
         private readonly LanguageService mLanguage;
+        private readonly UserManager<ApplicationUser> mUserManager;
 
-        public ResendEmailConfirmationModel(UserManager<ApplicationUser> userManager, IEmailSender emailSender, LanguageService language)
+        public ResendEmailConfirmationModel(UserManager<ApplicationUser> userManager, IEmailSender emailSender,
+                                            LanguageService language)
         {
             mUserManager = userManager;
             mEmailSender = emailSender;
             mLanguage = language;
         }
 
-        [BindProperty]
-        public InputModel Input { get; set; }
-
-        public class InputModel
-        {
-            [Required]
-            [EmailAddress]
-            public string Email { get; set; }
-        }
+        [BindProperty] public InputModel Input { get; set; }
 
         public void OnGet()
         {
@@ -43,12 +36,9 @@ namespace Comet.Web.Pages
 
         public async Task<IActionResult> OnPostAsync()
         {
-            if (!ModelState.IsValid)
-            {
-                return Page();
-            }
+            if (!ModelState.IsValid) return Page();
 
-            var user = await mUserManager.FindByEmailAsync(Input.Email);
+            ApplicationUser user = await mUserManager.FindByEmailAsync(Input.Email);
             if (user == null)
             {
                 ModelState.AddModelError(string.Empty, mLanguage.GetString("VerificationEmailSent"));
@@ -61,14 +51,14 @@ namespace Comet.Web.Pages
                 return Page();
             }
 
-            var userId = await mUserManager.GetUserIdAsync(user);
-            var code = await mUserManager.GenerateEmailConfirmationTokenAsync(user);
+            string userId = await mUserManager.GetUserIdAsync(user);
+            string code = await mUserManager.GenerateEmailConfirmationTokenAsync(user);
             code = WebEncoders.Base64UrlEncode(Encoding.UTF8.GetBytes(code));
-            var callbackUrl = Url.Page(
+            string callbackUrl = Url.Page(
                 "/Account/ConfirmEmail",
-                pageHandler: null,
-                values: new { userId, code },
-                protocol: Request.Scheme);
+                null,
+                new {userId, code},
+                Request.Scheme);
             await mEmailSender.SendEmailAsync(
                 Input.Email,
                 "Confirm your email",
@@ -76,6 +66,11 @@ namespace Comet.Web.Pages
 
             ModelState.AddModelError(string.Empty, mLanguage.GetString("VerificationEmailSent"));
             return Page();
+        }
+
+        public class InputModel
+        {
+            [Required] [EmailAddress] public string Email { get; set; }
         }
     }
 }

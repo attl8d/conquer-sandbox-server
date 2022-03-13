@@ -1,19 +1,18 @@
-﻿using MailKit.Net.Smtp;
-using MailKit.Security;
+﻿using System;
+using System.Threading.Tasks;
+using MailKit.Net.Smtp;
 using Microsoft.AspNetCore.Identity.UI.Services;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.Logging;
 using MimeKit;
 using MimeKit.Text;
-using System;
-using System.Threading.Tasks;
 
 namespace Comet.Web.Services
 {
     public class EmailService : IEmailSender
     {
-        private readonly EmailSettings mSettings;
         private readonly ILogger<EmailService> mLogger;
+        private readonly EmailSettings mSettings;
 
         public EmailService(ILogger<EmailService> logger, IConfiguration configuration)
         {
@@ -48,9 +47,9 @@ namespace Comet.Web.Services
                  * Keep this lines if using Selfsigned certificate (or no certificate at all)
                  */
                 client.ServerCertificateValidationCallback = (s, c, h, e) => true; //NOSONAR
-                client.CheckCertificateRevocation = false; //NOSONAR
+                client.CheckCertificateRevocation = false;                         //NOSONAR
 
-                await client.ConnectAsync(mSettings.PrimaryDomain, mSettings.PrimaryPort, SecureSocketOptions.Auto);
+                await client.ConnectAsync(mSettings.PrimaryDomain, mSettings.PrimaryPort);
                 await client.AuthenticateAsync(mSettings.UsernameEmail, mSettings.UsernamePassword);
                 await client.SendAsync(message);
                 await client.DisconnectAsync(true);

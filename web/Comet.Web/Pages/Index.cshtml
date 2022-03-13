@@ -1,8 +1,7 @@
 ﻿@page
-@using Comet.Web.Model.Helpers
-@using Comet.Web.Services
-@using System.Threading
 @inject LanguageService Language
+@using Comet.Web.Model.Helpers
+@using Comet.Web.Data.Entities
 @model IndexModel
 @{
     ViewData["Title"] = "Home page";
@@ -68,9 +67,9 @@ Additional classes:
 <!-- Latest News -->
 <h2 class="container h1">@Language.GetString("LatestNews")</h2>
 <section class="youplay-news container">
-    @foreach (var article in Model.Articles) 
+    @foreach (Article article in Model.Articles)
     {
-        var content = article.Content.FirstOrDefault(x => x.Locale.Equals(Language.CurrentLocale, StringComparison.InvariantCultureIgnoreCase)) ?? article.Content.FirstOrDefault();
+        ArticleContent content = article.Content.FirstOrDefault(x => x.Locale.Equals(Language.CurrentLocale, StringComparison.InvariantCultureIgnoreCase)) ?? article.Content.FirstOrDefault();
         <div class="news-one">
             <div class="row vertical-gutter">
                 <div class="col-md-4">
@@ -106,15 +105,14 @@ Additional classes:
 @section Scripts
 {
     <script>
-        $(".countdown").each(function()
-        {
-            var tz = $(this).attr('data-timezone');
+        $(".countdown").each(function() {
+            const tz = $(this).attr('data-timezone');
             var end = $(this).attr('data-end');
             end = moment.tz(end, tz).toDate();
-            $(this).countdown(end, function(event)
-            {
-                $(this).html(event.strftime(['<div class="countdown-item">', '<span>@Language.GetString("Days")</span>', '<span><span>%D</span></span>', '</div>', '<div class="countdown-item">', '<span>@Language.GetString("Hours")</span>', '<span><span>%H</span></span>', '</div>', '<div class="countdown-item">', '<span>@Language.GetString("Minutes")</span>', '<span><span>%M</span></span>', '</div>', '<div class="countdown-item">', '<span>@Language.GetString("Seconds")</span>', '<span><span>%S</span></span>', '</div>'].join('')));
-            });
+            $(this).countdown(end,
+                function(event) {
+                    $(this).html(event.strftime(['<div class="countdown-item">', '<span>@Language.GetString("Days")</span>', '<span><span>%D</span></span>', '</div>', '<div class="countdown-item">', '<span>@Language.GetString("Hours")</span>', '<span><span>%H</span></span>', '</div>', '<div class="countdown-item">', '<span>@Language.GetString("Minutes")</span>', '<span><span>%M</span></span>', '</div>', '<div class="countdown-item">', '<span>@Language.GetString("Seconds")</span>', '<span><span>%S</span></span>', '</div>'].join('')));
+                });
         });
     </script>
 }

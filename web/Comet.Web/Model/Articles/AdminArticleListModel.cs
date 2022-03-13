@@ -9,6 +9,6 @@ namespace Comet.Web.Model.Articles
         public string Category { get; set; }
         public string Title { get; set; }
         public string PublishDate { get; set; }
-        public List<string> Locales { get; set; } = new List<string>();
+        public List<string> Locales { get; set; } = new();
     }
 }

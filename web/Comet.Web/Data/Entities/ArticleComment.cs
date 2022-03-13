@@ -7,8 +7,8 @@ namespace Comet.Web.Data.Entities
     [Table("article_comment")]
     public class ArticleComment
     {
-        [Key]
-        public virtual int Id { get; set; }
+        [Key] public virtual int Id { get; set; }
+
         public virtual int ArticleId { get; set; }
         public virtual int UserId { get; set; }
         public virtual string TokenId { get; set; }

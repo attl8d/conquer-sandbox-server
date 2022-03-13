@@ -1,3 +1,7 @@
+using System.Collections.Generic;
+using System.ComponentModel.DataAnnotations;
+using System.Linq;
+using System.Threading.Tasks;
 using Comet.Web.Data.Entities;
 using Comet.Web.Services;
 using Microsoft.AspNetCore.Authentication;
@@ -6,25 +10,22 @@ using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.RazorPages;
 using Microsoft.Extensions.Logging;
-using System.Collections.Generic;
-using System.ComponentModel.DataAnnotations;
-using System.Linq;
-using System.Threading.Tasks;
+using SignInResult = Microsoft.AspNetCore.Identity.SignInResult;
 
 namespace Comet.Web.Pages
 {
     [AllowAnonymous]
     public class LoginModel : PageModel
     {
-        private readonly UserManager<ApplicationUser> mUserManager;
-        private readonly SignInManager<ApplicationUser> mSignInManager;
-        private readonly ILogger<LoginModel> mLogger;
         private readonly LanguageService mLanguage;
+        private readonly ILogger<LoginModel> mLogger;
+        private readonly SignInManager<ApplicationUser> mSignInManager;
+        private readonly UserManager<ApplicationUser> mUserManager;
 
         public LoginModel(SignInManager<ApplicationUser> signInManager,
-            ILogger<LoginModel> logger,
-            UserManager<ApplicationUser> userManager,
-            LanguageService languageService)
+                          ILogger<LoginModel> logger,
+                          UserManager<ApplicationUser> userManager,
+                          LanguageService languageService)
         {
             mUserManager = userManager;
             mSignInManager = signInManager;
@@ -32,30 +33,13 @@ namespace Comet.Web.Pages
             mLanguage = languageService;
         }
 
-        [BindProperty]
-        public InputModel Input { get; set; }
+        [BindProperty] public InputModel Input { get; set; }
 
         public IList<ExternalLoginSchema> ExternalLogins { get; set; }
 
         public string ReturnUrl { get; set; }
 
-        [TempData]
-        public string ErrorMessage { get; set; }
-
-        public class InputModel
-        {
-            [Required]
-            [Display(Name = "UserName")]
-            public string UserName { get; set; }
-
-            [Required]
-            [Display(Name = "Password")]
-            [DataType(DataType.Password)]
-            public string Password { get; set; }
-
-            [Display(Name = "RememberMe")]
-            public bool RememberMe { get; set; }
-        }
+        [TempData] public string ErrorMessage { get; set; }
 
         public async Task<IActionResult> OnGetAsync(string returnUrl = null)
         {
@@ -66,10 +50,7 @@ namespace Comet.Web.Pages
                 return Redirect(returnUrl);
             }
 
-            if (!string.IsNullOrEmpty(ErrorMessage))
-            {
-                ModelState.AddModelError(string.Empty, ErrorMessage);
-            }
+            if (!string.IsNullOrEmpty(ErrorMessage)) ModelState.AddModelError(string.Empty, ErrorMessage);
 
             returnUrl ??= Url.Content("~/");
 
@@ -91,36 +72,23 @@ namespace Comet.Web.Pages
                 // This doesn't count login failures towards account lockout
                 // To enable password failures to trigger account lockout, set lockoutOnFailure: true
                 ApplicationUser user = await mUserManager.FindByNameAsync(Input.UserName);
-                if (user == null)
-                {
-                    user = await mUserManager.FindByEmailAsync(Input.UserName);
-                }
+                if (user == null) user = await mUserManager.FindByEmailAsync(Input.UserName);
 
-                var result = await mSignInManager.PasswordSignInAsync(user, Input.Password, Input.RememberMe, lockoutOnFailure: false);
-                if (result.Succeeded)
-                {
-                    return LocalRedirect(returnUrl);
-                }
+                SignInResult result =
+                    await mSignInManager.PasswordSignInAsync(user, Input.Password, Input.RememberMe, false);
+                if (result.Succeeded) return LocalRedirect(returnUrl);
                 if (result.RequiresTwoFactor)
-                {
-                    return RedirectToPage("./LoginWith2fa", new { ReturnUrl = returnUrl, RememberMe = Input.RememberMe });
-                }
+                    return RedirectToPage("./LoginWith2fa", new {ReturnUrl = returnUrl, Input.RememberMe});
                 if (result.IsLockedOut)
                 {
                     return RedirectToPage("./Lockout");
                 }
+
+                if (user != null && !user.EmailConfirmed)
+                    ModelState.AddModelError(string.Empty, mLanguage.GetString("InvalidLoginAttempt2"));
                 else
-                {
-                    if (user != null && !user.EmailConfirmed)
-                    {
-                        ModelState.AddModelError(string.Empty, mLanguage.GetString("InvalidLoginAttempt2"));
-                    }
-                    else
-                    {
-                        ModelState.AddModelError(string.Empty, mLanguage.GetString("InvalidLoginAttempt"));
-                    }
-                    return Page();
-                }
+                    ModelState.AddModelError(string.Empty, mLanguage.GetString("InvalidLoginAttempt"));
+                return Page();
             }
 
             // If we got this far, something failed, redisplay form
@@ -130,45 +98,59 @@ namespace Comet.Web.Pages
         private async Task SetExternalLoginsAsync()
         {
             ExternalLogins = (await mSignInManager.GetExternalAuthenticationSchemesAsync())
-                .Select(x =>
-                {
-                    switch (x.Name.ToUpper())
-                    {
-                        case "FACEBOOK":
-                            return new ExternalLoginSchema
-                            {
-                                Icon = "fa fa-facebook",
-                                Name = x.Name,
-                                DisplayName = x.DisplayName,
-                                Class = "btn-primary"
-                            };
-                        case "GOOGLE":
-                            return new ExternalLoginSchema
-                            {
-                                Icon = "fa fa-google",
-                                Name = x.Name,
-                                DisplayName = x.DisplayName,
-                                Class = "btn-danger"
-                            };
-                        case "MICROSOFT":
-                            return new ExternalLoginSchema
-                            {
-                                Icon = "fa fa-windows",
-                                Name = x.Name,
-                                DisplayName = x.DisplayName,
-                                Class = "btn-info"
-                            };
-                        default:
-                            return new ExternalLoginSchema
-                            {
-                                Icon = "fa fa-lock",
-                                Name = x.Name,
-                                DisplayName = x.DisplayName,
-                                Class = "btn-secondary"
-                            };
-                    }
-                })
-                .ToList();
+                             .Select(x =>
+                             {
+                                 switch (x.Name.ToUpper())
+                                 {
+                                     case "FACEBOOK":
+                                         return new ExternalLoginSchema
+                                         {
+                                             Icon = "fa fa-facebook",
+                                             Name = x.Name,
+                                             DisplayName = x.DisplayName,
+                                             Class = "btn-primary"
+                                         };
+                                     case "GOOGLE":
+                                         return new ExternalLoginSchema
+                                         {
+                                             Icon = "fa fa-google",
+                                             Name = x.Name,
+                                             DisplayName = x.DisplayName,
+                                             Class = "btn-danger"
+                                         };
+                                     case "MICROSOFT":
+                                         return new ExternalLoginSchema
+                                         {
+                                             Icon = "fa fa-windows",
+                                             Name = x.Name,
+                                             DisplayName = x.DisplayName,
+                                             Class = "btn-info"
+                                         };
+                                     default:
+                                         return new ExternalLoginSchema
+                                         {
+                                             Icon = "fa fa-lock",
+                                             Name = x.Name,
+                                             DisplayName = x.DisplayName,
+                                             Class = "btn-secondary"
+                                         };
+                                 }
+                             })
+                             .ToList();
+        }
+
+        public class InputModel
+        {
+            [Required]
+            [Display(Name = "UserName")]
+            public string UserName { get; set; }
+
+            [Required]
+            [Display(Name = "Password")]
+            [DataType(DataType.Password)]
+            public string Password { get; set; }
+
+            [Display(Name = "RememberMe")] public bool RememberMe { get; set; }
         }
 
         public struct ExternalLoginSchema

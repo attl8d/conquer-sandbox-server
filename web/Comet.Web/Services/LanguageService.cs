@@ -1,28 +1,21 @@
-﻿using Comet.Web.Model.Identity;
-using Microsoft.AspNetCore.Http;
-using Microsoft.Extensions.Logging;
-using System;
+﻿using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Reflection;
 using System.Resources;
-using System.Security.Claims;
+using Comet.Web.Model.Identity;
+using Microsoft.AspNetCore.Http;
+using Microsoft.Extensions.Logging;
 
 namespace Comet.Web.Services
 {
     public class LanguageService
     {
-        public static List<Languages> AvailableLanguages = new List<Languages>
-        {
-            new Languages {LanguageFullName = "Português Brasileiro", LanguageCultureName = "pt-BR"},
-            new Languages {LanguageFullName = "English", LanguageCultureName = "en-US"}
-        };
+        private Languages mCurrentCulture;
+        private readonly IHttpContextAccessor mHttpContextAccessor;
+        private readonly ILogger<LanguageService> mLogger;
 
-        private Dictionary<string, ResourceManager> ResourceManager = new Dictionary<string, ResourceManager>();
-        private ILogger<LanguageService> mLogger;
-        private IHttpContextAccessor mHttpContextAccessor;
-
-        private Languages mCurrentCulture = null;
+        private readonly Dictionary<string, ResourceManager> ResourceManager = new();
 
         public LanguageService(ILogger<LanguageService> logger, IHttpContextAccessor httpContextAccessor)
         {
@@ -34,54 +27,20 @@ namespace Comet.Web.Services
 
         public string CurrentLocale => CurrentCulture.LanguageCultureName;
 
-        private void Initialize()
-        {
-            const string location = "Comet.Web.Localization.{0}";
-            ResourceManager.Add("pt-BR", new ResourceManager(string.Format(location, "Language"), Assembly.GetExecutingAssembly()));
-            foreach (var lang in AvailableLanguages)
-            {
-                // mLogger.LogDebug($"Language {lang.LanguageFullName} has been loaded.");
-                try
-                {
-                    if (!ResourceManager.ContainsKey(lang.LanguageCultureName))
-                        ResourceManager.Add(lang.LanguageCultureName,
-                            new ResourceManager(string.Format($"{location}.Language", lang.LanguageCultureName),
-                                Assembly.GetExecutingAssembly()));
-                }
-                catch (Exception ex)
-                {
-                    mLogger.LogError(ex.ToString());
-                }
-            }
-        }
-
-        public bool IsLanguageAvailable(string lang)
-        {
-            return AvailableLanguages.FirstOrDefault(a => a.LanguageCultureName.Equals(lang)) != null;
-        }
-
-        private static string GetDefaultLanguage()
-        {
-            return AvailableLanguages[0].LanguageCultureName;
-        }
-
         public Languages CurrentCulture
         {
             get
             {
                 if (mCurrentCulture == null && mHttpContextAccessor != null)
                 {
-                    string locale = "";
+                    var locale = "";
                     if (!mHttpContextAccessor.HttpContext.User.Identity.IsAuthenticated)
                     {
                         if (mHttpContextAccessor.HttpContext.Request.Cookies.ContainsKey("Locale"))
-                        {
                             locale = mHttpContextAccessor.HttpContext.Request.Cookies["Locale"];
-                        }
                         else
-                        {
-                            locale = mHttpContextAccessor.HttpContext.Request.Headers["Accept-Language"].ToString().Split(";")[0].Split(",")[0];
-                        }
+                            locale = mHttpContextAccessor.HttpContext.Request.Headers["Accept-Language"].ToString()
+                                                         .Split(";")[0].Split(",")[0];
                     }
                     else
                     {
@@ -95,10 +54,43 @@ namespace Comet.Web.Services
                 }
                 else if (mCurrentCulture == null)
                 {
-                    mCurrentCulture = AvailableLanguages.FirstOrDefault(x => x.LanguageCultureName.Equals(GetDefaultLanguage()));
+                    mCurrentCulture =
+                        AvailableLanguages.FirstOrDefault(x => x.LanguageCultureName.Equals(GetDefaultLanguage()));
                 }
+
                 return mCurrentCulture;
             }
+        }
+
+        private void Initialize()
+        {
+            const string location = "Comet.Web.Localization.{0}";
+            ResourceManager.Add(
+                "pt-BR", new ResourceManager(string.Format(location, "Language"), Assembly.GetExecutingAssembly()));
+            foreach (Languages lang in AvailableLanguages)
+                // mLogger.LogDebug($"Language {lang.LanguageFullName} has been loaded.");
+                try
+                {
+                    if (!ResourceManager.ContainsKey(lang.LanguageCultureName))
+                        ResourceManager.Add(lang.LanguageCultureName,
+                                            new ResourceManager(
+                                                string.Format($"{location}.Language", lang.LanguageCultureName),
+                                                Assembly.GetExecutingAssembly()));
+                }
+                catch (Exception ex)
+                {
+                    mLogger.LogError(ex.ToString());
+                }
+        }
+
+        public bool IsLanguageAvailable(string lang)
+        {
+            return AvailableLanguages.FirstOrDefault(a => a.LanguageCultureName.Equals(lang)) != null;
+        }
+
+        private static string GetDefaultLanguage()
+        {
+            return AvailableLanguages[0].LanguageCultureName;
         }
 
         public string GetString(string name, params object[] args)
@@ -112,6 +104,12 @@ namespace Comet.Web.Services
                 return name;
             return string.Format(result, args);
         }
+
+        public static List<Languages> AvailableLanguages = new()
+        {
+            new() {LanguageFullName = "Português Brasileiro", LanguageCultureName = "pt-BR"},
+            new() {LanguageFullName = "English", LanguageCultureName = "en-US"}
+        };
     }
 
     public class Languages

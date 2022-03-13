@@ -1,12 +1,12 @@
-﻿using Comet.Web.Data.Entities;
+﻿using System;
+using System.Security.Claims;
+using System.Threading.Tasks;
+using Comet.Web.Data.Entities;
 using Comet.Web.Model.Identity;
 using Comet.Web.Services;
 using Comet.Web.Services.Identity;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Http;
-using System;
-using System.Security.Claims;
-using System.Threading.Tasks;
 
 namespace Comet.Web.Middlewares
 {
@@ -20,13 +20,13 @@ namespace Comet.Web.Middlewares
         }
 
         public async Task InvokeAsync(HttpContext context, LanguageService language,
-            IHttpContextAccessor httpContextAccessor,
-            UserManager userManager,
-            SignInManager signInManager)
+                                      IHttpContextAccessor httpContextAccessor,
+                                      UserManager userManager,
+                                      SignInManager signInManager)
         {
-            var User = httpContextAccessor.HttpContext.User;
-            bool changeLocale = false;
-            string locale = "";
+            ClaimsPrincipal User = httpContextAccessor.HttpContext.User;
+            var changeLocale = false;
+            var locale = "";
             if (httpContextAccessor.HttpContext.Request.Query.ContainsKey("locale"))
             {
                 string current = httpContextAccessor.HttpContext.Request.Query["locale"];
@@ -47,13 +47,9 @@ namespace Comet.Web.Middlewares
                         Claim temp = User.FindFirst(CustomClaimTypes.Language);
                         Claim now = new(CustomClaimTypes.Language, locale);
                         if (temp != null)
-                        {
                             await userManager.ReplaceClaimAsync(user, temp, now);
-                        }
                         else
-                        {
                             await userManager.AddClaimAsync(user, now);
-                        }
                         await signInManager.RefreshSignInAsync(user);
                     }
                 }
@@ -84,5 +80,4 @@ namespace Comet.Web.Middlewares
             return builder.UseMiddleware<LocalizationMiddleware>();
         }
     }
-
 }

@@ -1,23 +1,24 @@
-﻿using Comet.Web.Data;
-using Comet.Web.Data.Entities;
-using Comet.Web.Services.Realms;
-using System;
+﻿using System;
 using System.Collections.Generic;
 using System.Data;
 using System.Diagnostics;
 using System.Linq;
 using System.Threading.Tasks;
+using Comet.Web.Data;
+using Comet.Web.Data.Entities;
+using Comet.Web.Services.Realms;
 using static Comet.Web.Data.Entities.LogHistory;
 
 namespace Comet.Web.Services
 {
     public sealed class GameServerDataManager
     {
-        private readonly RealmService mRealmService;
         private readonly ApplicationDbContext mContext;
         private readonly LogService<GameServerDataManager> mLog;
+        private readonly RealmService mRealmService;
 
-        public GameServerDataManager(RealmService realmService, ApplicationDbContext ctx, LogService<GameServerDataManager> log)
+        public GameServerDataManager(RealmService realmService, ApplicationDbContext ctx,
+                                     LogService<GameServerDataManager> log)
         {
             mRealmService = realmService;
             mContext = ctx;
@@ -26,32 +27,32 @@ namespace Comet.Web.Services
 
         public async Task ExecuteMigrationAsync()
         {
-            await mLog.LogAsync($"Daily Update initializing!", LogType.DailyUpdate);
-            Stopwatch sw = Stopwatch.StartNew();
+            await mLog.LogAsync("Daily Update initializing!", LogType.DailyUpdate);
+            var sw = Stopwatch.StartNew();
 
             await mRealmService.LoadRealmsAsync();
 
-            foreach (var realm in mRealmService.GetRealmList().Where(x => x.Active))
+            foreach (RealmService.RealmPublicListData realm in mRealmService.GetRealmList().Where(x => x.Active))
             {
                 await mLog.LogAsync($"Loading data from realm {realm.RealmName}", LogType.DailyUpdate);
 
-                ApplicationDbContext dbContext = new ApplicationDbContext();
+                var dbContext = new ApplicationDbContext();
                 dbContext.ConnectionString = mRealmService.GetRealmConnectionString(realm.RealmName);
 
                 DataTable data = await dbContext.SelectAsync("CALL GetSyndicates();");
-                List<RecordSyndicate> saveOrUpdateSyndicateList = new List<RecordSyndicate>();
+                var saveOrUpdateSyndicateList = new List<RecordSyndicate>();
                 foreach (DataRow row in data.Rows)
                 {
-                    uint idSyndicate = (uint)uint.Parse(row["Identity"].ToString());
-                    var syndicate = mContext.RecordSyndicates.FirstOrDefault(x => x.ServerIdentity == realm.RealmID && x.SyndicateIdentity == idSyndicate);
+                    uint idSyndicate = uint.Parse(row["Identity"].ToString());
+                    RecordSyndicate syndicate =
+                        mContext.RecordSyndicates.FirstOrDefault(
+                            x => x.ServerIdentity == realm.RealmID && x.SyndicateIdentity == idSyndicate);
                     if (syndicate == null)
-                    {
                         syndicate = new RecordSyndicate
                         {
                             ServerIdentity = realm.RealmID,
                             SyndicateIdentity = idSyndicate
                         };
-                    }
                     syndicate.Name = row.Field<string>("Name");
                     syndicate.LeaderIdentity = uint.Parse(row["LeaderIdentity"].ToString());
                     syndicate.CreatedAt = row.Field<DateTime>("CreatedAt");
@@ -60,23 +61,24 @@ namespace Comet.Web.Services
                     syndicate.Count = uint.Parse(row["Count"].ToString());
                     saveOrUpdateSyndicateList.Add(syndicate);
                 }
+
                 await mContext.SaveAsync(saveOrUpdateSyndicateList);
                 saveOrUpdateSyndicateList.Clear();
 
                 data = await dbContext.SelectAsync("CALL GetFamily();");
-                List<RecordFamily> saveOrUpdateFamily = new List<RecordFamily>();
+                var saveOrUpdateFamily = new List<RecordFamily>();
                 foreach (DataRow row in data.Rows)
                 {
-                    uint idFamily = (uint)uint.Parse(row["Identity"].ToString());
-                    var family = mContext.RecordFamilies.FirstOrDefault(x => x.ServerIdentity == realm.RealmID && x.FamilyIdentity == idFamily);
+                    uint idFamily = uint.Parse(row["Identity"].ToString());
+                    RecordFamily family =
+                        mContext.RecordFamilies.FirstOrDefault(
+                            x => x.ServerIdentity == realm.RealmID && x.FamilyIdentity == idFamily);
                     if (family == null)
-                    {
                         family = new RecordFamily
                         {
                             ServerIdentity = realm.RealmID,
                             FamilyIdentity = idFamily
                         };
-                    }
                     family.Name = row.Field<string>("Name");
                     family.LeaderIdentity = uint.Parse(row["LeaderIdentity"].ToString());
                     family.CreatedAt = row.Field<DateTime>("CreatedAt");
@@ -89,24 +91,24 @@ namespace Comet.Web.Services
                     family.Level = byte.Parse(row["Level"].ToString());
                     saveOrUpdateFamily.Add(family);
                 }
+
                 await mContext.SaveAsync(saveOrUpdateFamily);
                 saveOrUpdateFamily.Clear();
 
                 data = await dbContext.SelectAsync("CALL GetUsers();");
-                List<RecordUser> saveOrUpdateUser = new List<RecordUser>();
+                var saveOrUpdateUser = new List<RecordUser>();
                 foreach (DataRow row in data.Rows)
                 {
                     uint idUser = uint.Parse(row["Identity"].ToString());
-                    var user = mContext.RecordUsers.FirstOrDefault(x => x.ServerIdentity == realm.RealmID && x.Id == idUser);
+                    RecordUser user =
+                        mContext.RecordUsers.FirstOrDefault(x => x.ServerIdentity == realm.RealmID && x.Id == idUser);
 
                     if (user == null)
-                    {
                         user = new RecordUser
                         {
                             UserIdentity = idUser,
                             ServerIdentity = realm.RealmID
                         };
-                    }
 
                     user.Name = row.Field<string>("Name");
                     user.AccountIdentity = uint.Parse(row["AccountIdentity"].ToString());
@@ -122,19 +124,19 @@ namespace Comet.Web.Services
                     user.Vitality = ushort.Parse(row["Vitality"].ToString());
                     user.Spirit = ushort.Parse(row["Spirit"].ToString());
                     user.AdditionalPoints = ushort.Parse(row["AdditionalPoint"].ToString());
-                    user.SyndicateIdentity = (uint)long.Parse(row["SyndicateIdentity"].ToString());
-                    user.SyndicatePosition = (ushort)long.Parse(row["SyndicateRank"].ToString());
+                    user.SyndicateIdentity = (uint) long.Parse(row["SyndicateIdentity"].ToString());
+                    user.SyndicatePosition = (ushort) long.Parse(row["SyndicateRank"].ToString());
                     user.NobilityDonation = ulong.Parse(row["NobilityDonation"].ToString());
-                    user.NobilityRank = (byte)long.Parse(row["NobilityRank"].ToString());
-                    user.SupermanCount = (uint)long.Parse(row["SupermanCount"].ToString());
+                    user.NobilityRank = (byte) long.Parse(row["NobilityRank"].ToString());
+                    user.SupermanCount = (uint) long.Parse(row["SupermanCount"].ToString());
                     user.DeletedAt = row.Field<DateTime?>("DeletedAt");
                     user.Deleted = long.Parse(row["Deleted"].ToString()) != 0;
                     user.Money = uint.Parse(row["Money"].ToString());
                     user.WarehouseMoney = uint.Parse(row["WarehouseMoney"].ToString());
                     user.ConquerPoints = uint.Parse(row["ConquerPoints"].ToString());
                     user.ConquerPointsMono = uint.Parse(row["ConquerPointsMono"].ToString());
-                    user.FamilyIdentity = (uint)long.Parse(row["FamilyIdentity"].ToString());
-                    user.FamilyRank = (ushort)long.Parse(row["FamilyRank"].ToString());
+                    user.FamilyIdentity = (uint) long.Parse(row["FamilyIdentity"].ToString());
+                    user.FamilyRank = (ushort) long.Parse(row["FamilyRank"].ToString());
                     user.QualifierPoints = uint.Parse(row["QualifierPoints"].ToString());
                     user.QualifierTotalWins = uint.Parse(row["QualifierTotalWins"].ToString());
                     user.QualifierTotalLoses = uint.Parse(row["QualifierTotalLoses"].ToString());
@@ -147,6 +149,7 @@ namespace Comet.Web.Services
                     user.Orchid = uint.Parse(row["Orchid"].ToString());
                     user.Tulip = uint.Parse(row["Tulip"].ToString());
                 }
+
                 await mContext.SaveAsync(saveOrUpdateUser);
                 saveOrUpdateUser.Clear();
 
@@ -154,8 +157,8 @@ namespace Comet.Web.Services
             }
 
             sw.Stop();
-            await mLog.LogAsync($"Finishing daily update in {sw.ElapsedMilliseconds / 1000d:0.000} seconds.", LogType.DailyUpdate);
+            await mLog.LogAsync($"Finishing daily update in {sw.ElapsedMilliseconds / 1000d:0.000} seconds.",
+                                LogType.DailyUpdate);
         }
-
     }
 }

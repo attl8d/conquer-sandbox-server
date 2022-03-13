@@ -8,7 +8,6 @@ namespace Comet.Web.Pages
     {
         public void OnGet()
         {
-
         }
     }
 }

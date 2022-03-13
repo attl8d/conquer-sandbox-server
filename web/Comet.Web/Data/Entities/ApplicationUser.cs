@@ -1,7 +1,7 @@
-﻿using Microsoft.AspNetCore.Identity;
-using System;
+﻿using System;
 using System.ComponentModel.DataAnnotations;
 using System.ComponentModel.DataAnnotations.Schema;
+using Microsoft.AspNetCore.Identity;
 
 namespace Comet.Web.Data.Entities
 {
@@ -9,16 +9,20 @@ namespace Comet.Web.Data.Entities
     public class ApplicationUser : IdentityUser<int>
     {
         [Key]
-        public override int Id { get => base.Id; set => base.Id = value; }
+        public override int Id
+        {
+            get => base.Id;
+            set => base.Id = value;
+        }
 
-        public override string NormalizedEmail 
-        { 
+        public override string NormalizedEmail
+        {
             get => base.NormalizedEmail;
             set => base.NormalizedEmail = value;
         }
 
-        public override string NormalizedUserName 
-        { 
+        public override string NormalizedUserName
+        {
             get => base.NormalizedUserName;
             set => base.NormalizedUserName = value;
         }

@@ -6,8 +6,8 @@ namespace Comet.Web.Data.Entities
     [Table("log_history")]
     public class LogHistory
     {
-        [Key]
-        public virtual int Id { get; set; }
+        [Key] public virtual int Id { get; set; }
+
         public virtual int? AccountId { get; set; }
         public virtual LogType Type { get; set; }
         public virtual long Data { get; set; }
@@ -33,7 +33,7 @@ namespace Comet.Web.Data.Entities
             LogIn,
             LogOut,
             GameAccountCreation,
-            DailyUpdate,
+            DailyUpdate
         }
     }
 }

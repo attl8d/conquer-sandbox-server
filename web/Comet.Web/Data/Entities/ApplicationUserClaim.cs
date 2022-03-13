@@ -1,6 +1,6 @@
-﻿using Microsoft.AspNetCore.Identity;
-using System.ComponentModel.DataAnnotations;
+﻿using System.ComponentModel.DataAnnotations;
 using System.ComponentModel.DataAnnotations.Schema;
+using Microsoft.AspNetCore.Identity;
 
 namespace Comet.Web.Data.Entities
 {
@@ -8,7 +8,12 @@ namespace Comet.Web.Data.Entities
     public class ApplicationUserClaim : IdentityUserClaim<int>
     {
         [Key]
-        public override int Id { get => base.Id; set => base.Id = value; }
+        public override int Id
+        {
+            get => base.Id;
+            set => base.Id = value;
+        }
+
         [ForeignKey("FK_AspNetUserClaims_AspNetUsers_UserId")]
         public override int UserId { get; set; }
     }

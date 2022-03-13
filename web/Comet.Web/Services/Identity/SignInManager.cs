@@ -1,41 +1,47 @@
-﻿using Comet.Web.Data.Entities;
+﻿using System.Collections.Generic;
+using System.Security.Claims;
+using System.Threading.Tasks;
+using Comet.Web.Data.Entities;
 using Microsoft.AspNetCore.Authentication;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
-using System.Collections.Generic;
-using System.Security.Claims;
-using System.Threading.Tasks;
 
 namespace Comet.Web.Services.Identity
 {
     public class SignInManager : SignInManager<ApplicationUser>
     {
         public SignInManager(UserManager<ApplicationUser> userManager,
-            IHttpContextAccessor contextAccessor,
-            IUserClaimsPrincipalFactory<ApplicationUser> claimsFactory,
-            IOptions<IdentityOptions> optionsAccessor,
-            ILogger<SignInManager<ApplicationUser>> logger,
-            IAuthenticationSchemeProvider schemes,
-            IUserConfirmation<ApplicationUser> confirmation)
+                             IHttpContextAccessor contextAccessor,
+                             IUserClaimsPrincipalFactory<ApplicationUser> claimsFactory,
+                             IOptions<IdentityOptions> optionsAccessor,
+                             ILogger<SignInManager<ApplicationUser>> logger,
+                             IAuthenticationSchemeProvider schemes,
+                             IUserConfirmation<ApplicationUser> confirmation)
             : base(userManager, contextAccessor, claimsFactory, optionsAccessor, logger, schemes, confirmation)
         {
         }
 
-        public override ILogger Logger { get => base.Logger; set => base.Logger = value; }
+        public override ILogger Logger
+        {
+            get => base.Logger;
+            set => base.Logger = value;
+        }
 
         public override Task<bool> CanSignInAsync(ApplicationUser user)
         {
             return base.CanSignInAsync(user);
         }
 
-        public override Task<SignInResult> CheckPasswordSignInAsync(ApplicationUser user, string password, bool lockoutOnFailure)
+        public override Task<SignInResult> CheckPasswordSignInAsync(ApplicationUser user, string password,
+                                                                    bool lockoutOnFailure)
         {
             return base.CheckPasswordSignInAsync(user, password, lockoutOnFailure);
         }
 
-        public override AuthenticationProperties ConfigureExternalAuthenticationProperties(string provider, string redirectUrl, string userId = null)
+        public override AuthenticationProperties ConfigureExternalAuthenticationProperties(
+            string provider, string redirectUrl, string userId = null)
         {
             return base.ConfigureExternalAuthenticationProperties(provider, redirectUrl, userId);
         }
@@ -45,12 +51,14 @@ namespace Comet.Web.Services.Identity
             return base.CreateUserPrincipalAsync(user);
         }
 
-        public override Task<SignInResult> ExternalLoginSignInAsync(string loginProvider, string providerKey, bool isPersistent)
+        public override Task<SignInResult> ExternalLoginSignInAsync(string loginProvider, string providerKey,
+                                                                    bool isPersistent)
         {
             return base.ExternalLoginSignInAsync(loginProvider, providerKey, isPersistent);
         }
 
-        public override Task<SignInResult> ExternalLoginSignInAsync(string loginProvider, string providerKey, bool isPersistent, bool bypassTwoFactor)
+        public override Task<SignInResult> ExternalLoginSignInAsync(string loginProvider, string providerKey,
+                                                                    bool isPersistent, bool bypassTwoFactor)
         {
             return base.ExternalLoginSignInAsync(loginProvider, providerKey, isPersistent, bypassTwoFactor);
         }
@@ -85,12 +93,14 @@ namespace Comet.Web.Services.Identity
             return base.IsTwoFactorClientRememberedAsync(user);
         }
 
-        public override Task<SignInResult> PasswordSignInAsync(ApplicationUser user, string password, bool isPersistent, bool lockoutOnFailure)
+        public override Task<SignInResult> PasswordSignInAsync(ApplicationUser user, string password, bool isPersistent,
+                                                               bool lockoutOnFailure)
         {
             return base.PasswordSignInAsync(user, password, isPersistent, lockoutOnFailure);
         }
 
-        public override Task<SignInResult> PasswordSignInAsync(string userName, string password, bool isPersistent, bool lockoutOnFailure)
+        public override Task<SignInResult> PasswordSignInAsync(string userName, string password, bool isPersistent,
+                                                               bool lockoutOnFailure)
         {
             return base.PasswordSignInAsync(userName, password, isPersistent, lockoutOnFailure);
         }
@@ -110,17 +120,21 @@ namespace Comet.Web.Services.Identity
             return base.SignInAsync(user, isPersistent, authenticationMethod);
         }
 
-        public override Task SignInAsync(ApplicationUser user, AuthenticationProperties authenticationProperties, string authenticationMethod = null)
+        public override Task SignInAsync(ApplicationUser user, AuthenticationProperties authenticationProperties,
+                                         string authenticationMethod = null)
         {
             return base.SignInAsync(user, authenticationProperties, authenticationMethod);
         }
 
-        public override Task SignInWithClaimsAsync(ApplicationUser user, bool isPersistent, IEnumerable<Claim> additionalClaims)
+        public override Task SignInWithClaimsAsync(ApplicationUser user, bool isPersistent,
+                                                   IEnumerable<Claim> additionalClaims)
         {
             return base.SignInWithClaimsAsync(user, isPersistent, additionalClaims);
         }
 
-        public override Task SignInWithClaimsAsync(ApplicationUser user, AuthenticationProperties authenticationProperties, IEnumerable<Claim> additionalClaims)
+        public override Task SignInWithClaimsAsync(ApplicationUser user,
+                                                   AuthenticationProperties authenticationProperties,
+                                                   IEnumerable<Claim> additionalClaims)
         {
             return base.SignInWithClaimsAsync(user, authenticationProperties, additionalClaims);
         }
@@ -130,7 +144,8 @@ namespace Comet.Web.Services.Identity
             return base.SignOutAsync();
         }
 
-        public override Task<SignInResult> TwoFactorAuthenticatorSignInAsync(string code, bool isPersistent, bool rememberClient)
+        public override Task<SignInResult> TwoFactorAuthenticatorSignInAsync(
+            string code, bool isPersistent, bool rememberClient)
         {
             return base.TwoFactorAuthenticatorSignInAsync(code, isPersistent, rememberClient);
         }
@@ -140,7 +155,8 @@ namespace Comet.Web.Services.Identity
             return base.TwoFactorRecoveryCodeSignInAsync(recoveryCode);
         }
 
-        public override Task<SignInResult> TwoFactorSignInAsync(string provider, string code, bool isPersistent, bool rememberClient)
+        public override Task<SignInResult> TwoFactorSignInAsync(string provider, string code, bool isPersistent,
+                                                                bool rememberClient)
         {
             return base.TwoFactorSignInAsync(provider, code, isPersistent, rememberClient);
         }
@@ -185,7 +201,9 @@ namespace Comet.Web.Services.Identity
             return base.ResetLockout(user);
         }
 
-        protected override Task<SignInResult> SignInOrTwoFactorAsync(ApplicationUser user, bool isPersistent, string loginProvider = null, bool bypassTwoFactor = false)
+        protected override Task<SignInResult> SignInOrTwoFactorAsync(ApplicationUser user, bool isPersistent,
+                                                                     string loginProvider = null,
+                                                                     bool bypassTwoFactor = false)
         {
             return base.SignInOrTwoFactorAsync(user, isPersistent, loginProvider, bypassTwoFactor);
         }

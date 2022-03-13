@@ -1,13 +1,12 @@
-using Comet.Web.Data.Entities;
-using Comet.Web.Services;
-using Comet.Web.Services.Identity;
-using Microsoft.AspNetCore.Authorization;
-using Microsoft.AspNetCore.Mvc;
-using Microsoft.AspNetCore.Mvc.RazorPages;
 using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
+using Comet.Web.Data.Entities;
+using Comet.Web.Services.Identity;
+using Microsoft.AspNetCore.Authorization;
+using Microsoft.AspNetCore.Mvc;
+using Microsoft.AspNetCore.Mvc.RazorPages;
 using static Comet.Web.Services.Security;
 
 namespace Comet.Web.Areas.Panel.Pages.Administration
@@ -17,12 +16,12 @@ namespace Comet.Web.Areas.Panel.Pages.Administration
     {
         private readonly RoleManager mRoleManager;
 
+        public Dictionary<string, Claims> Claims = new();
+
         public RoleModel(RoleManager roleManager)
         {
             mRoleManager = roleManager;
         }
-
-        public Dictionary<string, Claims> Claims = new Dictionary<string, Claims>();
 
         [BindProperty(SupportsGet = true)] public int RoleId { get; set; }
 

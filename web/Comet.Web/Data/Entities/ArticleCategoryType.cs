@@ -7,8 +7,8 @@ namespace Comet.Web.Data.Entities
     [Table("article_category_type")]
     public class ArticleCategoryType
     {
-        [Key]
-        public virtual int Id { get; set; }
+        [Key] public virtual int Id { get; set; }
+
         public virtual string Name { get; set; }
         public virtual int UserId { get; set; }
         public virtual int Flags { get; set; }

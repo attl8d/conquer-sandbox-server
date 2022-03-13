@@ -8,11 +8,13 @@ namespace Comet.Web.Data.Entities
     [Table("article_category")]
     public class ArticleCategory
     {
-        [Key]
-        public virtual int Id { get; set; }
+        [Key] public virtual int Id { get; set; }
+
         public virtual string Name { get; set; }
+
         [ForeignKey("FK_Article_Category_Type")]
         public virtual int CategoryTypeId { get; set; }
+
         public virtual int UserId { get; set; }
         public virtual int Flags { get; set; }
         public virtual DateTime CreationDate { get; set; }

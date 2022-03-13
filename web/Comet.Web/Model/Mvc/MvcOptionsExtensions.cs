@@ -1,7 +1,7 @@
-﻿using Microsoft.AspNetCore.Mvc;
+﻿using System.Linq;
+using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.ApplicationModels;
 using Microsoft.AspNetCore.Mvc.Routing;
-using System.Linq;
 
 namespace Comet.Web.Model.Mvc
 {
@@ -13,7 +13,7 @@ namespace Comet.Web.Model.Mvc
         }
 
         public static void UseGeneralRoutePrefix(this MvcOptions opts, string
-        prefix)
+                                                     prefix)
         {
             opts.UseGeneralRoutePrefix(new RouteAttribute(prefix));
         }
@@ -30,17 +30,12 @@ namespace Comet.Web.Model.Mvc
 
         public void Apply(ApplicationModel application)
         {
-            foreach (var selector in application.Controllers.SelectMany(c => c.Selectors))
-            {
+            foreach (SelectorModel selector in application.Controllers.SelectMany(c => c.Selectors))
                 if (selector.AttributeRouteModel != null)
-                {
-                    selector.AttributeRouteModel = AttributeRouteModel.CombineAttributeRouteModel(_routePrefix, selector.AttributeRouteModel);
-                }
+                    selector.AttributeRouteModel =
+                        AttributeRouteModel.CombineAttributeRouteModel(_routePrefix, selector.AttributeRouteModel);
                 else
-                {
                     selector.AttributeRouteModel = _routePrefix;
-                }
-            }
         }
     }
 }

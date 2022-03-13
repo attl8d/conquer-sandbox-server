@@ -1,7 +1,7 @@
-﻿using Comet.Web.Data;
+﻿using System.Threading.Tasks;
+using Comet.Web.Data;
 using Comet.Web.Data.Entities;
 using Microsoft.EntityFrameworkCore;
-using System.Threading.Tasks;
 
 namespace Comet.Web.Services
 {
@@ -14,6 +14,10 @@ namespace Comet.Web.Services
             mContext = context;
         }
 
-        public Task<SystemConfig> GetAsync() => mContext.SystemConfigs.FirstOrDefaultAsync(x => x.Key.Equals(SystemConfig.ConfigKey.MaintenanceSettings.ToString()));
+        public Task<SystemConfig> GetAsync()
+        {
+            return mContext.SystemConfigs.FirstOrDefaultAsync(
+                x => x.Key.Equals(SystemConfig.ConfigKey.MaintenanceSettings.ToString()));
+        }
     }
 }

@@ -1,5 +1,4 @@
 ﻿@page
-@using Comet.Web.Services
 @inject LanguageService Language
 @model ConfirmEmailModel
 @{
@@ -9,5 +8,5 @@
 @await Html.PartialAsync("../../../Pages/Shared/_ViewTitleContainer")
 
 <div class="container youplay-news">
-    <partial name="_StatusMessage" model="Model.StatusMessage" />
+    <partial name="_StatusMessage" model="Model.StatusMessage"/>
 </div>

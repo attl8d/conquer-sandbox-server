@@ -1,10 +1,10 @@
-﻿using Comet.Web.Data;
+﻿using System.Threading.Tasks;
+using Comet.Web.Data;
 using Comet.Web.Model.Helpers;
 using Comet.Web.Services;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Http;
-using System.Threading.Tasks;
 
 namespace Comet.Web.Middlewares
 {
@@ -18,18 +18,20 @@ namespace Comet.Web.Middlewares
         }
 
         public async Task InvokeAsync(HttpContext context,
-            IHttpContextAccessor httpContextAccessor,
-            ApplicationDbContext dbContext,
-            IAuthorizationService authorizationService)
+                                      IHttpContextAccessor httpContextAccessor,
+                                      ApplicationDbContext dbContext,
+                                      IAuthorizationService authorizationService)
         {
             bool isUnderMaintenance = await httpContextAccessor.HttpContext.IsUnderMaintenanceAsync(dbContext);
-            bool userHasAccess = true;
+            var userHasAccess = true;
             if (isUnderMaintenance && !httpContextAccessor.HttpContext.Request.Path.Equals("/Maintenance"))
             {
-                bool notAuthorized = true;
+                var notAuthorized = true;
                 if (httpContextAccessor.HttpContext.User.Identity.IsAuthenticated)
                 {
-                    var authorization = await authorizationService.AuthorizeAsync(httpContextAccessor.HttpContext.User, Security.Administrator);
+                    AuthorizationResult authorization =
+                        await authorizationService.AuthorizeAsync(httpContextAccessor.HttpContext.User,
+                                                                  Security.Administrator);
                     if (authorization.Succeeded)
                     {
                         notAuthorized = false;
@@ -40,9 +42,7 @@ namespace Comet.Web.Middlewares
                 if (notAuthorized)
                 {
                     if (!httpContextAccessor.HttpContext.Request.Path.Equals("/Login"))
-                    {
                         httpContextAccessor.HttpContext.Response.Redirect("/Maintenance");
-                    }
                     userHasAccess = false;
                 }
             }

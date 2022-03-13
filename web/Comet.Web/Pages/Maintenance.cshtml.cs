@@ -1,11 +1,12 @@
+using System;
+using System.Threading.Tasks;
 using Comet.Shared;
 using Comet.Web.Data;
+using Comet.Web.Data.Entities;
 using Comet.Web.Model.Helpers;
 using Comet.Web.Services;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.RazorPages;
-using System;
-using System.Threading.Tasks;
 
 namespace Comet.Web.Pages
 {
@@ -26,23 +27,21 @@ namespace Comet.Web.Pages
 
         public async Task<IActionResult> OnGetAsync()
         {
-            if (!await HttpContext.IsUnderMaintenanceAsync(mContext))
-            {
-                return Redirect("/");
-            }
+            if (!await HttpContext.IsUnderMaintenanceAsync(mContext)) return Redirect("/");
 
-            var maintenanceConfig = await mService.GetAsync();
+            SystemConfig maintenanceConfig = await mService.GetAsync();
             if (maintenanceConfig != null)
             {
                 if (maintenanceConfig.Data2 != 0)
                 {
-                    MaintenanceEndTime = UnixTimestamp.ToDateTime((int)maintenanceConfig.Data2);
+                    MaintenanceEndTime = UnixTimestamp.ToDateTime((int) maintenanceConfig.Data2);
                     HasTimer = true;
                 }
 
                 if (!string.IsNullOrEmpty(maintenanceConfig.Text))
                     Message = maintenanceConfig.Text;
             }
+
             return Page();
         }
     }

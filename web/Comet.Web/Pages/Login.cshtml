@@ -1,5 +1,4 @@
 ﻿@page
-@using Comet.Web.Services
 @inject LanguageService Language
 @model LoginModel
 @{
@@ -18,10 +17,10 @@
                         <h2>@Language.GetString("SignIn")</h2>
                         <div class="btn-group social-list dib">
                             <form id="external-account" asp-page="./ExternalLogin" asp-route-returnUrl="@Model.ReturnUrl" method="post" class="form-horizontal">
-                                @foreach (var provider in Model.ExternalLogins)
+                                @foreach (LoginModel.ExternalLoginSchema provider in Model.ExternalLogins)
                                 {
-                                    <button type="submit" class="btn @provider.Class" name="provider" style="width: 75px; margin-right: 10px;"
-                                        value="@provider.Name" title="@Language.GetString("Sigin3rdPartyAccount", provider.DisplayName)">
+                                    <button type="submit" class="btn @provider.Class" name="provider" style="margin-right: 10px; width: 75px;"
+                                            value="@provider.Name" title="@Language.GetString("Sigin3rdPartyAccount", provider.DisplayName)">
                                         <i class="@provider.Icon" aria-hidden="true"></i>
                                     </button>
                                 }
@@ -63,5 +62,5 @@
 </section>
 
 @section Scripts {
-<partial name="_ValidationScriptsPartial" />
+    <partial name="_ValidationScriptsPartial"/>
 }

@@ -11,8 +11,8 @@ namespace Comet.Web.Pages
     [AllowAnonymous]
     public class LogoutModel : PageModel
     {
-        private readonly SignInManager<ApplicationUser> mSignInManager;
         private readonly ILogger<LogoutModel> mLogger;
+        private readonly SignInManager<ApplicationUser> mSignInManager;
 
         public LogoutModel(SignInManager<ApplicationUser> signInManager, ILogger<LogoutModel> logger)
         {
@@ -29,13 +29,8 @@ namespace Comet.Web.Pages
             await mSignInManager.SignOutAsync();
 
             if (returnUrl != null)
-            {
                 return LocalRedirect(returnUrl);
-            }
-            else
-            {
-                return RedirectToPage();
-            }
+            return RedirectToPage();
         }
     }
 }

@@ -1,16 +1,15 @@
-﻿using Comet.Account.Database;
-using Comet.Account.Packets;
-using Comet.Account.States;
-using Comet.Database;
-using Comet.Database.Entities;
-using Comet.Network.Packets;
-using Comet.Network.Sockets;
-using Comet.Shared;
-using System;
+﻿using System;
 using System.Linq;
 using System.Net.Sockets;
 using System.Threading;
 using System.Threading.Tasks;
+using Comet.Account.Database;
+using Comet.Account.Packets;
+using Comet.Account.States;
+using Comet.Database.Entities;
+using Comet.Network.Packets;
+using Comet.Network.Sockets;
+using Comet.Shared;
 
 namespace Comet.Account
 {
@@ -40,7 +39,6 @@ namespace Comet.Account
             var client = new GameServer(socket, buffer, partition);
             await Log.WriteLogAsync(LogLevel.Info, $"Accepting connection from server on [{client.IPAddress}].");
             return client;
-
         }
 
         /// <summary>
@@ -70,7 +68,7 @@ namespace Comet.Account
 
             // Read in TQ's binary header
             var length = BitConverter.ToUInt16(packet, 0);
-            var type = (PacketType)BitConverter.ToUInt16(packet, 2);
+            var type = (PacketType) BitConverter.ToUInt16(packet, 2);
 
             try
             {
@@ -100,7 +98,7 @@ namespace Comet.Account
 
                     default:
                         Console.WriteLine("Missing packet {0}, Length {1}\n{2}",
-                            type, length, PacketDump.Hex(packet));
+                                          type, length, PacketDump.Hex(packet));
                         return;
                 }
 
@@ -119,7 +117,8 @@ namespace Comet.Account
             if (actor.Realm == null)
                 return;
 
-            _ = Log.WriteLogAsync(LogLevel.Info, $"Server [{actor.Realm.Name}] has disconnected.").ConfigureAwait(false);
+            _ = Log.WriteLogAsync(LogLevel.Info, $"Server [{actor.Realm.Name}] has disconnected.")
+                   .ConfigureAwait(false);
 
             try
             {
@@ -132,7 +131,7 @@ namespace Comet.Account
             }
 
             // cleanup server data?
-            foreach (var player in Kernel.Players.Values.Where(x => x.Realm.RealmID == actor.Realm.RealmID))
+            foreach (Player player in Kernel.Players.Values.Where(x => x.Realm.RealmID == actor.Realm.RealmID))
                 Kernel.Players.TryRemove(player.AccountIdentity, out _);
 
             actor.Realm.Server = null;

@@ -1,14 +1,14 @@
-﻿using Comet.Database.Entities;
-using Comet.Network.Sockets;
-using System;
+﻿using System;
 using System.Linq;
 using System.Net.Sockets;
+using Comet.Database.Entities;
+using Comet.Network.Sockets;
 
 namespace Comet.Account.States
 {
     public sealed class GameServer : TcpServerActor
     {
-        public GameServer(Socket socket, Memory<byte> buffer, uint partition) 
+        public GameServer(Socket socket, Memory<byte> buffer, uint partition)
             : base(socket, buffer, null, partition, "8a653a5d1e92b4e1db79")
         {
         }
@@ -17,7 +17,8 @@ namespace Comet.Account.States
 
         public void SetRealm(string name)
         {
-            Realm = Kernel.Realms.Values.FirstOrDefault(x => x.Name.Equals(name, StringComparison.InvariantCultureIgnoreCase));
+            Realm = Kernel.Realms.Values.FirstOrDefault(
+                x => x.Name.Equals(name, StringComparison.InvariantCultureIgnoreCase));
         }
     }
 }

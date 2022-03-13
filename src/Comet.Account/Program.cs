@@ -1,22 +1,21 @@
-﻿namespace Comet.Account
-{
-    using System;
-    using System.Collections.Generic;
-    using System.Text;
-    using System.Threading;
-    using System.Threading.Tasks;
-    using Comet.Account.Database;
-    using Comet.Account.Database.Repositories;
-    using Comet.Account.Packets;
-    using Comet.Account.Threading;
-    using Comet.Database;
-    using Comet.Shared;
+﻿using System;
+using System.Collections.Generic;
+using System.Threading;
+using System.Threading.Tasks;
+using Comet.Account.Database;
+using Comet.Account.Database.Repositories;
+using Comet.Account.Packets;
+using Comet.Account.Threading;
+using Comet.Database;
+using Comet.Shared;
 
+namespace Comet.Account
+{
     /// <summary>
-    /// The account server accepts clients and authenticates players from the client's 
-    /// login screen. If the player enters valid account credentials, then the server
-    /// will send login details to the game server and disconnect the client. The client
-    /// will reconnect to the game server with an access token from the account server.
+    ///     The account server accepts clients and authenticates players from the client's
+    ///     login screen. If the player enters valid account credentials, then the server
+    ///     will send login details to the game server and disconnect the client. The client
+    ///     will reconnect to the game server with an access token from the account server.
     /// </summary>
     internal static class Program
     {
@@ -35,14 +34,14 @@
 
             // Read configuration file and command-line arguments
             var config = new ServerConfiguration(args);
-            if (!config.Valid) 
+            if (!config.Valid)
             {
                 await Log.WriteLogAsync(LogLevel.Info, "Invalid server configuration file");
                 return;
             }
 
             MsgAccServerExchange.RealmDataKey = new byte[config.DatabaseKey.Length / 2];
-            for (int index = 0; index < MsgAccServerExchange.RealmDataKey.Length; index++)
+            for (var index = 0; index < MsgAccServerExchange.RealmDataKey.Length; index++)
             {
                 string byteValue = config.DatabaseKey.Substring(index * 2, 2);
                 MsgAccServerExchange.RealmDataKey[index] = Convert.ToByte(byteValue, 16);
@@ -62,7 +61,7 @@
             var tasks = new List<Task>();
             tasks.Add(RealmsRepository.LoadAsync());
             Task.WaitAll(tasks.ToArray());
-            
+
             // Start background services
             tasks = new List<Task>();
             tasks.Add(Kernel.Services.Randomness.StartAsync(CancellationToken.None));
@@ -76,7 +75,7 @@
             await Log.WriteLogAsync(LogLevel.Info, "Listening for new connections");
             var server = new Server(config);
             _ = server.StartAsync(config.Network.Port, config.Network.IPAddress)
-                .ConfigureAwait(false);
+                      .ConfigureAwait(false);
 
             BasicProcessing thread = new();
             await thread.StartAsync();
@@ -106,7 +105,7 @@
                     return true;
                 }
 
-                string[] full = text.Split(new[] { ' ' }, StringSplitOptions.RemoveEmptyEntries);
+                string[] full = text.Split(new[] {' '}, StringSplitOptions.RemoveEmptyEntries);
 
                 if (full.Length <= 0)
                     continue;
@@ -114,9 +113,9 @@
                 switch (full[0].ToLower())
                 {
                     case "exit":
-                        {
-                            return true;
-                        }
+                    {
+                        return true;
+                    }
                 }
             }
         }

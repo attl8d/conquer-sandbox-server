@@ -1,7 +1,5 @@
-﻿using Comet.Database.Entities;
-using System.Collections.Generic;
-using System.Linq;
-using System.Threading.Tasks;
+﻿using System.Threading.Tasks;
+using Comet.Database.Entities;
 
 namespace Comet.AI.Database.Repositories
 {
@@ -9,7 +7,7 @@ namespace Comet.AI.Database.Repositories
     {
         public static async Task<DbTrapType> GetAsync(uint id)
         {
-            await using ServerDbContext ctx = new ServerDbContext();
+            await using var ctx = new ServerDbContext();
             return await ctx.TrapTypes.FindAsync(id);
         }
     }

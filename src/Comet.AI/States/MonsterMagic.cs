@@ -1,12 +1,12 @@
-﻿using Comet.Database.Entities;
+﻿using System;
+using Comet.Database.Entities;
 using Comet.Shared;
-using System;
 
 namespace Comet.AI.States
 {
     public sealed class MonsterMagic
     {
-        private TimeOutMS timeOutMS = new TimeOutMS();
+        private readonly TimeOutMS timeOutMS = new();
 
         public MonsterMagic(DbMonsterTypeMagic magic)
         {
@@ -19,19 +19,23 @@ namespace Comet.AI.States
             StatusMagicType = magic.StatusMagicType;
             LastTick = 0;
 
-            timeOutMS.Startup((int)ColdTime);
+            timeOutMS.Startup((int) ColdTime);
         }
 
-        public uint MonsterType { get; private set; }
-        public uint MagicType { get; private set; }
-        public uint MagicLev { get; private set; }
-        public uint ColdTime { get; private set; }
-        public ushort WarningTime { get; private set; }
-        public uint StatusMagicType { get; private set; }
-        public uint StatusMagicLev { get; private set; }
+        public uint MonsterType { get; }
+        public uint MagicType { get; }
+        public uint MagicLev { get; }
+        public uint ColdTime { get; }
+        public ushort WarningTime { get; }
+        public uint StatusMagicType { get; }
+        public uint StatusMagicLev { get; }
         public long LastTick { get; set; }
 
-        public bool IsReady() => timeOutMS.IsTimeOut();
+        public bool IsReady()
+        {
+            return timeOutMS.IsTimeOut();
+        }
+
         public void Use()
         {
             timeOutMS.Update();

@@ -1,39 +1,32 @@
-﻿using Comet.AI.Packets;
+﻿using System;
+using System.Collections.Concurrent;
+using System.Collections.Generic;
+using System.Drawing;
+using System.Linq;
+using System.Threading.Tasks;
+using Comet.AI.Packets;
 using Comet.AI.States;
 using Comet.AI.World.Managers;
 using Comet.AI.World.Maps;
 using Comet.Database.Entities;
 using Comet.Network.Packets.Ai;
 using Comet.Shared;
-using System;
-using System.Collections.Concurrent;
-using System.Drawing;
-using System.Linq;
-using System.Threading.Tasks;
 
 namespace Comet.AI.World
 {
     public sealed class Generator
     {
-        private const int _MAX_PER_GEN = 15;
-        private const int _MIN_TIME_BETWEEN_GEN = 10;
-        private static uint m_idGenerator = 2000000;
-
         private readonly DbGenerator m_dbGen;
         private readonly DbMonstertype m_dbMonster;
         private readonly Point m_pCenter;
         private readonly GameMap m_pMap;
 
-        private TimeOut mMinTime = new TimeOut(3);
+        public bool CanBeProcessed;
+        private readonly ConcurrentDictionary<uint, TimeOut> m_dicAwaitingToRebirth = new();
 
-        public int Generated => m_dicMonsters.Count;
+        private readonly ConcurrentDictionary<uint, Monster> m_dicMonsters = new();
 
-        private ConcurrentDictionary<uint, Monster> m_dicMonsters = new ConcurrentDictionary<uint, Monster>();
-        private ConcurrentDictionary<uint, TimeOut> m_dicAwaitingToRebirth = new ConcurrentDictionary<uint, TimeOut>();
-
-        public bool CanBeProcessed = false;
-
-        public bool IsActive => m_pMap.PlayerCount > 0 || m_dicMonsters.Values.Any(x => !x.IsAlive);
+        private readonly TimeOut mMinTime = new(3);
 
         public Generator(DbGenerator dbGen)
         {
@@ -42,16 +35,18 @@ namespace Comet.AI.World
             m_pMap = MapManager.GetMap(m_dbGen.Mapid);
             if (m_pMap == null)
             {
-                _ = Log.WriteLogAsync(LogLevel.Error, $"Could not load map ({m_dbGen.Mapid}) for generator ({m_dbGen.Id})")
-                    .ConfigureAwait(false);
+                _ = Log.WriteLogAsync(LogLevel.Error,
+                                      $"Could not load map ({m_dbGen.Mapid}) for generator ({m_dbGen.Id})")
+                       .ConfigureAwait(false);
                 return;
             }
 
             m_dbMonster = RoleManager.GetMonstertype(m_dbGen.Npctype);
             if (m_dbMonster == null)
             {
-                _ = Log.WriteLogAsync(LogLevel.Error, $"Could not load monster ({m_dbGen.Npctype}) for generator ({m_dbGen.Id})")
-                    .ConfigureAwait(false);
+                _ = Log.WriteLogAsync(LogLevel.Error,
+                                      $"Could not load monster ({m_dbGen.Npctype}) for generator ({m_dbGen.Id})")
+                       .ConfigureAwait(false);
                 return;
             }
 
@@ -77,21 +72,27 @@ namespace Comet.AI.World
             m_pMap = MapManager.GetMap(m_dbGen.Mapid);
             if (m_pMap == null)
             {
-                _ = Log.WriteLogAsync(LogLevel.Error, $"Could not load map ({m_dbGen.Mapid}) for generator ({m_dbGen.Id})")
-                    .ConfigureAwait(false);
+                _ = Log.WriteLogAsync(LogLevel.Error,
+                                      $"Could not load map ({m_dbGen.Mapid}) for generator ({m_dbGen.Id})")
+                       .ConfigureAwait(false);
                 return;
             }
 
             m_dbMonster = RoleManager.GetMonstertype(m_dbGen.Npctype);
             if (m_dbMonster == null)
             {
-                _ = Log.WriteLogAsync(LogLevel.Error, $"Could not load monster ({m_dbGen.Npctype}) for generator ({m_dbGen.Id})")
-                    .ConfigureAwait(false);
+                _ = Log.WriteLogAsync(LogLevel.Error,
+                                      $"Could not load monster ({m_dbGen.Npctype}) for generator ({m_dbGen.Id})")
+                       .ConfigureAwait(false);
                 return;
             }
 
             m_pCenter = new Point(m_dbGen.BoundX + m_dbGen.BoundCx / 2, m_dbGen.BoundY + m_dbGen.BoundCy / 2);
         }
+
+        public int Generated => m_dicMonsters.Count;
+
+        public bool IsActive => m_pMap.PlayerCount > 0 || m_dicMonsters.Values.Any(x => !x.IsAlive);
 
         public uint Identity => m_dbGen.Id;
 
@@ -105,23 +106,20 @@ namespace Comet.AI.World
 
         public async Task<Point> FindGenPosAsync()
         {
-            Point result = new Point
+            var result = new Point
             {
                 X = m_dbGen.BoundX + await Kernel.Services.Randomness.NextAsync(0, m_dbGen.BoundCx),
                 Y = m_dbGen.BoundY + await Kernel.Services.Randomness.NextAsync(0, m_dbGen.BoundCy)
             };
 
-            if (!m_pMap.IsValidPoint(result.X, result.Y) || !m_pMap.IsStandEnable(result.X, result.Y))
-            {
-                return default;
-            }
+            if (!m_pMap.IsValidPoint(result.X, result.Y) || !m_pMap.IsStandEnable(result.X, result.Y)) return default;
 
             return result;
         }
 
         public async Task<Monster> GenerateMonsterAsync()
         {
-            Monster mob = new Monster(m_dbMonster, (uint)IdentityGenerator.Monster.GetNextIdentity, this);
+            var mob = new Monster(m_dbMonster, (uint) IdentityGenerator.Monster.GetNextIdentity, this);
 
             Point pos = await FindGenPosAsync();
             if (pos == default)
@@ -130,11 +128,12 @@ namespace Comet.AI.World
                 return null;
             }
 
-            if (!await mob.InitializeAsync(m_pMap.Identity, (ushort)pos.X, (ushort)pos.Y))
+            if (!await mob.InitializeAsync(m_pMap.Identity, (ushort) pos.X, (ushort) pos.Y))
             {
                 IdentityGenerator.Monster.ReturnIdentity(mob.Identity);
                 return null;
             }
+
             return mob;
         }
 
@@ -143,7 +142,7 @@ namespace Comet.AI.World
             if (!IsActive || !mMinTime.ToNextTime())
                 return Task.CompletedTask;
 
-            foreach (var mob in m_dicAwaitingToRebirth.Where(x => x.Value.IsTimeOut()))
+            foreach (KeyValuePair<uint, TimeOut> mob in m_dicAwaitingToRebirth.Where(x => x.Value.IsTimeOut()))
             {
                 m_dicMonsters.TryRemove(mob.Key, out _);
                 m_dicAwaitingToRebirth.TryRemove(mob.Key, out _);
@@ -151,9 +150,7 @@ namespace Comet.AI.World
 
             int generate = Math.Min(m_dbGen.MaxPerGen - Generated, _MAX_PER_GEN);
             if (generate > 0)
-            {
                 while (generate-- > 0)
-                {
                     Kernel.Services.Processor.Queue(m_pMap.Partition, async () =>
                     {
                         Monster monster = await GenerateMonsterAsync();
@@ -161,8 +158,6 @@ namespace Comet.AI.World
                             return;
                         await monster.EnterMapAsync();
                     });
-                }
-            }
             return Task.CompletedTask;
         }
 
@@ -179,7 +174,7 @@ namespace Comet.AI.World
                 return;
             }
 
-            if (m_dicMonsters.TryGetValue(role, out var mob))
+            if (m_dicMonsters.TryGetValue(role, out Monster mob))
             {
                 var tm = new TimeOut();
                 tm.Startup(RestSeconds);
@@ -189,10 +184,7 @@ namespace Comet.AI.World
 
         public async Task ClearGeneratorAsync()
         {
-            foreach (var monster in m_dicMonsters.Values)
-            {
-                await monster.LeaveMapAsync();
-            }
+            foreach (Monster monster in m_dicMonsters.Values) await monster.LeaveMapAsync();
         }
 
         public Monster[] GetRoles()
@@ -244,10 +236,10 @@ namespace Comet.AI.World
             if (Kernel.GameServer == null || !Kernel.GameServer.Socket.Connected)
                 return 0;
 
-            int result = 0;
+            var result = 0;
             MsgAiSpawnNpc msg = new();
             msg.Mode = AiSpawnNpcMode.Spawn;
-            foreach (var npc in m_dicMonsters.Values.Where(x => x.IsAlive))
+            foreach (Monster npc in m_dicMonsters.Values.Where(x => x.IsAlive))
             {
                 if (msg.List.Count >= 25)
                 {
@@ -262,7 +254,7 @@ namespace Comet.AI.World
                     GeneratorId = Identity,
                     MonsterType = npc.Type,
                     MapId = npc.MapIdentity,
-                    X = npc.MapX, 
+                    X = npc.MapX,
                     Y = npc.MapY
                 });
             }
@@ -275,5 +267,9 @@ namespace Comet.AI.World
 
             return result;
         }
+
+        private const int _MAX_PER_GEN = 15;
+        private const int _MIN_TIME_BETWEEN_GEN = 10;
+        private static uint m_idGenerator = 2000000;
     }
 }

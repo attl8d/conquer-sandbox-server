@@ -1,33 +1,24 @@
-﻿using Comet.AI.Database.Repositories;
-using Comet.AI.States;
-using Comet.Database.Entities;
-using System;
+﻿using System;
 using System.Collections.Concurrent;
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
+using Comet.AI.Database.Repositories;
+using Comet.AI.States;
+using Comet.AI.World.Maps;
+using Comet.Database.Entities;
 
 namespace Comet.AI.World.Managers
 {
     public static class RoleManager
     {
-        private static readonly ConcurrentDictionary<uint, Character> m_userSet = new ConcurrentDictionary<uint, Character>();
-        private static readonly ConcurrentDictionary<uint, Role> m_roleSet = new ConcurrentDictionary<uint, Role>();
-        private static readonly Dictionary<uint, DbMonstertype> mDicMonsterTypes = new Dictionary<uint, DbMonstertype>();
-        private static readonly Dictionary<uint, DbMonsterTypeMagic> mMonsterMagics = new Dictionary<uint, DbMonsterTypeMagic>();
-
         public static int RolesCount => m_roleSet.Count;
 
         public static async Task<bool> InitializeAsync()
         {
-            foreach (var mob in await MonsterypeRepository.GetAsync())
-            {
-                mDicMonsterTypes.TryAdd(mob.Id, mob);
-            }
-            foreach (var magic in await MonsterTypeMagicRepository.GetAsync())
-            {
+            foreach (DbMonstertype mob in await MonsterypeRepository.GetAsync()) mDicMonsterTypes.TryAdd(mob.Id, mob);
+            foreach (DbMonsterTypeMagic magic in await MonsterTypeMagicRepository.GetAsync())
                 mMonsterMagics.TryAdd(magic.Id, magic);
-            }
             return true;
         }
 
@@ -46,7 +37,7 @@ namespace Comet.AI.World.Managers
 
         public static Character GetUser(uint idUser)
         {
-            return m_userSet.TryGetValue(idUser, out var client) ? client : null;
+            return m_userSet.TryGetValue(idUser, out Character client) ? client : null;
         }
 
         public static Character GetUser(string name)
@@ -84,41 +75,43 @@ namespace Comet.AI.World.Managers
 
         public static Role GetRole(uint idRole)
         {
-            return m_roleSet.TryGetValue(idRole, out var role) ? role : null;
+            return m_roleSet.TryGetValue(idRole, out Role role) ? role : null;
         }
 
         public static T GetRole<T>(uint idRole) where T : Role
         {
-            return m_roleSet.TryGetValue(idRole, out var role) ? role as T : null;
+            return m_roleSet.TryGetValue(idRole, out Role role) ? role as T : null;
         }
 
         public static T GetRole<T>(Func<T, bool> predicate) where T : Role
         {
             return m_roleSet.Values
-                .Where(x => x is T)
-                .Cast<T>()
-                .FirstOrDefault(x => predicate != null && predicate(x));
+                            .Where(x => x is T)
+                            .Cast<T>()
+                            .FirstOrDefault(x => predicate != null && predicate(x));
         }
 
         public static T FindRole<T>(uint idRole) where T : Role
         {
-            foreach (var map in MapManager.GameMaps.Values)
+            foreach (GameMap map in MapManager.GameMaps.Values)
             {
-                T result = map.QueryRole<T>(idRole);
+                var result = map.QueryRole<T>(idRole);
                 if (result != null)
                     return result;
             }
+
             return null;
         }
 
         public static T FindRole<T>(Func<T, bool> predicate) where T : Role
         {
-            foreach (var map in MapManager.GameMaps.Values)
+            foreach (GameMap map in MapManager.GameMaps.Values)
             {
                 T result = map.QueryRole(predicate);
                 if (result != null)
                     return result;
             }
+
             return null;
         }
 
@@ -132,7 +125,7 @@ namespace Comet.AI.World.Managers
 
         public static DbMonstertype GetMonstertype(uint type)
         {
-            return mDicMonsterTypes.TryGetValue(type, out var mob) ? mob : null;
+            return mDicMonsterTypes.TryGetValue(type, out DbMonstertype mob) ? mob : null;
         }
 
         public static List<DbMonsterTypeMagic> GetMonsterMagics(uint type)
@@ -144,14 +137,17 @@ namespace Comet.AI.World.Managers
 
         public static async Task OnTimerAsync()
         {
-            foreach (var role in m_roleSet.Values.Where(x => !x.IsPlayer()
-                && x.IsAlive
-                && x.Map?.PlayerCount > 0))
-            {
+            foreach (Role role in m_roleSet.Values.Where(x => !x.IsPlayer()
+                                                              && x.IsAlive
+                                                              && x.Map?.PlayerCount > 0))
                 await role.OnTimerAsync();
-            }
         }
 
         #endregion
+
+        private static readonly ConcurrentDictionary<uint, Character> m_userSet = new();
+        private static readonly ConcurrentDictionary<uint, Role> m_roleSet = new();
+        private static readonly Dictionary<uint, DbMonstertype> mDicMonsterTypes = new();
+        private static readonly Dictionary<uint, DbMonsterTypeMagic> mMonsterMagics = new();
     }
 }

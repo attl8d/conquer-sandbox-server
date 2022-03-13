@@ -1,4 +1,6 @@
-﻿using Comet.AI.Database;
+﻿using System;
+using System.Threading.Tasks;
+using Comet.AI.Database;
 using Comet.AI.States;
 using Comet.AI.World;
 using Comet.AI.World.Managers;
@@ -6,8 +8,6 @@ using Comet.AI.World.Threads;
 using Comet.Network.Packets;
 using Comet.Network.Services;
 using Comet.Shared;
-using System;
-using System.Threading.Tasks;
 
 namespace Comet.AI
 {
@@ -15,14 +15,14 @@ namespace Comet.AI
     {
         public static ServerConfiguration Configuration { get; set; }
 
-        public static NetworkMonitor NetworkMonitor { get; private set; } = new NetworkMonitor();
+        public static NetworkMonitor NetworkMonitor { get; } = new();
 
         public static Client GameClient { get; set; }
         public static Server GameServer { get; set; }
 
-        private static CommonThread CommonThread { get; } = new CommonThread();
-        private static AiThread AiThread { get; } = new AiThread();
-        private static GeneratorThread GeneratorThread { get; } = new GeneratorThread();
+        private static CommonThread CommonThread { get; } = new();
+        private static AiThread AiThread { get; } = new();
+        private static GeneratorThread GeneratorThread { get; } = new();
 
         public static async Task<bool> InitializeAsync()
         {
@@ -54,7 +54,7 @@ namespace Comet.AI
         }
 
         /// <summary>
-        /// Sends a message to the game server.
+        ///     Sends a message to the game server.
         /// </summary>
         /// <param name="msg">The packet to be send to the game server.</param>
         /// <returns>The amount of bytes sent to the server.</returns>
@@ -66,7 +66,7 @@ namespace Comet.AI
         }
 
         /// <summary>
-        /// Returns the next random number from the generator.
+        ///     Returns the next random number from the generator.
         /// </summary>
         /// <param name="maxValue">One greater than the greatest legal return value.</param>
         public static Task<int> NextAsync(int maxValue)
@@ -81,8 +81,10 @@ namespace Comet.AI
 
         /// <summary>Writes random numbers from the generator to a buffer.</summary>
         /// <param name="buffer">Buffer to write bytes to.</param>
-        public static Task NextBytesAsync(byte[] buffer) =>
-            Services.Randomness.NextBytesAsync(buffer);
+        public static Task NextBytesAsync(byte[] buffer)
+        {
+            return Services.Randomness.NextBytesAsync(buffer);
+        }
 
         /// <summary>
         ///     Returns the next random number from the generator.
@@ -101,9 +103,9 @@ namespace Comet.AI
 
         public static class Services
         {
-            public readonly static RandomnessService Randomness = new RandomnessService();
+            public static readonly RandomnessService Randomness = new();
 #if DEBUG
-            public readonly static ServerProcessor Processor = new ServerProcessor(2);
+            public static readonly ServerProcessor Processor = new(2);
 #else
             public readonly static ServerProcessor Processor = new ServerProcessor(Environment.ProcessorCount/2);
 #endif

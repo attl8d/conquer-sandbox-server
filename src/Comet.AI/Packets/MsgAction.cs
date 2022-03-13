@@ -1,7 +1,7 @@
-﻿using Comet.AI.States;
+﻿using System.Threading.Tasks;
+using Comet.AI.States;
 using Comet.AI.World.Managers;
 using Comet.Game.Packets;
-using System.Threading.Tasks;
 
 namespace Comet.AI.Packets
 {
@@ -14,12 +14,12 @@ namespace Comet.AI.Packets
             switch (Action)
             {
                 case ActionType.MapJump:
-                    {
-                        ushort newX = (ushort)Command;
-                        ushort newY = (ushort)(Command >> 16);
-                        target.QueueAction(() => target.JumpPosAsync(newX, newY, false));
-                        break;
-                    }
+                {
+                    var newX = (ushort) Command;
+                    var newY = (ushort) (Command >> 16);
+                    target.QueueAction(() => target.JumpPosAsync(newX, newY, false));
+                    break;
+                }
             }
         }
     }

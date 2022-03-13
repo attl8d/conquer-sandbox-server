@@ -1,8 +1,8 @@
-﻿using Comet.AI.States;
+﻿using System.Threading.Tasks;
+using Comet.AI.States;
 using Comet.AI.World.Managers;
 using Comet.Network.Packets.Ai;
 using Comet.Shared;
-using System.Threading.Tasks;
 
 namespace Comet.AI.Packets
 {
@@ -13,7 +13,8 @@ namespace Comet.AI.Packets
             Character user = RoleManager.GetUser(Id);
             if (user != null)
             {
-                await Log.WriteLogAsync(LogLevel.Warning, $"User [{Id}]{Name} is already signed in. Invalid Call (FlyMap??)");
+                await Log.WriteLogAsync(LogLevel.Warning,
+                                        $"User [{Id}]{Name} is already signed in. Invalid Call (FlyMap??)");
                 return;
             }
 

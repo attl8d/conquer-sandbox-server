@@ -1,8 +1,8 @@
-﻿using Comet.AI.States;
+﻿using System.Threading.Tasks;
+using Comet.AI.States;
 using Comet.AI.World.Managers;
 using Comet.Network.Packets.Ai;
 using Comet.Shared;
-using System.Threading.Tasks;
 
 namespace Comet.AI.Packets
 {
@@ -10,7 +10,7 @@ namespace Comet.AI.Packets
     {
         public override async Task ProcessAsync(Server client)
         {
-            if (!RoleManager.LogoutUser(Id, out var user))
+            if (!RoleManager.LogoutUser(Id, out Character user))
                 return;
 
             await user.LeaveMapAsync(false);

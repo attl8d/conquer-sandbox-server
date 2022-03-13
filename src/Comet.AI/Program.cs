@@ -1,18 +1,18 @@
-﻿using Comet.AI.Database;
-using Comet.Database;
-using Comet.Shared;
-using System;
+﻿using System;
 using System.Collections.Generic;
 using System.Threading;
 using System.Threading.Tasks;
+using Comet.AI.Database;
+using Comet.Database;
+using Comet.Shared;
 
 namespace Comet.AI
 {
     /// <summary>
-    /// The game server listens for authentication players with a valid access token from
-    /// the account server, and hosts the game world. The game world in this project has 
-    /// been simplified into a single server executable. For an n-server distributed 
-    /// systems implementation of a Conquer Online server, see Chimera. 
+    ///     The game server listens for authentication players with a valid access token from
+    ///     the account server, and hosts the game world. The game world in this project has
+    ///     been simplified into a single server executable. For an n-server distributed
+    ///     systems implementation of a Conquer Online server, see Chimera.
     /// </summary>
     internal static class Program
     {
@@ -23,13 +23,14 @@ namespace Comet.AI
             Console.Title = "Comet, Ai Server";
             Console.WriteLine();
             await Log.WriteLogAsync(LogLevel.Info, "  Comet: AI Server");
-            await Log.WriteLogAsync(LogLevel.Info, $"  Copyright 2022-{DateTime.Now:yyyy} Felipe Vieira Vendramini \"Konichu\"");
+            await Log.WriteLogAsync(LogLevel.Info,
+                                    $"  Copyright 2022-{DateTime.Now:yyyy} Felipe Vieira Vendramini \"Konichu\"");
             await Log.WriteLogAsync(LogLevel.Info, "  All Rights Reserved");
             Console.WriteLine();
 
             await Log.WriteLogAsync(LogLevel.Info, "Initializing server...");
             // Read configuration file and command-line arguments
-            var config = Kernel.Configuration = new ServerConfiguration(args);
+            ServerConfiguration config = Kernel.Configuration = new ServerConfiguration(args);
             if (!config.Valid)
             {
                 await Log.WriteLogAsync(LogLevel.Info, "Invalid server configuration file");
@@ -81,7 +82,7 @@ namespace Comet.AI
                     return true;
                 }
 
-                string[] full = text.Split(new[] { ' ' }, StringSplitOptions.RemoveEmptyEntries);
+                string[] full = text.Split(new[] {' '}, StringSplitOptions.RemoveEmptyEntries);
 
                 if (full.Length <= 0)
                     continue;
@@ -89,9 +90,9 @@ namespace Comet.AI
                 switch (full[0].ToLower())
                 {
                     case "exit":
-                        {
-                            return true;
-                        }
+                    {
+                        return true;
+                    }
                 }
             }
         }

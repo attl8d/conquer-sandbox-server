@@ -1,13 +1,14 @@
-﻿using Comet.AI.Packets;
+﻿using System;
+using System.Drawing;
+using System.Threading.Tasks;
+using Comet.AI.Packets;
 using Comet.AI.World.Managers;
 using Comet.AI.World.Maps;
 using Comet.Core.World.Maps;
+using Comet.Game.Packets;
 using Comet.Network.Packets;
 using Comet.Network.Packets.Game;
 using Comet.Shared;
-using System;
-using System.Drawing;
-using System.Threading.Tasks;
 using static Comet.Network.Packets.Game.MsgWalk<Comet.AI.States.Server>;
 
 namespace Comet.AI.States
@@ -15,16 +16,50 @@ namespace Comet.AI.States
     public abstract class Role
     {
         protected uint m_idMap;
-        protected ushort m_posX,
-            m_posY;
 
         protected uint m_maxLife = 0,
-            m_maxMana = 0;
+                       m_maxMana = 0;
+
+        protected ushort m_posX,
+                         m_posY;
 
         protected Role()
         {
             StatusSet = new StatusSet(this);
         }
+
+        #region Appearence
+
+        public virtual uint Mesh { get; set; }
+
+        #endregion
+
+        #region Level
+
+        public virtual byte Level { get; set; }
+
+        #endregion
+
+        #region Processor Queue
+
+        public void QueueAction(Func<Task> task)
+        {
+            if (Map == null)
+                return;
+
+            Kernel.Services.Processor.Queue(Map.Partition, task);
+        }
+
+        #endregion
+
+        #region Timers
+
+        public virtual Task OnTimerAsync()
+        {
+            return Task.CompletedTask;
+        }
+
+        #endregion
 
         #region Identity
 
@@ -37,18 +72,6 @@ namespace Comet.AI.States
         ///     The name of the role. May be empty or null for NPCs and Dynamic NPCs.
         /// </summary>
         public virtual string Name { get; set; }
-
-        #endregion
-
-        #region Appearence
-
-        public virtual uint Mesh { get; set; }
-
-        #endregion
-
-        #region Level
-
-        public virtual byte Level { get; set; }
 
         #endregion
 
@@ -123,6 +146,7 @@ namespace Comet.AI.States
                 await Map.RemoveAsync(Identity);
                 RoleManager.RemoveRole(Identity);
             }
+
             Map = null;
         }
 
@@ -140,68 +164,63 @@ namespace Comet.AI.States
 
             Map.EnterBlock(this, x, y, MapX, MapY);
 
-            Direction = (FacingDirection)Calculations.GetDirectionSector(MapX, MapY, x, y);
+            Direction = (FacingDirection) Calculations.GetDirectionSector(MapX, MapY, x, y);
 
             if (sync)
-            {
                 await Kernel.SendAsync(new MsgAction
                 {
-                    X = (ushort)x,
-                    Y = (ushort)y,
+                    X = (ushort) x,
+                    Y = (ushort) y,
                     ArgumentX = m_posX,
                     ArgumentY = m_posY,
                     Identity = Identity,
-                    Action = MsgAction.ActionType.MapJump,
-                    Direction = (ushort)Direction
+                    Action = MsgAction<Server>.ActionType.MapJump,
+                    Direction = (ushort) Direction
                 });
 
-            }
-
-            m_posX = (ushort)x;
-            m_posY = (ushort)y;
+            m_posX = (ushort) x;
+            m_posY = (ushort) y;
 
             return true;
         }
 
         public async Task<bool> MoveTowardAsync(int direction, int mode, bool sync = true)
         {
-            Character user = this as Character;
+            var user = this as Character;
             ushort newX = 0, newY = 0;
 
-            if (mode == (int)RoleMoveMode.Track)
+            if (mode == (int) RoleMoveMode.Track)
             {
                 direction %= 24;
-                newX = (ushort)(MapX + GameMapData.RideXCoords[direction]);
-                newY = (ushort)(MapY + GameMapData.RideYCoords[direction]);
+                newX = (ushort) (MapX + GameMapData.RideXCoords[direction]);
+                newY = (ushort) (MapY + GameMapData.RideYCoords[direction]);
             }
             else
             {
                 direction %= 8;
-                newX = (ushort)(MapX + GameMapData.WalkXCoords[direction]);
-                newY = (ushort)(MapY + GameMapData.WalkYCoords[direction]);
+                newX = (ushort) (MapX + GameMapData.WalkXCoords[direction]);
+                newY = (ushort) (MapY + GameMapData.WalkYCoords[direction]);
 
-                bool isRunning = mode >= (int)RoleMoveMode.RunDir0 &&
-                                 mode <= (int)RoleMoveMode.RunDir7;
+                bool isRunning = mode >= (int) RoleMoveMode.RunDir0 &&
+                                 mode <= (int) RoleMoveMode.RunDir7;
                 if (isRunning && IsAlive)
                 {
-                    newX += (ushort)GameMapData.WalkXCoords[direction];
-                    newY += (ushort)GameMapData.WalkYCoords[direction];
+                    newX += (ushort) GameMapData.WalkXCoords[direction];
+                    newY += (ushort) GameMapData.WalkYCoords[direction];
                 }
             }
 
             Map.EnterBlock(this, newX, newY, MapX, MapY);
 
-            Direction = (FacingDirection)direction;
+            Direction = (FacingDirection) direction;
 
             if (sync)
-            {
                 await Kernel.SendAsync(new MsgWalk
                 {
-                    Direction = (byte)direction,
+                    Direction = (byte) direction,
                     Identity = Identity,
-                    Mode = (byte)mode
+                    Mode = (byte) mode
                 });
-            }
 
             m_posX = newX;
             m_posY = newY;
@@ -216,9 +235,9 @@ namespace Comet.AI.States
             if (steps <= 0)
                 return false;
 
-            for (int i = 0; i < steps; i++)
+            for (var i = 0; i < steps; i++)
             {
-                Point pos = new Point(MapX + (x - MapX) * i / steps, MapY + (y - MapY) * i / steps);
+                var pos = new Point(MapX + (x - MapX) * i / steps, MapY + (y - MapY) * i / steps);
                 if (Map.IsStandEnable(pos.X, pos.Y))
                 {
                     await JumpPosAsync(pos.X, pos.Y);
@@ -248,15 +267,16 @@ namespace Comet.AI.States
                 return true;
             }
 
-            for (int i = 0; i < steps; i++)
+            for (var i = 0; i < steps; i++)
             {
-                Point pos = new Point(MapX + (x - MapX) * i / steps, MapY + (y - MapY) * i / steps);
+                var pos = new Point(MapX + (x - MapX) * i / steps, MapY + (y - MapY) * i / steps);
                 if (Map.IsStandEnable(pos.X, pos.Y))
                 {
                     await JumpPosAsync(pos.X, pos.Y);
                     return true;
                 }
             }
+
             return false;
         }
 
@@ -272,16 +292,14 @@ namespace Comet.AI.States
         {
             Direction = direction;
             if (sync)
-            {
                 await Kernel.SendAsync(new MsgAction
                 {
                     Identity = Identity,
-                    Action = MsgAction.ActionType.CharacterDirection,
-                    Direction = (ushort)direction,
+                    Action = MsgAction<Server>.ActionType.CharacterDirection,
+                    Direction = (ushort) direction,
                     ArgumentX = MapX,
                     ArgumentY = MapY
                 });
-            }
         }
 
         public async Task SetActionAsync(EntityAction action, bool sync = true)
@@ -291,17 +309,15 @@ namespace Comet.AI.States
 
             Action = action;
             if (sync)
-            {
                 await Kernel.SendAsync(new MsgAction
                 {
                     Identity = Identity,
-                    Action = MsgAction.ActionType.CharacterEmote,
-                    Command = (ushort)action,
+                    Action = MsgAction<Server>.ActionType.CharacterEmote,
+                    Command = (ushort) action,
                     ArgumentX = MapX,
                     ArgumentY = MapY,
-                    Direction = (ushort)Direction
+                    Direction = (ushort) Direction
                 });
-            }
         }
 
         #endregion
@@ -421,29 +437,25 @@ namespace Comet.AI.States
 
         protected const int maxStatus = 64;
 
-        public ulong StatusFlag { get; set; } = 0UL;
+        public ulong StatusFlag { get; set; }
 
         public StatusSet StatusSet { get; }
 
         public virtual async Task<bool> DetachWellStatusAsync()
         {
-            for (int i = 1; i < maxStatus; i++)
-            {
+            for (var i = 1; i < maxStatus; i++)
                 if (StatusSet[i] != null)
                     if (IsWellStatus(i))
                         await DetachStatusAsync(i);
-            }
             return true;
         }
 
         public virtual async Task<bool> DetachBadlyStatusAsync()
         {
-            for (int i = 1; i < maxStatus; i++)
-            {
+            for (var i = 1; i < maxStatus; i++)
                 if (StatusSet[i] != null)
                     if (IsBadlyStatus(i))
                         await DetachStatusAsync(i);
-            }
             return true;
         }
 
@@ -487,6 +499,7 @@ namespace Comet.AI.States
                 case StatusSet.CTF_FLAG:
                     return true;
             }
+
             return false;
         }
 
@@ -504,10 +517,12 @@ namespace Comet.AI.States
                 case StatusSet.TOXIC_FOG:
                     return true;
             }
+
             return false;
         }
 
-        public virtual async Task<bool> AttachStatusAsync(Role pSender, int nStatus, int nPower, int nSecs, int nTimes, byte pLevel, bool save = false)
+        public virtual async Task<bool> AttachStatusAsync(Role pSender, int nStatus, int nPower, int nSecs, int nTimes,
+                                                          byte pLevel, bool save = false)
         {
             if (Map == null)
                 return false;
@@ -515,16 +530,20 @@ namespace Comet.AI.States
             IStatus pStatus = QueryStatus(nStatus);
             if (pStatus != null)
             {
-                bool bChangeData = false;
+                var bChangeData = false;
                 if (pStatus.Power == nPower)
+                {
                     bChangeData = true;
+                }
                 else
                 {
                     int nMinPower = Math.Min(nPower, pStatus.Power);
                     int nMaxPower = Math.Max(nPower, pStatus.Power);
 
                     if (nPower <= 30000)
+                    {
                         bChangeData = true;
+                    }
                     else
                     {
                         if (nMinPower >= 30100 || nMinPower > 0 && nMaxPower < 30000)
@@ -540,33 +559,29 @@ namespace Comet.AI.States
                     }
                 }
 
-                if (bChangeData)
-                {
-                    await pStatus.ChangeDataAsync(nPower, nSecs, nTimes, pSender?.Identity ?? 0);
-                }
+                if (bChangeData) await pStatus.ChangeDataAsync(nPower, nSecs, nTimes, pSender?.Identity ?? 0);
                 return true;
+            }
+
+            if (nTimes > 1)
+            {
+                var pNewStatus = new StatusMore();
+                if (await pNewStatus.CreateAsync(this, nStatus, nPower, nSecs, nTimes, pSender?.Identity ?? 0, pLevel))
+                {
+                    await StatusSet.AddObjAsync(pNewStatus);
+                    return true;
+                }
             }
             else
             {
-                if (nTimes > 1)
+                var pNewStatus = new StatusOnce();
+                if (await pNewStatus.CreateAsync(this, nStatus, nPower, nSecs, 0, pSender?.Identity ?? 0, pLevel))
                 {
-                    var pNewStatus = new StatusMore();
-                    if (await pNewStatus.CreateAsync(this, nStatus, nPower, nSecs, nTimes, pSender?.Identity ?? 0, pLevel))
-                    {
-                        await StatusSet.AddObjAsync(pNewStatus);
-                        return true;
-                    }
-                }
-                else
-                {
-                    var pNewStatus = new StatusOnce();
-                    if (await pNewStatus.CreateAsync(this, nStatus, nPower, nSecs, 0, pSender?.Identity ?? 0, pLevel))
-                    {
-                        await StatusSet.AddObjAsync(pNewStatus);
-                        return true;
-                    }
+                    await StatusSet.AddObjAsync(pNewStatus);
+                    return true;
                 }
             }
+
             return false;
         }
 
@@ -636,11 +651,11 @@ namespace Comet.AI.States
             switch (type)
             {
                 case ClientUpdateType.Hitpoints:
-                    currAttr = Life = (uint)Math.Min(MaxLife, Math.Max(Life + value, 0));
+                    currAttr = Life = (uint) Math.Min(MaxLife, Math.Max(Life + value, 0));
                     break;
 
                 case ClientUpdateType.Mana:
-                    currAttr = Mana = (uint)Math.Min(MaxMana, Math.Max(Mana + value, 0));
+                    currAttr = Mana = (uint) Math.Min(MaxMana, Math.Max(Mana + value, 0));
                     break;
 
                 default:
@@ -653,15 +668,15 @@ namespace Comet.AI.States
 
         public virtual async Task<bool> SetAttributesAsync(ClientUpdateType type, ulong value)
         {
-            bool screen = false;
+            var screen = false;
             switch (type)
             {
                 case ClientUpdateType.Hitpoints:
-                    value = Life = (uint)Math.Max(0, Math.Min(MaxLife, value));
+                    value = Life = (uint) Math.Max(0, Math.Min(MaxLife, value));
                     break;
 
                 case ClientUpdateType.Mana:
-                    value = Mana = (uint)Math.Max(0, Math.Min(MaxMana, value));
+                    value = Mana = (uint) Math.Max(0, Math.Min(MaxMana, value));
                     break;
 
                 case ClientUpdateType.StatusFlag:
@@ -675,27 +690,6 @@ namespace Comet.AI.States
             }
 
             return true;
-        }
-
-        #endregion
-
-        #region Processor Queue
-
-        public void QueueAction(Func<Task> task)
-        {
-            if (Map == null)
-                return;
-
-            Kernel.Services.Processor.Queue(Map.Partition, task);
-        }
-
-        #endregion
-
-        #region Timers
-
-        public virtual Task OnTimerAsync()
-        {
-            return Task.CompletedTask;
         }
 
         #endregion
@@ -730,7 +724,9 @@ namespace Comet.AI.States
 
         #region Constants
 
-        public static ulong KEEP_EFFECT_NOT_VIRTUOUS => StatusSet.GetFlag(StatusSet.BLUE_NAME) | StatusSet.GetFlag(StatusSet.RED_NAME) | StatusSet.GetFlag(StatusSet.BLACK_NAME);
+        public static ulong KEEP_EFFECT_NOT_VIRTUOUS => StatusSet.GetFlag(StatusSet.BLUE_NAME) |
+                                                        StatusSet.GetFlag(StatusSet.RED_NAME) |
+                                                        StatusSet.GetFlag(StatusSet.BLACK_NAME);
 
         public const int SCENEID_FIRST = 1;
         public const int SYSNPCID_FIRST = 1;

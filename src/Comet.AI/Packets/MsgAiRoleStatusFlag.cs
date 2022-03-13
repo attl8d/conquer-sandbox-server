@@ -1,7 +1,7 @@
-﻿using Comet.AI.States;
+﻿using System.Threading.Tasks;
+using Comet.AI.States;
 using Comet.AI.World.Managers;
 using Comet.Network.Packets.Ai;
-using System.Threading.Tasks;
 
 namespace Comet.AI.Packets
 {
@@ -15,13 +15,9 @@ namespace Comet.AI.Packets
 
             Role sender = RoleManager.GetRole(Caster);
             if (Mode == 0)
-            {
                 await target.AttachStatusAsync(sender, Flag, 0, Duration, Steps, 0);
-            }
             else
-            {
                 await target.DetachStatusAsync(Flag);
-            }
         }
     }
 }

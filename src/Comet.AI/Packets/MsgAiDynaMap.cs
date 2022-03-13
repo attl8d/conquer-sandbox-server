@@ -1,10 +1,10 @@
-﻿using Comet.AI.States;
+﻿using System.Threading.Tasks;
+using Comet.AI.States;
 using Comet.AI.World.Managers;
 using Comet.AI.World.Maps;
 using Comet.Database.Entities;
 using Comet.Network.Packets.Ai;
 using Comet.Shared;
-using System.Threading.Tasks;
 
 namespace Comet.AI.Packets
 {
@@ -14,7 +14,7 @@ namespace Comet.AI.Packets
         {
             if (Mode == 0) // add
             {
-                DbDynamap dynaMap = new DbDynamap
+                var dynaMap = new DbDynamap
                 {
                     Identity = Identity,
                     Name = Name,
@@ -39,14 +39,15 @@ namespace Comet.AI.Packets
                     Color = Color
                 };
 
-                GameMap map = new GameMap(dynaMap);
+                var map = new GameMap(dynaMap);
                 if (!await map.InitializeAsync())
                     return;
 
                 MapManager.AddMap(map);
 
 #if DEBUG
-                await Log.WriteLogAsync(LogLevel.Debug, $"Map {map.Identity} {map.Name} {Description} has been added to the pool.");
+                await Log.WriteLogAsync(LogLevel.Debug,
+                                        $"Map {map.Identity} {map.Name} {Description} has been added to the pool.");
 #endif
             }
             else

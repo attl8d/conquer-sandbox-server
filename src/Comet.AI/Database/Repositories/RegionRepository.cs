@@ -1,8 +1,8 @@
-﻿using Comet.Database.Entities;
-using Microsoft.EntityFrameworkCore;
-using System.Collections.Generic;
+﻿using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
+using Comet.Database.Entities;
+using Microsoft.EntityFrameworkCore;
 
 namespace Comet.AI.Database.Repositories
 {
@@ -10,7 +10,7 @@ namespace Comet.AI.Database.Repositories
     {
         public static async Task<List<DbRegion>> GetAsync(uint idMap)
         {
-            await using ServerDbContext ctx = new ServerDbContext();
+            await using var ctx = new ServerDbContext();
             return await ctx.Regions.Where(x => x.MapIdentity == idMap).ToListAsync();
         }
     }

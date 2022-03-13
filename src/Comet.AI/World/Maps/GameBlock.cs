@@ -1,6 +1,6 @@
-﻿using Comet.AI.States;
-using System.Collections.Concurrent;
+﻿using System.Collections.Concurrent;
 using System.Threading;
+using Comet.AI.States;
 
 namespace Comet.AI.World.Maps
 {
@@ -11,45 +11,36 @@ namespace Comet.AI.World.Maps
     /// </summary>
     public class GameBlock
     {
-        /// <summary>
-        ///     The width/height of a view block.
-        /// </summary>
-        public const int BLOCK_SIZE = 18;
-
-        private int m_userCount = 0;
+        private int m_userCount;
 
         /// <summary>
         ///     Collection of roles currently inside of this block.
         /// </summary>
-        public ConcurrentDictionary<uint, Role> RoleSet = new ConcurrentDictionary<uint, Role>();
+        public ConcurrentDictionary<uint, Role> RoleSet = new();
 
         public bool Add(Role role)
         {
-            if (role is Character)
-            {
-                Interlocked.Increment(ref m_userCount);
-            }
+            if (role is Character) Interlocked.Increment(ref m_userCount);
             return RoleSet.TryAdd(role.Identity, role);
         }
 
         public bool Remove(Role role)
         {
             bool remove = RoleSet.TryRemove(role.Identity, out _);
-            if (role is Character && remove)
-            {
-                Interlocked.Decrement(ref m_userCount);
-            }
+            if (role is Character && remove) Interlocked.Decrement(ref m_userCount);
             return remove;
         }
 
         public bool Remove(uint role)
         {
-            bool remove = RoleSet.TryRemove(role, out var target);
-            if (target is Character && remove)
-            {
-                Interlocked.Decrement(ref m_userCount);
-            }
+            bool remove = RoleSet.TryRemove(role, out Role target);
+            if (target is Character && remove) Interlocked.Decrement(ref m_userCount);
             return remove;
         }
+
+        /// <summary>
+        ///     The width/height of a view block.
+        /// </summary>
+        public const int BLOCK_SIZE = 18;
     }
 }

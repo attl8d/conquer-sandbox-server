@@ -5,6 +5,5 @@ namespace Comet.AI.Packets
 {
     public sealed class MsgAiLoginExchange : MsgAiLoginExchange<Server>
     {
-
     }
 }

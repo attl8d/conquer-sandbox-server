@@ -1,12 +1,12 @@
-﻿using Comet.AI.World.Managers;
+﻿using System.Threading.Tasks;
+using Comet.AI.World.Managers;
 using Comet.Shared;
-using System.Threading.Tasks;
 
 namespace Comet.AI.World.Threads
 {
     public class AiThread : TimerBase
     {
-        public AiThread() 
+        public AiThread()
             : base(300, "Ai Thread")
         {
         }

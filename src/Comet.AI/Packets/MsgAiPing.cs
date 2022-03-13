@@ -1,8 +1,8 @@
-﻿using Comet.AI.States;
+﻿using System;
+using System.Threading.Tasks;
+using Comet.AI.States;
 using Comet.Network.Packets.Ai;
 using Comet.Shared;
-using System;
-using System.Threading.Tasks;
 
 namespace Comet.AI.Packets
 {
@@ -23,9 +23,7 @@ namespace Comet.AI.Packets
                 await client.SendAsync(this);
 
                 if (ping > 1000 || pingMs > 1000)
-                {
                     await Log.WriteLogAsync($"Inter server network lag detected! Ping: {ping}s ({pingMs}ms)");
-                }
             }
         }
     }

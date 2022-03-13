@@ -1,7 +1,7 @@
-﻿using Comet.AI.States;
+﻿using System.Threading.Tasks;
+using Comet.AI.States;
 using Comet.AI.World.Managers;
 using Comet.Network.Packets.Game;
-using System.Threading.Tasks;
 
 namespace Comet.AI.Packets
 {

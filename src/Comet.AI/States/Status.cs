@@ -1,10 +1,10 @@
-﻿using Comet.Database.Entities;
-using Comet.Network.Packets.Game;
-using Comet.Shared;
-using System;
+﻿using System;
 using System.Collections.Concurrent;
 using System.Runtime.InteropServices;
 using System.Threading.Tasks;
+using Comet.Database.Entities;
+using Comet.Network.Packets.Game;
+using Comet.Shared;
 
 namespace Comet.AI.States
 {
@@ -28,10 +28,10 @@ namespace Comet.AI.States
 
     public sealed class StatusOnce : IStatus
     {
-        private Role mOwner;
-        private TimeOutMS mKeep;
         private long mAutoFlash;
         private TimeOutMS mInterval;
+        private TimeOutMS mKeep;
+        private Role mOwner;
 
         public StatusOnce()
         {
@@ -76,7 +76,7 @@ namespace Comet.AI.States
             try
             {
                 Power = power;
-                mKeep.SetInterval((int)Math.Min(int.MaxValue, (long)secs * 1000));
+                mKeep.SetInterval((int) Math.Min(int.MaxValue, (long) secs * 1000));
                 mKeep.Update();
 
                 if (caster != 0)
@@ -123,9 +123,7 @@ namespace Comet.AI.States
             {
                 switch (Identity)
                 {
-                    
                 }
-
             }
             catch (Exception ex)
             {
@@ -133,14 +131,15 @@ namespace Comet.AI.States
             }
         }
 
-        public async Task<bool> CreateAsync(Role role, int status, int power, int secs, int times, uint caster = 0, byte level = 0)
+        public async Task<bool> CreateAsync(Role role, int status, int power, int secs, int times, uint caster = 0,
+                                            byte level = 0)
         {
             mOwner = role;
             CasterId = caster;
             Identity = status;
             Power = power;
             mKeep = new TimeOutMS(Math.Min(int.MaxValue, secs * 1000));
-            mKeep.Startup((int)Math.Min((long)secs * 1000, int.MaxValue));
+            mKeep.Startup((int) Math.Min((long) secs * 1000, int.MaxValue));
             mKeep.Update();
             mInterval = new TimeOutMS(1000);
             mInterval.Update();
@@ -151,10 +150,9 @@ namespace Comet.AI.States
 
     public sealed class StatusMore : IStatus
     {
-        private Role mOwner;
-        private TimeOut mKeep;
         private long mAutoFlash;
-        private int mTimes;
+        private TimeOut mKeep;
+        private Role mOwner;
 
         public StatusMore()
         {
@@ -170,7 +168,7 @@ namespace Comet.AI.States
 
         public int Identity { get; private set; }
 
-        public bool IsValid => mTimes > 0;
+        public bool IsValid => RemainingTimes > 0;
 
         public int Power { get; set; }
 
@@ -178,7 +176,7 @@ namespace Comet.AI.States
 
         public byte Level { get; private set; }
 
-        public int RemainingTimes => mTimes;
+        public int RemainingTimes { get; private set; }
 
         public int RemainingTime => mKeep.GetRemain();
 
@@ -189,7 +187,7 @@ namespace Comet.AI.States
             info.Power = Power;
             info.Seconds = mKeep.GetRemain();
             info.Status = Identity;
-            info.Times = mTimes;
+            info.Times = RemainingTimes;
 
             return IsValid;
         }
@@ -204,7 +202,7 @@ namespace Comet.AI.States
                 CasterId = caster;
 
                 if (times > 0)
-                    mTimes = times;
+                    RemainingTimes = times;
                 return true;
             }
             catch
@@ -247,13 +245,12 @@ namespace Comet.AI.States
 
                 if (mOwner != null)
                 {
-                    int loseLife = 0;
+                    var loseLife = 0;
                     switch (Identity)
                     {
-                        
                     }
 
-                    mTimes--;
+                    RemainingTimes--;
                 }
             }
             catch (Exception ex)
@@ -268,14 +265,15 @@ namespace Comet.AI.States
             // todo destroy and detach status
         }
 
-        public async Task<bool> CreateAsync(Role role, int status, int power, int secs, int times, uint caster = 0, byte level = 0, bool save = false)
+        public async Task<bool> CreateAsync(Role role, int status, int power, int secs, int times, uint caster = 0,
+                                            byte level = 0, bool save = false)
         {
             mOwner = role;
             Identity = status;
             Power = power;
             mKeep = new TimeOut(secs);
             mKeep.Update(); // no instant start
-            mTimes = times;
+            RemainingTimes = times;
             CasterId = caster;
             Level = level;
             return true;
@@ -284,143 +282,6 @@ namespace Comet.AI.States
 
     public sealed class StatusSet
     {
-        public static ulong KEEP_EFFECT_NOT_VIRTUOUS => GetFlag(BLUE_NAME) | GetFlag(RED_NAME) | GetFlag(BLACK_NAME);
-
-        public const int NONE = 0,
-            BLUE_NAME = 1,
-            POISONED = 2,
-            FULL_INVIS = 3,
-            FADE = 4,
-            START_XP = 5,
-            GHOST = 6,
-            TEAM_LEADER = 7,
-            STAR_OF_ACCURACY = 8,
-            SHIELD = 9,
-            STIG = 10,
-            DEAD = 11,
-            INVISIBLE = 12,
-            UNKNOWN13 = 13,
-            UNKNOWN14 = 14,
-            RED_NAME = 15,
-            BLACK_NAME = 16,
-            UNKNOWN17 = 17,
-            UNKNOWN18 = 18,
-            SUPERMAN = 19,
-            REFLECTTYPE_THING = 20,
-            DIF_REFLECT_THING = 21,
-            FREEZE = 22,
-            PARTIALLY_INVISIBLE = 23,
-            CYCLONE = 24,
-            UNKNOWN25 = 25,
-            UNKNOWN26 = 26,
-            DODGE = 27,
-            FLY = 28,
-            INTENSIFY = 29,
-            UNKNOWN30 = 30,
-            LUCKY_DIFFUSE = 31,
-            LUCKY_ABSORB = 32,
-            CURSED = 33,
-            HEAVEN_BLESS = 34,
-            TOP_GUILD = 35,
-            TOP_DEP = 36,
-            MONTH_PK = 37,
-            WEEK_PK = 38,
-            TOP_WARRIOR = 39,
-            TOP_TRO = 40,
-            TOP_ARCHER = 41,
-            TOP_WATER = 42,
-            TOP_FIRE = 43,
-            TOP_NINJA = 44,
-            POISON_STAR = 45,
-            TOXIC_FOG = 46,
-            VORTEX = 47,
-            FATAL_STRIKE = 48,
-            ORANGE_HALO_GLOW = 49,
-            UNKNOWN50 = 50,
-            LOW_VIGOR_UNABLE_TO_JUMP = 51,
-            RIDING = 51,
-            TOP_SPOUSE = 52,
-            SPARKLE_HALO = 53,
-            NO_POTION = 54,
-            DAZED = 55,
-            BLUE_RESTORE_AURA = 56,
-            MOVE_SPEED_RECOVERED = 57,
-            SUPER_SHIELD_HALO = 58,
-            HUGE_DAZED = 59,
-            ICE_BLOCK = 60,
-            CONFUSED = 61,
-            UNKNOWN62 = 62,
-            UNKNOWN63 = 63,
-            UNKNOWN64 = 64,
-            WEEKLY_TOP8_PK = 65,
-            WEEKLY_TOP2_PK_GOLD = 66,
-            WEEKLY_TOP2_PK_BLUE = 67,
-            MONTHLY_TOP8_PK = 68,
-            MONTLY_TOP2_PK = 69,
-            MONTLY_TOP3_PK = 70,
-            TOP8_FIRE = 71,
-            TOP2_FIRE = 72,
-            TOP3_FIRE = 73,
-            TOP8_WATER = 74,
-            TOP2_WATER = 75,
-            TOP3_WATER = 76,
-            TOP8_NINJA = 77,
-            TOP2_NINJA = 78,
-            TOP3_NINJA = 79,
-            TOP8_WARRIOR = 80,
-            TOP2_WARRIOR = 81,
-            TOP3_WARRIOR = 82,
-            TOP8_TROJAN = 83,
-            TOP2_TROJAN = 84,
-            TOP3_TROJAN = 85,
-            TOP8_ARCHER = 86,
-            TOP2_ARCHER = 87,
-            TOP3_ARCHER = 88,
-            TOP3_SPOUSE_BLUE = 89,
-            TOP2_SPOUSE_BLUE = 90,
-            TOP3_SPOUSE_YELLOW = 91,
-            CONTESTANT = 92,
-            CHAIN_BOLT_ACTIVE = 93,
-            AZURE_SHIELD = 94,
-            AZURE_SHIELD_FADE = 95,
-            CARYING_FLAG = 96,
-            UNKNOWN97 = 97,
-            UNKNOWN98 = 98,
-            TYRANT_AURA = 99,
-            UNKNOWN100 = 100,
-            FEND_AURA = 101,
-            UNKNOWN102 = 102,
-            METAL_AURA = 103,
-            UNKNOWN104 = 104,
-            WOOD_AURA = 105,
-            UNKNOWN106 = 106,
-            WATER_AURA = 107,
-            UNKNOWN108 = 108,
-            FIRE_AURA = 109,
-            UNKNOWN110 = 110,
-            EARTH_AURA = 111,
-            SHACKLED = 112,
-            OBLIVION = 113,
-            UNKNOWN114 = 114,
-            TOP_MONK = 115,
-            TOP8_MONK = 116,
-            TOP2_MONK = 117,
-            TOP3_MONK = 118,
-            CTF_FLAG = 119,
-            SCURVY_BOMB = 120,
-            CANNON_BARRAGE = 121,
-            BLACKBEARDS_REVENGE = 122,
-            TOP_PIRATE = 123,
-            TOP_PIRATE8 = 124,
-            TOP_PIRATE2 = 125,
-            TOP_PIRATE3 = 126,
-            DEFENSIVE_INSTANCE = 127,
-            MAGIC_DEFENDER = 129,
-            ASSASSIN = 146,
-            BLADE_FLURRY = 147,
-            KINETIC_SPARK = 148,
-            AUTO_HUNTING = 149;
-
         private readonly Role mOwner;
         public ConcurrentDictionary<int, IStatus> Status;
 
@@ -434,6 +295,8 @@ namespace Comet.AI.States
             Status = new ConcurrentDictionary<int, IStatus>(5, 128);
         }
 
+        public static ulong KEEP_EFFECT_NOT_VIRTUOUS => GetFlag(BLUE_NAME) | GetFlag(RED_NAME) | GetFlag(BLACK_NAME);
+
         private ulong StatusFlag
         {
             get => mOwner.StatusFlag;
@@ -446,7 +309,7 @@ namespace Comet.AI.States
             {
                 try
                 {
-                    return Status.TryGetValue(nKey, out var ret) ? ret : null;
+                    return Status.TryGetValue(nKey, out IStatus ret) ? ret : null;
                 }
                 catch
                 {
@@ -479,7 +342,7 @@ namespace Comet.AI.States
             if (Status.ContainsKey(pInfo.Status))
                 return false; // status already exists
 
-            ulong flag = 1UL << pInfo.Status - 1;
+            ulong flag = 1UL << (pInfo.Status - 1);
             Status.TryAdd(pInfo.Status, pStatus);
             StatusFlag |= flag;
 
@@ -492,10 +355,10 @@ namespace Comet.AI.States
             if (nFlag > 192)
                 return false;
 
-            if (!Status.TryRemove(nFlag, out var status))
+            if (!Status.TryRemove(nFlag, out IStatus status))
                 return false;
 
-            ulong uFlag = 1UL << nFlag - 1;
+            ulong uFlag = 1UL << (nFlag - 1);
             StatusFlag &= ~uFlag;
 
             await mOwner.SetAttributesAsync(ClientUpdateType.StatusFlag, StatusFlag);
@@ -510,9 +373,9 @@ namespace Comet.AI.States
         /// <returns></returns>
         public static int InvertFlag(ulong flag, bool b64 = false, bool b128 = false)
         {
-            var inv = flag;
+            ulong inv = flag;
             int ret = -1;
-            for (int i = 0; inv > 1; i++)
+            for (var i = 0; inv > 1; i++)
             {
                 inv = flag >> i;
                 ret++;
@@ -523,8 +386,143 @@ namespace Comet.AI.States
 
         public static ulong GetFlag(int status)
         {
-            return 1UL << status - 1;
+            return 1UL << (status - 1);
         }
+
+        public const int NONE = 0,
+                         BLUE_NAME = 1,
+                         POISONED = 2,
+                         FULL_INVIS = 3,
+                         FADE = 4,
+                         START_XP = 5,
+                         GHOST = 6,
+                         TEAM_LEADER = 7,
+                         STAR_OF_ACCURACY = 8,
+                         SHIELD = 9,
+                         STIG = 10,
+                         DEAD = 11,
+                         INVISIBLE = 12,
+                         UNKNOWN13 = 13,
+                         UNKNOWN14 = 14,
+                         RED_NAME = 15,
+                         BLACK_NAME = 16,
+                         UNKNOWN17 = 17,
+                         UNKNOWN18 = 18,
+                         SUPERMAN = 19,
+                         REFLECTTYPE_THING = 20,
+                         DIF_REFLECT_THING = 21,
+                         FREEZE = 22,
+                         PARTIALLY_INVISIBLE = 23,
+                         CYCLONE = 24,
+                         UNKNOWN25 = 25,
+                         UNKNOWN26 = 26,
+                         DODGE = 27,
+                         FLY = 28,
+                         INTENSIFY = 29,
+                         UNKNOWN30 = 30,
+                         LUCKY_DIFFUSE = 31,
+                         LUCKY_ABSORB = 32,
+                         CURSED = 33,
+                         HEAVEN_BLESS = 34,
+                         TOP_GUILD = 35,
+                         TOP_DEP = 36,
+                         MONTH_PK = 37,
+                         WEEK_PK = 38,
+                         TOP_WARRIOR = 39,
+                         TOP_TRO = 40,
+                         TOP_ARCHER = 41,
+                         TOP_WATER = 42,
+                         TOP_FIRE = 43,
+                         TOP_NINJA = 44,
+                         POISON_STAR = 45,
+                         TOXIC_FOG = 46,
+                         VORTEX = 47,
+                         FATAL_STRIKE = 48,
+                         ORANGE_HALO_GLOW = 49,
+                         UNKNOWN50 = 50,
+                         LOW_VIGOR_UNABLE_TO_JUMP = 51,
+                         RIDING = 51,
+                         TOP_SPOUSE = 52,
+                         SPARKLE_HALO = 53,
+                         NO_POTION = 54,
+                         DAZED = 55,
+                         BLUE_RESTORE_AURA = 56,
+                         MOVE_SPEED_RECOVERED = 57,
+                         SUPER_SHIELD_HALO = 58,
+                         HUGE_DAZED = 59,
+                         ICE_BLOCK = 60,
+                         CONFUSED = 61,
+                         UNKNOWN62 = 62,
+                         UNKNOWN63 = 63,
+                         UNKNOWN64 = 64,
+                         WEEKLY_TOP8_PK = 65,
+                         WEEKLY_TOP2_PK_GOLD = 66,
+                         WEEKLY_TOP2_PK_BLUE = 67,
+                         MONTHLY_TOP8_PK = 68,
+                         MONTLY_TOP2_PK = 69,
+                         MONTLY_TOP3_PK = 70,
+                         TOP8_FIRE = 71,
+                         TOP2_FIRE = 72,
+                         TOP3_FIRE = 73,
+                         TOP8_WATER = 74,
+                         TOP2_WATER = 75,
+                         TOP3_WATER = 76,
+                         TOP8_NINJA = 77,
+                         TOP2_NINJA = 78,
+                         TOP3_NINJA = 79,
+                         TOP8_WARRIOR = 80,
+                         TOP2_WARRIOR = 81,
+                         TOP3_WARRIOR = 82,
+                         TOP8_TROJAN = 83,
+                         TOP2_TROJAN = 84,
+                         TOP3_TROJAN = 85,
+                         TOP8_ARCHER = 86,
+                         TOP2_ARCHER = 87,
+                         TOP3_ARCHER = 88,
+                         TOP3_SPOUSE_BLUE = 89,
+                         TOP2_SPOUSE_BLUE = 90,
+                         TOP3_SPOUSE_YELLOW = 91,
+                         CONTESTANT = 92,
+                         CHAIN_BOLT_ACTIVE = 93,
+                         AZURE_SHIELD = 94,
+                         AZURE_SHIELD_FADE = 95,
+                         CARYING_FLAG = 96,
+                         UNKNOWN97 = 97,
+                         UNKNOWN98 = 98,
+                         TYRANT_AURA = 99,
+                         UNKNOWN100 = 100,
+                         FEND_AURA = 101,
+                         UNKNOWN102 = 102,
+                         METAL_AURA = 103,
+                         UNKNOWN104 = 104,
+                         WOOD_AURA = 105,
+                         UNKNOWN106 = 106,
+                         WATER_AURA = 107,
+                         UNKNOWN108 = 108,
+                         FIRE_AURA = 109,
+                         UNKNOWN110 = 110,
+                         EARTH_AURA = 111,
+                         SHACKLED = 112,
+                         OBLIVION = 113,
+                         UNKNOWN114 = 114,
+                         TOP_MONK = 115,
+                         TOP8_MONK = 116,
+                         TOP2_MONK = 117,
+                         TOP3_MONK = 118,
+                         CTF_FLAG = 119,
+                         SCURVY_BOMB = 120,
+                         CANNON_BARRAGE = 121,
+                         BLACKBEARDS_REVENGE = 122,
+                         TOP_PIRATE = 123,
+                         TOP_PIRATE8 = 124,
+                         TOP_PIRATE2 = 125,
+                         TOP_PIRATE3 = 126,
+                         DEFENSIVE_INSTANCE = 127,
+                         MAGIC_DEFENDER = 129,
+                         ASSASSIN = 146,
+                         BLADE_FLURRY = 147,
+                         KINETIC_SPARK = 148,
+                         AUTO_HUNTING = 149;
     }
 
     public interface IStatus
@@ -554,6 +552,8 @@ namespace Comet.AI.States
         uint CasterId { get; }
         bool IsUserCast { get; }
 
+        DbStatus Model { get; set; }
+
         /// <summary>
         ///     This method will get the status information into another param.
         /// </summary>
@@ -572,7 +572,5 @@ namespace Comet.AI.States
         bool IncTime(int nMilliSecs, int nLimit);
         bool ToFlash();
         Task OnTimerAsync();
-
-        DbStatus Model { get; set; }
     }
 }

@@ -1,12 +1,12 @@
-﻿using Comet.AI.World.Managers;
+﻿using System.Threading.Tasks;
+using Comet.AI.World.Managers;
 using Comet.Shared;
-using System.Threading.Tasks;
 
 namespace Comet.AI.World.Threads
 {
     public class GeneratorThread : TimerBase
     {
-        public GeneratorThread() 
+        public GeneratorThread()
             : base(1000, "Generator Thread")
         {
         }

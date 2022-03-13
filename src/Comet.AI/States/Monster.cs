@@ -1,4 +1,9 @@
-﻿using Comet.AI.Packets;
+﻿using System;
+using System.Collections.Generic;
+using System.Drawing;
+using System.Linq;
+using System.Threading.Tasks;
+using Comet.AI.Packets;
 using Comet.AI.World;
 using Comet.AI.World.Managers;
 using Comet.Core;
@@ -7,27 +12,21 @@ using Comet.Database.Entities;
 using Comet.Network.Packets.Ai;
 using Comet.Network.Packets.Game;
 using Comet.Shared;
-using System;
-using System.Collections.Generic;
-using System.Drawing;
-using System.Linq;
-using System.Threading.Tasks;
 using static Comet.Network.Packets.Game.MsgWalk<Comet.AI.States.Server>;
 
 namespace Comet.AI.States
 {
     public sealed class Monster : Role
     {
-        private readonly Generator mGenerator;
+        private readonly TimeOut mAction = new();
         private readonly DbMonstertype mDbMonster;
+        private readonly Generator mGenerator;
+        private readonly TimeOut mLeaveMap = new(10);
 
-        private readonly TimeOut mAction = new TimeOut();
-        private readonly TimeOutMS mMove = new TimeOutMS();
-        private readonly TimeOut mLeaveMap = new TimeOut(10);
+        private readonly List<MonsterMagic> mMagics = new();
+        private readonly TimeOutMS mMove = new();
 
         private AiStage mStage = AiStage.Idle;
-
-        private readonly List<MonsterMagic> mMagics = new List<MonsterMagic>();
 
         public Monster(DbMonstertype type, uint identity, Generator generator)
         {
@@ -63,21 +62,50 @@ namespace Comet.AI.States
 
             Life = MaxLife;
 
-            foreach (var dbm in RoleManager.GetMonsterMagics(Type))
-            {
-                mMagics.Add(new MonsterMagic(dbm));
-            }
+            foreach (DbMonsterTypeMagic dbm in RoleManager.GetMonsterMagics(Type)) mMagics.Add(new MonsterMagic(dbm));
 
             if (mDbMonster.MagicType != 0)
-            {
                 mMagics.Add(new MonsterMagic(new DbMonsterTypeMagic
                 {
                     MagicType = mDbMonster.MagicType,
                     MagicLev = 0,
-                    ColdTime = (uint)Math.Max(500, mDbMonster.AttackSpeed)
+                    ColdTime = (uint) Math.Max(500, mDbMonster.AttackSpeed)
                 }));
-            }
             return true;
+        }
+
+        #endregion
+
+        #region OnTimer
+
+        public override async Task OnTimerAsync()
+        {
+            if (Map == null)
+                return;
+
+            if (!IsAlive)
+                return;
+
+            for (var i = 0; i < 5; i++)
+                switch (mStage)
+                {
+                    case AiStage.Idle:
+                        if (await OnIdleAsync())
+                            return;
+                        break;
+                    case AiStage.Forward:
+                        if (await OnForwardAsync())
+                            return;
+                        break;
+                    case AiStage.Attack:
+                        if (await OnAttackAsync())
+                            return;
+                        break;
+                    case AiStage.Escape:
+                        if (await OnEscapeAsync())
+                            return;
+                        break;
+                }
         }
 
         #endregion
@@ -89,7 +117,7 @@ namespace Comet.AI.States
         public override uint Mesh
         {
             get => mDbMonster.Lookface;
-            set => mDbMonster.Lookface = (ushort)value;
+            set => mDbMonster.Lookface = (ushort) value;
         }
 
         #endregion
@@ -98,17 +126,13 @@ namespace Comet.AI.States
 
         public override byte Level
         {
-            get => (byte)(mDbMonster?.Level ?? 0);
+            get => (byte) (mDbMonster?.Level ?? 0);
             set => mDbMonster.Level = value;
         }
 
-        public override uint Life
-        {
-            get;
-            set;
-        }
+        public override uint Life { get; set; }
 
-        public override uint MaxLife => (uint)(mDbMonster?.Life ?? 1);
+        public override uint MaxLife => (uint) (mDbMonster?.Life ?? 1);
 
         public override int BattlePower => mDbMonster?.ExtraBattlelev ?? 0;
 
@@ -124,11 +148,11 @@ namespace Comet.AI.States
 
         public override int MagicDefense => mDbMonster?.MagicDef ?? 0;
 
-        public override int Dodge => (int)(mDbMonster?.Dodge ?? 0);
+        public override int Dodge => (int) (mDbMonster?.Dodge ?? 0);
 
         public override int AttackSpeed => mDbMonster?.AttackSpeed ?? 1000;
 
-        public override int Accuracy => (int)(mDbMonster?.Dexterity ?? 0);
+        public override int Accuracy => (int) (mDbMonster?.Dexterity ?? 0);
 
         public uint AttackUser => mDbMonster?.AttackUser ?? 0;
 
@@ -258,10 +282,9 @@ namespace Comet.AI.States
         {
             Map = MapManager.GetMap(MapIdentity);
             if (Map != null && await Map.AddAsync(this))
-            {
                 if (sync)
                 {
-                    MsgAiSpawnNpc msg = new MsgAiSpawnNpc();
+                    var msg = new MsgAiSpawnNpc();
                     msg.Mode = AiSpawnNpcMode.Spawn;
                     msg.List.Add(new MsgAiSpawnNpc<Server>.SpawnNpc
                     {
@@ -275,7 +298,6 @@ namespace Comet.AI.States
                     });
                     await Kernel.SendAsync(msg);
                 }
-            }
         }
 
         public override async Task LeaveMapAsync(bool sync = true)
@@ -285,7 +307,7 @@ namespace Comet.AI.States
 
             if (sync)
             {
-                MsgAiSpawnNpc msg = new MsgAiSpawnNpc();
+                var msg = new MsgAiSpawnNpc();
                 msg.Mode = AiSpawnNpcMode.DestroyNpc;
                 msg.List.Add(new MsgAiSpawnNpc<Server>.SpawnNpc
                 {
@@ -299,6 +321,7 @@ namespace Comet.AI.States
                 await Map.RemoveAsync(Identity);
                 RoleManager.RemoveRole(Identity);
             }
+
             Map = null;
         }
 
@@ -419,7 +442,7 @@ namespace Comet.AI.States
             int nAtkDistance = Calculations.CutOverflow(nDistance, GetAttackRange(target.SizeAddition));
             int nDist = GetDistance(target.MapX, target.MapY);
 
-            if (!(nDist <= nDistance) || (nDist <= nAtkDistance && GetAttackRange(target.SizeAddition) > 1))
+            if (!(nDist <= nDistance) || nDist <= nAtkDistance && GetAttackRange(target.SizeAddition) > 1)
             {
                 mActTarget = 0;
                 return false;
@@ -446,8 +469,8 @@ namespace Comet.AI.States
 
             uint idOldTarget = mActTarget;
             int distance = ViewRange;
-            var roles = Map.Query9BlocksByPos(MapX, MapY);
-            foreach (var role in roles.Distinct())
+            List<Role> roles = Map.Query9BlocksByPos(MapX, MapY);
+            foreach (Role role in roles.Distinct())
             {
                 if (role.Identity == Identity)
                     continue;
@@ -462,9 +485,9 @@ namespace Comet.AI.States
                 {
                     bool pkKill = IsPkKiller() && targetUser.IsPker();
                     bool evilKill = IsEvilKiller() && !targetUser.IsVirtuous();
-                    bool evilMob = (IsEvil() && !(IsPkKiller() || IsEvilKiller()));
+                    bool evilMob = IsEvil() && !(IsPkKiller() || IsEvilKiller());
 
-                    if ((IsGuard() && targetUser.IsCrime())
+                    if (IsGuard() && targetUser.IsCrime()
                         || pkKill
                         || evilKill
                         || evilMob)
@@ -488,8 +511,8 @@ namespace Comet.AI.States
                 }
                 else if (role is Monster monster)
                 {
-                    if ((IsEvil() && monster.IsRighteous()
-                                         || IsRighteous() && monster.IsEvil()))
+                    if (IsEvil() && monster.IsRighteous()
+                        || IsRighteous() && monster.IsEvil())
                     {
                         if (monster.IsWing && !IsWing) continue;
 
@@ -509,15 +532,13 @@ namespace Comet.AI.States
                 if (role is Character targetUser && targetUser.Identity != idOldTarget)
                 {
                     if (IsGuard() && targetUser.IsCrime())
-                    {
-                        await Kernel.SendAsync(new MsgTalk(Identity, TalkChannel.Talk, Color.White, targetUser.Name, Name,
-                                Language.StrGuardYouPay));
-                    }
+                        await Kernel.SendAsync(new MsgTalk(Identity, TalkChannel.Talk, Color.White, targetUser.Name,
+                                                           Name,
+                                                           Language.StrGuardYouPay));
                     else if (IsPkKiller() && targetUser.IsPker() && mStage == AiStage.Idle)
-                    {
-                        await Kernel.SendAsync(new MsgTalk(Identity, TalkChannel.Talk, Color.White, targetUser.Name, Name,
-                                Language.StrGuardYouPay));
-                    }
+                        await Kernel.SendAsync(new MsgTalk(Identity, TalkChannel.Talk, Color.White, targetUser.Name,
+                                                           Name,
+                                                           Language.StrGuardYouPay));
                 }
 
                 FindPath();
@@ -531,13 +552,9 @@ namespace Comet.AI.States
         private async Task<bool> OnIdleAsync()
         {
             if (!(IsGuard() || IsPkKiller() || IsEvilKiller()))
-            {
                 if (!(IsFastBack() && !mGenerator.IsInRegion(MapX, MapY)))
-                {
                     if (!mAction.ToNextTime())
                         return true;
-                }
-            }
 
             if (await FindNewTargetAsync())
             {
@@ -568,11 +585,9 @@ namespace Comet.AI.States
                 }
             }
 
-            if ((IsGuard() || IsPkKiller() || IsEvilKiller()))
-            {
+            if (IsGuard() || IsPkKiller() || IsEvilKiller())
                 if (!mAction.ToNextTime())
                     return true;
-            }
 
             if (!IsMoveEnable())
                 return true;
@@ -592,7 +607,7 @@ namespace Comet.AI.States
                 }
                 else
                 {
-                    FacingDirection dir = (FacingDirection)(await Kernel.NextAsync(int.MaxValue) % 8);
+                    var dir = (FacingDirection) (await Kernel.NextAsync(int.MaxValue) % 8);
                     if (await Kernel.NextAsync(100) < 5 && TestPath(dir))
                         await PathMoveAsync(RoleMoveMode.Walk);
                 }
@@ -600,20 +615,14 @@ namespace Comet.AI.States
             else
             {
                 if (IsGuard() || IsPkKiller() || IsEvilKiller() || IsFastBack() || await Kernel.NextAsync(100) < 25)
-                {
                     if (mGenerator.IsInRegion(MapX, MapY))
                     {
                         Point pos = mGenerator.GetCenter();
                         if (FindPath(pos.X, pos.Y))
-                        {
                             await PathMoveAsync(RoleMoveMode.Walk);
-                        }
                         else
-                        {
                             await JumpBlockAsync(pos.X, pos.Y, Direction);
-                        }
                     }
-                }
             }
 
             return true;
@@ -627,11 +636,10 @@ namespace Comet.AI.States
                 && target.QueryStatus(StatusSet.INVISIBLE) == null
                 && GetDistance(target) <= GetAttackRange(target.SizeAddition))
             {
-                if (!IsGuard() && !IsMoveEnable() && IsFarWeapon() && !mAheadPath && mNextDir != FacingDirection.Invalid)
-                {
+                if (!IsGuard() && !IsMoveEnable() && IsFarWeapon() && !mAheadPath &&
+                    mNextDir != FacingDirection.Invalid)
                     if (await PathMoveAsync(RoleMoveMode.Run))
                         return true;
-                }
 
                 await ChangeModeAsync(AiStage.Attack);
                 return true;
@@ -651,7 +659,8 @@ namespace Comet.AI.States
                 return true;
             }
 
-            if ((IsGuard() || IsPkKiller() || IsEvilKiller()) && target != null && GetDistance(target.MapX, target.MapY) >= GetAttackRange(target.SizeAddition))
+            if ((IsGuard() || IsPkKiller() || IsEvilKiller()) && target != null &&
+                GetDistance(target.MapX, target.MapY) >= GetAttackRange(target.SizeAddition))
             {
                 await JumpPosAsync(target.MapX, target.MapY);
                 return true;
@@ -714,6 +723,7 @@ namespace Comet.AI.States
                     FindPath();
                     await ChangeModeAsync(AiStage.Forward);
                 }
+
                 return true;
             }
 
@@ -729,12 +739,11 @@ namespace Comet.AI.States
                         await ChangeModeAsync(AiStage.Forward);
                         return true;
                     }
-                    else
-                    {
-                        await ChangeModeAsync(AiStage.Idle);
-                        return true;
-                    }
+
+                    await ChangeModeAsync(AiStage.Idle);
+                    return true;
                 }
+
                 return true;
             }
 
@@ -787,10 +796,7 @@ namespace Comet.AI.States
                     break;
             }
 
-            if (mode != AiStage.Forward)
-            {
-                ClearPath();
-            }
+            if (mode != AiStage.Forward) ClearPath();
 
             mStage = mode;
         }
@@ -809,7 +815,6 @@ namespace Comet.AI.States
 
             MsgInteract msg;
             if (mDbMonster.MagicType != 0 && mMagics.Count == 1) // only has this magic
-            {
                 if (await Kernel.NextAsync(100) < mDbMonster.MagicHitrate)
                 {
                     msg = new MsgInteract();
@@ -818,11 +823,10 @@ namespace Comet.AI.States
                     msg.TargetIdentity = target.Identity;
                     msg.PosX = target.MapX;
                     msg.PosY = target.MapY;
-                    msg.Data = (int)mDbMonster.MagicType;
+                    msg.Data = (int) mDbMonster.MagicType;
                     await Kernel.SendAsync(msg);
                     return;
                 }
-            }
 
             MonsterMagic magic = mMagics.Where(x => x.IsReady()).OrderBy(x => x.LastTick).FirstOrDefault();
             if (magic != null)
@@ -833,7 +837,7 @@ namespace Comet.AI.States
                 msg.TargetIdentity = target.Identity;
                 msg.PosX = target.MapX;
                 msg.PosY = target.MapY;
-                msg.Data = (int)magic.MagicType;
+                msg.Data = (int) magic.MagicType;
                 await Kernel.SendAsync(msg);
                 magic.Use();
                 return;
@@ -859,7 +863,7 @@ namespace Comet.AI.States
         {
             ClearPath();
 
-            Point posTarget = new Point();
+            var posTarget = new Point();
             if (mMoveTarget != 0)
             {
                 Role role = RoleManager.GetRole(mMoveTarget);
@@ -877,16 +881,16 @@ namespace Comet.AI.States
 
             int oldDist = GetDistance(posTarget.X, posTarget.Y);
             int bestDist = oldDist;
-            FacingDirection bestDir = FacingDirection.Invalid;
-            FacingDirection firstDir = FacingDirection.Begin;
+            var bestDir = FacingDirection.Invalid;
+            var firstDir = FacingDirection.Begin;
 
-            for (FacingDirection i = FacingDirection.Begin; i < FacingDirection.Invalid; i++)
+            for (var i = FacingDirection.Begin; i < FacingDirection.Invalid; i++)
             {
                 FacingDirection dir = firstDir;
                 if (dir != noDir)
                 {
-                    int x = MapX + GameMapData.WalkXCoords[(int)dir];
-                    int y = MapY + GameMapData.WalkYCoords[(int)dir];
+                    int x = MapX + GameMapData.WalkXCoords[(int) dir];
+                    int y = MapY + GameMapData.WalkYCoords[(int) dir];
                     if (Map.IsMoveEnable(x, y, dir, SizeAddition, NPC_CLIMBCAP))
                     {
                         int dist = GetDistance(x, y);
@@ -913,12 +917,12 @@ namespace Comet.AI.States
             if (x == MapX && y == MapY)
                 return false;
 
-            FacingDirection dir = (FacingDirection)Calculations.GetDirection(MapX, MapY, x, y);
+            var dir = (FacingDirection) Calculations.GetDirection(MapX, MapY, x, y);
             if (!mAheadPath)
                 dir += 4;
-            for (int i = 0; i < 8; i++)
+            for (var i = 0; i < 8; i++)
             {
-                dir = (FacingDirection)(((int)dir + i) % 8);
+                dir = (FacingDirection) (((int) dir + i) % 8);
                 if (TestPath(dir))
                 {
                     mNextDir = dir;
@@ -953,13 +957,11 @@ namespace Comet.AI.States
             }
 
             if (mNextDir != FacingDirection.Invalid)
-            {
                 if (!Map.IsMoveEnable(MapX, MapY, mNextDir, SizeAddition))
                 {
                     DetectPath(mNextDir);
                     return mNextDir != FacingDirection.Invalid;
                 }
-            }
 
             return mNextDir != FacingDirection.Invalid;
         }
@@ -969,8 +971,8 @@ namespace Comet.AI.States
             if (dir == FacingDirection.Invalid)
                 return false;
 
-            int x = MapX + GameMapData.WalkXCoords[(int)dir];
-            int y = MapY + GameMapData.WalkYCoords[(int)dir];
+            int x = MapX + GameMapData.WalkXCoords[(int) dir];
+            int y = MapY + GameMapData.WalkYCoords[(int) dir];
 
             if (Map.IsMoveEnable(x, y, dir, SizeAddition, NPC_CLIMBCAP))
             {
@@ -995,31 +997,31 @@ namespace Comet.AI.States
             }
             else
             {
-                if (!mMove.ToNextTime((int)mDbMonster.RunSpeed))
+                if (!mMove.ToNextTime((int) mDbMonster.RunSpeed))
                     return true;
             }
 
-            int newX = MapX + GameMapData.WalkXCoords[(int)mNextDir];
-            int newY = MapY + GameMapData.WalkYCoords[(int)mNextDir];
+            int newX = MapX + GameMapData.WalkXCoords[(int) mNextDir];
+            int newY = MapY + GameMapData.WalkYCoords[(int) mNextDir];
 
             //if (!Map.IsSuperPosition(newX, newY))
             {
                 if (TestPath(mNextDir))
                 {
-                    await MoveTowardAsync((int)mNextDir, (int)mode);
+                    await MoveTowardAsync((int) mNextDir, (int) mode);
                     return true;
                 }
             }
 
-            if (DetectPath(mNextDir)/* && !Map.IsSuperPosition(newX, newY)*/)
+            if (DetectPath(mNextDir) /* && !Map.IsSuperPosition(newX, newY)*/)
             {
-                await MoveTowardAsync((int)mNextDir, (int)mode);
+                await MoveTowardAsync((int) mNextDir, (int) mode);
                 return true;
             }
 
             if (IsJumpEnable())
             {
-                var pos = mGenerator.GetCenter();
+                Point pos = mGenerator.GetCenter();
                 await JumpBlockAsync(pos.X, pos.Y, Direction);
                 return true;
             }
@@ -1029,86 +1031,54 @@ namespace Comet.AI.States
 
         #endregion
 
-        #region OnTimer
-
-        public override async Task OnTimerAsync()
-        {
-            if (Map == null)
-                return;
-
-            if (!IsAlive)
-                return;
-
-            for (int i = 0; i < 5; i++)
-            {
-                switch (mStage)
-                {
-                    case AiStage.Idle:
-                        if (await OnIdleAsync())
-                            return;
-                        break;
-                    case AiStage.Forward:
-                        if (await OnForwardAsync())
-                            return;
-                        break;
-                    case AiStage.Attack:
-                        if (await OnAttackAsync())
-                            return;
-                        break;
-                    case AiStage.Escape:
-                        if (await OnEscapeAsync())
-                            return;
-                        break;
-                }
-            }
-        }
-
-        #endregion
-
         #region Constants
 
-        public const int ATKUSER_LEAVEONLY = 0, // Ö»»áÌÓÅÜ
-            ATKUSER_PASSIVE = 0x01, // ±»¶¯¹¥»÷
-            ATKUSER_ACTIVE = 0x02, // Ö÷¶¯¹¥»÷
-            ATKUSER_RIGHTEOUS = 0x04, // ÕýÒåµÄ(ÎÀ±ø»òÍæ¼ÒÕÙ»½ºÍ¿ØÖÆµÄ¹ÖÎï)
-            ATKUSER_GUARD = 0x08, // ÎÀ±ø(ÎÞÊÂ»ØÔ­Î»ÖÃ)
-            ATKUSER_PPKER = 0x10, // ×·É±ºÚÃû 
-            ATKUSER_JUMP = 0x20, // »áÌø
-            ATKUSER_FIXED = 0x40, // ²»»á¶¯µÄ
-            ATKUSER_FASTBACK = 0x0080, // ËÙ¹é
-            ATKUSER_LOCKUSER = 0x0100, // Ëø¶¨¹¥»÷Ö¸¶¨Íæ¼Ò£¬Íæ¼ÒÀë¿ª×Ô¶¯ÏûÊ§ 
-            ATKUSER_LOCKONE = 0x0200, // Ëø¶¨¹¥»÷Ê×ÏÈ¹¥»÷×Ô¼ºµÄÍæ¼Ò
-            ATKUSER_ADDLIFE = 0x0400, // ×Ô¶¯¼ÓÑª
-            ATKUSER_EVIL_KILLER = 0x0800, // °×ÃûÉ±ÊÖ
-            ATKUSER_WING = 0x1000, // ·ÉÐÐ×´Ì¬
-            ATKUSER_NEUTRAL = 0x2000, // ÖÐÁ¢
-            ATKUSER_ROAR = 0x4000, // ³öÉúÊ±È«µØÍ¼Å­ºð
-            ATKUSER_NOESCAPE = 0x8000, // ²»»áÌÓÅÜ
-            ATKUSER_EQUALITY = 0x10000; // ²»ÃêÊÓ
+        public const int ATKUSER_LEAVEONLY = 0,        // Ö»»áÌÓÅÜ
+                         ATKUSER_PASSIVE = 0x01,       // ±»¶¯¹¥»÷
+                         ATKUSER_ACTIVE = 0x02,        // Ö÷¶¯¹¥»÷
+                         ATKUSER_RIGHTEOUS = 0x04,     // ÕýÒåµÄ(ÎÀ±ø»òÍæ¼ÒÕÙ»½ºÍ¿ØÖÆµÄ¹ÖÎï)
+                         ATKUSER_GUARD = 0x08,         // ÎÀ±ø(ÎÞÊÂ»ØÔ­Î»ÖÃ)
+                         ATKUSER_PPKER = 0x10,         // ×·É±ºÚÃû 
+                         ATKUSER_JUMP = 0x20,          // »áÌø
+                         ATKUSER_FIXED = 0x40,         // ²»»á¶¯µÄ
+                         ATKUSER_FASTBACK = 0x0080,    // ËÙ¹é
+                         ATKUSER_LOCKUSER = 0x0100,    // Ëø¶¨¹¥»÷Ö¸¶¨Íæ¼Ò£¬Íæ¼ÒÀë¿ª×Ô¶¯ÏûÊ§ 
+                         ATKUSER_LOCKONE = 0x0200,     // Ëø¶¨¹¥»÷Ê×ÏÈ¹¥»÷×Ô¼ºµÄÍæ¼Ò
+                         ATKUSER_ADDLIFE = 0x0400,     // ×Ô¶¯¼ÓÑª
+                         ATKUSER_EVIL_KILLER = 0x0800, // °×ÃûÉ±ÊÖ
+                         ATKUSER_WING = 0x1000,        // ·ÉÐÐ×´Ì¬
+                         ATKUSER_NEUTRAL = 0x2000,     // ÖÐÁ¢
+                         ATKUSER_ROAR = 0x4000,        // ³öÉúÊ±È«µØÍ¼Å­ºð
+                         ATKUSER_NOESCAPE = 0x8000,    // ²»»áÌÓÅÜ
+                         ATKUSER_EQUALITY = 0x10000;   // ²»ÃêÊÓ
 
         public const int NPC_CLIMBCAP = 26;
-        public const int SHORTWEAPON_RANGE_LIMIT = 2;		// ½üÉíÎäÆ÷µÄ×î´ó¹¥»÷·¶Î§(ÒÔ´Ë·¶Î§ÊÇ·ñ¹­¼ýÊÖ)
+        public const int SHORTWEAPON_RANGE_LIMIT = 2; // ½üÉíÎäÆ÷µÄ×î´ó¹¥»÷·¶Î§(ÒÔ´Ë·¶Î§ÊÇ·ñ¹­¼ýÊÖ)
 
-        enum AiStage
+        private enum AiStage
         {
             /// <summary>
-            /// Monster wont do nothing, just heal. Activated if on active block but haven't triggered any other action.
+            ///     Monster wont do nothing, just heal. Activated if on active block but haven't triggered any other action.
             /// </summary>
             Dormancy,
+
             /// <summary>
-            /// Monster is doing absolutely nothing.
+            ///     Monster is doing absolutely nothing.
             /// </summary>
             Idle,
+
             /// <summary>
-            /// When monster is low life and want to run from the attacker.
+            ///     When monster is low life and want to run from the attacker.
             /// </summary>
             Escape,
+
             /// <summary>
-            /// Monster movement.
+            ///     Monster movement.
             /// </summary>
             Forward,
+
             /// <summary>
-            /// Monster is ready for attack.
+            ///     Monster is ready for attack.
             /// </summary>
             Attack,
             Last

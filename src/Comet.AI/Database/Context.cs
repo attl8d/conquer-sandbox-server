@@ -1,20 +1,21 @@
-using Microsoft.EntityFrameworkCore;
-using Comet.Database.Entities;
-using Comet.Database;
-using System.Data;
-using Comet.Shared;
 using System;
-using System.Threading.Tasks;
 using System.Collections.Generic;
+using System.Data;
+using System.Data.Common;
+using System.Threading.Tasks;
+using Comet.Database;
+using Comet.Database.Entities;
+using Comet.Shared;
+using Microsoft.EntityFrameworkCore;
 
 namespace Comet.AI.Database
 {
     /// <summary>
-    /// Server database client context implemented using Entity Framework Core, an open
-    /// source object-relational mapping framework for ADO.NET. Substitutes in MySQL 
-    /// support through a third-party framework provided by Pomelo Foundation.
+    ///     Server database client context implemented using Entity Framework Core, an open
+    ///     source object-relational mapping framework for ADO.NET. Substitutes in MySQL
+    ///     support through a third-party framework provided by Pomelo Foundation.
     /// </summary>
-    public partial class ServerDbContext : AbstractDbContext
+    public class ServerDbContext : AbstractDbContext
     {
         // Table Definitions
         public virtual DbSet<DbMap> Maps { get; set; }
@@ -33,9 +34,9 @@ namespace Comet.AI.Database
         public virtual DbSet<DbMonsterTypeMagic> MonsterTypeMagic { get; set; }
 
         /// <summary>
-        /// Typically called only once when the first instance of the context is created.
-        /// Allows for model building before the context is fully initialized, and used
-        /// to initialize composite keys and relationships.
+        ///     Typically called only once when the first instance of the context is created.
+        ///     Allows for model building before the context is fully initialized, and used
+        ///     to initialize composite keys and relationships.
         /// </summary>
         /// <param name="builder">Builder for creating models in the context</param>
         protected override void OnModelCreating(ModelBuilder builder)
@@ -47,7 +48,7 @@ namespace Comet.AI.Database
         {
             try
             {
-                using ServerDbContext ctx = new ServerDbContext();
+                using var ctx = new ServerDbContext();
                 return ctx.Database.CanConnect();
             }
             catch (Exception ex)
@@ -124,8 +125,8 @@ namespace Comet.AI.Database
         public static async Task<string> ScalarAsync(string query)
         {
             await using var db = new ServerDbContext();
-            var connection = db.Database.GetDbConnection();
-            var state = connection.State;
+            DbConnection connection = db.Database.GetDbConnection();
+            ConnectionState state = connection.State;
 
             string result;
             try
@@ -133,7 +134,7 @@ namespace Comet.AI.Database
                 if ((state & ConnectionState.Open) == 0)
                     await connection.OpenAsync();
 
-                var cmd = connection.CreateCommand();
+                DbCommand cmd = connection.CreateCommand();
                 cmd.CommandType = CommandType.Text;
                 cmd.CommandText = query;
 
@@ -144,6 +145,7 @@ namespace Comet.AI.Database
                 if (state != ConnectionState.Closed)
                     await connection.CloseAsync();
             }
+
             return result;
         }
 
@@ -151,19 +153,19 @@ namespace Comet.AI.Database
         {
             await using var db = new ServerDbContext();
             var result = new DataTable();
-            var connection = db.Database.GetDbConnection();
-            var state = connection.State;
+            DbConnection connection = db.Database.GetDbConnection();
+            ConnectionState state = connection.State;
 
             try
             {
                 if (state != ConnectionState.Open)
                     await connection.OpenAsync();
 
-                var command = connection.CreateCommand();
+                DbCommand command = connection.CreateCommand();
                 command.CommandText = query;
                 command.CommandType = CommandType.Text;
 
-                await using var reader = await command.ExecuteReaderAsync();
+                await using DbDataReader reader = await command.ExecuteReaderAsync();
                 result.Load(reader);
             }
             catch (Exception ex)

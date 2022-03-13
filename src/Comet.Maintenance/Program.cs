@@ -1,30 +1,25 @@
-﻿using Comet.Database;
+﻿using System;
+using System.Linq;
+using System.Threading.Tasks;
+using Comet.Database;
 using Comet.Maintenance.Database;
 using Comet.Maintenance.Managers;
 using Comet.Shared;
-using System;
-using System.Linq;
-using System.Threading.Tasks;
 
 namespace Comet.Maintenance
 {
     internal static class Program
     {
-        private const string ArgSqlAllTables = "--sql-all-tables";
-        private const string ArgSqlOnlyUserData = "--sql-only-user-data";
-        private const string ArgClearOldSqlFiles = "--clear-sql";
-        private const string ArgZipLogFiles = "--zip-logs";
-
         private static async Task Main(string[] args)
         {
             Console.Title = "Comet System Maintenance";
             Log.DefaultFileName = "MaintenanceMgr";
 
-            bool dumpSqlAllTables = false; // --sql-all-tables
-            bool dumpSqlOnlyUserData = true; // --sql-only-user-data
-            bool clearOldSqlFiles = true; // --clear-sql
+            var dumpSqlAllTables = false;   // --sql-all-tables
+            var dumpSqlOnlyUserData = true; // --sql-only-user-data
+            var clearOldSqlFiles = true;    // --clear-sql
 
-            bool zipLogFiles = true;
+            var zipLogFiles = true;
 
             if (args.Length > 0)
             {
@@ -33,7 +28,8 @@ namespace Comet.Maintenance
 
                 if (dumpSqlAllTables && dumpSqlOnlyUserData)
                 {
-                    await Log.WriteLogAsync(LogLevel.Error, $"Cannot use '{ArgSqlAllTables}' and '{ArgSqlOnlyUserData}' in the same execution.");
+                    await Log.WriteLogAsync(LogLevel.Error,
+                                            $"Cannot use '{ArgSqlAllTables}' and '{ArgSqlOnlyUserData}' in the same execution.");
                     Console.ReadLine();
                     return;
                 }
@@ -65,5 +61,10 @@ namespace Comet.Maintenance
                 await DatabaseBackupManager.DumpAsync(!dumpSqlOnlyUserData);
             }
         }
+
+        private const string ArgSqlAllTables = "--sql-all-tables";
+        private const string ArgSqlOnlyUserData = "--sql-only-user-data";
+        private const string ArgClearOldSqlFiles = "--clear-sql";
+        private const string ArgZipLogFiles = "--zip-logs";
     }
 }

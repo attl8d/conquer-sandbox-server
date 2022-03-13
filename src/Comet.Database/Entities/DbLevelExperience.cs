@@ -6,8 +6,8 @@ namespace Comet.Database.Entities
     [Table("cq_levexp")]
     public class DbLevelExperience
     {
-        [Key]
-        [Column("id")] public virtual uint Identity { get; set; }
+        [Key] [Column("id")] public virtual uint Identity { get; set; }
+
         [Column("level")] public virtual byte Level { get; set; }
         [Column("exp")] public virtual ulong Exp { get; set; }
         [Column("up_lev_time")] public virtual int UpLevTime { get; set; }

@@ -6,7 +6,7 @@ namespace Comet.Database.Entities
     [Table("flower")]
     public class DbFlower
     {
-        [Key][Column("id")] public uint Identity { get; set; }
+        [Key] [Column("id")] public uint Identity { get; set; }
         [Column("player_id")] public uint UserId { get; set; }
         [Column("flower_r")] public uint RedRose { get; set; }
         [Column("flower_w")] public uint WhiteRose { get; set; }

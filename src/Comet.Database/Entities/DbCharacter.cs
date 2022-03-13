@@ -1,9 +1,6 @@
 ﻿using System;
-using System.Collections.Generic;
 using System.ComponentModel.DataAnnotations;
 using System.ComponentModel.DataAnnotations.Schema;
-using System.Linq;
-using System.Threading.Tasks;
 
 namespace Comet.Database.Entities
 {
@@ -16,8 +13,8 @@ namespace Comet.Database.Entities
     public class DbCharacter
     {
         // Column Properties
-        [Key]
-        [Column("id")] public virtual uint Identity { get; set; }
+        [Key] [Column("id")] public virtual uint Identity { get; set; }
+
         [Column("account_id")] public virtual uint AccountIdentity { get; set; }
         [Column("name")] public virtual string Name { get; set; }
         [Column("mateid")] public virtual uint Mate { get; set; }
@@ -70,31 +67,42 @@ namespace Comet.Database.Entities
         [Column("flower_w")] public uint FlowerWhite { get; set; }
         [Column("flower_lily")] public uint FlowerOrchid { get; set; }
         [Column("flower_tulip")] public uint FlowerTulip { get; set; }
+
         /// <summary>
-        /// Experience Gained by staying online with Heaven Blessing.
+        ///     Experience Gained by staying online with Heaven Blessing.
         /// </summary>
-        [Column("online_god_exptime")] public uint OnlineGodExpTime { get; set; }
+        [Column("online_god_exptime")]
+        public uint OnlineGodExpTime { get; set; }
+
         /// <summary>
-        /// Experience gained by killing monsters in the world with Heaven Blessing.
+        ///     Experience gained by killing monsters in the world with Heaven Blessing.
         /// </summary>
-        [Column("battle_god_exptime")] public uint BattleGodExpTime { get; set; }
-        
+        [Column("battle_god_exptime")]
+        public uint BattleGodExpTime { get; set; }
+
         /// <summary>
-        /// Amount of times remaining to enlight other player.
+        ///     Amount of times remaining to enlight other player.
         /// </summary>
-        [Column("mentor_opportunity")] public uint MentorOpportunity { get; set; }
+        [Column("mentor_opportunity")]
+        public uint MentorOpportunity { get; set; }
+
         /// <summary>
-        /// Enlightment experience to be awarded.
+        ///     Enlightment experience to be awarded.
         /// </summary>
-        [Column("mentor_uplev_time")] public uint MentorUplevTime { get; set; }
+        [Column("mentor_uplev_time")]
+        public uint MentorUplevTime { get; set; }
+
         /// <summary>
-        /// Amount of times enlightened.
+        ///     Amount of times enlightened.
         /// </summary>
-        [Column("mentor_achieve")] public uint MentorAchieve { get; set; }
+        [Column("mentor_achieve")]
+        public uint MentorAchieve { get; set; }
+
         /// <summary>
-        /// Enlightment last reset time.
+        ///     Enlightment last reset time.
         /// </summary>
-        [Column("mentor_day")] public uint MentorDay { get; set; }
+        [Column("mentor_day")]
+        public uint MentorDay { get; set; }
 
         [Column("title")] public uint Title { get; set; }
         [Column("title_select")] public byte TitleSelect { get; set; }
@@ -105,14 +113,16 @@ namespace Comet.Database.Entities
         [Column("athlete_day_wins")] public uint AthleteDayWins { get; set; }
         [Column("athlete_day_loses")] public uint AthleteDayLoses { get; set; }
         [Column("athlete_cur_honor_point")] public uint AthleteCurrentHonorPoints { get; set; }
-        [Column("athlete_hisorty_honor_point")] public uint AthleteHistoryHonorPoints { get; set; }
+
+        [Column("athlete_hisorty_honor_point")]
+        public uint AthleteHistoryHonorPoints { get; set; }
 
         [Column("emoney_mono")] public uint ConquerPointsBound { get; set; }
 
         [Column("quiz_point")] public uint QuizPoints { get; set; }
 
         [Column("nationality")] public ushort Nationality { get; set; }
-        [Column("cultivation")] public uint Cultivation { get; set; } // Study Points
+        [Column("cultivation")] public uint Cultivation { get; set; }      // Study Points
         [Column("strength_value")] public uint StrengthValue { get; set; } // ChiPoints
         [Column("day_reset_date")] public uint DayResetDate { get; set; }
     }

@@ -1,16 +1,14 @@
 ﻿using System;
-using System.Collections.Generic;
 using System.ComponentModel.DataAnnotations;
 using System.ComponentModel.DataAnnotations.Schema;
-using System.Threading.Tasks;
 
 namespace Comet.Database.Entities
 {
     [Table("family")]
     public class DbFamily
     {
-        [Key]
-        [Column("id")] public uint Identity { get; set; }
+        [Key] [Column("id")] public uint Identity { get; set; }
+
         [Column("family_name")] public string Name { get; set; }
         [Column("rank")] public byte Rank { get; set; }
         [Column("lead_id")] public uint LeaderIdentity { get; set; }

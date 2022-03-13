@@ -6,7 +6,7 @@ namespace Comet.Database.Entities
     [Table("cq_itemtype")]
     public class DbItemtype
     {
-        [Key][Column("id")] public virtual uint Type { get; set; }
+        [Key] [Column("id")] public virtual uint Type { get; set; }
         [Column("name")] public virtual string Name { get; set; }
         [Column("req_profession")] public virtual uint ReqProfession { get; set; }
         [Column("req_weaponskill")] public virtual byte ReqWeaponskill { get; set; }
@@ -44,7 +44,7 @@ namespace Comet.Database.Entities
         [Column("type_mask")] public virtual byte TypeMask { get; set; }
         [Column("emoney_price")] public virtual uint EmoneyPrice { get; set; }
         [Column("emoney_mono_price")] public virtual uint BoundEmoneyPrice { get; set; } // 2014-12-14
-        [Column("save_time")] public virtual uint SaveTime { get; set; } // 2020-08-06
+        [Column("save_time")] public virtual uint SaveTime { get; set; }                 // 2020-08-06
         [Column("critical_rate")] public virtual uint CriticalStrike { get; set; }
         [Column("magic_critical_rate")] public virtual uint SkillCritStrike { get; set; }
         [Column("anti_critical_rate")] public virtual uint Immunity { get; set; }
@@ -59,6 +59,7 @@ namespace Comet.Database.Entities
         [Column("attr_fire")] public virtual uint ResistFire { get; set; }
         [Column("attr_earth")] public virtual uint ResistEarth { get; set; }
         [Column("godsoullev")] public virtual byte Phase { get; set; }
+
         [Column("meteor_count")] public virtual uint MeteorAmount { get; set; } // 2014-12-14
         //[Column("honor_price")] public virtual uint HonorPrice { get; set; } // 2014-12-14
         //[Column("life_time")] public virtual uint LifeTime { get; set; } // 2014-12-25

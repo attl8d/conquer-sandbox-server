@@ -6,7 +6,7 @@ namespace Comet.Database.Entities
     [Table("cq_magictypeop")]
     public class DbMagictypeOp
     {
-        [Key][Column("id")] public virtual uint Id { get; set; }
+        [Key] [Column("id")] public virtual uint Id { get; set; }
         [Column("rebirth_time")] public virtual byte RebirthTime { get; set; }
         [Column("profession_ago")] public virtual ushort ProfessionAgo { get; set; }
         [Column("profession_now")] public virtual ushort ProfessionNow { get; set; }

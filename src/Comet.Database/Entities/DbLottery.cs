@@ -6,7 +6,7 @@ namespace Comet.Database.Entities
     [Table("cq_lottery")]
     public class DbLottery
     {
-        [Key][Column("id")] public virtual uint Identity { get; set; }
+        [Key] [Column("id")] public virtual uint Identity { get; set; }
 
         [Column("type")] public virtual uint Type { get; set; }
         [Column("rank")] public virtual byte Rank { get; set; }

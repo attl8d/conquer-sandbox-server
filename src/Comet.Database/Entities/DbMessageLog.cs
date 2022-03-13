@@ -7,7 +7,7 @@ namespace Comet.Database.Entities
     [Table("cq_message_log")]
     public class DbMessageLog
     {
-        [Key][Column("id")] public virtual uint Identity { get; set; }
+        [Key] [Column("id")] public virtual uint Identity { get; set; }
         [Column("sender_id")] public virtual uint SenderIdentity { get; set; }
         [Column("sender_name")] public virtual string SenderName { get; set; }
         [Column("target_id")] public virtual uint TargetIdentity { get; set; }

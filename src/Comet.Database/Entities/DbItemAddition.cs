@@ -6,7 +6,7 @@ namespace Comet.Database.Entities
     [Table("cq_itemaddition")]
     public class DbItemAddition
     {
-        [Key][Column("id")] public virtual uint Identity { get; set; }
+        [Key] [Column("id")] public virtual uint Identity { get; set; }
 
         [Column("typeid")] public virtual uint TypeId { get; set; }
 

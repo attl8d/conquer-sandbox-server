@@ -6,8 +6,8 @@ namespace Comet.Database.Entities
     [Table("cq_traptype")]
     public class DbTrapType
     {
-        [Key]
-        [Column("id")] public virtual uint Id { get; set; }
+        [Key] [Column("id")] public virtual uint Id { get; set; }
+
         [Column("sort")] public virtual uint Sort { get; set; }
         [Column("look")] public virtual uint Look { get; set; }
         [Column("action_id")] public virtual uint ActionId { get; set; }

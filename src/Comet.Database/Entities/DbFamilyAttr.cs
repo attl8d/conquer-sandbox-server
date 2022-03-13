@@ -7,7 +7,7 @@ namespace Comet.Database.Entities
     [Table("family_attr")]
     public class DbFamilyAttr
     {
-        [Key][Column("id")] public uint Identity { get; set; }
+        [Key] [Column("id")] public uint Identity { get; set; }
         [Column("user_id")] public uint UserIdentity { get; set; }
         [Column("family_id")] public uint FamilyIdentity { get; set; }
         [Column("rank")] public byte Rank { get; set; }

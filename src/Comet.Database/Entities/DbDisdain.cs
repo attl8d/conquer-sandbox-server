@@ -1,14 +1,12 @@
-﻿using System.Collections.Generic;
-using System.ComponentModel.DataAnnotations;
+﻿using System.ComponentModel.DataAnnotations;
 using System.ComponentModel.DataAnnotations.Schema;
-using System.Threading.Tasks;
 
 namespace Comet.Database.Entities
 {
     [Table("cq_disdain")]
     public class DbDisdain
     {
-        [Key][Column("id")] public uint Identity { get; set; }
+        [Key] [Column("id")] public uint Identity { get; set; }
         [Column("delta_lev")] public int DeltaLev { get; set; }
         [Column("exp_factor")] public int ExpFactor { get; set; }
         [Column("max_atk")] public int MaxAtk { get; set; }

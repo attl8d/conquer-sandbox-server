@@ -6,8 +6,8 @@ namespace Comet.Database.Entities
     [Table("cq_generator")]
     public class DbGenerator
     {
-        [Key]
-        [Column("id")] public virtual uint Id { get; set; }
+        [Key] [Column("id")] public virtual uint Id { get; set; }
+
         [Column("mapid")] public virtual uint Mapid { get; set; }
         [Column("bound_x")] public virtual ushort BoundX { get; set; }
         [Column("bound_y")] public virtual ushort BoundY { get; set; }

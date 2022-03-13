@@ -7,7 +7,7 @@ namespace Comet.Database.Entities
     [Table("cq_syn_ally")]
     public class DbSyndicateAlly
     {
-        [Key][Column("id")] public virtual uint Identity { get; set; }
+        [Key] [Column("id")] public virtual uint Identity { get; set; }
         [Column("synid")] public virtual uint SyndicateIdentity { get; set; }
         [Column("synname")] public virtual string SyndicateName { get; set; }
         [Column("allyid")] public virtual uint AllyIdentity { get; set; }

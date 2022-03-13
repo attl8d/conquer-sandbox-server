@@ -7,7 +7,7 @@ namespace Comet.Database.Entities
     [Table("cq_syn_history")]
     public class DbSyndicateMemberHistory
     {
-        [Key][Column("id")] public virtual uint Identity { get; set; }
+        [Key] [Column("id")] public virtual uint Identity { get; set; }
         [Column("user_id")] public virtual uint UserIdentity { get; set; }
         [Column("syn_id")] public virtual uint SyndicateIdentity { get; set; }
         [Column("join_date")] public virtual DateTime JoinDate { get; set; }

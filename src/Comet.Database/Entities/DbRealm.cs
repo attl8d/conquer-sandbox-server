@@ -5,18 +5,18 @@ using System.ComponentModel.DataAnnotations.Schema;
 namespace Comet.Database.Entities
 {
     /// <summary>
-    /// Realms are configured instances of the game server. This class defines routing 
-    /// details for authenticated clients to be redirected to. Redirection involves
-    /// access token leasing, provided by the game server via RPC. Security for RPC stream
-    /// encryption is defined in this class.
+    ///     Realms are configured instances of the game server. This class defines routing
+    ///     details for authenticated clients to be redirected to. Redirection involves
+    ///     access token leasing, provided by the game server via RPC. Security for RPC stream
+    ///     encryption is defined in this class.
     /// </summary>
     [Table("realm")]
-    public partial class DbRealm
+    public class DbRealm
     {
         [NotMapped] public object Server;
 
-        [Key]
-        public virtual uint RealmID { get; set; }
+        [Key] public virtual uint RealmID { get; set; }
+
         public virtual string Name { get; set; }
         public virtual ushort AuthorityID { get; set; }
         public virtual string GameIPAddress { get; set; }

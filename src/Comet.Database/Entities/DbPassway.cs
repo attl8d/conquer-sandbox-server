@@ -6,8 +6,7 @@ namespace Comet.Database.Entities
     [Table("cq_passway")]
     public class DbPassway
     {
-        [Key] 
-        [Column("id")] public virtual uint Identity { get; set; }
+        [Key] [Column("id")] public virtual uint Identity { get; set; }
 
         [Column("mapid")] public virtual uint MapId { get; set; }
 

@@ -6,7 +6,7 @@ namespace Comet.Database.Entities
     [Table("task_detail")]
     public class DbTaskDetail
     {
-        [Key][Column("id")] public virtual uint Identity { get; set; }
+        [Key] [Column("id")] public virtual uint Identity { get; set; }
         [Column("user_id")] public virtual uint UserIdentity { get; set; }
         [Column("task_id")] public virtual uint TaskIdentity { get; set; }
         [Column("complete_flag")] public virtual ushort CompleteFlag { get; set; }

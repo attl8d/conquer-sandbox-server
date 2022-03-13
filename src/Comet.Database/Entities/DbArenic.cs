@@ -7,7 +7,7 @@ namespace Comet.Database.Entities
     [Table("cq_arenic")]
     public class DbArenic
     {
-        [Key][Column("id")] public uint Identity { get; set; }
+        [Key] [Column("id")] public uint Identity { get; set; }
         [Column("type")] public byte Type { get; set; }
         [Column("date")] public DateTime Date { get; set; }
         [Column("user_id")] public uint UserId { get; set; }

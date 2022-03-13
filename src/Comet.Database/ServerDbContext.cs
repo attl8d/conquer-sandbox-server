@@ -3,28 +3,27 @@
 namespace Comet.Database
 {
     /// <summary>
-    /// Server database client context implemented using Entity Framework Core, an open
-    /// source object-relational mapping framework for ADO.NET. Substitutes in MySQL 
-    /// support through a third-party framework provided by Pomelo Foundation.
+    ///     Server database client context implemented using Entity Framework Core, an open
+    ///     source object-relational mapping framework for ADO.NET. Substitutes in MySQL
+    ///     support through a third-party framework provided by Pomelo Foundation.
     /// </summary>
     public abstract class AbstractDbContext : DbContext
     {
-        public static DatabaseConfiguration Configuration;
-
         private static string ConnectionString { get; set; }
         private static ServerVersion ServerVersion { get; set; }
 
         public static void Initialize()
         {
-            ConnectionString = $"server={Configuration.Hostname};database={Configuration.Schema};user={Configuration.Username};password={Configuration.Password};port={Configuration.Port}";
+            ConnectionString =
+                $"server={Configuration.Hostname};database={Configuration.Schema};user={Configuration.Username};password={Configuration.Password};port={Configuration.Port}";
             ServerVersion = ServerVersion.AutoDetect(ConnectionString);
         }
 
         /// <summary>
-        /// Configures the database to be used for this context. This method is called
-        /// for each instance of the context that is created. For this project, the MySQL
-        /// connector will be initialized with a connection string from the server's
-        /// configuration file.
+        ///     Configures the database to be used for this context. This method is called
+        ///     for each instance of the context that is created. For this project, the MySQL
+        ///     connector will be initialized with a connection string from the server's
+        ///     configuration file.
         /// </summary>
         /// <param name="options">Builder to create the context</param>
         protected override void OnConfiguring(DbContextOptionsBuilder options)
@@ -32,5 +31,7 @@ namespace Comet.Database
             options.UseLazyLoadingProxies(false);
             options.UseMySql(ConnectionString, ServerVersion.AutoDetect(ConnectionString));
         }
+
+        public static DatabaseConfiguration Configuration;
     }
 }

@@ -7,7 +7,7 @@ namespace Comet.Database.Entities
     [Table("cq_syndicate")]
     public class DbSyndicate
     {
-        [Key][Column("id")] public virtual ushort Identity { get; set; }
+        [Key] [Column("id")] public virtual ushort Identity { get; set; }
         [Column("creation_date")] public virtual DateTime CreationDate { get; set; }
         [Column("name")] public virtual string Name { get; set; }
         [Column("announce")] public virtual string Announce { get; set; }

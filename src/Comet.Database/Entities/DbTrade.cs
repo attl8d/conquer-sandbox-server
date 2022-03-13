@@ -7,7 +7,7 @@ namespace Comet.Database.Entities
     [Table("cq_trade")]
     public class DbTrade
     {
-        [Key][Column("id")] public virtual uint Identity { get; set; }
+        [Key] [Column("id")] public virtual uint Identity { get; set; }
         [Column("user_id")] public virtual uint UserIdentity { get; set; }
         [Column("target_id")] public virtual uint TargetIdentity { get; set; }
         [Column("user_money")] public virtual uint UserMoney { get; set; }

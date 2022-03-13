@@ -7,8 +7,8 @@ namespace Comet.Database.Entities
     public class DbMap
     {
         // Column Properties
-        [Key]
-        [Column("id")] public virtual uint Identity { get; set; }
+        [Key] [Column("id")] public virtual uint Identity { get; set; }
+
         [Column("name")] public virtual string Name { get; set; }
         [Column("describe_text")] public virtual string Description { get; set; }
         [Column("mapdoc")] public virtual uint MapDoc { get; set; }

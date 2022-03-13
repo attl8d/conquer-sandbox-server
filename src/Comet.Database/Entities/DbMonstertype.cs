@@ -6,7 +6,7 @@ namespace Comet.Database.Entities
     [Table("cq_monstertype")]
     public class DbMonstertype
     {
-        [Key][Column("id")] public virtual uint Id { get; set; }
+        [Key] [Column("id")] public virtual uint Id { get; set; }
         [Column("name")] public virtual string Name { get; set; }
         [Column("type")] public virtual uint Type { get; set; }
         [Column("lookface")] public virtual ushort Lookface { get; set; }
@@ -51,6 +51,7 @@ namespace Comet.Database.Entities
         [Column("anti_monster")] public virtual byte AntiMonster { get; set; }
         [Column("extra_battlelev")] public virtual ushort ExtraBattlelev { get; set; }
         [Column("extra_exp")] public virtual short ExtraExp { get; set; }
+
         [Column("extra_damage")] public virtual short ExtraDamage { get; set; }
         //[Column("")] public virtual int WaterAtk { get; set; }
         //[Column("")] public virtual int FireAtk { get; set; }

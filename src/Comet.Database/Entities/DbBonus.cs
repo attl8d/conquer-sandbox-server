@@ -7,7 +7,7 @@ namespace Comet.Database.Entities
     [Table("cq_bonus")]
     public class DbBonus
     {
-        [Key][Column("id")] public virtual uint Identity { get; set; }
+        [Key] [Column("id")] public virtual uint Identity { get; set; }
         [Column("action")] public virtual uint Action { get; set; }
         [Column("id_account")] public virtual uint AccountIdentity { get; set; }
         [Column("flag")] public virtual byte Flag { get; set; }

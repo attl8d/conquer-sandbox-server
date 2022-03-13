@@ -6,7 +6,7 @@ namespace Comet.Database.Entities
     [Table("cq_newbie_info")]
     public class DbNewbieInfo
     {
-        [Key][Column("id")] public uint Identity { get; set; }
+        [Key] [Column("id")] public uint Identity { get; set; }
         [Column("profession")] public uint Profession { get; set; }
         [Column("lweapon")] public uint LeftHand { get; set; }
         [Column("rweapon")] public uint RightHand { get; set; }

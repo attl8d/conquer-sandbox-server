@@ -6,7 +6,7 @@ namespace Comet.Database.Entities
     [Table("cq_point_allot")]
     public class DbPointAllot
     {
-        [Key][Column("id")] public virtual uint Identity { get; set; }
+        [Key] [Column("id")] public virtual uint Identity { get; set; }
 
         [Column("profession")] public virtual byte Profession { get; set; }
         [Column("level")] public virtual byte Level { get; set; }

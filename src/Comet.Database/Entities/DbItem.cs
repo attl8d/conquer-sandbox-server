@@ -155,6 +155,5 @@ namespace Comet.Database.Entities
         [Column("save_time")] public virtual uint SaveTime { get; set; }
 
         [Column("accumulate_num")] public virtual uint AccumulateNum { get; set; }
-
     }
 }

@@ -6,7 +6,7 @@ namespace Comet.Database.Entities
     [Table("cq_magictype")]
     public class DbMagictype
     {
-        [Key][Column("id")] public virtual uint Id { get; set; }
+        [Key] [Column("id")] public virtual uint Id { get; set; }
         [Column("type")] public virtual uint Type { get; set; }
         [Column("sort")] public virtual uint Sort { get; set; }
         [Column("name")] public virtual string Name { get; set; }
@@ -40,9 +40,9 @@ namespace Comet.Database.Entities
         [Column("next_magic")] public virtual uint NextMagic { get; set; }
         [Column("delay_ms")] public virtual uint DelayMs { get; set; }
         [Column("use_item_num")] public virtual uint UseItemNum { get; set; }
-        [Column("attr_type")] public virtual byte ElementType { get; set; } // 2016-12-11
-        [Column("attr_power")] public virtual uint ElementPower { get; set; } // 2016-12-12
-        [Column("coldtime")] public virtual uint Timeout { get; set; } // 2017-03-13
+        [Column("attr_type")] public virtual byte ElementType { get; set; }      // 2016-12-11
+        [Column("attr_power")] public virtual uint ElementPower { get; set; }    // 2016-12-12
+        [Column("coldtime")] public virtual uint Timeout { get; set; }           // 2017-03-13
         [Column("req_uplevtime")] public virtual uint ReqUplevTime { get; set; } // 2017-03-13
     }
 }

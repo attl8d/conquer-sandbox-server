@@ -6,9 +6,8 @@ namespace Comet.Database.Entities
     [Table("cq_quiz")]
     public class DbQuiz
     {
-        [Key]
-        [Column("id")]
-        public uint Identity { get; set; }
+        [Key] [Column("id")] public uint Identity { get; set; }
+
         [Column("type")] public byte Type { get; set; }
         [Column("level")] public byte Level { get; set; }
         [Column("term")] public byte Term { get; set; }

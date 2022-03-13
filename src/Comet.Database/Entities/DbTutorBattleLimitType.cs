@@ -7,14 +7,16 @@ namespace Comet.Database.Entities
     public class DbTutorBattleLimitType
     {
         /// <summary>
-        /// Battle power of the apprentice.
+        ///     Battle power of the apprentice.
         /// </summary>
         [Key]
         [Column("id")]
         public virtual ushort Id { get; set; }
+
         /// <summary>
-        /// Maximum addition battle power for that level.
+        ///     Maximum addition battle power for that level.
         /// </summary>
-        [Column("Battle_lev_limit")] public virtual ushort BattleLevelLimit { get; set; }
+        [Column("Battle_lev_limit")]
+        public virtual ushort BattleLevelLimit { get; set; }
     }
 }

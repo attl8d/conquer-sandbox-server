@@ -6,7 +6,7 @@ namespace Comet.Database.Entities
     [Table("cq_trade_item")]
     public class DbTradeItem
     {
-        [Key][Column("id")] public virtual uint Identity { get; set; }
+        [Key] [Column("id")] public virtual uint Identity { get; set; }
         [Column("trade_id")] public virtual uint TradeIdentity { get; set; }
         [Column("user_id")] public virtual uint SenderIdentity { get; set; }
         [Column("item_id")] public virtual uint ItemIdentity { get; set; }

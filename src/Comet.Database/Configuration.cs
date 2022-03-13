@@ -1,7 +1,7 @@
 ﻿namespace Comet.Database
 {
     /// <summary>
-    /// Encapsulates database configuration for Entity Framework.
+    ///     Encapsulates database configuration for Entity Framework.
     /// </summary>
     public class DatabaseConfiguration
     {

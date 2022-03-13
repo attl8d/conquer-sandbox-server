@@ -7,7 +7,7 @@ namespace Comet.Database.Entities
     [Table("cq_card")]
     public class DbCard
     {
-        [Key][Column("id")] public virtual uint Identity { get; set; }
+        [Key] [Column("id")] public virtual uint Identity { get; set; }
         [Column("ref_id")] public virtual uint ReferenceId { get; set; }
         [Column("account_id")] public virtual uint AccountId { get; set; }
         [Column("itemtype")] public virtual uint ItemType { get; set; }

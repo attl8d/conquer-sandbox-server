@@ -7,7 +7,7 @@ namespace Comet.Database.Entities
     [Table("cq_user_title")]
     public class DbUserTitle
     {
-        [Key][Column("id")] public uint Identity { get; set; }
+        [Key] [Column("id")] public uint Identity { get; set; }
 
         [Column("player_id")] public uint PlayerId { get; set; }
         [Column("type")] public uint Type { get; set; }

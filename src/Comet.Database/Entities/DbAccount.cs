@@ -13,8 +13,8 @@ namespace Comet.Database.Entities
     public class DbAccount
     {
         // Column Properties
-        [Key]
-        public uint AccountID { get; set; }
+        [Key] public uint AccountID { get; set; }
+
         public string Username { get; set; }
         public string Password { get; set; }
         public string Salt { get; set; }

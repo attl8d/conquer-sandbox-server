@@ -101,7 +101,9 @@ namespace Comet.Game.States
             }
 
             Character user = mOwner as Character;
-            if (user?.IsBowman == true && !user.Map.IsTrainingMap() && !await user.SpendEquipItemAsync(0050, 1, true))
+            if (user?.IsBowman == true 
+                && !user.Map.IsTrainingMap() 
+                && !await user.SpendEquipItemAsync(0050, 1, true))
             {
                 ResetBattle();
                 return false;
@@ -119,7 +121,7 @@ namespace Comet.Game.States
                 return false;
             }
 
-            if (user != null)
+            if (user != null && !user.Map.IsTrainingMap())
             {
                 await user.DecEquipmentDurabilityAsync(true, 0, 1);
             }

@@ -23,9 +23,9 @@ namespace Comet.Game.States.Events
         private const int TOTAL_EXP_REWARD = 600;
         private readonly ushort[] m_expReward =
         {
-            6000,
             3000,
-            1500,
+            1800,
+            1200,
             600
         };
 
@@ -91,7 +91,7 @@ namespace Comet.Game.States.Events
                         }
                     }
 
-                    _ = RoleManager.BroadcastMsgAsync(new MsgQuiz
+                    await RoleManager.BroadcastMsgAsync(new MsgQuiz
                     {
                         Action = MsgQuiz.QuizAction.Start,
                         Param1 = (ushort)(60 - DateTime.Now.Second),
@@ -121,10 +121,18 @@ namespace Comet.Game.States.Events
                         if (user == null)
                             continue;
 
+                        if (!player.Replied)
+                        {
+                            player.Points += 1;
+                            player.TimeTaken += TIME_PER_QUESTION;
+                        }
+
+                        player.Replied = false;
                         player.CurrentQuestion = m_questionIdx;
                         ushort lastResult = 1;
                         if (m_questionIdx > 0)
-                            lastResult = (ushort)(m_quizQuestions[m_questionIdx - 1].Result == m_lastCorrectReply ? 1 : 0);
+                            lastResult = (ushort)(player.Correct ? 1 : 2);
+                        player.Correct = false;
                         _ = user.SendAsync(new MsgQuiz
                         {
                             Action = MsgQuiz.QuizAction.Question,
@@ -238,15 +246,18 @@ namespace Comet.Game.States.Events
             {
                 expBallAmount = TOTAL_EXP_REWARD / MAX_QUESTION;
                 player.Points += points = (ushort)Math.Max(1, m_questionTimer.GetRemain());
-                player.TimeTaken += (ushort)m_questionTimer.GetRemain();
+                player.TimeTaken += (ushort)Math.Max(1, Math.Min(TIME_PER_QUESTION, m_questionTimer.GetInterval() - m_questionTimer.GetRemain()));
+                player.Correct = true;
             }
             else
             {
                 expBallAmount = TOTAL_EXP_REWARD / MAX_QUESTION * 4;
                 player.Points += points = 1;
                 player.TimeTaken += TIME_PER_QUESTION;
+                player.Correct = false;
             }
 
+            player.Replied = true;
             user.QuizPoints += points;
             player.Experience += (ushort)expBallAmount;
             await user.AwardExperienceAsync(user.CalculateExpBall(expBallAmount));
@@ -363,6 +374,8 @@ namespace Comet.Game.States.Events
             public ushort TimeTaken { get; set; } // in seconds
             public int CurrentQuestion { get; set; }
             public ushort Rank { get; set; }
+            public bool Correct { get; set; }
+            public bool Replied { get; set; }
             public bool Canceled { get; set; }
         }
     }

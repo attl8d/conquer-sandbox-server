@@ -593,6 +593,15 @@ namespace Comet.Game.Packets
                             user.ShowAction = !user.ShowAction;
                             return true;
                         }
+
+                    case "/vip":
+                        {
+                            if (byte.TryParse(param, out var vip))
+                            {
+                                await user.SetAttributesAsync(ClientUpdateType.VipLevel, vip);
+                            }
+                            return true;
+                        }
                 }
             }
 

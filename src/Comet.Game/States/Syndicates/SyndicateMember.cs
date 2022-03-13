@@ -258,13 +258,13 @@ namespace Comet.Game.States.Syndicates
             set => m_attr.AssistantIdentity = value;
         }
 
-        public int TotalDonation => (int) ((int) (Silvers / 10000) + ConquerPointsDonation * 20 + GuideDonation + PkDonation +
+        public int TotalDonation => (int) (Silvers / 10000 + ConquerPointsDonation * 20 + GuideDonation + PkDonation +
                                            ArsenalDonation + RedRoseDonation + WhiteRoseDonation + OrchidDonation +
                                            TulipDonation);
 
-        public int UsableDonation => (int)(Silvers / 10000 + ConquerPointsDonation * 20 + GuideDonation + PkDonation +
-                                           ArsenalDonation + RedRoseDonation + WhiteRoseDonation + OrchidDonation +
-                                           TulipDonation);
+        public int UsableDonation => (int) (Silvers / 10000 + ConquerPointsDonation * 20 + GuideDonation + PkDonation +
+                                            ArsenalDonation + RedRoseDonation + WhiteRoseDonation + OrchidDonation +
+                                            TulipDonation);
 
         public async Task<bool> CreateAsync(DbSyndicateAttr attr, Syndicate syn)
         {
@@ -317,7 +317,8 @@ namespace Comet.Game.States.Syndicates
             Level = user.Level;
             MateIdentity = user.MateIdentity;
 
-            await Log.GmLogAsync("syndicate", $"User [{user.Identity}, {user.Name}] has joined [{syn.Identity}, {syn.Name}]");
+            await Log.GmLogAsync("syndicate",
+                                 $"User [{user.Identity}, {user.Name}] has joined [{syn.Identity}, {syn.Name}]");
             return true;
         }
 

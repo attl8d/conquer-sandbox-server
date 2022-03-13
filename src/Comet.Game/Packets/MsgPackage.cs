@@ -1,13 +1,11 @@
-﻿using Comet.Core;
+﻿using System.Threading.Tasks;
+using Comet.Core;
 using Comet.Game.States;
 using Comet.Game.States.Items;
 using Comet.Game.States.Npcs;
 using Comet.Game.World.Managers;
 using Comet.Game.World.Maps;
-using Comet.Network.Packets;
 using Comet.Network.Packets.Game;
-using System.Collections.Generic;
-using System.Threading.Tasks;
 
 namespace Comet.Game.Packets
 {
@@ -30,12 +28,9 @@ namespace Comet.Game.Packets
                     return;
                 }
 
-                BaseNpc interacting = RoleManager.GetRole<BaseNpc>(user.InteractingNpc);
+                var interacting = RoleManager.GetRole<BaseNpc>(user.InteractingNpc);
 
-                if (interacting == null || interacting.Type != BaseNpc.STORAGE_NPC)
-                {
-                    return;
-                }
+                if (interacting == null || interacting.Type != BaseNpc.STORAGE_NPC) return;
 
                 if (interacting.MapIdentity != 5000 &&
                     (interacting.MapIdentity != user.MapIdentity || interacting.GetDistance(user) > Screen.VIEW_SIZE))
@@ -46,7 +41,6 @@ namespace Comet.Game.Packets
                 }
 
                 if (interacting.MapIdentity == 5000)
-                {
                     switch (npc.MapIdentity)
                     {
                         case 1002: // twin
@@ -75,33 +69,29 @@ namespace Comet.Game.Packets
                                 return;
                             break;
                     }
-                }
             }
             else if (Mode == StorageType.Chest)
             {
                 storageItem = user.UserPackage[Identity];
-                if (storageItem == null)
-                {
-                    return;
-                }
+                if (storageItem == null) return;
             }
 
             if (Action == WarehouseMode.Query)
             {
-                foreach (var item in user.UserPackage.GetStorageItems(Identity, Mode))
+                foreach (Item item in user.UserPackage.GetStorageItems(Identity, Mode))
                 {
                     Items.Add(new WarehouseItem
                     {
                         Identity = item.Identity,
                         Type = item.Type,
-                        SocketOne = (byte)item.SocketOne,
-                        SocketTwo = (byte)item.SocketTwo,
-                        Blessing = (byte)item.Blessing,
+                        SocketOne = (byte) item.SocketOne,
+                        SocketTwo = (byte) item.SocketTwo,
+                        Blessing = (byte) item.Blessing,
                         Enchantment = item.Enchantment,
-                        Magic1 = (byte)item.Effect,
+                        Magic1 = (byte) item.Effect,
                         Magic3 = item.Plus,
                         Locked = item.IsLocked(),
-                        Color = (byte)item.Color,
+                        Color = (byte) item.Color,
                         Suspicious = false,
                         CompositionProgress = item.CompositionProgress,
                         SocketProgress = item.SocketProgress,
@@ -136,7 +126,7 @@ namespace Comet.Game.Packets
 
                 if (Mode == StorageType.Storage && npc?.IsStorageNpc() != true)
                     return;
-                else if (Mode == StorageType.Chest && storageItem?.GetItemSort() != (Item.ItemSort?)11)
+                if (Mode == StorageType.Chest && storageItem?.GetItemSort() != (Item.ItemSort?) 11)
                     return;
 
                 if (user.UserPackage.StorageSize(Identity, Mode) >= 40) // all warehouses 40 blocks

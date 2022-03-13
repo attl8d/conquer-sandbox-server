@@ -1,11 +1,11 @@
-﻿using Comet.Game.Packets.Ai;
-using Comet.Network.Packets;
-using Comet.Network.Sockets;
-using Comet.Shared;
-using System;
+﻿using System;
 using System.Net.Sockets;
 using System.Threading;
 using System.Threading.Tasks;
+using Comet.Game.Packets.Ai;
+using Comet.Network.Packets;
+using Comet.Network.Sockets;
+using Comet.Shared;
 using static Comet.Network.Packets.Ai.MsgAiAction<Comet.Game.Internal.AI.AiClient>;
 
 namespace Comet.Game.Internal.AI
@@ -16,9 +16,9 @@ namespace Comet.Game.Internal.AI
         private readonly PacketProcessor<AiClient> Processor;
 
         /// <summary>
-        /// Instantiates a new instance of <see cref="Server"/> by initializing the 
-        /// <see cref="PacketProcessor"/> for processing packets from the players using 
-        /// channels and worker threads. Initializes the TCP server listener.
+        ///     Instantiates a new instance of <see cref="Server" /> by initializing the
+        ///     <see cref="PacketProcessor" /> for processing packets from the players using
+        ///     channels and worker threads. Initializes the TCP server listener.
         /// </summary>
         /// <param name="config">The server's read configuration file</param>
         public AiServer()
@@ -26,20 +26,19 @@ namespace Comet.Game.Internal.AI
         {
             Processor = new PacketProcessor<AiClient>(ProcessAsync, 1);
             _ = Processor.StartAsync(CancellationToken.None).ConfigureAwait(false);
-
         }
 
         /// <summary>
-        /// Invoked by the server listener's Accepting method to create a new server actor
-        /// around the accepted client socket. Gives the server an opportunity to initialize
-        /// any processing mechanisms or authentication routines for the client connection.
+        ///     Invoked by the server listener's Accepting method to create a new server actor
+        ///     around the accepted client socket. Gives the server an opportunity to initialize
+        ///     any processing mechanisms or authentication routines for the client connection.
         /// </summary>
         /// <param name="socket">Accepted client socket from the server socket</param>
         /// <param name="buffer">Preallocated buffer from the server listener</param>
         /// <returns>A new instance of a ServerActor around the client socket</returns>
         protected override async Task<AiClient> AcceptedAsync(Socket socket, Memory<byte> buffer)
         {
-            var partition = Processor.SelectPartition();
+            uint partition = Processor.SelectPartition();
             var client = new AiClient(socket, buffer, partition);
 
             await client.SendAsync(new MsgAiAction
@@ -50,9 +49,9 @@ namespace Comet.Game.Internal.AI
         }
 
         /// <summary>
-        /// Invoked by the server listener's Receiving method to process a completed packet
-        /// from the actor's socket pipe. At this point, the packet has been assembled and
-        /// split off from the rest of the buffer.
+        ///     Invoked by the server listener's Receiving method to process a completed packet
+        ///     from the actor's socket pipe. At this point, the packet has been assembled and
+        ///     split off from the rest of the buffer.
         /// </summary>
         /// <param name="actor">Server actor that represents the remote client</param>
         /// <param name="packet">Packet bytes to be processed</param>
@@ -63,9 +62,9 @@ namespace Comet.Game.Internal.AI
         }
 
         /// <summary>
-        /// Invoked by one of the server's packet processor worker threads to process a
-        /// single packet of work. Allows the server to process packets as individual 
-        /// messages on a single channel.
+        ///     Invoked by one of the server's packet processor worker threads to process a
+        ///     single packet of work. Allows the server to process packets as individual
+        ///     messages on a single channel.
         /// </summary>
         /// <param name="actor">Actor requesting packet processing</param>
         /// <param name="packet">An individual data packet to be processed</param>
@@ -77,7 +76,7 @@ namespace Comet.Game.Internal.AI
 
             // Read in TQ's binary header
             var length = BitConverter.ToUInt16(packet, 0);
-            PacketType type = (PacketType)BitConverter.ToUInt16(packet, 2);
+            var type = (PacketType) BitConverter.ToUInt16(packet, 2);
 
             try
             {
@@ -86,46 +85,46 @@ namespace Comet.Game.Internal.AI
                 switch (type)
                 {
                     case PacketType.MsgAiLoginExchange:
-                        {
-                            msg = new MsgAiLoginExchange();
-                            break;
-                        }
+                    {
+                        msg = new MsgAiLoginExchange();
+                        break;
+                    }
 
                     case PacketType.MsgAiSpawnNpc:
-                        {
-                            msg = new MsgAiSpawnNpc();
-                            break;
-                        }
+                    {
+                        msg = new MsgAiSpawnNpc();
+                        break;
+                    }
 
                     case PacketType.MsgAiPing:
-                        {
-                            msg = new MsgAiPing();
-                            break;
-                        }
+                    {
+                        msg = new MsgAiPing();
+                        break;
+                    }
 
                     case PacketType.MsgAction:
-                        {
-                            msg = new MsgAction();
-                            break;
-                        }
+                    {
+                        msg = new MsgAction();
+                        break;
+                    }
 
                     case PacketType.MsgInteract:
-                        {
-                            msg = new MsgInteract();
-                            break;
-                        }
+                    {
+                        msg = new MsgInteract();
+                        break;
+                    }
 
                     case PacketType.MsgWalk:
-                        {
-                            msg = new MsgWalk();
-                            break;
-                        }
+                    {
+                        msg = new MsgWalk();
+                        break;
+                    }
 
                     case PacketType.MsgTalk:
-                        {
-                            msg = new MsgTalk();
-                            break;
-                        }
+                    {
+                        msg = new MsgTalk();
+                        break;
+                    }
 
                     default:
                         Console.WriteLine(
@@ -146,9 +145,9 @@ namespace Comet.Game.Internal.AI
         }
 
         /// <summary>
-        /// Invoked by the server listener's Disconnecting method to dispose of the actor's
-        /// resources. Gives the server an opportunity to cleanup references to the actor
-        /// from other actors and server collections.
+        ///     Invoked by the server listener's Disconnecting method to dispose of the actor's
+        ///     resources. Gives the server an opportunity to cleanup references to the actor
+        ///     from other actors and server collections.
         /// </summary>
         /// <param name="actor">Server actor that represents the remote client</param>
         protected override void Disconnected(AiClient actor)

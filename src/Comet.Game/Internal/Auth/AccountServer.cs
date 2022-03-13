@@ -1,7 +1,7 @@
-﻿using Comet.Network.Sockets;
-using System;
+﻿using System;
 using System.Net.Sockets;
 using System.Threading.Tasks;
+using Comet.Network.Sockets;
 
 namespace Comet.Game.Internal.Auth
 {

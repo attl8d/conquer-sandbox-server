@@ -7,7 +7,6 @@ namespace Comet.Game.Packets
 {
     public sealed class MsgAccServerPlayerExchange : MsgAccServerPlayerExchange<AccountServer>
     {
-
         public static PlayerData CreatePlayerData(Character player)
         {
             return new PlayerData

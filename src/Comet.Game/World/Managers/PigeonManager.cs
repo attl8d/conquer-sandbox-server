@@ -1,4 +1,9 @@
-﻿using Comet.Core;
+﻿using System;
+using System.Collections.Generic;
+using System.Drawing;
+using System.Linq;
+using System.Threading.Tasks;
+using Comet.Core;
 using Comet.Database.Entities;
 using Comet.Game.Database;
 using Comet.Game.Database.Repositories;
@@ -6,11 +11,6 @@ using Comet.Game.Packets;
 using Comet.Game.States;
 using Comet.Network.Packets.Game;
 using Comet.Shared;
-using System;
-using System.Collections.Generic;
-using System.Drawing;
-using System.Linq;
-using System.Threading.Tasks;
 
 namespace Comet.Game.World.Managers
 {
@@ -22,11 +22,11 @@ namespace Comet.Game.World.Managers
         private const int PIGEON_MAX_MSG_LENGTH = 80;
         private const int PIGEON_STAND_SECS = 60;
 
-        private static List<DbPigeon> m_past = new List<DbPigeon>();
-        private static List<DbPigeonQueue> m_queue = new List<DbPigeonQueue>();
-        private static DbPigeon m_current = null;
+        private static readonly List<DbPigeon> m_past = new();
+        private static List<DbPigeonQueue> m_queue = new();
+        private static DbPigeon m_current;
 
-        private static TimeOut m_next = new TimeOut(PIGEON_STAND_SECS);
+        private static readonly TimeOut m_next = new(PIGEON_STAND_SECS);
 
         public static async Task<bool> InitializeAsync()
         {
@@ -35,7 +35,8 @@ namespace Comet.Game.World.Managers
             return true;
         }
 
-        public static async Task<bool> PushAsync(Character sender, string message, bool showError = true, bool forceShow = false)
+        public static async Task<bool> PushAsync(Character sender, string message, bool showError = true,
+                                                 bool forceShow = false)
         {
             if (message.Length > PIGEON_MAX_MSG_LENGTH)
             {
@@ -65,7 +66,7 @@ namespace Comet.Game.World.Managers
                 return false;
             }
 
-            DbPigeonQueue pigeon = new DbPigeonQueue
+            var pigeon = new DbPigeonQueue
             {
                 UserIdentity = sender.Identity,
                 UserName = sender.Name,
@@ -88,10 +89,9 @@ namespace Comet.Game.World.Managers
         public static async Task AdditionAsync(Character sender, MsgPigeon request)
         {
             DbPigeonQueue pigeon = null;
-            int position = 0;
+            var position = 0;
 
-            for (int i = 0; i < m_queue.Count; i++)
-            {
+            for (var i = 0; i < m_queue.Count; i++)
                 if (m_queue[i].Identity == request.Param &&
                     m_queue[i].UserIdentity == sender.Identity)
                 {
@@ -99,16 +99,15 @@ namespace Comet.Game.World.Managers
                     pigeon = m_queue[i];
                     break;
                 }
-            }
 
             if (pigeon == null)
                 return;
 
-            int newPos = 0;
+            var newPos = 0;
             switch (request.Mode)
             {
-                case MsgPigeon.PigeonMode.Urgent:
-                    if (!await sender.SpendConquerPointsAsync(PIGEON_ADDITION, false))
+                case MsgPigeon<Client>.PigeonMode.Urgent:
+                    if (!await sender.SpendConquerPointsAsync(PIGEON_ADDITION))
                     {
                         await sender.SendAsync(Language.StrPigeonUrgentErrNoEmoney);
                         return;
@@ -117,8 +116,8 @@ namespace Comet.Game.World.Managers
                     pigeon.Addition += PIGEON_ADDITION;
                     newPos = Math.Max(0, position - 5);
                     break;
-                case MsgPigeon.PigeonMode.SuperUrgent:
-                    if (!await sender.SpendConquerPointsAsync(PIGEON_TOP_ADDITION, false))
+                case MsgPigeon<Client>.PigeonMode.SuperUrgent:
+                    if (!await sender.SpendConquerPointsAsync(PIGEON_TOP_ADDITION))
                     {
                         await sender.SendAsync(Language.StrPigeonUrgentErrNoEmoney);
                         return;
@@ -139,10 +138,7 @@ namespace Comet.Game.World.Managers
         public static Task RebuildQueueAsync()
         {
             uint idx = 0;
-            foreach (var queued in m_queue)
-            {
-                queued.NextIdentity = idx++;
-            }
+            foreach (DbPigeonQueue queued in m_queue) queued.NextIdentity = idx++;
             return ServerDbContext.SaveAsync(m_queue);
         }
 
@@ -167,7 +163,8 @@ namespace Comet.Game.World.Managers
             m_past.Add(m_current);
 
             await RebuildQueueAsync();
-            await RoleManager.BroadcastMsgAsync(new MsgTalk(m_current.UserIdentity, TalkChannel.Broadcast, Color.White, MsgTalk.ALLUSERS, m_current.UserName, m_current.Message));
+            await RoleManager.BroadcastMsgAsync(new MsgTalk(m_current.UserIdentity, TalkChannel.Broadcast, Color.White,
+                                                            MsgTalk.ALLUSERS, m_current.UserName, m_current.Message));
         }
 
         public static async Task OnTimerAsync()
@@ -181,28 +178,24 @@ namespace Comet.Game.World.Managers
             await SyncAsync();
         }
 
-        public static async Task SendListAsync(Character user, MsgPigeon.PigeonMode request, int page)
+        public static async Task SendListAsync(Character user, MsgPigeon<Client>.PigeonMode request, int page)
         {
             const int ipp = 10;
             List<DbPigeonQueue> temp;
-            if (request == MsgPigeon.PigeonMode.Query)
-            {
+            if (request == MsgPigeon<Client>.PigeonMode.Query)
                 temp = new List<DbPigeonQueue>(m_queue);
-            }
             else
-            {
                 temp = new List<DbPigeonQueue>(m_queue.FindAll(x => x.UserIdentity == user.Identity));
-            }
 
-            uint pos = (uint)(page * ipp);
-            MsgPigeonQuery msg = new MsgPigeonQuery
+            var pos = (uint) (page * ipp);
+            var msg = new MsgPigeonQuery
             {
-                Mode = (uint)page
+                Mode = (uint) page
             };
 
-            var queryList = temp.Skip((int)pos).Take(ipp).ToArray();
+            DbPigeonQueue[] queryList = temp.Skip((int) pos).Take(ipp).ToArray();
             msg.Total = 0;
-            foreach (var pigeon in queryList)
+            foreach (DbPigeonQueue pigeon in queryList)
             {
                 if (msg.Messages.Count >= 5)
                 {
@@ -210,7 +203,7 @@ namespace Comet.Game.World.Managers
                     msg.Messages.Clear();
                 }
 
-                msg.Messages.Add(new MsgPigeonQuery.PigeonMessage
+                msg.Messages.Add(new MsgPigeonQuery<Client>.PigeonMessage
                 {
                     Identity = pigeon.Identity,
                     UserIdentity = pigeon.UserIdentity,
@@ -229,9 +222,13 @@ namespace Comet.Game.World.Managers
         public static async Task SendToUserAsync(Character user)
         {
             if (m_current != null)
-                await user.SendAsync(new MsgTalk(m_current.UserIdentity, TalkChannel.Broadcast, Color.White, MsgTalk.ALLUSERS, m_current.UserName, m_current.Message));
+                await user.SendAsync(new MsgTalk(m_current.UserIdentity, TalkChannel.Broadcast, Color.White,
+                                                 MsgTalk.ALLUSERS, m_current.UserName, m_current.Message));
         }
 
-        public static int OnQueueByUser(uint idUser) => m_queue.Count(x => x.UserIdentity == idUser);
+        public static int OnQueueByUser(uint idUser)
+        {
+            return m_queue.Count(x => x.UserIdentity == idUser);
+        }
     }
 }

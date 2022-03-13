@@ -1,10 +1,10 @@
-﻿using Comet.Database.Entities;
+﻿using System.Collections.Concurrent;
+using System.Linq;
+using System.Threading.Tasks;
+using Comet.Database.Entities;
 using Comet.Game.Database;
 using Comet.Game.Database.Repositories;
 using Comet.Game.Packets;
-using System.Collections.Concurrent;
-using System.Linq;
-using System.Threading.Tasks;
 
 namespace Comet.Game.States
 {
@@ -21,20 +21,18 @@ namespace Comet.Game.States
 
         public async Task InitializeAsync()
         {
-            foreach (var skill in await WeaponSkillRepository.GetAsync(m_user.Identity))
-            {
-                m_skills.TryAdd((ushort)skill.Type, skill);
-            }
+            foreach (DbWeaponSkill skill in await WeaponSkillRepository.GetAsync(m_user.Identity))
+                m_skills.TryAdd((ushort) skill.Type, skill);
         }
 
-        public DbWeaponSkill this[ushort type] => m_skills.TryGetValue(type, out var item) ? item : null;
+        public DbWeaponSkill this[ushort type] => m_skills.TryGetValue(type, out DbWeaponSkill item) ? item : null;
 
         public async Task<bool> CreateAsync(ushort type, byte level = 1)
         {
             if (m_skills.ContainsKey(type))
                 return false;
 
-            DbWeaponSkill skill = new DbWeaponSkill
+            var skill = new DbWeaponSkill
             {
                 Type = type,
                 Experience = 0,
@@ -70,7 +68,7 @@ namespace Comet.Game.States
 
         public async Task<bool> UnearnAllAsync()
         {
-            foreach (var skill in m_skills.Values)
+            foreach (DbWeaponSkill skill in m_skills.Values)
             {
                 skill.Unlearn = 1;
                 skill.OldLevel = skill.Level;
@@ -79,12 +77,13 @@ namespace Comet.Game.States
 
                 await m_user.SendAsync(new MsgAction
                 {
-                    Action = MsgAction.ActionType.ProficiencyRemove,
+                    Action = MsgAction<Client>.ActionType.ProficiencyRemove,
                     Identity = m_user.Identity,
                     Command = skill.Type,
                     Argument = skill.Type
                 });
             }
+
             return true;
         }
 
@@ -100,7 +99,7 @@ namespace Comet.Game.States
 
         public async Task SendAsync()
         {
-            foreach (var skill in m_skills.Values.Where(x => x.Unlearn == 0))
+            foreach (DbWeaponSkill skill in m_skills.Values.Where(x => x.Unlearn == 0))
                 await m_user.SendAsync(new MsgWeaponSkill
                 {
                     Experience = skill.Experience,

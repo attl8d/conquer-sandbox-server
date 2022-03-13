@@ -1,8 +1,8 @@
-﻿using Comet.Game.Internal.Auth;
+﻿using System.Threading.Tasks;
+using Comet.Game.Internal.Auth;
 using Comet.Game.States;
 using Comet.Game.World.Managers;
 using Comet.Network.Packets;
-using System.Threading.Tasks;
 
 namespace Comet.Game.Packets
 {
@@ -13,8 +13,8 @@ namespace Comet.Game.Packets
 
         public override void Decode(byte[] bytes)
         {
-            PacketReader reader = new PacketReader(bytes);
-            Type = (PacketType)reader.ReadUInt16();
+            var reader = new PacketReader(bytes);
+            Type = (PacketType) reader.ReadUInt16();
             AccountIdentity = reader.ReadUInt32();
             MacAddress = reader.ReadString(12);
         }

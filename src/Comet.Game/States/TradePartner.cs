@@ -1,15 +1,16 @@
-﻿using Comet.Database.Entities;
+﻿using System;
+using System.Threading.Tasks;
+using Comet.Database.Entities;
 using Comet.Game.Database;
 using Comet.Game.Packets;
 using Comet.Game.World.Managers;
-using System;
-using System.Threading.Tasks;
+using Comet.Network.Packets.Game;
 
 namespace Comet.Game.States
 {
     public sealed class TradePartner
     {
-        private DbBusiness m_dbBusiness;
+        private readonly DbBusiness m_dbBusiness;
 
         public TradePartner(Character owner, DbBusiness business = null)
         {
@@ -22,11 +23,13 @@ namespace Comet.Game.States
 
         public Character Target =>
             RoleManager.GetUser(m_dbBusiness.UserId == Owner.Identity
-                ? m_dbBusiness.BusinessId
-                : m_dbBusiness.UserId);
+                                    ? m_dbBusiness.BusinessId
+                                    : m_dbBusiness.UserId);
 
         public uint Identity => m_dbBusiness.UserId == Owner.Identity ? m_dbBusiness.BusinessId : m_dbBusiness.UserId;
-        public string Name => m_dbBusiness.UserId == Owner.Identity ? m_dbBusiness.Business?.Name : m_dbBusiness.User?.Name;
+
+        public string Name =>
+            m_dbBusiness.UserId == Owner.Identity ? m_dbBusiness.Business?.Name : m_dbBusiness.User?.Name;
 
         public bool IsValid()
         {
@@ -38,9 +41,9 @@ namespace Comet.Game.States
             return Owner.SendAsync(new MsgTradeBuddy
             {
                 Name = Name,
-                Action = MsgTradeBuddy.TradeBuddyAction.AddPartner,
+                Action = MsgTradeBuddy<Client>.TradeBuddyAction.AddPartner,
                 IsOnline = Target != null,
-                HoursLeft = (int)(!IsValid() ? (m_dbBusiness.Date - DateTime.Now).TotalMinutes : 0),
+                HoursLeft = (int) (!IsValid() ? (m_dbBusiness.Date - DateTime.Now).TotalMinutes : 0),
                 Identity = Identity
             });
         }
@@ -60,7 +63,7 @@ namespace Comet.Game.States
                 PkPoints = target.PkPoints,
                 Profession = target.Profession,
                 Syndicate = target.SyndicateIdentity,
-                SyndicatePosition = (int)target.SyndicateRank
+                SyndicatePosition = (int) target.SyndicateRank
             });
         }
 
@@ -68,7 +71,7 @@ namespace Comet.Game.States
         {
             return Owner.SendAsync(new MsgTradeBuddy
             {
-                Action = MsgTradeBuddy.TradeBuddyAction.BreakPartnership,
+                Action = MsgTradeBuddy<Client>.TradeBuddyAction.BreakPartnership,
                 Identity = Identity,
                 IsOnline = true,
                 Name = ""

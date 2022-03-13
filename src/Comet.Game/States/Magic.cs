@@ -1,21 +1,22 @@
-﻿using Comet.Database.Entities;
+﻿using System;
+using System.Threading.Tasks;
+using Comet.Database.Entities;
 using Comet.Game.Database;
 using Comet.Game.Packets;
 using Comet.Game.World.Managers;
+using Comet.Network.Packets.Game;
 using Comet.Shared;
-using System;
-using System.Threading.Tasks;
 
 namespace Comet.Game.States
 {
     public sealed class Magic
     {
-        private Role m_pOwner;
+        private readonly Role m_pOwner;
 
         private DbMagic m_dbMagic;
         private DbMagictype m_dbMagictype;
 
-        private TimeOutMS m_tDelay = new TimeOutMS();
+        private readonly TimeOutMS m_tDelay = new();
 
         private byte m_pMaxLevel;
 
@@ -34,17 +35,18 @@ namespace Comet.Game.States
             m_dbMagictype = MagicManager.GetMagictype(idMgc, level);
             if (m_dbMagictype == null)
             {
-                await Log.WriteLogAsync(LogLevel.Warning, $"Skill not existent for creation (type:{idMgc}, level:{0}, player: {m_pOwner.Identity})");
+                await Log.WriteLogAsync(LogLevel.Warning,
+                                        $"Skill not existent for creation (type:{idMgc}, level:{0}, player: {m_pOwner.Identity})");
                 return false;
             }
 
-            if (m_pOwner.MagicData.CheckType((ushort)idMgc))
+            if (m_pOwner.MagicData.CheckType((ushort) idMgc))
                 return false;
 
             m_dbMagic = new DbMagic
             {
                 OwnerId = m_pOwner.Identity,
-                Type = (ushort)idMgc,
+                Type = (ushort) idMgc,
                 Level = level
             };
 
@@ -55,6 +57,7 @@ namespace Comet.Game.States
                 await SaveAsync();
                 await SendAsync();
             }
+
             return true;
         }
 
@@ -63,7 +66,8 @@ namespace Comet.Game.States
             m_dbMagictype = MagicManager.GetMagictype(pMgc.Type, pMgc.Level);
             if (m_dbMagictype == null)
             {
-                await Log.WriteLogAsync(LogLevel.Warning, $"Skill not existent (type:{pMgc.Type}, level:{pMgc.Level}, player: {m_pOwner.Identity})");
+                await Log.WriteLogAsync(LogLevel.Warning,
+                                        $"Skill not existent (type:{pMgc.Type}, level:{pMgc.Level}, player: {m_pOwner.Identity})");
                 return false;
             }
 
@@ -99,23 +103,23 @@ namespace Comet.Game.States
 
         public byte OldLevel
         {
-            get => (byte)m_dbMagic.OldLevel;
+            get => (byte) m_dbMagic.OldLevel;
             set => m_dbMagic.OldLevel = value;
         }
 
         public bool Unlearn
         {
             get => m_dbMagic.Unlearn != 0;
-            set => m_dbMagic.Unlearn = (byte)(value ? 1 : 0);
+            set => m_dbMagic.Unlearn = (byte) (value ? 1 : 0);
         }
 
         public ushort MaxLevel => m_pMaxLevel;
-        public MagicData.MagicSort Sort => (MagicData.MagicSort)m_dbMagictype.Sort;
+        public MagicData.MagicSort Sort => (MagicData.MagicSort) m_dbMagictype.Sort;
         public uint AutoActive => m_dbMagictype.AutoActive;
         public byte Crime => m_dbMagictype.Crime;
         public byte Ground => m_dbMagictype.Ground;
         public byte Multi => m_dbMagictype.Multi;
-        public byte Target => (byte)m_dbMagictype.Target;
+        public byte Target => (byte) m_dbMagictype.Target;
         public uint UseMana => m_dbMagictype.UseMp;
         public int Power => m_dbMagictype.Power;
         public uint IntoneSpeed => m_dbMagictype.IntoneSpeed;
@@ -127,7 +131,7 @@ namespace Comet.Game.States
         public uint NeedProf => m_dbMagictype.NeedProf;
         public int NeedExp => m_dbMagictype.NeedExp;
         public uint NeedLevel => m_dbMagictype.NeedLevel;
-        public BattleSystem.MagicType UseXp => (BattleSystem.MagicType)m_dbMagictype.UseXp;
+        public BattleSystem.MagicType UseXp => (BattleSystem.MagicType) m_dbMagictype.UseXp;
         public uint WeaponSubtype => m_dbMagictype.WeaponSubtype;
         public uint ActiveTimes => m_dbMagictype.ActiveTimes;
         public uint FloorAttr => m_dbMagictype.FloorAttr;
@@ -137,11 +141,11 @@ namespace Comet.Game.States
         public byte WeaponHit => m_dbMagictype.WeaponHit;
         public uint UseItem => m_dbMagictype.UseItem;
         public uint NextMagic => m_dbMagictype.NextMagic;
-        public int DelayMs => (int)(m_dbMagictype.DelayMs > 0 ? m_dbMagictype.DelayMs : m_dbMagictype.Timeout);
+        public int DelayMs => (int) (m_dbMagictype.DelayMs > 0 ? m_dbMagictype.DelayMs : m_dbMagictype.Timeout);
         public uint UseItemNum => m_dbMagictype.UseItemNum;
         public byte ElementType => m_dbMagictype.ElementType;
         public uint ElementPower => m_dbMagictype.ElementPower;
-        public uint CpsCost => (uint)(m_dbMagictype.ReqUplevTime / 22.22d);
+        public uint CpsCost => (uint) (m_dbMagictype.ReqUplevTime / 22.22d);
 
         #endregion
 
@@ -168,6 +172,7 @@ namespace Comet.Game.States
                 m_tDelay.Startup(DelayMs);
                 return true;
             }
+
             return m_tDelay.IsTimeOut(DelayMs);
         }
 
@@ -191,7 +196,7 @@ namespace Comet.Game.States
             if (m_pOwner is Character user)
                 await user.SendAsync(new MsgFlushExp
                 {
-                    Action = MsgFlushExp.FlushMode.Magic,
+                    Action = MsgFlushExp<Client>.FlushMode.Magic,
                     Identity = Type,
                     Experience = Experience
                 });
@@ -205,7 +210,7 @@ namespace Comet.Game.States
         {
             try
             {
-                await using ServerDbContext context = new ServerDbContext();
+                await using var context = new ServerDbContext();
                 if (m_dbMagic.Id == 0)
                     context.Magic.Add(m_dbMagic);
                 else context.Magic.Update(m_dbMagic);

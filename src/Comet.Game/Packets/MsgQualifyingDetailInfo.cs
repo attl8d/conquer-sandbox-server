@@ -1,7 +1,7 @@
-﻿using Comet.Game.States;
-using Comet.Network.Packets.Game;
-using System;
+﻿using System;
 using System.Threading.Tasks;
+using Comet.Game.States;
+using Comet.Network.Packets.Game;
 
 namespace Comet.Game.Packets
 {
@@ -22,8 +22,8 @@ namespace Comet.Game.Packets
             HistoryHonor = user.HistoryHonorPoints;
             CurrentHonor = user.HonorPoints;
             Points = user.QualifierPoints;
-            TriumphToday20 = (byte)Math.Min(20, user.QualifierDayGames);
-            TriumphToday9 = (byte)Math.Min(9, user.QualifierDayWins);
+            TriumphToday20 = (byte) Math.Min(20, user.QualifierDayGames);
+            TriumphToday9 = (byte) Math.Min(9, user.QualifierDayWins);
             await client.SendAsync(this);
         }
     }

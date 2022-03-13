@@ -1,7 +1,7 @@
-﻿using Comet.Database.Entities;
-using Microsoft.EntityFrameworkCore;
-using System.Collections.Generic;
+﻿using System.Collections.Generic;
 using System.Threading.Tasks;
+using Comet.Database.Entities;
+using Microsoft.EntityFrameworkCore;
 
 namespace Comet.Game.Database.Repositories
 {
@@ -11,8 +11,8 @@ namespace Comet.Game.Database.Repositories
         {
             await using var ctx = new ServerDbContext();
             return await ctx.Flowers
-                .Include(x => x.User)
-                .ToListAsync();
+                            .Include(x => x.User)
+                            .ToListAsync();
         }
     }
 }

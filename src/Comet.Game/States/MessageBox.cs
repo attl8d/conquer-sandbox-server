@@ -1,12 +1,13 @@
-﻿using Comet.Game.Packets;
+﻿using System.Threading.Tasks;
+using Comet.Game.Packets;
+using Comet.Network.Packets.Game;
 using Comet.Shared;
-using System.Threading.Tasks;
 
 namespace Comet.Game.States
 {
     public class MessageBox
     {
-        protected TimeOut m_expiration = new TimeOut();
+        protected TimeOut m_expiration = new();
         protected Character m_owner;
 
         protected MessageBox(Character owner)
@@ -40,10 +41,10 @@ namespace Comet.Game.States
             m_expiration.Startup(TimeOut);
             return m_owner.SendAsync(new MsgTaskDialog
             {
-                InteractionType = MsgTaskDialog.TaskInteraction.MessageBox,
+                InteractionType = MsgTaskDialog<Client>.TaskInteraction.MessageBox,
                 Text = Message,
                 OptionIndex = 255,
-                Data = (ushort)TimeOut
+                Data = (ushort) TimeOut
             });
         }
     }

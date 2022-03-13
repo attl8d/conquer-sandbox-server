@@ -1,4 +1,9 @@
-﻿using Comet.Core;
+﻿using System;
+using System.Collections.Concurrent;
+using System.Collections.Generic;
+using System.Linq;
+using System.Threading.Tasks;
+using Comet.Core;
 using Comet.Database.Entities;
 using Comet.Game.Database;
 using Comet.Game.Database.Repositories;
@@ -9,11 +14,6 @@ using Comet.Game.World.Maps;
 using Comet.Network.Packets;
 using Comet.Network.Packets.Game;
 using Comet.Shared;
-using System;
-using System.Collections.Concurrent;
-using System.Collections.Generic;
-using System.Linq;
-using System.Threading.Tasks;
 
 namespace Comet.Game.States.Events
 {
@@ -24,7 +24,7 @@ namespace Comet.Game.States.Events
         public const uint BASE_MAP_ID_U = 900000;
         public const uint TRIUMPH_HONOR_REWARD = 5000;
 
-        public static IdentityGenerator MapIdentityGenerator = new IdentityGenerator(900001, 999999);
+        public static IdentityGenerator MapIdentityGenerator = new(900001, 999999);
         public static DbMap BaseMap { get; private set; }
 
         private static readonly uint[] m_dwStartPoints =
@@ -33,13 +33,13 @@ namespace Comet.Game.States.Events
             2200, // over 90
             2700, // over 100
             3200, // over 110
-            4000 // over 120
+            4000  // over 120
         };
 
-        private ConcurrentDictionary<uint, DbArenic> m_arenics = new ConcurrentDictionary<uint, DbArenic>();
-        private ConcurrentDictionary<uint, QualifierUser> m_awaitingQueue = new ConcurrentDictionary<uint, QualifierUser>();
-        private ConcurrentDictionary<uint, QualifierMatch> m_matches = new ConcurrentDictionary<uint, QualifierMatch>();
-        private ConcurrentDictionary<uint, DbArenicHonor> m_rewards = new ConcurrentDictionary<uint, DbArenicHonor>();
+        private ConcurrentDictionary<uint, DbArenic> m_arenics = new();
+        private readonly ConcurrentDictionary<uint, QualifierUser> m_awaitingQueue = new();
+        private readonly ConcurrentDictionary<uint, QualifierMatch> m_matches = new();
+        private readonly ConcurrentDictionary<uint, DbArenicHonor> m_rewards = new();
 
         public ArenaQualifier()
             : base("ArenaQualifier", 500)
@@ -60,12 +60,10 @@ namespace Comet.Game.States.Events
                 return false;
             }
 
-            m_arenics = new ConcurrentDictionary<uint, DbArenic>((await ArenicRepository.GetAsync(DateTime.Now)).ToDictionary(x => x.UserId));
+            m_arenics = new ConcurrentDictionary<uint, DbArenic>(
+                (await ArenicRepository.GetAsync(DateTime.Now)).ToDictionary(x => x.UserId));
 
-            foreach (var honor in await ArenicHonorRepository.GetAsync(0))
-            {
-                m_rewards.TryAdd(honor.Id, honor);
-            }
+            foreach (DbArenicHonor honor in await ArenicHonorRepository.GetAsync(0)) m_rewards.TryAdd(honor.Id, honor);
 
             return true;
         }
@@ -89,7 +87,8 @@ namespace Comet.Game.States.Events
 
         public override bool IsAttackEnable(Role sender)
         {
-            return FindMatchByMap(sender.MapIdentity)?.IsAttackEnable ?? true; // return true, because if not in event already it must be able to attack
+            return FindMatchByMap(sender.MapIdentity)?.IsAttackEnable ??
+                   true; // return true, because if not in event already it must be able to attack
         }
 
         public override Task OnEnterAsync(Character sender)
@@ -107,7 +106,8 @@ namespace Comet.Game.States.Events
             if (attacker is not Character || target is not Character)
                 return Task.CompletedTask;
 
-            if (attacker.MapIdentity - attacker.MapIdentity % BASE_MAP_ID_U != BASE_MAP_ID_U || attacker.MapIdentity != target.MapIdentity)
+            if (attacker.MapIdentity - attacker.MapIdentity % BASE_MAP_ID_U != BASE_MAP_ID_U ||
+                attacker.MapIdentity != target.MapIdentity)
                 return Task.CompletedTask; // ??? should remove?
 
             QualifierMatch match = FindMatchByMap(attacker.MapIdentity);
@@ -115,24 +115,18 @@ namespace Comet.Game.States.Events
                 return Task.CompletedTask; // ??? Should remove???
 
             if (attacker.Identity == match.Player1.Identity)
-            {
                 match.Points1 += damage;
-            }
             else if (attacker.Identity == match.Player2.Identity)
-            {
                 match.Points2 += damage;
-            }
             else
-            {
                 return Task.CompletedTask;
-            }
 
             return match.SendBoardAsync();
         }
 
         public override async Task OnTimerAsync()
         {
-            foreach (var queueUser in m_awaitingQueue.Values)
+            foreach (QualifierUser queueUser in m_awaitingQueue.Values)
             {
                 Character player = RoleManager.GetUser(queueUser.Identity);
                 if (player == null)
@@ -164,8 +158,9 @@ namespace Comet.Game.States.Events
                     continue;
                 }
 
-                QualifierMatch match = new QualifierMatch();
-                if (!await match.CreateAsync(player, queueUser, targetPlayer, target) || !m_matches.TryAdd(match.MapIdentity, match))
+                var match = new QualifierMatch();
+                if (!await match.CreateAsync(player, queueUser, targetPlayer, target) ||
+                    !m_matches.TryAdd(match.MapIdentity, match))
                 {
                     await UnsubscribeAsync(queueUser.Identity);
                     await UnsubscribeAsync(target.Identity);
@@ -182,7 +177,7 @@ namespace Comet.Game.States.Events
                 await SendArenaInformationAsync(targetPlayer);
             }
 
-            foreach (var match in m_matches.Values)
+            foreach (QualifierMatch match in m_matches.Values)
             {
                 if (match.Status == QualifierMatch.MatchStatus.ReadyToDispose)
                 {
@@ -221,6 +216,7 @@ namespace Comet.Game.States.Events
                 user.QualifierStatus = ArenaStatus.NotSignedUp;
                 await user.SignOutEventAsync();
             }
+
             return true;
         }
 
@@ -235,20 +231,20 @@ namespace Comet.Game.States.Events
 
         public QualifierMatch FindMatchByMap(uint idMap)
         {
-            return m_matches.TryGetValue(idMap, out var match) ? match : null;
+            return m_matches.TryGetValue(idMap, out QualifierMatch match) ? match : null;
         }
 
         public List<QualifierMatch> QueryMatches(int from, int limit)
         {
             return m_matches.Values
-                .Skip(from)
-                .Take(limit)
-                .ToList();
+                            .Skip(from)
+                            .Take(limit)
+                            .ToList();
         }
 
         public async Task FinishMatchAsync(QualifierMatch match)
         {
-            if (!m_arenics.TryGetValue(match.Player1.Identity, out var arenic)
+            if (!m_arenics.TryGetValue(match.Player1.Identity, out DbArenic arenic)
                 || arenic.Date.Date != DateTime.Now.Date)
             {
                 m_arenics.TryRemove(match.Player1.Identity, out _);
@@ -289,10 +285,10 @@ namespace Comet.Game.States.Events
 
         public async Task<QualifierUser> FindTargetAsync(QualifierUser request)
         {
-            List<QualifierUser> possibleTargets = new List<QualifierUser>();
-            foreach (var target in m_awaitingQueue.Values
-                .Where(x => x.Identity != request.Identity
-                    && IsMatchEnable(request.Grade, x.Grade)))
+            var possibleTargets = new List<QualifierUser>();
+            foreach (QualifierUser target in m_awaitingQueue.Values
+                                                            .Where(x => x.Identity != request.Identity
+                                                                        && IsMatchEnable(request.Grade, x.Grade)))
                 possibleTargets.Add(target);
 
             if (possibleTargets.Count == 0)
@@ -307,19 +303,22 @@ namespace Comet.Game.States.Events
 
         public int PlayersOnQueue => m_awaitingQueue.Count;
 
-        public QualifierUser FindInQueue(uint idUser) => m_awaitingQueue.TryGetValue(idUser, out var value) ? value : null;
+        public QualifierUser FindInQueue(uint idUser)
+        {
+            return m_awaitingQueue.TryGetValue(idUser, out QualifierUser value) ? value : null;
+        }
 
         public QualifierUser EnterQueue(Character user)
         {
             if (FindInQueue(user.Identity) != null)
                 return null;
 
-            QualifierUser queueUser = new QualifierUser
+            var queueUser = new QualifierUser
             {
                 Identity = user.Identity,
                 Name = user.Name,
                 Level = user.Level,
-                Points = (int)user.QualifierPoints,
+                Points = (int) user.QualifierPoints,
                 PreviousPkMode = user.PkMode,
                 Profession = user.Profession
             };
@@ -328,18 +327,20 @@ namespace Comet.Game.States.Events
                 user.QualifierStatus = ArenaStatus.WaitingForOpponent;
                 return queueUser;
             }
+
             return null;
         }
 
         public QualifierUser LeaveQueue(uint idUser)
         {
-            if (m_awaitingQueue.TryRemove(idUser, out var result))
+            if (m_awaitingQueue.TryRemove(idUser, out QualifierUser result))
             {
                 Character user = RoleManager.GetUser(idUser);
                 if (user != null)
                     user.QualifierStatus = ArenaStatus.NotSignedUp;
                 return result;
             }
+
             return null;
         }
 
@@ -348,7 +349,10 @@ namespace Comet.Game.States.Events
             return FindInQueue(idUser) != null || FindMatch(idUser) != null;
         }
 
-        public bool IsInsideMatch(uint idUser) => FindMatch(idUser) != null;
+        public bool IsInsideMatch(uint idUser)
+        {
+            return FindMatch(idUser) != null;
+        }
 
         #endregion
 
@@ -383,27 +387,29 @@ namespace Comet.Game.States.Events
 
         public int GetPlayerRanking(uint idUser)
         {
-            int rank = 0;
-            foreach (var arenic in m_arenics.Values
-                .Where(x => x.Date == DateTime.Now.Date)
-                .OrderByDescending(x => x.AthletePoint)
-                .ThenByDescending(x => x.DayWins)
-                .ThenBy(x => x.DayLoses))
+            var rank = 0;
+            foreach (DbArenic arenic in m_arenics.Values
+                                                 .Where(x => x.Date == DateTime.Now.Date)
+                                                 .OrderByDescending(x => x.AthletePoint)
+                                                 .ThenByDescending(x => x.DayWins)
+                                                 .ThenBy(x => x.DayLoses))
             {
                 if (idUser == arenic.UserId)
                     return rank + 1;
                 rank++;
             }
+
             return 0;
         }
 
         public bool GetReward(uint idUser, out DbArenicHonor value)
         {
-            if (m_rewards.TryGetValue((uint)GetPlayerRanking(idUser), out var result))
+            if (m_rewards.TryGetValue((uint) GetPlayerRanking(idUser), out DbArenicHonor result))
             {
                 value = result;
                 return true;
             }
+
             value = default;
             return false;
         }
@@ -425,8 +431,8 @@ namespace Comet.Game.States.Events
                 TotalWins = target.QualifierHistoryWins,
                 TotalLoses = target.QualifierHistoryLoses,
                 Status = target.QualifierStatus,
-                TriumphToday9 = (byte)Math.Min(9, target.QualifierDayWins),
-                TriumphToday20 = (byte)Math.Min(20, target.QualifierDayGames)
+                TriumphToday9 = (byte) Math.Min(9, target.QualifierDayWins),
+                TriumphToday20 = (byte) Math.Min(20, target.QualifierDayGames)
             });
         }
 
@@ -442,10 +448,10 @@ namespace Comet.Game.States.Events
                 ReadyToDispose
             }
 
-            private TimeOut m_startMatch = new TimeOut();
-            private TimeOut m_leaveMap = new TimeOut();
-            private TimeOut m_confirmation = new TimeOut();
-            private TimeOut m_matchTime = new TimeOut();
+            private readonly TimeOut m_startMatch = new();
+            private readonly TimeOut m_leaveMap = new();
+            private readonly TimeOut m_confirmation = new();
+            private readonly TimeOut m_matchTime = new();
 
             public GameMap Map { get; private set; }
             public uint Winner { get; private set; }
@@ -468,7 +474,10 @@ namespace Comet.Game.States.Events
 
             public bool InvitationExpired => m_confirmation.IsActive() && m_confirmation.IsTimeOut();
             public bool IsRunning => Status == MatchStatus.Running;
-            public bool IsAttackEnable => m_startMatch.IsActive() && m_startMatch.IsTimeOut() && Status == MatchStatus.Running;
+
+            public bool IsAttackEnable =>
+                m_startMatch.IsActive() && m_startMatch.IsTimeOut() && Status == MatchStatus.Running;
+
             public bool TimeOut => m_matchTime.IsActive() && m_matchTime.IsTimeOut();
 
             ~QualifierMatch()
@@ -477,26 +486,27 @@ namespace Comet.Game.States.Events
                     MapIdentityGenerator.ReturnIdentity(MapIdentity);
             }
 
-            public async Task<bool> CreateAsync(Character user1, QualifierUser obj1, Character user2, QualifierUser obj2)
+            public async Task<bool> CreateAsync(Character user1, QualifierUser obj1, Character user2,
+                                                QualifierUser obj2)
             {
-                ArenaQualifier qualifier = EventManager.GetEvent<ArenaQualifier>();
+                var qualifier = EventManager.GetEvent<ArenaQualifier>();
                 if (qualifier == null)
                     return false;
 
                 if (!qualifier.IsAllowedToJoin(user1) || !qualifier.IsAllowedToJoin(user2))
                     return false;
 
-                MapIdentity = (uint)MapIdentityGenerator.GetNextIdentity;
+                MapIdentity = (uint) MapIdentityGenerator.GetNextIdentity;
 
                 Player1 = user1;
                 Object1 = obj1;
                 Player2 = user2;
                 Object2 = obj2;
 
-                MsgQualifyingInteractive msg = new MsgQualifyingInteractive
+                var msg = new MsgQualifyingInteractive
                 {
-                    Interaction = MsgQualifyingInteractive.InteractionType.Countdown,
-                    Identity = (uint)ArenaStatus.WaitingInactive
+                    Interaction = MsgQualifyingInteractive<Client>.InteractionType.Countdown,
+                    Identity = (uint) ArenaStatus.WaitingInactive
                 };
 
                 await Player1.SendAsync(msg);
@@ -510,7 +520,7 @@ namespace Comet.Game.States.Events
             {
                 m_confirmation.Clear();
 
-                ArenaQualifier qualifier = EventManager.GetEvent<ArenaQualifier>();
+                var qualifier = EventManager.GetEvent<ArenaQualifier>();
                 if (qualifier == null)
                     return false;
 
@@ -520,7 +530,7 @@ namespace Comet.Game.States.Events
                     Identity = MapIdentity,
                     Name = "ArenaQualifier",
                     Description = $"{Player1.Name} x {Player2.Name}`s map",
-                    Type = (uint)qualifier.Map.Type,
+                    Type = (uint) qualifier.Map.Type,
                     OwnerIdentity = Player1.Identity,
                     LinkMap = 1002,
                     LinkX = 430,
@@ -531,7 +541,7 @@ namespace Comet.Game.States.Events
 
                 if (!await Map.InitializeAsync())
                 {
-                    await Log.WriteLogAsync(LogLevel.Error, $"Could not initialize map for arena qualifier!!");
+                    await Log.WriteLogAsync(LogLevel.Error, "Could not initialize map for arena qualifier!!");
                     return false;
                 }
 
@@ -557,9 +567,10 @@ namespace Comet.Game.States.Events
                 return true;
             }
 
-            private async Task<bool> PrepareAsync(Character sender, QualifierUser senderObj, Character target, QualifierUser targetObj)
+            private async Task<bool> PrepareAsync(Character sender, QualifierUser senderObj, Character target,
+                                                  QualifierUser targetObj)
             {
-                ArenaQualifier qualifier = EventManager.GetEvent<ArenaQualifier>();
+                var qualifier = EventManager.GetEvent<ArenaQualifier>();
                 if (qualifier == null)
                     return false;
 
@@ -589,13 +600,13 @@ namespace Comet.Game.States.Events
 
                 await sender.SendAsync(new MsgQualifyingInteractive
                 {
-                    Interaction = MsgQualifyingInteractive.InteractionType.StartTheFight,
+                    Interaction = MsgQualifyingInteractive<Client>.InteractionType.StartTheFight,
                     Identity = target.Identity,
                     Rank = target.QualifierRank,
                     Name = target.Name,
                     Level = target.Level,
                     Profession = target.Profession,
-                    Points = (int)target.QualifierPoints
+                    Points = (int) target.QualifierPoints
                 });
 
                 await sender.SendAsync(new MsgArenicScore
@@ -611,7 +622,7 @@ namespace Comet.Game.States.Events
 
                 await sender.SendAsync(new MsgQualifyingInteractive
                 {
-                    Interaction = MsgQualifyingInteractive.InteractionType.Match,
+                    Interaction = MsgQualifyingInteractive<Client>.InteractionType.Match,
                     Option = 5
                 });
 
@@ -630,7 +641,7 @@ namespace Comet.Game.States.Events
                     {
                         if (Player1 != null && Player1.MapIdentity == Map.Identity)
                             await Player1.FlyMapAsync(Player1.RecordMapIdentity, Player1.RecordMapX,
-                                Player1.RecordMapY);
+                                                      Player1.RecordMapY);
 
                         if (!Player1.IsAlive)
                         {
@@ -647,7 +658,7 @@ namespace Comet.Game.States.Events
 
                     await Player1.SendAsync(new MsgQualifyingInteractive
                     {
-                        Interaction = MsgQualifyingInteractive.InteractionType.Dialog,
+                        Interaction = MsgQualifyingInteractive<Client>.InteractionType.Dialog,
                         Option = Winner == Player1.Identity ? 1 : 0
                     });
                 }
@@ -659,7 +670,7 @@ namespace Comet.Game.States.Events
                     {
                         if (Player2 != null && Player2.MapIdentity == Map.Identity)
                             await Player2.FlyMapAsync(Player2.RecordMapIdentity, Player2.RecordMapX,
-                                Player2.RecordMapY);
+                                                      Player2.RecordMapY);
 
                         if (!Player2.IsAlive)
                         {
@@ -676,15 +687,12 @@ namespace Comet.Game.States.Events
 
                     await Player2.SendAsync(new MsgQualifyingInteractive
                     {
-                        Interaction = MsgQualifyingInteractive.InteractionType.Dialog,
+                        Interaction = MsgQualifyingInteractive<Client>.InteractionType.Dialog,
                         Option = Winner == Player2.Identity ? 1 : 0
                     });
                 }
 
-                if (Map != null)
-                {
-                    await MapManager.RemoveMapAsync(Map.Identity);
-                }
+                if (Map != null) await MapManager.RemoveMapAsync(Map.Identity);
 
                 MapIdentityGenerator.ReturnIdentity(MapIdentity);
                 Status = MatchStatus.ReadyToDispose;
@@ -708,7 +716,7 @@ namespace Comet.Game.States.Events
 
                 Winner = winner.Identity;
 
-                winner.QualifierPoints = (uint)(winner.QualifierPoints * 1.03d);
+                winner.QualifierPoints = (uint) (winner.QualifierPoints * 1.03d);
                 winner.QualifierDayWins++;
                 winner.QualifierHistoryWins++;
 
@@ -738,7 +746,7 @@ namespace Comet.Game.States.Events
                 //    Profession = winner.Profession
                 //});
 
-                loser.QualifierPoints = (uint)(loser.QualifierPoints * 0.975d);
+                loser.QualifierPoints = (uint) (loser.QualifierPoints * 0.975d);
                 loser.QualifierDayLoses++;
                 loser.QualifierHistoryLoses++;
 
@@ -762,11 +770,11 @@ namespace Comet.Game.States.Events
                 //    Profession = loser.Profession
                 //});
 
-                ArenaQualifier qualifier = EventManager.GetEvent<ArenaQualifier>();
+                var qualifier = EventManager.GetEvent<ArenaQualifier>();
                 await qualifier.FinishMatchAsync(this);
 
-                string strWin = "";
-                string strLose = "";
+                var strWin = "";
+                var strLose = "";
 
                 if (winner.SyndicateIdentity != 0)
                     strWin += $"({winner.SyndicateName}) ";
@@ -776,7 +784,9 @@ namespace Comet.Game.States.Events
                     strLose += $"({loser.SyndicateName}) ";
                 strLose += loser.Name;
 
-                await RoleManager.BroadcastMsgAsync(string.Format(Language.StrArenicMatchEnd, strWin, strLose, winner.QualifierRank), TalkChannel.Qualifier);
+                await RoleManager.BroadcastMsgAsync(
+                    string.Format(Language.StrArenicMatchEnd, strWin, strLose, winner.QualifierRank),
+                    TalkChannel.Qualifier);
 
                 if (force)
                     QueueAction(() => DestroyAsync(disconnect, true));
@@ -790,7 +800,7 @@ namespace Comet.Game.States.Events
                 Status = MatchStatus.Finished;
                 m_leaveMap.Startup(3);
 
-                Player1.QualifierPoints = (uint)(Player1.QualifierPoints * 0.975d);
+                Player1.QualifierPoints = (uint) (Player1.QualifierPoints * 0.975d);
                 Player1.QualifierDayLoses++;
                 Player1.QualifierHistoryLoses++;
 
@@ -803,11 +813,11 @@ namespace Comet.Game.States.Events
 
                 await Player1.SendAsync(new MsgQualifyingInteractive
                 {
-                    Interaction = MsgQualifyingInteractive.InteractionType.Dialog,
+                    Interaction = MsgQualifyingInteractive<Client>.InteractionType.Dialog,
                     Option = 3
                 });
 
-                Player2.QualifierPoints = (uint)(Player2.QualifierPoints * 0.975d);
+                Player2.QualifierPoints = (uint) (Player2.QualifierPoints * 0.975d);
                 Player2.QualifierDayLoses++;
                 Player2.QualifierHistoryLoses++;
 
@@ -820,15 +830,15 @@ namespace Comet.Game.States.Events
 
                 await Player2.SendAsync(new MsgQualifyingInteractive
                 {
-                    Interaction = MsgQualifyingInteractive.InteractionType.Dialog,
+                    Interaction = MsgQualifyingInteractive<Client>.InteractionType.Dialog,
                     Option = 3
                 });
 
-                ArenaQualifier qualifier = EventManager.GetEvent<ArenaQualifier>();
+                var qualifier = EventManager.GetEvent<ArenaQualifier>();
                 await qualifier.FinishMatchAsync(this);
 
-                string strLose1 = "";
-                string strLose2 = "";
+                var strLose1 = "";
+                var strLose2 = "";
 
                 if (Player1.SyndicateIdentity != 0)
                     strLose1 += $"({Player1.SyndicateName}) ";
@@ -838,7 +848,8 @@ namespace Comet.Game.States.Events
                     strLose2 += $"({Player2.SyndicateName}) ";
                 strLose2 += Player2.Name;
 
-                await RoleManager.BroadcastMsgAsync(string.Format(Language.StrArenicMatchDraw, strLose1, strLose2), TalkChannel.Qualifier);
+                await RoleManager.BroadcastMsgAsync(string.Format(Language.StrArenicMatchDraw, strLose1, strLose2),
+                                                    TalkChannel.Qualifier);
 
                 if (force)
                     QueueAction(() => DestroyAsync(0, true));
@@ -849,17 +860,10 @@ namespace Comet.Game.States.Events
                 if (m_confirmation.IsActive() && m_confirmation.IsTimeOut())
                 {
                     if (!Accepted1 && !Accepted2)
-                    {
                         await DrawAsync();
-                    }
                     else if (!Accepted1)
-                    {
                         await FinishAsync(Player2, Player1);
-                    }
-                    else if (!Accepted2)
-                    {
-                        await FinishAsync(Player1, Player2);
-                    }
+                    else if (!Accepted2) await FinishAsync(Player1, Player2);
                     return;
                 }
 
@@ -879,20 +883,29 @@ namespace Comet.Game.States.Events
                     QueueAction(() => DestroyAsync());
             }
 
-            public Task SendBoardAsync() => SendAsync(new MsgArenicScore
+            public Task SendBoardAsync()
             {
-                Identity1 = Player1.Identity,
-                Name1 = Player1.Name,
-                Damage1 = Points1,
+                return SendAsync(new MsgArenicScore
+                {
+                    Identity1 = Player1.Identity,
+                    Name1 = Player1.Name,
+                    Damage1 = Points1,
 
-                Identity2 = Player2.Identity,
-                Name2 = Player2.Name,
-                Damage2 = Points2
-            });
+                    Identity2 = Player2.Identity,
+                    Name2 = Player2.Name,
+                    Damage2 = Points2
+                });
+            }
 
-            public Task SendAsync(IPacket msg) => Map.BroadcastMsgAsync(msg);
+            public Task SendAsync(IPacket msg)
+            {
+                return Map.BroadcastMsgAsync(msg);
+            }
 
-            public void QueueAction(Func<Task> task) => Kernel.Services.Processor.Queue(Map?.Partition ?? 0, task);
+            public void QueueAction(Func<Task> task)
+            {
+                Kernel.Services.Processor.Queue(Map?.Partition ?? 0, task);
+            }
         }
 
         public class QualifierUser
@@ -908,6 +921,7 @@ namespace Comet.Game.States.Events
             public int Profession { get; set; }
             public PkModeType PreviousPkMode { get; set; }
             public int Points { get; set; }
+
             public int Grade
             {
                 get
@@ -925,6 +939,7 @@ namespace Comet.Game.States.Events
                     return 0;
                 }
             }
+
             public DateTime JoinTime { get; }
         }
 

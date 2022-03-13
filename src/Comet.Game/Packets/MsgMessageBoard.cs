@@ -1,8 +1,9 @@
-﻿using Comet.Game.States;
-using Comet.Network.Packets.Game;
-using System;
+﻿using System;
+using System.Collections.Generic;
 using System.Drawing;
 using System.Threading.Tasks;
+using Comet.Game.States;
+using Comet.Network.Packets.Game;
 
 namespace Comet.Game.Packets
 {
@@ -15,11 +16,11 @@ namespace Comet.Game.Packets
             switch (Action)
             {
                 case BoardAction.GetList:
-                    var list = MessageBoard.GetMessages((TalkChannel)Channel, Index);
+                    List<MessageInfo> list = MessageBoard.GetMessages((TalkChannel) Channel, Index);
                     if (list.Count == 0)
                         return;
 
-                    foreach (var msg in list)
+                    foreach (MessageInfo msg in list)
                     {
                         if (Messages.Count >= 8)
                             break;
@@ -34,10 +35,10 @@ namespace Comet.Game.Packets
                     break;
 
                 case BoardAction.GetWords:
-                    string message = MessageBoard.GetMessage(Messages[0], (TalkChannel)Channel);
+                    string message = MessageBoard.GetMessage(Messages[0], (TalkChannel) Channel);
                     await user.SendAsync(new MsgTalk
                     {
-                        Channel = (TalkChannel)Channel,
+                        Channel = (TalkChannel) Channel,
                         Color = Color.White,
                         Message = message,
                         SenderName = Messages[0],

@@ -1,23 +1,23 @@
+using System;
+using System.Net.Sockets;
+using System.Threading;
+using System.Threading.Tasks;
+using Comet.Game.Database;
+using Comet.Game.Packets;
+using Comet.Game.States;
+using Comet.Game.World.Managers;
+using Comet.Network.Packets;
+using Comet.Network.Packets.Game;
+using Comet.Network.Security;
+using Comet.Network.Sockets;
+using Comet.Shared;
+
 namespace Comet.Game
 {
-    using System;
-    using System.Net.Sockets;
-    using System.Threading;
-    using System.Threading.Tasks;
-    using Comet.Game.Database;
-    using Comet.Game.Packets;
-    using Comet.Game.States;
-    using Comet.Game.World.Managers;
-    using Comet.Network.Packets;
-    using Comet.Network.Packets.Game;
-    using Comet.Network.Security;
-    using Comet.Network.Sockets;
-    using Comet.Shared;
-
     /// <summary>
-    /// Server inherits from a base server listener to provide the game server with
-    /// listening functionality and event handling. This class defines how the server 
-    /// listener and invoked events are customized for the game server.
+    ///     Server inherits from a base server listener to provide the game server with
+    ///     listening functionality and event handling. This class defines how the server
+    ///     listener and invoked events are customized for the game server.
     /// </summary>
     internal sealed class Server : TcpServerListener<Client>
     {
@@ -27,13 +27,13 @@ namespace Comet.Game
         private readonly PacketProcessor<Client> Processor;
 
         /// <summary>
-        /// Instantiates a new instance of <see cref="Server"/> by initializing the 
-        /// <see cref="PacketProcessor"/> for processing packets from the players using 
-        /// channels and worker threads. Initializes the TCP server listener.
+        ///     Instantiates a new instance of <see cref="Server" /> by initializing the
+        ///     <see cref="PacketProcessor" /> for processing packets from the players using
+        ///     channels and worker threads. Initializes the TCP server listener.
         /// </summary>
         /// <param name="config">The server's read configuration file</param>
-        public Server(ServerConfiguration config) 
-            : base(maxConn: config.GameNetwork.MaxConn, exchange: true, footerLength: 8)
+        public Server(ServerConfiguration config)
+            : base(config.GameNetwork.MaxConn, exchange: true, footerLength: 8)
         {
             Processor = new PacketProcessor<Client>(ProcessAsync);
             _ = Processor.StartAsync(CancellationToken.None).ConfigureAwait(false);
@@ -42,16 +42,16 @@ namespace Comet.Game
         }
 
         /// <summary>
-        /// Invoked by the server listener's Accepting method to create a new server actor
-        /// around the accepted client socket. Gives the server an opportunity to initialize
-        /// any processing mechanisms or authentication routines for the client connection.
+        ///     Invoked by the server listener's Accepting method to create a new server actor
+        ///     around the accepted client socket. Gives the server an opportunity to initialize
+        ///     any processing mechanisms or authentication routines for the client connection.
         /// </summary>
         /// <param name="socket">Accepted client socket from the server socket</param>
         /// <param name="buffer">Preallocated buffer from the server listener</param>
         /// <returns>A new instance of a ServerActor around the client socket</returns>
         protected override async Task<Client> AcceptedAsync(Socket socket, Memory<byte> buffer)
         {
-            var partition = Processor.SelectPartition();
+            uint partition = Processor.SelectPartition();
             var client = new Client(socket, buffer, partition);
             await client.DiffieHellman.ComputePublicKeyAsync();
 
@@ -59,7 +59,7 @@ namespace Comet.Game
             await Kernel.NextBytesAsync(client.DiffieHellman.EncryptionIV);
 
             var handshakeRequest = new MsgHandshake(
-                client.DiffieHellman, 
+                client.DiffieHellman,
                 client.DiffieHellman.EncryptionIV,
                 client.DiffieHellman.DecryptionIV);
 
@@ -69,9 +69,9 @@ namespace Comet.Game
         }
 
         /// <summary>
-        /// Invoked by the server listener's Exchanging method to process the client 
-        /// response from the Diffie-Hellman Key Exchange. At this point, the raw buffer 
-        /// from the client has been decrypted and is ready for direct processing.
+        ///     Invoked by the server listener's Exchanging method to process the client
+        ///     response from the Diffie-Hellman Key Exchange. At this point, the raw buffer
+        ///     from the client has been decrypted and is ready for direct processing.
         /// </summary>
         /// <param name="actor">Server actor that represents the remote client</param>
         /// <param name="buffer">Packet buffer to be processed</param>
@@ -80,15 +80,17 @@ namespace Comet.Game
         {
             try
             {
-                MsgHandshake msg = new MsgHandshake();
+                var msg = new MsgHandshake();
                 msg.Decode(buffer.ToArray());
 
                 actor.DiffieHellman.ComputePrivateKey(msg.ClientKey);
 
-                actor.Cipher.GenerateKeys(new object[] { 
-                    actor.DiffieHellman.PrivateKey.ToByteArrayUnsigned() });
+                actor.Cipher.GenerateKeys(new object[]
+                {
+                    actor.DiffieHellman.PrivateKey.ToByteArrayUnsigned()
+                });
                 (actor.Cipher as BlowfishCipher).SetIVs(
-                    actor.DiffieHellman.DecryptionIV, 
+                    actor.DiffieHellman.DecryptionIV,
                     actor.DiffieHellman.EncryptionIV);
 
                 actor.DiffieHellman = null;
@@ -101,14 +103,18 @@ namespace Comet.Game
                 actor.ReceiveTimeOutSeconds = 900;
                 return true;
             }
-            catch (Exception e) { Console.WriteLine(e); }
+            catch (Exception e)
+            {
+                Console.WriteLine(e);
+            }
+
             return false;
         }
 
         /// <summary>
-        /// Invoked by the server listener's Receiving method to process a completed packet
-        /// from the actor's socket pipe. At this point, the packet has been assembled and
-        /// split off from the rest of the buffer.
+        ///     Invoked by the server listener's Receiving method to process a completed packet
+        ///     from the actor's socket pipe. At this point, the packet has been assembled and
+        ///     split off from the rest of the buffer.
         /// </summary>
         /// <param name="actor">Server actor that represents the remote client</param>
         /// <param name="packet">Packet bytes to be processed</param>
@@ -119,17 +125,17 @@ namespace Comet.Game
         }
 
         /// <summary>
-        /// Invoked by one of the server's packet processor worker threads to process a
-        /// single packet of work. Allows the server to process packets as individual 
-        /// messages on a single channel.
+        ///     Invoked by one of the server's packet processor worker threads to process a
+        ///     single packet of work. Allows the server to process packets as individual
+        ///     messages on a single channel.
         /// </summary>
         /// <param name="actor">Actor requesting packet processing</param>
         /// <param name="packet">An individual data packet to be processed</param>
-        private async Task ProcessAsync(Client actor, byte[] packet) 
+        private async Task ProcessAsync(Client actor, byte[] packet)
         {
             // Read in TQ's binary header
             var length = BitConverter.ToUInt16(packet, 0);
-            PacketType type = (PacketType)BitConverter.ToUInt16(packet, 2);
+            var type = (PacketType) BitConverter.ToUInt16(packet, 2);
 
             // Validate connection
             if (!actor.Socket.Connected)
@@ -351,11 +357,11 @@ namespace Comet.Game
 
                     default:
                         Console.WriteLine(
-                            "Missing packet {0}, Length {1}\n{2}", 
+                            "Missing packet {0}, Length {1}\n{2}",
                             type, length, PacketDump.Hex(packet));
                         await actor.SendAsync(new MsgTalk(actor.Identity, TalkChannel.Service,
-                            String.Format("Missing packet {0}, Length {1}",
-                            type, length)));
+                                                          string.Format("Missing packet {0}, Length {1}",
+                                                                        type, length)));
                         return;
                 }
 
@@ -372,23 +378,27 @@ namespace Comet.Game
                             await RoleManager.KickOutAsync(actor.Identity);
                         return;
                     }
+
                     Kernel.Services.Processor.Queue(actor.Character.Map.Partition, () => msg.ProcessAsync(actor));
                 }
-                else Kernel.Services.Processor.Queue(0, () => msg.ProcessAsync(actor));
+                else
+                {
+                    Kernel.Services.Processor.Queue(0, () => msg.ProcessAsync(actor));
+                }
             }
-            catch (Exception e) 
+            catch (Exception e)
             {
                 await Log.WriteLogAsync(LogLevel.Socket, $"{e.Message}\r\n{e}");
             }
         }
 
         /// <summary>
-        /// Invoked by the server listener's Disconnecting method to dispose of the actor's
-        /// resources. Gives the server an opportunity to cleanup references to the actor
-        /// from other actors and server collections.
+        ///     Invoked by the server listener's Disconnecting method to dispose of the actor's
+        ///     resources. Gives the server an opportunity to cleanup references to the actor
+        ///     from other actors and server collections.
         /// </summary>
         /// <param name="actor">Server actor that represents the remote client</param>
-        protected override void Disconnected(Client actor) 
+        protected override void Disconnected(Client actor)
         {
             if (actor == null)
             {
@@ -398,7 +408,7 @@ namespace Comet.Game
 
             Processor.DeselectPartition(actor.Partition);
 
-            bool fromCreation = false;
+            var fromCreation = false;
             if (actor.Creation != null)
             {
                 Kernel.Registration.Remove(actor.Creation.Token);
@@ -409,21 +419,17 @@ namespace Comet.Game
             {
                 _ = Log.WriteLogAsync(LogLevel.Info, $"{actor.Character.Name} has logged out.").ConfigureAwait(false);
 
-                Kernel.Services.Processor.Queue(0, async () =>
-                {
-                    await actor.Character.OnDisconnectAsync();
-                });
+                Kernel.Services.Processor.Queue(0, async () => { await actor.Character.OnDisconnectAsync(); });
             }
             else
             {
                 if (fromCreation)
-                {
-                    _ = Log.WriteLogAsync(LogLevel.Info, $"{actor.AccountIdentity} has created a new character and has logged out.").ConfigureAwait(false);
-                }
+                    _ = Log.WriteLogAsync(LogLevel.Info,
+                                          $"{actor.AccountIdentity} has created a new character and has logged out.")
+                           .ConfigureAwait(false);
                 else
-                {
-                    _ = Log.WriteLogAsync(LogLevel.Info, $"[{actor.IPAddress}] {actor.AccountIdentity} has logged out.").ConfigureAwait(false);
-                }
+                    _ = Log.WriteLogAsync(LogLevel.Info, $"[{actor.IPAddress}] {actor.AccountIdentity} has logged out.")
+                           .ConfigureAwait(false);
             }
         }
     }

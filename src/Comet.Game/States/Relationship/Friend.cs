@@ -7,6 +7,7 @@ using Comet.Game.Database.Repositories;
 using Comet.Game.Packets;
 using Comet.Game.States.Syndicates;
 using Comet.Game.World.Managers;
+using Comet.Network.Packets.Game;
 using Comet.Shared;
 
 namespace Comet.Game.States.Relationship
@@ -14,7 +15,7 @@ namespace Comet.Game.States.Relationship
     public sealed class Friend
     {
         private DbFriend m_dbFriend;
-        private Character m_owner;
+        private readonly Character m_owner;
 
         public Friend(Character owner)
         {
@@ -25,7 +26,7 @@ namespace Comet.Game.States.Relationship
         public string Name { get; private set; }
         public bool Online => User != null;
         public Character User => RoleManager.GetUser(Identity);
-        
+
         public bool Create(Character user)
         {
             m_dbFriend = new DbFriend
@@ -50,11 +51,11 @@ namespace Comet.Game.States.Relationship
             {
                 Identity = Identity,
                 Name = Name,
-                Action = MsgFriend.MsgFriendAction.AddFriend,
+                Action = MsgFriend<Client>.MsgFriendAction.AddFriend,
                 Online = Online
             });
         }
-        
+
         public async Task SendInfoAsync()
         {
             Character user = User;
@@ -75,7 +76,7 @@ namespace Comet.Game.States.Relationship
         {
             try
             {
-                await using ServerDbContext ctx = new ServerDbContext();
+                await using var ctx = new ServerDbContext();
                 if (m_dbFriend.Identity == 0)
                     await ctx.Friends.AddAsync(m_dbFriend);
                 else
@@ -94,7 +95,7 @@ namespace Comet.Game.States.Relationship
         {
             try
             {
-                await using ServerDbContext ctx = new ServerDbContext();
+                await using var ctx = new ServerDbContext();
                 if (m_dbFriend.Identity == 0)
                     return false;
                 ctx.Friends.Remove(m_dbFriend);

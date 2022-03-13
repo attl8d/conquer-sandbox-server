@@ -1,8 +1,8 @@
-﻿using Comet.Database.Entities;
-using Microsoft.EntityFrameworkCore;
-using System.Collections.Generic;
+﻿using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
+using Comet.Database.Entities;
+using Microsoft.EntityFrameworkCore;
 
 namespace Comet.Game.Database.Repositories
 {
@@ -18,14 +18,16 @@ namespace Comet.Game.Database.Repositories
         {
             await using var db = new ServerDbContext();
             return db.Maps.Where(x => x.ServerIndex == -1 || x.ServerIndex == Kernel.GameConfiguration.ServerIdentity)
-                .ToList();
+                     .ToList();
         }
 
         public static async Task<List<DbDynamap>> GetDynaAsync()
         {
             await using var db = new ServerDbContext();
-            return db.DynaMaps.Where(x => x.Identity > 10000000 && (x.ServerIndex == -1 || x.ServerIndex == Kernel.GameConfiguration.ServerIdentity))
-                .ToList();
+            return db.DynaMaps.Where(x => x.Identity > 10000000 &&
+                                          (x.ServerIndex == -1 ||
+                                           x.ServerIndex == Kernel.GameConfiguration.ServerIdentity))
+                     .ToList();
         }
     }
 }

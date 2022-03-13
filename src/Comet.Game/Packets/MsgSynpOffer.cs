@@ -1,7 +1,7 @@
-﻿using Comet.Game.States;
+﻿using System.Threading.Tasks;
+using Comet.Game.States;
 using Comet.Game.States.Syndicates;
 using Comet.Network.Packets.Game;
-using System.Threading.Tasks;
 
 namespace Comet.Game.Packets
 {
@@ -9,7 +9,6 @@ namespace Comet.Game.Packets
     {
         public MsgSynpOffer()
         {
-
         }
 
         public MsgSynpOffer(SyndicateMember member)
@@ -24,7 +23,7 @@ namespace Comet.Game.Packets
             WhiteRoseDonation = member.WhiteRoseDonation;
             OrchidDonation = member.OrchidDonation;
             TulipDonation = member.TulipDonation;
-            SilverTotal = (uint)(member.SilversTotal / 10000);
+            SilverTotal = (uint) (member.SilversTotal / 10000);
             ConquerPointsTotal = member.ConquerPointsTotalDonation * 20;
             GuideTotal = member.GuideDonation;
             PkTotal = member.PkTotalDonation;

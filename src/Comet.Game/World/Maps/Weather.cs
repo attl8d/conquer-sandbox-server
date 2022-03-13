@@ -1,29 +1,7 @@
-﻿// //////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
-// Copyright (C) FTW! Masters
-// Keep the headers and the patterns adopted by the project. If you changed anything in the file just insert
-// your name below, but don't remove the names of who worked here before.
-// 
-// This project is a fork from Comet, a Conquer Online Server Emulator created by Spirited, which can be
-// found here: https://gitlab.com/spirited/comet
-// 
-// Comet - Comet.Game - Weather.cs
-// Description:
-// 
-// Creator: FELIPEVIEIRAVENDRAMI [FELIPE VIEIRA VENDRAMINI]
-// 
-// Developed by:
-// Felipe Vieira Vendramini <felipevendramini@live.com>
-// 
-// Programming today is a race between software engineers striving to build bigger and better
-// idiot-proof programs, and the Universe trying to produce bigger and better idiots.
-// So far, the Universe is winning.
-// //////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
-
-#region References
+﻿#region References
 
 using System;
 using System.Threading.Tasks;
-using Comet.Core;
 using Comet.Game.Packets;
 using Comet.Game.States;
 using Comet.Shared;
@@ -123,8 +101,9 @@ namespace Comet.Game.World.Maps
             return true;
         }
 
-        public async Task<bool> SetNewWeatherAsync(WeatherType nType, int nIntensity, int nDir, int nColor, int nKeepSecs,
-            int nSpeedSecs)
+        public async Task<bool> SetNewWeatherAsync(WeatherType nType, int nIntensity, int nDir, int nColor,
+                                                   int nKeepSecs,
+                                                   int nSpeedSecs)
         {
             if (nType <= WeatherType.WeatherNone || nType >= WeatherType.WeatherAll)
                 return false;
@@ -167,7 +146,9 @@ namespace Comet.Game.World.Maps
                     m_nKeepSecs *= 5;
             }
             else
+            {
                 m_nKeepSecs = nKeepSecs;
+            }
 
             m_nSpeedSecs = nSpeedSecs;
 
@@ -186,7 +167,7 @@ namespace Comet.Game.World.Maps
 
         public int GetParticle(int nIntensity)
         {
-            var nParticle = nIntensity + (int) Math.Sqrt(MAX_WEATHER_INTENSITY);
+            int nParticle = nIntensity + (int) Math.Sqrt(MAX_WEATHER_INTENSITY);
             if (nParticle >= MAX_WEATHER_INTENSITY)
                 nParticle = MAX_WEATHER_INTENSITY - 1;
             nParticle = nParticle * nParticle / MAX_WEATHER_INTENSITY;
@@ -255,8 +236,8 @@ namespace Comet.Game.World.Maps
                 if (m_nCurrType == m_nTargType && (m_nKeepSecs == 0 || --m_nKeepSecs <= 0))
                 {
                     WeatherType nType = await Kernel.NextAsync(100) < WERTHER_FINE_PERCENT
-                        ? WeatherType.WeatherFine
-                        : m_nDefaultType;
+                                            ? WeatherType.WeatherFine
+                                            : m_nDefaultType;
 
                     int nIntensity = m_nDefaultIntensity - MAX_WEATHER_INTENSITY / 4 +
                                      await Kernel.NextAsync(MAX_WEATHER_INTENSITY / 2);
@@ -266,8 +247,8 @@ namespace Comet.Game.World.Maps
                         nIntensity = MAX_WEATHER_INTENSITY - 1;
 
                     int nDir = nType != nOldType && await Kernel.NextAsync(100) < WERTHER_CHANGE_DIR_PERCENT
-                        ? await Kernel.NextAsync(MAX_WEATHER_DIR)
-                        : m_nTargDir;
+                                   ? await Kernel.NextAsync(MAX_WEATHER_DIR)
+                                   : m_nTargDir;
                     int nKeepSecs = await Kernel.NextAsync(MAX_KEEP_SECS - MIN_KEEP_SECS + 1) + MIN_KEEP_SECS;
                     if (nType == WeatherType.WeatherCloudy)
                         nKeepSecs *= 5;
@@ -313,12 +294,12 @@ namespace Comet.Game.World.Maps
 
             if (m_nCurrType != nOldType || m_nCurrParticle != nOldParticle)
             {
-                MsgWeather cMsg = new MsgWeather
+                var cMsg = new MsgWeather
                 {
                     ColorArgb = (uint) GetColor(),
                     Direction = (uint) GetDir(),
                     Intensity = (uint) GetParticle(),
-                    WeatherType = (uint)GetType()
+                    WeatherType = (uint) GetType()
                 };
                 await m_pOwner.BroadcastMsgAsync(cMsg);
             }
@@ -337,12 +318,12 @@ namespace Comet.Game.World.Maps
 
         public async Task<bool> SendWeatherAsync(Character pUser = null)
         {
-            MsgWeather pMsg = new MsgWeather
+            var pMsg = new MsgWeather
             {
                 ColorArgb = (uint) GetColor(),
                 Direction = (uint) GetDir(),
                 Intensity = (uint) GetParticle(),
-                WeatherType = (uint)GetType()
+                WeatherType = (uint) GetType()
             };
             if (pUser != null)
                 await pUser.SendAsync(pMsg);
@@ -356,9 +337,9 @@ namespace Comet.Game.World.Maps
             if (pUser == null)
                 return false;
 
-            MsgWeather pMsg = new MsgWeather
+            var pMsg = new MsgWeather
             {
-                WeatherType = (uint)WeatherType.WeatherFine,
+                WeatherType = (uint) WeatherType.WeatherFine,
                 ColorArgb = 0,
                 Direction = 0,
                 Intensity = 0

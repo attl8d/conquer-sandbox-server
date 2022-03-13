@@ -1,6 +1,6 @@
-﻿using Comet.Game.World.Managers;
+﻿using System.Threading.Tasks;
+using Comet.Game.World.Managers;
 using Quartz;
-using System.Threading.Tasks;
 
 namespace Comet.Game.World.Schedule
 {
@@ -9,7 +9,7 @@ namespace Comet.Game.World.Schedule
     {
         public async Task Execute(IJobExecutionContext context)
         {
-            await RoleManager.OnDailyTriggerAsync();   
+            await RoleManager.OnDailyTriggerAsync();
         }
     }
 }

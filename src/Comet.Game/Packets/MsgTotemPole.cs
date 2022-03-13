@@ -1,10 +1,10 @@
-﻿using Comet.Game.States;
+﻿using System;
+using System.Threading.Tasks;
+using Comet.Game.States;
 using Comet.Game.States.Items;
 using Comet.Game.States.Syndicates;
 using Comet.Game.World.Managers;
 using Comet.Network.Packets.Game;
-using System;
-using System.Threading.Tasks;
 
 namespace Comet.Game.Packets
 {
@@ -25,75 +25,75 @@ namespace Comet.Game.Packets
             switch (Action)
             {
                 case ActionMode.UnlockArsenal:
+                {
+                    if (user.SyndicateRank != SyndicateMember.SyndicateRank.GuildLeader
+                        && user.SyndicateRank != SyndicateMember.SyndicateRank.DeputyLeader
+                        && user.SyndicateRank != SyndicateMember.SyndicateRank.HonoraryDeputyLeader
+                        && user.SyndicateRank != SyndicateMember.SyndicateRank.LeaderSpouse)
+                        return;
+
+                    var type = (Syndicate.TotemPoleType) Data1;
+                    if (type == Syndicate.TotemPoleType.None)
+                        return;
+
+                    if (user.Syndicate.LastOpenTotem != null)
                     {
-                        if (user.SyndicateRank != SyndicateMember.SyndicateRank.GuildLeader
-                            && user.SyndicateRank != SyndicateMember.SyndicateRank.DeputyLeader
-                            && user.SyndicateRank != SyndicateMember.SyndicateRank.HonoraryDeputyLeader
-                            && user.SyndicateRank != SyndicateMember.SyndicateRank.LeaderSpouse)
+                        int now = int.Parse($"{DateTime.Now:yyyyMMdd}");
+                        int lastOpenTotem = int.Parse($"{user.Syndicate.LastOpenTotem.Value:yyyyMMdd}");
+                        if (lastOpenTotem >= now)
                             return;
-
-                        Syndicate.TotemPoleType type = (Syndicate.TotemPoleType)Data1;
-                        if (type == Syndicate.TotemPoleType.None)
-                            return;
-
-                        if (user.Syndicate.LastOpenTotem != null)
-                        {
-                            int now = int.Parse($"{DateTime.Now:yyyyMMdd}");
-                            int lastOpenTotem = int.Parse($"{user.Syndicate.LastOpenTotem.Value:yyyyMMdd}");
-                            if (lastOpenTotem >= now)
-                                return;
-                        }
-
-                        int price = user.Syndicate.UnlockTotemPolePrice();
-                        if (user.Syndicate.Money < price)
-                            return;
-
-                        if (!await user.Syndicate.OpenTotemPoleAsync(type))
-                            return;
-
-                        user.Syndicate.Money -= price;
-                        await user.Syndicate.SaveAsync();
-
-                        await user.Syndicate.SendTotemPolesAsync(user);
-                        await user.SendSyndicateAsync();
-                        break;
                     }
+
+                    int price = user.Syndicate.UnlockTotemPolePrice();
+                    if (user.Syndicate.Money < price)
+                        return;
+
+                    if (!await user.Syndicate.OpenTotemPoleAsync(type))
+                        return;
+
+                    user.Syndicate.Money -= price;
+                    await user.Syndicate.SaveAsync();
+
+                    await user.Syndicate.SendTotemPolesAsync(user);
+                    await user.SendSyndicateAsync();
+                    break;
+                }
 
                 case ActionMode.InscribeItem:
-                    {
-                        Item item = user.UserPackage[(uint)Data2];
-                        if (item == null)
-                            return;
+                {
+                    Item item = user.UserPackage[(uint) Data2];
+                    if (item == null)
+                        return;
 
-                        await user.Syndicate.InscribeItemAsync(user, item);
-                        break;
-                    }
+                    await user.Syndicate.InscribeItemAsync(user, item);
+                    break;
+                }
 
                 case ActionMode.UnsubscribeItem:
-                    {
-                        await user.Syndicate.UnsubscribeItemAsync((uint)Data2, user.Identity);
-                        break;
-                    }
+                {
+                    await user.Syndicate.UnsubscribeItemAsync((uint) Data2, user.Identity);
+                    break;
+                }
 
                 case ActionMode.Enhance:
-                    {
-                        if (user.SyndicateRank != SyndicateMember.SyndicateRank.GuildLeader)
-                            return;
+                {
+                    if (user.SyndicateRank != SyndicateMember.SyndicateRank.GuildLeader)
+                        return;
 
-                        if (await user.Syndicate.EnhanceTotemPoleAsync((Syndicate.TotemPoleType)Data1, (byte)Data3))
-                        {
-                            await user.Syndicate.SendTotemPolesAsync(user);
-                            await user.SendSyndicateAsync();
-                        }
-
-                        break;
-                    }
-
-                case ActionMode.Refresh:
+                    if (await user.Syndicate.EnhanceTotemPoleAsync((Syndicate.TotemPoleType) Data1, (byte) Data3))
                     {
                         await user.Syndicate.SendTotemPolesAsync(user);
-                        break;
+                        await user.SendSyndicateAsync();
                     }
+
+                    break;
+                }
+
+                case ActionMode.Refresh:
+                {
+                    await user.Syndicate.SendTotemPolesAsync(user);
+                    break;
+                }
             }
         }
     }

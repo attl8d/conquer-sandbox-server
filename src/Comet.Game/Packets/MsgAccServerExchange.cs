@@ -5,6 +5,5 @@ namespace Comet.Game.Packets
 {
     public sealed class MsgAccServerExchange : MsgAccServerExchange<AccountServer>
     {
-        
     }
 }

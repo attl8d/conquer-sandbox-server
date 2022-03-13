@@ -1,16 +1,17 @@
-﻿using Comet.Database.Entities;
+﻿using System;
+using System.Collections.Concurrent;
+using System.Collections.Generic;
+using System.Linq;
+using System.Threading.Tasks;
+using Comet.Database.Entities;
 using Comet.Game.Database;
 using Comet.Game.Database.Repositories;
 using Comet.Game.Packets;
 using Comet.Game.States.Npcs;
 using Comet.Game.World.Managers;
 using Comet.Network.Packets;
+using Comet.Network.Packets.Game;
 using Comet.Shared;
-using System;
-using System.Collections.Concurrent;
-using System.Collections.Generic;
-using System.Linq;
-using System.Threading.Tasks;
 
 namespace Comet.Game.States.Events
 {
@@ -21,6 +22,7 @@ namespace Comet.Game.States.Events
         private const int TIME_PER_QUESTION = 30;
 
         private const int TOTAL_EXP_REWARD = 600;
+
         private readonly ushort[] m_expReward =
         {
             3000,
@@ -34,15 +36,15 @@ namespace Comet.Game.States.Events
         {
         }
 
-        private List<DbQuiz> m_questions = new List<DbQuiz>();
-        private List<DbQuiz> m_quizQuestions = new List<DbQuiz>();
-        private ConcurrentDictionary<uint, QuizUser> m_users = new ConcurrentDictionary<uint, QuizUser>();
+        private readonly List<DbQuiz> m_questions = new();
+        private readonly List<DbQuiz> m_quizQuestions = new();
+        private readonly ConcurrentDictionary<uint, QuizUser> m_users = new();
 
         private DynamicNpc m_owner;
 
-        private int m_questionIdx = 0;
+        private int m_questionIdx;
         private int m_lastCorrectReply = -1;
-        private TimeOut m_questionTimer = new TimeOut(30);
+        private readonly TimeOut m_questionTimer = new(30);
 
         public override EventType Identity => EventType.QuizShow;
 
@@ -72,29 +74,23 @@ namespace Comet.Game.States.Events
                     m_users.Clear();
                     m_quizQuestions.Clear();
                     var temp = new List<DbQuiz>(m_questions);
-                    for (int i = 0; i < Math.Min(temp.Count, MAX_QUESTION); i++)
+                    for (var i = 0; i < Math.Min(temp.Count, MAX_QUESTION); i++)
                     {
                         int idx = await Kernel.NextAsync(temp.Count) % Math.Max(1, temp.Count);
                         m_quizQuestions.Add(temp[idx]);
                         temp.RemoveAt(idx);
                     }
 
-                    foreach (var user in RoleManager.QueryRoleByType<Character>())
-                    {
-                        if (!m_users.TryGetValue(user.Identity, out var res))
-                        {
+                    foreach (Character user in RoleManager.QueryRoleByType<Character>())
+                        if (!m_users.TryGetValue(user.Identity, out QuizUser res))
                             Enter(user);
-                        }
                         else
-                        {
                             res.Canceled = false;
-                        }
-                    }
 
                     await RoleManager.BroadcastMsgAsync(new MsgQuiz
                     {
-                        Action = MsgQuiz.QuizAction.Start,
-                        Param1 = (ushort)(60 - DateTime.Now.Second),
+                        Action = MsgQuiz<Client>.QuizAction.Start,
+                        Param1 = (ushort) (60 - DateTime.Now.Second),
                         Param2 = MAX_QUESTION,
                         Param3 = TIME_PER_QUESTION,
                         Param4 = m_expReward[0],
@@ -104,6 +100,7 @@ namespace Comet.Game.States.Events
 
                     return;
                 }
+
                 if (m_owner.Data0 == 4) // start
                 {
                     Status = QuizStatus.Running;
@@ -115,7 +112,7 @@ namespace Comet.Game.States.Events
                 if (m_questionTimer.ToNextTime(TIME_PER_QUESTION) && ++m_questionIdx < m_quizQuestions.Count)
                 {
                     DbQuiz question = m_quizQuestions[m_questionIdx];
-                    foreach (var player in m_users.Values.Where(x => !x.Canceled))
+                    foreach (QuizUser player in m_users.Values.Where(x => !x.Canceled))
                     {
                         Character user = RoleManager.GetUser(player.Identity);
                         if (user == null)
@@ -131,12 +128,12 @@ namespace Comet.Game.States.Events
                         player.CurrentQuestion = m_questionIdx;
                         ushort lastResult = 1;
                         if (m_questionIdx > 0)
-                            lastResult = (ushort)(player.Correct ? 1 : 2);
+                            lastResult = (ushort) (player.Correct ? 1 : 2);
                         player.Correct = false;
                         _ = user.SendAsync(new MsgQuiz
                         {
-                            Action = MsgQuiz.QuizAction.Question,
-                            Param1 = (ushort)(m_questionIdx + 1),
+                            Action = MsgQuiz<Client>.QuizAction.Question,
+                            Param1 = (ushort) (m_questionIdx + 1),
                             Param2 = lastResult,
                             Param3 = player.Experience,
                             Param4 = player.TimeTaken,
@@ -158,20 +155,17 @@ namespace Comet.Game.States.Events
                 {
                     Status = QuizStatus.Idle;
 
-                    var top3 = GetTop3();
-                    foreach (var player in m_users.Values.Where(x => !x.Canceled))
+                    List<QuizUser> top3 = GetTop3();
+                    foreach (QuizUser player in m_users.Values.Where(x => !x.Canceled))
                     {
                         if (player.CurrentQuestion < m_questionIdx)
                             player.TimeTaken += TIME_PER_QUESTION;
 
-                        int expBallReward = 0;
+                        var expBallReward = 0;
                         if (top3.Any(x => x.Identity == player.Identity))
                         {
                             int rank = GetRanking(player.Identity);
-                            if (rank > 0 && rank <= 3)
-                            {
-                                expBallReward = m_expReward[rank];
-                            }
+                            if (rank > 0 && rank <= 3) expBallReward = m_expReward[rank];
                         }
                         else
                         {
@@ -181,23 +175,21 @@ namespace Comet.Game.States.Events
                         Character user = RoleManager.GetUser(player.Identity);
                         if (user != null)
                         {
-                            MsgQuiz msg = new MsgQuiz
+                            var msg = new MsgQuiz
                             {
-                                Action = MsgQuiz.QuizAction.Finish,
+                                Action = MsgQuiz<Client>.QuizAction.Finish,
                                 Param1 = player.Rank,
                                 Param2 = player.Experience,
                                 Param3 = player.TimeTaken,
                                 Param4 = player.Points
                             };
-                            foreach (var top in top3)
-                            {
-                                msg.Scores.Add(new MsgQuiz.QuizRank
+                            foreach (QuizUser top in top3)
+                                msg.Scores.Add(new MsgQuiz<Client>.QuizRank
                                 {
                                     Name = top.Name,
                                     Time = top.TimeTaken,
                                     Score = top.Points
                                 });
-                            }
                             await user.SendAsync(msg);
 
                             if (user.Level < Role.MAX_UPLEV)
@@ -209,7 +201,7 @@ namespace Comet.Game.States.Events
                             if (dbUser != null && dbUser.Level < Role.MAX_UPLEV)
                             {
                                 user = new Character(dbUser, null);
-                                dbUser.Experience += (ulong)user.CalculateExpBall(expBallReward);
+                                dbUser.Experience += (ulong) user.CalculateExpBall(expBallReward);
                                 await ServerDbContext.SaveAsync(dbUser);
                             }
                         }
@@ -225,28 +217,28 @@ namespace Comet.Game.States.Events
             if (Status != QuizStatus.Running)
                 return;
 
-            if (!m_users.TryGetValue(user.Identity, out var player))
-            {
+            if (!m_users.TryGetValue(user.Identity, out QuizUser player))
                 m_users.TryAdd(user.Identity, player = new QuizUser
                 {
                     Identity = user.Identity,
                     Name = user.Name,
-                    TimeTaken = (ushort)(Math.Max(0, m_questionIdx - 1) * TIME_PER_QUESTION),
+                    TimeTaken = (ushort) (Math.Max(0, m_questionIdx - 1) * TIME_PER_QUESTION),
                     CurrentQuestion = m_questionIdx
                 });
-            }
 
             if (player.CurrentQuestion != m_questionIdx)
                 return;
 
-            var question = m_quizQuestions[idxQuestion - 1];
+            DbQuiz question = m_quizQuestions[idxQuestion - 1];
             ushort points;
             int expBallAmount;
             if (question.Result == reply)
             {
                 expBallAmount = TOTAL_EXP_REWARD / MAX_QUESTION;
-                player.Points += points = (ushort)Math.Max(1, m_questionTimer.GetRemain());
-                player.TimeTaken += (ushort)Math.Max(1, Math.Min(TIME_PER_QUESTION, m_questionTimer.GetInterval() - m_questionTimer.GetRemain()));
+                player.Points += points = (ushort) Math.Max(1, m_questionTimer.GetRemain());
+                player.TimeTaken +=
+                    (ushort) Math.Max(
+                        1, Math.Min(TIME_PER_QUESTION, m_questionTimer.GetInterval() - m_questionTimer.GetRemain()));
                 player.Correct = true;
             }
             else
@@ -259,26 +251,24 @@ namespace Comet.Game.States.Events
 
             player.Replied = true;
             user.QuizPoints += points;
-            player.Experience += (ushort)expBallAmount;
+            player.Experience += (ushort) expBallAmount;
             await user.AwardExperienceAsync(user.CalculateExpBall(expBallAmount));
 
-            MsgQuiz msg = new MsgQuiz
+            var msg = new MsgQuiz
             {
-                Action = MsgQuiz.QuizAction.AfterReply,
+                Action = MsgQuiz<Client>.QuizAction.AfterReply,
                 Param2 = player.TimeTaken,
                 Param3 = player.Rank = GetRanking(player.Identity),
                 Param6 = player.Points
             };
-            var top3 = GetTop3();
-            foreach (var top in top3)
-            {
-                msg.Scores.Add(new MsgQuiz.QuizRank
+            List<QuizUser> top3 = GetTop3();
+            foreach (QuizUser top in top3)
+                msg.Scores.Add(new MsgQuiz<Client>.QuizRank
                 {
                     Name = top.Name,
                     Time = top.TimeTaken,
                     Score = top.Points
                 });
-            }
             await user.SendAsync(msg);
         }
 
@@ -298,30 +288,32 @@ namespace Comet.Game.States.Events
         public ushort GetRanking(uint idUser)
         {
             ushort pos = 1;
-            foreach (var player in m_users.Values
-                .Where(x => !x.Canceled)
-                .OrderByDescending(x => x.Points)
-                .ThenBy(x => x.TimeTaken))
+            foreach (QuizUser player in m_users.Values
+                                               .Where(x => !x.Canceled)
+                                               .OrderByDescending(x => x.Points)
+                                               .ThenBy(x => x.TimeTaken))
             {
                 if (player.Identity == idUser)
                     return pos;
                 pos++;
             }
+
             return pos;
         }
 
         private List<QuizUser> GetTop3()
         {
-            List<QuizUser> rank = new List<QuizUser>();
-            foreach (var player in m_users.Values
-                .Where(x => !x.Canceled)
-                .OrderByDescending(x => x.Points)
-                .ThenBy(x => x.TimeTaken))
+            var rank = new List<QuizUser>();
+            foreach (QuizUser player in m_users.Values
+                                               .Where(x => !x.Canceled)
+                                               .OrderByDescending(x => x.Points)
+                                               .ThenBy(x => x.TimeTaken))
             {
                 if (rank.Count == 3)
                     break;
                 rank.Add(player);
             }
+
             return rank;
         }
 
@@ -331,7 +323,7 @@ namespace Comet.Game.States.Events
 
         public async Task BroadcastMsgAsync(IPacket msg)
         {
-            foreach (var user in m_users.Values.Where(x => !x.Canceled))
+            foreach (QuizUser user in m_users.Values.Where(x => !x.Canceled))
             {
                 Character player = RoleManager.GetUser(user.Identity);
                 if (player == null)
@@ -346,15 +338,12 @@ namespace Comet.Game.States.Events
 
         public void Cancel(uint idUser)
         {
-            if (m_users.TryGetValue(idUser, out var value))
-            {
-                value.Canceled = true;
-            }
+            if (m_users.TryGetValue(idUser, out QuizUser value)) value.Canceled = true;
         }
 
         public bool IsCanceled(uint idUser)
         {
-            return m_users.TryGetValue(idUser, out var value) && value.Canceled;
+            return m_users.TryGetValue(idUser, out QuizUser value) && value.Canceled;
         }
 
         #endregion
@@ -371,7 +360,7 @@ namespace Comet.Game.States.Events
             public string Name { get; set; }
             public ushort Points { get; set; }
             public ushort Experience { get; set; } // 600 = 1 expball
-            public ushort TimeTaken { get; set; } // in seconds
+            public ushort TimeTaken { get; set; }  // in seconds
             public int CurrentQuestion { get; set; }
             public ushort Rank { get; set; }
             public bool Correct { get; set; }

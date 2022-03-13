@@ -1,5 +1,8 @@
-﻿using Comet.Core;
+﻿using System;
+using System.Threading.Tasks;
+using Comet.Core;
 using Comet.Core.World.Maps.Enums;
+using Comet.Database.Entities;
 using Comet.Game.Packets;
 using Comet.Game.States.Events;
 using Comet.Game.States.Items;
@@ -8,15 +11,13 @@ using Comet.Game.World.Managers;
 using Comet.Game.World.Maps;
 using Comet.Network.Packets.Game;
 using Comet.Shared;
-using System;
-using System.Threading.Tasks;
 
 namespace Comet.Game.States
 {
     public sealed class BattleSystem
     {
-        private Role mOwner;
-        private TimeOutMS mAttackMs = new TimeOutMS();
+        private readonly Role mOwner;
+        private readonly TimeOutMS mAttackMs = new();
 
         private uint mIdTarget;
 
@@ -70,10 +71,8 @@ namespace Comet.Game.States
             if (mOwner.Map.QueryRegion(RegionTypes.PkProtected, target.MapX, target.MapY))
                 return false;
 
-            if (mOwner is Character atkUser && atkUser.CurrentEvent != null && !atkUser.CurrentEvent.IsAttackEnable(atkUser))
-            {
-                return false;
-            }
+            if (mOwner is Character atkUser && atkUser.CurrentEvent != null &&
+                !atkUser.CurrentEvent.IsAttackEnable(atkUser)) return false;
             return true;
         }
 
@@ -100,9 +99,9 @@ namespace Comet.Game.States
                 return false;
             }
 
-            Character user = mOwner as Character;
-            if (user?.IsBowman == true 
-                && !user.Map.IsTrainingMap() 
+            var user = mOwner as Character;
+            if (user?.IsBowman == true
+                && !user.Map.IsTrainingMap()
                 && !await user.SpendEquipItemAsync(0050, 1, true))
             {
                 ResetBattle();
@@ -121,16 +120,14 @@ namespace Comet.Game.States
                 return false;
             }
 
-            if (user != null && !user.Map.IsTrainingMap())
-            {
-                await user.DecEquipmentDurabilityAsync(true, 0, 1);
-            }
+            if (user != null && !user.Map.IsTrainingMap()) await user.DecEquipmentDurabilityAsync(true, 0, 1);
 
-            int adjustAtk = 0;
+            var adjustAtk = 0;
             if (mOwner.QueryStatus(StatusSet.FATAL_STRIKE) != null)
                 adjustAtk = mOwner.QueryStatus(StatusSet.FATAL_STRIKE).Power;
 
-            var result = await CalcPowerAsync(MagicType.None, mOwner, target, adjustAtk);
+            (int Damage, InteractionEffect effect) result =
+                await CalcPowerAsync(MagicType.None, mOwner, target, adjustAtk);
             InteractionEffect effect = result.effect;
             int damage = result.Damage;
 
@@ -140,7 +137,7 @@ namespace Comet.Game.States
                 damage *= 2;
             }
 
-            int lifeLost = (int)Math.Min(target.MaxLife, Math.Max(1, damage));
+            var lifeLost = (int) Math.Min(target.MaxLife, Math.Max(1, damage));
             long nExp = Math.Min(Math.Max(0, lifeLost), target.MaxLife);
 
             await mOwner.SendDamageMsgAsync(target.Identity, damage);
@@ -167,7 +164,7 @@ namespace Comet.Game.States
                 var ninjaStepMsg = new MsgAction
                 {
                     Identity = mOwner.Identity,
-                    Action = MsgAction.ActionType.NinjaStep,
+                    Action = MsgAction<Client>.ActionType.NinjaStep,
                     Data = target.Identity,
                     X = target.MapX,
                     Y = target.MapY
@@ -184,20 +181,19 @@ namespace Comet.Game.States
                 }
             }
 
-            DynamicNpc npc = target as DynamicNpc;
-            if (npc?.IsAwardScore() == true && user != null)
-            {
-                await user.AddSynWarScoreAsync(npc, lifeLost);
-            }
+            var npc = target as DynamicNpc;
+            if (npc?.IsAwardScore() == true && user != null) await user.AddSynWarScoreAsync(npc, lifeLost);
 
-            if (user != null && (target is Monster monster && !monster.IsGuard() && !monster.IsPkKiller() && !monster.IsRighteous() || npc?.IsGoal() == true))
+            if (user != null &&
+                (target is Monster monster && !monster.IsGuard() && !monster.IsPkKiller() && !monster.IsRighteous() ||
+                 npc?.IsGoal() == true))
             {
-                int nWeaponExp = (int)nExp / 3; //(int) (nExp / 10);
+                int nWeaponExp = (int) nExp / 3; //(int) (nExp / 10);
                 nExp = user.AdjustExperience(target, nExp, false);
-                int nAdditionExp = 0;
+                var nAdditionExp = 0;
                 if (!target.IsAlive && npc?.IsGoal() != true)
                 {
-                    nAdditionExp = (int)(target.MaxLife * 0.05f);
+                    nAdditionExp = (int) (target.MaxLife * 0.05f);
                     nExp += nAdditionExp;
 
                     if (user.Team != null)
@@ -215,10 +211,13 @@ namespace Comet.Game.States
                     nWeaponExp *= 2;
 
                 if (user.UserPackage[Item.ItemPosition.RightHand] != null)
-                    await user.AddWeaponSkillExpAsync((ushort)user.UserPackage[Item.ItemPosition.RightHand].GetItemSubType(),
+                    await user.AddWeaponSkillExpAsync(
+                        (ushort) user.UserPackage[Item.ItemPosition.RightHand].GetItemSubType(),
                         nWeaponExp);
-                if (user.UserPackage[Item.ItemPosition.LeftHand] != null && !user.UserPackage[Item.ItemPosition.LeftHand].IsArrowSort())
-                    await user.AddWeaponSkillExpAsync((ushort)user.UserPackage[Item.ItemPosition.LeftHand].GetItemSubType(),
+                if (user.UserPackage[Item.ItemPosition.LeftHand] != null &&
+                    !user.UserPackage[Item.ItemPosition.LeftHand].IsArrowSort())
+                    await user.AddWeaponSkillExpAsync(
+                        (ushort) user.UserPackage[Item.ItemPosition.LeftHand].GetItemSubType(),
                         nWeaponExp / 2);
 
                 if (await Kernel.ChanceCalcAsync(7f))
@@ -246,15 +245,14 @@ namespace Comet.Game.States
                 await user.Team.AwardMemberExpAsync(mOwner.Identity, target, nBonusExp);
         }
 
-        public async Task<(int Damage, InteractionEffect effect)> CalcPowerAsync(MagicType magic, Role attacker, Role target, int adjustAtk = 0)
+        public async Task<(int Damage, InteractionEffect effect)> CalcPowerAsync(
+            MagicType magic, Role attacker, Role target, int adjustAtk = 0)
         {
             (int, InteractionEffect None) result;
             if (magic == MagicType.None)
                 result = await CalcAttackPowerAsync(attacker, target, adjustAtk);
             else
-            {
                 result = await CalcMagicAttackPowerAsync(attacker, target, adjustAtk);
-            }
 
             GameEvent @event = EventManager.GetEvent(attacker.MapIdentity);
             if (@event != null)
@@ -266,41 +264,40 @@ namespace Comet.Game.States
             if (target is DynamicNpc dynamicNpc
                 && dynamicNpc.IsSynFlag()
                 && dynamicNpc.IsSynMoneyEmpty())
-            {
                 result.Item1 *= Role.SYNWAR_NOMONEY_DAMAGETIMES;
-            }
 
             return result;
         }
 
-        public async Task<(int Damage, InteractionEffect effect)> CalcAttackPowerAsync(Role attacker, Role target, int adjustAtk = 0, int adjustDef = 0)
+        public async Task<(int Damage, InteractionEffect effect)> CalcAttackPowerAsync(
+            Role attacker, Role target, int adjustAtk = 0, int adjustDef = 0)
         {
-            InteractionEffect effect = InteractionEffect.None;
-            int attack = 0;
-            int damage = 0;
+            var effect = InteractionEffect.None;
+            var attack = 0;
+            var damage = 0;
 
             if (await Kernel.ChanceCalcAsync(50))
-                attack = attacker.MaxAttack - await Kernel.NextAsync(1, Math.Max(1, attacker.MaxAttack - attacker.MinAttack) / 2 + 1);
+                attack = attacker.MaxAttack -
+                         await Kernel.NextAsync(1, Math.Max(1, attacker.MaxAttack - attacker.MinAttack) / 2 + 1);
             else
-                attack = attacker.MinAttack - await Kernel.NextAsync(1, Math.Max(1, attacker.MaxAttack - attacker.MinAttack) / 2 + 1);
+                attack = attacker.MinAttack -
+                         await Kernel.NextAsync(1, Math.Max(1, attacker.MaxAttack - attacker.MinAttack) / 2 + 1);
 
             if (adjustAtk > 0 && adjustAtk < Calculations.ADJUST_PERCENT)
                 attack = Calculations.CutTrail(0, Calculations.AdjustDataEx(attack, adjustAtk));
 
             if (attacker is Character && target is Character && attacker.IsBowman)
-                attack = (int)(attack * 0.1125f);
+                attack = (int) (attack * 0.1125f);
 
-            Character targetUser = target as Character;
+            var targetUser = target as Character;
             int defense = target.Defense;
 
             if (adjustDef > 0)
                 defense = Calculations.CutTrail(0, Calculations.AdjustDataEx(defense, adjustDef));
 
             if (targetUser != null)
-            {
                 if (targetUser.Metempsychosis > 0 && targetUser.Level >= 70)
-                    defense = (int)(defense * 1.3d);
-            }
+                    defense = (int) (defense * 1.3d);
 
             if (target.QueryStatus(StatusSet.SHIELD) != null)
                 defense = Calculations.AdjustData(defense, target.QueryStatus(StatusSet.SHIELD).Power);
@@ -321,8 +318,8 @@ namespace Comet.Game.States
 
             if (targetUser != null)
             {
-                damage = (int)(damage * (1 - targetUser.Blessing / 100d));
-                damage = (int)(damage * (1 - targetUser.TortoiseGemBonus / 100d));
+                damage = (int) (damage * (1 - targetUser.Blessing / 100d));
+                damage = (int) (damage * (1 - targetUser.TortoiseGemBonus / 100d));
             }
 
             if (attacker is Character atkUsr && target is Monster tgtMonster)
@@ -352,7 +349,7 @@ namespace Comet.Game.States
             if (attacker is Character && targetUser != null && attacker.BattlePower < target.BattlePower)
             {
                 double delta = Math.Min(25, target.BattlePower - attacker.BattlePower) * 2 / 100f;
-                damage = (int)(damage * (1 - delta));
+                damage = (int) (damage * (1 - delta));
             }
 
             damage += attacker.AddFinalAttack;
@@ -362,9 +359,10 @@ namespace Comet.Game.States
             return (damage, effect);
         }
 
-        public async Task<(int Damage, InteractionEffect effect)> CalcMagicAttackPowerAsync(Role attacker, Role target, int adjustAtk = 0)
+        public async Task<(int Damage, InteractionEffect effect)> CalcMagicAttackPowerAsync(
+            Role attacker, Role target, int adjustAtk = 0)
         {
-            InteractionEffect effect = InteractionEffect.None;
+            var effect = InteractionEffect.None;
             int attack = attacker.MagicAttack;
 
             if (adjustAtk > 0 && adjustAtk < Calculations.ADJUST_PERCENT)
@@ -374,16 +372,16 @@ namespace Comet.Game.States
 
             int damage = attack - defense;
 
-            damage = (int)(damage * (1 - Math.Min(target.MagicDefenseBonus, 90) / 100d));
+            damage = (int) (damage * (1 - Math.Min(target.MagicDefenseBonus, 90) / 100d));
 
             if (adjustAtk > 0 && adjustAtk > Calculations.ADJUST_PERCENT)
                 damage = Calculations.CutTrail(0, Calculations.AdjustDataEx(damage, adjustAtk));
 
-            Character targetUser = target as Character;
+            var targetUser = target as Character;
             if (targetUser != null)
             {
-                damage = (int)(damage * (1 - targetUser.Blessing / 100d));
-                damage = (int)(damage * (1 - targetUser.TortoiseGemBonus / 100d));
+                damage = (int) (damage * (1 - targetUser.Blessing / 100d));
+                damage = (int) (damage * (1 - targetUser.TortoiseGemBonus / 100d));
             }
 
             if (attacker is Character atkUsr && target is Monster tgtMonster)
@@ -405,7 +403,7 @@ namespace Comet.Game.States
             else
             {
                 if (attacker is Character && target is Character)
-                    damage = CalcDamageUser2User((Character)attacker, (Character)target, damage);
+                    damage = CalcDamageUser2User((Character) attacker, (Character) target, damage);
 
                 damage = target.AdjustWeaponDamage(damage);
             }
@@ -413,7 +411,7 @@ namespace Comet.Game.States
             if (targetUser != null && attacker.BattlePower < target.BattlePower)
             {
                 double delta = Math.Min(50, target.BattlePower - attacker.BattlePower) / 100f;
-                damage = (int)(damage * (1 - delta));
+                damage = (int) (damage * (1 - delta));
             }
 
             damage += attacker.AddFinalMAttack;
@@ -448,7 +446,8 @@ namespace Comet.Game.States
             if (attacker == null || target == null || attacker.Identity == target.Identity)
                 return true;
 
-            if (attacker.QueryStatus(StatusSet.FATAL_STRIKE) != null && target is Monster tgtMob)// && !tgtMob.IsGuard())
+            if (attacker.QueryStatus(StatusSet.FATAL_STRIKE) != null &&
+                target is Monster tgtMob) // && !tgtMob.IsGuard())
                 return false;
 
             int hitRate = attacker.Accuracy;
@@ -501,9 +500,13 @@ namespace Comet.Game.States
                     {
                     }
                     else if (nDeltaLev < 6)
+                    {
                         nDrop /= 5;
+                    }
                     else
+                    {
                         nDrop /= 10;
+                    }
                 }
                 else if (19 < nAtkLev && nAtkLev <= 49)
                 {
@@ -511,9 +514,13 @@ namespace Comet.Game.States
                     {
                     }
                     else if (nDeltaLev < 10)
+                    {
                         nDrop /= 5;
+                    }
                     else
+                    {
                         nDrop /= 10;
+                    }
                 }
                 else if (49 < nAtkLev && nAtkLev <= 85)
                 {
@@ -521,9 +528,13 @@ namespace Comet.Game.States
                     {
                     }
                     else if (nDeltaLev < 8)
+                    {
                         nDrop /= 5;
+                    }
                     else
+                    {
                         nDrop /= 10;
+                    }
                 }
                 else if (85 < nAtkLev && nAtkLev <= 112)
                 {
@@ -531,9 +542,13 @@ namespace Comet.Game.States
                     {
                     }
                     else if (nDeltaLev < 6)
+                    {
                         nDrop /= 5;
+                    }
                     else
+                    {
                         nDrop /= 10;
+                    }
                 }
                 else if (112 < nAtkLev)
                 {
@@ -541,9 +556,13 @@ namespace Comet.Game.States
                     {
                     }
                     else if (nDeltaLev < 4)
+                    {
                         nDrop /= 5;
+                    }
                     else
+                    {
                         nDrop /= 10;
+                    }
                 }
             }
 
@@ -563,31 +582,33 @@ namespace Comet.Game.States
             return NAME_BLACK;
         }
 
-        public static int CalcDamageUser2Monster(Character attacker, Role target, int damage)//(int nAtk, int nDef, int nAtkLev, int nDefLev)
+        public static int
+            CalcDamageUser2Monster(Character attacker, Role target,
+                                   int damage) //(int nAtk, int nDef, int nAtkLev, int nDefLev)
         {
             if (GetNameType(attacker.Level, target.Level) == NAME_GREEN)
             {
                 int nDeltaLev = attacker.Level - target.Level;
                 if (nDeltaLev >= 3
                     && nDeltaLev <= 5)
-                    damage = (int)(damage * 1.5);
+                    damage = (int) (damage * 1.5);
                 else if (nDeltaLev > 5
                          && nDeltaLev <= 10)
                     damage *= 2;
                 else if (nDeltaLev > 10
                          && nDeltaLev <= 20)
-                    damage = (int)(damage * 2.5);
+                    damage = (int) (damage * 2.5);
                 else if (nDeltaLev > 20)
                     damage *= 3;
             }
 
-            var disdain = RoleManager.GetDisdain(attacker.BattlePower - target.BattlePower);
+            DbDisdain disdain = RoleManager.GetDisdain(attacker.BattlePower - target.BattlePower);
             int factor = disdain.MaxAtk;
 
             if (attacker.IsOnXpSkill())
                 factor = disdain.MaxXpAtk;
 
-            int maxDamage = (int)(target.MaxLife * (factor / 100d));
+            var maxDamage = (int) (target.MaxLife * (factor / 100d));
             damage = Math.Min(damage, maxDamage);
 
             int extraDelta = target.BattlePower - attacker.BattlePower;
@@ -602,7 +623,9 @@ namespace Comet.Game.States
             return damage;
         }
 
-        public static int CalcDamageMonster2User(Role attacker, Character target, int damage)//(int nAtk, int nDef, int nAtkLev, int nDefLev)
+        public static int
+            CalcDamageMonster2User(Role attacker, Character target,
+                                   int damage) //(int nAtk, int nDef, int nAtkLev, int nDefLev)
         {
             int extraDelta = target.BattlePower - attacker.BattlePower;
             int factor;
@@ -612,13 +635,13 @@ namespace Comet.Game.States
             else if (extraDelta < 20) factor = 40;
             else factor = 30;
 
-            int adjustDamage = Calculations.MulDiv((int)target.MaxLife, factor * attacker.ExtraDamage, 1000000);
+            int adjustDamage = Calculations.MulDiv((int) target.MaxLife, factor * attacker.ExtraDamage, 1000000);
             return Math.Max(adjustDamage, damage);
         }
 
         public static int CalcDamageUser2User(Character attacker, Character target, int damage)
         {
-            var disdain = RoleManager.GetDisdain(attacker.BattlePower - target.BattlePower);
+            DbDisdain disdain = RoleManager.GetDisdain(attacker.BattlePower - target.BattlePower);
 
             int min, max, overAdjust;
 
@@ -663,18 +686,18 @@ namespace Comet.Game.States
             int maxDamage = max * targetLev * factor / 100;
             if (damage > maxDamage)
             {
-
-                var nDamage = Calculations.MulDiv(damage - maxDamage, overAdjust, 100);
-                return (nDamage + maxDamage);
+                int nDamage = Calculations.MulDiv(damage - maxDamage, overAdjust, 100);
+                return nDamage + maxDamage;
             }
+
             return damage;
         }
 
-        static int[] _nonRebornInts = { 10, 6, 6, 6, 6 };
-        static int[] _rebornInts = { 18, 18, 14, 27, 18 };
+        private static readonly int[] _nonRebornInts = {10, 6, 6, 6, 6};
+        private static readonly int[] _rebornInts = {18, 18, 14, 27, 18};
+
         public static int UserAttackUserGetFactor(Character target)
         {
-
             int index;
             if (target.ProfessionSort == 1) index = 0;
             else if (target.ProfessionSort == 2) index = 1;
@@ -685,19 +708,18 @@ namespace Comet.Game.States
 
             if (target.Metempsychosis > 0)
                 return _rebornInts[index];
-            else
-                return _nonRebornInts[index];
+            return _nonRebornInts[index];
         }
 
         public static int AdjustMinDamageUser2Monster(int nDamage, Role pAtker, Role pTarget)
         {
-            int nMinDamage = 1;
+            var nMinDamage = 1;
             nMinDamage += pAtker.Level / 10;
 
             if (pAtker is not Character)
                 return Calculations.CutTrail(nMinDamage, nDamage);
 
-            var pUser = (Character)pAtker;
+            var pUser = (Character) pAtker;
             Item pItem = pUser.UserPackage[Item.ItemPosition.RightHand];
             if (pItem != null)
                 nMinDamage += pItem.GetQuality();
@@ -707,7 +729,7 @@ namespace Comet.Game.States
 
         public static int AdjustMinDamageMonster2User(int nDamage, Role pAtker, Role pTarget)
         {
-            int nMinDamage = 1;
+            var nMinDamage = 1;
             if (nDamage >= nMinDamage
                 || pTarget.Level <= 15)
                 return nDamage;
@@ -715,7 +737,7 @@ namespace Comet.Game.States
             if (pTarget is not Character pUser)
                 return Calculations.CutTrail(nMinDamage, nDamage);
 
-            for (Item.ItemPosition pos = Item.ItemPosition.EquipmentBegin; pos <= Item.ItemPosition.EquipmentEnd; pos++)
+            for (var pos = Item.ItemPosition.EquipmentBegin; pos <= Item.ItemPosition.EquipmentEnd; pos++)
             {
                 Item item = pUser.UserPackage[pos];
                 if (item == null)
@@ -767,18 +789,18 @@ namespace Comet.Game.States
             }
             else if (nNameType == NAME_RED)
             {
-                nExp = (int)(nExp * 1.3f);
+                nExp = (int) (nExp * 1.3f);
             }
             else if (nNameType == NAME_BLACK)
             {
                 if (nDeltaLev >= -10
                     && nDeltaLev < -5)
-                    nExp = (int)(nExp * 1.5f);
+                    nExp = (int) (nExp * 1.5f);
                 else if (nDeltaLev >= -20
                          && nDeltaLev < -10)
-                    nExp = (int)(nExp * 1.8f);
+                    nExp = (int) (nExp * 1.8f);
                 else if (nDeltaLev < -20)
-                    nExp = (int)(nExp * 2.3f);
+                    nExp = (int) (nExp * 2.3f);
             }
 
             return Calculations.CutTrail(0, nExp);
@@ -787,9 +809,9 @@ namespace Comet.Game.States
         #endregion
 
         public const int NAME_GREEN = 0,
-            NAME_WHITE = 1,
-            NAME_RED = 2,
-            NAME_BLACK = 3;
+                         NAME_WHITE = 1,
+                         NAME_RED = 2,
+                         NAME_BLACK = 3;
 
         public enum MagicType
         {

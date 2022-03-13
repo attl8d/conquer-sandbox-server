@@ -1,4 +1,11 @@
-﻿using Comet.Core;
+﻿using System;
+using System.Collections.Concurrent;
+using System.Collections.Generic;
+using System.Diagnostics;
+using System.Drawing;
+using System.Linq;
+using System.Threading.Tasks;
+using Comet.Core;
 using Comet.Database.Entities;
 using Comet.Game.Database;
 using Comet.Game.Database.Repositories;
@@ -7,32 +14,26 @@ using Comet.Game.Packets;
 using Comet.Game.States;
 using Comet.Game.States.Events;
 using Comet.Game.States.Items;
+using Comet.Game.World.Maps;
 using Comet.Network.Packets;
 using Comet.Network.Packets.Game;
 using Comet.Network.Packets.Internal;
 using Comet.Shared;
-using System;
-using System.Collections.Concurrent;
-using System.Collections.Generic;
-using System.Diagnostics;
-using System.Drawing;
-using System.Linq;
-using System.Threading.Tasks;
 
 namespace Comet.Game.World.Managers
 {
     public static class RoleManager
     {
-        private static TimeOutMS mFloorItemCheckMs = new TimeOutMS();
+        private static readonly TimeOutMS mFloorItemCheckMs = new();
 
-        private static readonly ConcurrentDictionary<uint, Character> m_userSet = new ConcurrentDictionary<uint, Character>();
-        private static readonly ConcurrentDictionary<uint, Role> m_roleSet = new ConcurrentDictionary<uint, Role>();
-        private static readonly ConcurrentDictionary<uint, MapItem> m_mapItemSet = new ConcurrentDictionary<uint, MapItem>();
-        private static readonly List<DbDisdain> mDisdains = new List<DbDisdain>();
-        private static readonly Dictionary<uint, DbMonstertype> mDicMonsterTypes = new Dictionary<uint, DbMonstertype>();
-        private static readonly Dictionary<uint, DbMonsterTypeMagic> mMonsterMagics = new Dictionary<uint, DbMonsterTypeMagic>();
+        private static readonly ConcurrentDictionary<uint, Character> m_userSet = new();
+        private static readonly ConcurrentDictionary<uint, Role> m_roleSet = new();
+        private static readonly ConcurrentDictionary<uint, MapItem> m_mapItemSet = new();
+        private static readonly List<DbDisdain> mDisdains = new();
+        private static readonly Dictionary<uint, DbMonstertype> mDicMonsterTypes = new();
+        private static readonly Dictionary<uint, DbMonsterTypeMagic> mMonsterMagics = new();
 
-        private static bool m_isShutdown = false;
+        private static bool m_isShutdown;
 
         public static int OnlineUniquePlayers => m_userSet.Values.Select(x => x.Client.IPAddress).Distinct().Count();
         public static int OnlinePlayers => m_userSet.Count;
@@ -42,17 +43,12 @@ namespace Comet.Game.World.Managers
 
         public static async Task<bool> InitializeAsync()
         {
-            foreach (var mob in await MonsterypeRepository.GetAsync())
-            {
-                mDicMonsterTypes.TryAdd(mob.Id, mob);
-            }
+            foreach (DbMonstertype mob in await MonsterypeRepository.GetAsync()) mDicMonsterTypes.TryAdd(mob.Id, mob);
 
             mDisdains.AddRange(await DisdainRepository.GetAsync());
 
-            foreach (var magic in await MonsterTypeMagicRepository.GetAsync())
-            {
+            foreach (DbMonsterTypeMagic magic in await MonsterTypeMagicRepository.GetAsync())
                 mMonsterMagics.TryAdd(magic.Id, magic);
-            }
 
             mFloorItemCheckMs.Startup(1000);
 
@@ -64,24 +60,20 @@ namespace Comet.Game.World.Managers
         {
             if (m_isShutdown)
             {
-                await user.SendAsync(new MsgConnectEx(MsgConnectEx.RejectionCode.ServerDown));
+                await user.SendAsync(new MsgConnectEx(MsgConnectEx<Client>.RejectionCode.ServerDown));
                 user.Disconnect();
                 return false;
             }
 
-            if (m_userSet.TryGetValue(user.Character.Identity, out var concurrent))
+            if (m_userSet.TryGetValue(user.Character.Identity, out Character concurrent))
             {
                 await Log.WriteLogAsync(LogLevel.Info,
-                    $"User {user.Character.Identity} {user.Character.Name} tried to login an already connected client.");
+                                        $"User {user.Character.Identity} {user.Character.Name} tried to login an already connected client.");
 
                 if (user.IPAddress != concurrent.Client.IPAddress)
-                {
                     await concurrent.SendAsync(Language.StrAnotherLoginSameIp, TalkChannel.Talk);
-                }
                 else
-                {
                     await concurrent.SendAsync(Language.StrAnotherLoginOtherIp, TalkChannel.Talk);
-                }
 
                 concurrent.Client.Disconnect();
                 user.Disconnect();
@@ -92,7 +84,7 @@ namespace Comet.Game.World.Managers
             if (m_userSet.Count > Kernel.GameConfiguration.MaxConn && user.AccountIdentity >= 10000 &&
                 !user.Character.IsGm())
             {
-                await user.SendAsync(new MsgConnectEx(MsgConnectEx.RejectionCode.ServerFull));
+                await user.SendAsync(new MsgConnectEx(MsgConnectEx<Client>.RejectionCode.ServerFull));
                 await Log.WriteLogAsync(LogLevel.Warning, $"{user.Character.Name} tried to login and server is full.");
                 user.Disconnect();
                 return false;
@@ -110,11 +102,12 @@ namespace Comet.Game.World.Managers
                 ServerName = Kernel.GameConfiguration.ServerName,
                 Status = new List<MsgAccServerPlayerStatus<AccountServer>.PlayerStatus>
                 {
-                    new MsgAccServerPlayerStatus<AccountServer>.PlayerStatus { Identity = user.AccountIdentity, Online = true }
+                    new() {Identity = user.AccountIdentity, Online = true}
                 }
             });
 
-            { // scope to don't create variable externally
+            {
+                // scope to don't create variable externally
                 var msg = new MsgAccServerPlayerExchange
                 {
                     ServerName = Kernel.GameConfiguration.ServerName
@@ -136,7 +129,7 @@ namespace Comet.Game.World.Managers
 
         public static async Task KickOutAsync(uint idUser, string reason = "")
         {
-            if (m_userSet.TryGetValue(idUser, out var user))
+            if (m_userSet.TryGetValue(idUser, out Character user))
             {
                 await user.SendAsync(string.Format(Language.StrKickout, reason), TalkChannel.Talk, Color.White);
                 user.Client.Disconnect();
@@ -149,7 +142,7 @@ namespace Comet.Game.World.Managers
             if (isShutdown)
                 m_isShutdown = true;
 
-            foreach (var user in m_userSet.Values)
+            foreach (Character user in m_userSet.Values)
             {
                 await user.SendAsync(string.Format(Language.StrKickout, reason), TalkChannel.Talk, Color.White);
                 user.Client.Disconnect();
@@ -165,7 +158,7 @@ namespace Comet.Game.World.Managers
 
         public static Character GetUser(uint idUser)
         {
-            return m_userSet.TryGetValue(idUser, out var client) ? client : null;
+            return m_userSet.TryGetValue(idUser, out Character client) ? client : null;
         }
 
         public static Character GetUser(string name)
@@ -205,7 +198,7 @@ namespace Comet.Game.World.Managers
 
         public static Role GetRole(uint idRole)
         {
-            return m_roleSet.TryGetValue(idRole, out var role) ? role : null;
+            return m_roleSet.TryGetValue(idRole, out Role role) ? role : null;
         }
 
         public static List<Role> QueryRoles(Func<Role, bool> predicate)
@@ -215,36 +208,38 @@ namespace Comet.Game.World.Managers
 
         public static T GetRole<T>(uint idRole) where T : Role
         {
-            return m_roleSet.TryGetValue(idRole, out var role) ? role as T : null;
+            return m_roleSet.TryGetValue(idRole, out Role role) ? role as T : null;
         }
 
         public static T GetRole<T>(Func<T, bool> predicate) where T : Role
         {
             return m_roleSet.Values
-                .Where(x => x is T)
-                .Cast<T>()
-                .FirstOrDefault(x => predicate != null && predicate(x));
+                            .Where(x => x is T)
+                            .Cast<T>()
+                            .FirstOrDefault(x => predicate != null && predicate(x));
         }
 
         public static T FindRole<T>(uint idRole) where T : Role
         {
-            foreach (var map in MapManager.GameMaps.Values)
+            foreach (GameMap map in MapManager.GameMaps.Values)
             {
-                T result = map.QueryRole<T>(idRole);
+                var result = map.QueryRole<T>(idRole);
                 if (result != null)
                     return result;
             }
+
             return null;
         }
 
         public static T FindRole<T>(Func<T, bool> predicate) where T : Role
         {
-            foreach (var map in MapManager.GameMaps.Values)
+            foreach (GameMap map in MapManager.GameMaps.Values)
             {
                 T result = map.QueryRole(predicate);
                 if (result != null)
                     return result;
             }
+
             return null;
         }
 
@@ -258,28 +253,27 @@ namespace Comet.Game.World.Managers
         }
 
         public static Task BroadcastMsgAsync(string message, TalkChannel channel = TalkChannel.System,
-            Color? color = null)
+                                             Color? color = null)
         {
-            foreach (var user in m_userSet.Values)
-            {
+            foreach (Character user in m_userSet.Values)
                 _ = user.SendAsync(message, channel, color).ConfigureAwait(false);
-            }
             return Task.CompletedTask;
         }
 
         public static Task BroadcastMsgAsync(IPacket msg, uint ignore = 0)
         {
-            foreach (var user in m_userSet.Values)
+            foreach (Character user in m_userSet.Values)
             {
                 if (user.Identity == ignore) continue;
                 _ = user.SendAsync(msg).ConfigureAwait(false);
             }
+
             return Task.CompletedTask;
         }
 
         public static DbMonstertype GetMonstertype(uint type)
         {
-            return mDicMonsterTypes.TryGetValue(type, out var mob) ? mob : null;
+            return mDicMonsterTypes.TryGetValue(type, out DbMonstertype mob) ? mob : null;
         }
 
         public static List<DbMonsterTypeMagic> GetMonsterMagics(uint type)
@@ -296,7 +290,7 @@ namespace Comet.Game.World.Managers
 
         public static async Task OnTimerAsync()
         {
-            foreach (var user in m_userSet.Values)
+            foreach (Character user in m_userSet.Values)
             {
                 if (!user.IsConnected)
                     continue;
@@ -307,10 +301,7 @@ namespace Comet.Game.World.Managers
 
         public static async Task OnRoleTimerAsync()
         {
-            foreach (var role in m_roleSet.Values.Where(x => !x.IsPlayer()))
-            {
-                await role.OnTimerAsync();
-            }
+            foreach (Role role in m_roleSet.Values.Where(x => !x.IsPlayer())) await role.OnTimerAsync();
 
             //if (mFloorItemCheckMs.ToNextTime())
             //{
@@ -327,17 +318,15 @@ namespace Comet.Game.World.Managers
 
         public static async Task OnDailyTriggerAsync()
         {
-            Stopwatch sw = Stopwatch.StartNew();
+            var sw = Stopwatch.StartNew();
             uint today = uint.Parse(DateTime.Now.ToString("yyyyMMdd"));
 
-            foreach (var user in m_userSet.Values)
-            {
+            foreach (Character user in m_userSet.Values)
                 user.QueueAction(async () =>
                 {
                     await DoResetAsync(user, true);
                     await user.SaveAsync();
                 });
-            }
 
             await OfflinePlayersResetAsync();
 
@@ -353,8 +342,7 @@ namespace Comet.Game.World.Managers
             {
                 uint today = uint.Parse(DateTime.Now.ToString("yyyyMMdd"));
                 List<DbCharacter> dbUsers = await CharactersRepository.GetResetAsync(today);
-                foreach (var user in dbUsers.Select(x => new Character(x, null)))
-                {
+                foreach (Character user in dbUsers.Select(x => new Character(x, null)))
                     try
                     {
                         await DoResetAsync(user, false);
@@ -363,7 +351,7 @@ namespace Comet.Game.World.Managers
                     {
                         await Log.WriteLogAsync(ex);
                     }
-                }
+
                 await ServerDbContext.SaveAsync(dbUsers);
             }
             catch (Exception ex)

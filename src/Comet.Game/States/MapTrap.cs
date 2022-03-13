@@ -1,10 +1,10 @@
-﻿using Comet.Database.Entities;
+﻿using System.Threading.Tasks;
+using Comet.Database.Entities;
 using Comet.Game.Database.Repositories;
 using Comet.Game.Packets;
 using Comet.Game.World;
 using Comet.Game.World.Managers;
 using Comet.Shared;
-using System.Threading.Tasks;
 using static Comet.Network.Packets.Game.MsgMapItem<Comet.Game.States.Client>;
 
 namespace Comet.Game.States
@@ -14,7 +14,7 @@ namespace Comet.Game.States
         private readonly TimeOutMS m_tFight;
         private readonly TimeOut m_tLifePeriod;
 
-        private DbTrap m_dbTrap;
+        private readonly DbTrap m_dbTrap;
         private Role m_owner;
 
         public MapTrap(DbTrap trap)
@@ -36,11 +36,13 @@ namespace Comet.Game.States
         public uint IdAction => m_dbTrap.Type.ActionId;
         public int ActiveTimes => m_dbTrap.Type.ActiveTimes;
         public int RemainingActiveTimes { get; set; }
+
         public override byte Level
         {
             get => m_dbTrap.Type.Level;
             set => m_dbTrap.Type.Level = value;
         }
+
         public override int MinAttack => m_dbTrap.Type.AttackMin;
         public override int MaxAttack => m_dbTrap.Type.AttackMax;
         public override int MagicAttack => m_dbTrap.Type.AttackMax;
@@ -94,10 +96,7 @@ namespace Comet.Game.States
         public override Task EnterMapAsync()
         {
             Map = MapManager.GetMap(MapIdentity);
-            if (Map != null)
-            {
-                return Map.AddAsync(this);
-            }
+            if (Map != null) return Map.AddAsync(this);
             return Task.CompletedTask;
         }
 
@@ -113,12 +112,7 @@ namespace Comet.Game.States
             }, false);
 
             if (Map != null)
-            {
-                Kernel.Services.Processor.Queue(Map.Partition, async () =>
-                {
-                    await Map.RemoveAsync(Identity);
-                });
-            }
+                Kernel.Services.Processor.Queue(Map.Partition, async () => { await Map.RemoveAsync(Identity); });
 
             if (Identity >= MAGICTRAPID_FIRST && Identity <= MAGICTRAPID_LAST)
                 IdentityGenerator.Traps.ReturnIdentity(Identity);
@@ -145,17 +139,17 @@ namespace Comet.Game.States
             if (m_owner?.IsImmunity(target) == true)
                 return;
 
-            if ((AttackMode & (int)TargetType.User) != 0 && !(target is Character))
+            if ((AttackMode & (int) TargetType.User) != 0 && !(target is Character))
                 return;
 
             //if ((AttackMode & (int)TargetType.Monster) != 0 && !(target is Monster))
             //    return;
 
-            Character user = m_owner as Character;
+            var user = m_owner as Character;
             if (user?.IsEvil() == true)
                 await user.SetCrimeStatusAsync(25);
 
-            if ((AttackMode & (int)TargetType.Passive) == 0)
+            if ((AttackMode & (int) TargetType.Passive) == 0)
             {
                 //BattleSystem.CreateBattle(target.Identity);
                 //QueueAction(BattleSystem.ProcessAttackAsync);
@@ -163,9 +157,9 @@ namespace Comet.Game.States
 
             if (IdAction > 0)
             {
-                if ((AttackMode & (int)TargetType.User) != 0)
+                if ((AttackMode & (int) TargetType.User) != 0)
                     await GameAction.ExecuteActionAsync(IdAction, target as Character, this, null, "");
-                else if ((AttackMode & (int)TargetType.Monster) != 0)
+                else if ((AttackMode & (int) TargetType.Monster) != 0)
                     await GameAction.ExecuteActionAsync(IdAction, null, target, null, "");
                 else
                     await GameAction.ExecuteActionAsync(IdAction, null, null, null, "");
@@ -209,16 +203,13 @@ namespace Comet.Game.States
                 return;
 
             if (m_tLifePeriod.IsActive())
-            {
                 if (m_tLifePeriod.ToNextTime())
                 {
                     await LeaveMapAsync();
                     m_tLifePeriod.Clear();
                 }
-            }
 
             if (IsAutoSort)
-            {
                 if (m_tFight.ToNextTick(AttackSpeed))
                 {
                     if (ActiveTimes > 0)
@@ -229,7 +220,6 @@ namespace Comet.Game.States
                     if (ActiveTimes > 0 && RemainingActiveTimes <= 0)
                         await LeaveMapAsync();
                 }
-            }
         }
 
         #endregion

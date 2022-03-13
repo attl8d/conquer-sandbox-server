@@ -1,6 +1,6 @@
-﻿using Comet.Game.States;
+﻿using System.Threading.Tasks;
+using Comet.Game.States;
 using Comet.Network.Packets.Game;
-using System.Threading.Tasks;
 
 namespace Comet.Game.Packets
 {
@@ -13,26 +13,26 @@ namespace Comet.Game.Packets
             switch (Mode)
             {
                 case Action.Accept:
+                {
+                    if (!(user.MessageBox is EventInviationBox box))
+                        return;
+
+                    if (box.HasExpired)
                     {
-                        if (!(user.MessageBox is EventInviationBox box))
-                            return;
-
-                        if (box.HasExpired)
-                        {
-                            user.MessageBox = null;
-                            return;
-                        }
-
-                        await user.MessageBox.OnAcceptAsync();
-                        await user.SendAsync(new MsgInviteTrans
-                        {
-                            Mode = Action.AcceptMessage,
-                            Message = box.AcceptMsgId
-                        });
-
                         user.MessageBox = null;
-                        break;
+                        return;
                     }
+
+                    await user.MessageBox.OnAcceptAsync();
+                    await user.SendAsync(new MsgInviteTrans
+                    {
+                        Mode = Action.AcceptMessage,
+                        Message = box.AcceptMsgId
+                    });
+
+                    user.MessageBox = null;
+                    break;
+                }
             }
         }
     }

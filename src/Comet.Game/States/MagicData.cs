@@ -1,4 +1,9 @@
-﻿using Comet.Core;
+﻿using System.Collections.Concurrent;
+using System.Collections.Generic;
+using System.Linq;
+using System.Threading.Tasks;
+using Comet.Core;
+using Comet.Database.Entities;
 using Comet.Game.Database;
 using Comet.Game.Database.Repositories;
 using Comet.Game.Packets;
@@ -6,18 +11,14 @@ using Comet.Game.States.Items;
 using Comet.Game.States.Npcs;
 using Comet.Game.World.Managers;
 using Comet.Shared;
-using System.Collections.Concurrent;
-using System.Collections.Generic;
-using System.Linq;
-using System.Threading.Tasks;
 
 namespace Comet.Game.States
 {
     public sealed partial class MagicData
     {
-        private Role mOwner;
+        private readonly Role mOwner;
 
-        public ConcurrentDictionary<uint, Magic> Magics = new ConcurrentDictionary<uint, Magic>();
+        public ConcurrentDictionary<uint, Magic> Magics = new();
 
         public MagicData(Role role)
         {
@@ -28,11 +29,11 @@ namespace Comet.Game.States
         {
             if (mOwner.IsPlayer())
             {
-                Character user = (Character)mOwner;
+                var user = (Character) mOwner;
 
-                foreach (var dbMagic in await MagicRepository.GetAsync(mOwner.Identity))
+                foreach (DbMagic dbMagic in await MagicRepository.GetAsync(mOwner.Identity))
                 {
-                    Magic magic = new Magic(mOwner);
+                    var magic = new Magic(mOwner);
                     if (!await magic.CreateAsync(dbMagic))
                         continue;
 
@@ -41,11 +42,13 @@ namespace Comet.Game.States
                         await ServerDbContext.DeleteAsync(dbMagic);
                         continue;
                     }
+
                     if (magic.Type == 1025 && user != null && user.ProfessionSort != 2 && user.ProfessionSort != 13)
                     {
                         await ServerDbContext.DeleteAsync(dbMagic);
                         continue;
                     }
+
                     if (magic.Type == 1050 && user != null && user.ProfessionSort != 14 && user.ProfessionSort != 13)
                     {
                         await ServerDbContext.DeleteAsync(dbMagic);
@@ -78,14 +81,12 @@ namespace Comet.Game.States
                     await old.SaveAsync();
                     await old.SendAsync();
                 }
+
                 return true;
             }
 
-            Magic pMagic = new Magic(mOwner);
-            if (await pMagic.CreateAsync(type, level))
-            {
-                return Magics.TryAdd(type, pMagic);
-            }
+            var pMagic = new Magic(mOwner);
+            if (await pMagic.CreateAsync(type, level)) return Magics.TryAdd(type, pMagic);
             return false;
         }
 
@@ -95,7 +96,7 @@ namespace Comet.Game.States
             if (!Magics.TryGetValue(type, out pMagic))
                 return false;
 
-            byte nNewLevel = (byte)(pMagic.Level + 1);
+            var nNewLevel = (byte) (pMagic.Level + 1);
             if (!FindMagicType(type, nNewLevel))
                 return false;
 
@@ -127,25 +128,23 @@ namespace Comet.Game.States
             if (magic == null) return 0;
 
             if (magic.WeaponHit == 0)
-            {
-                return magic.UseXp == BattleSystem.MagicType.XpSkill ? BattleSystem.MagicType.XpSkill : BattleSystem.MagicType.Normal;
-            }
+                return magic.UseXp == BattleSystem.MagicType.XpSkill
+                           ? BattleSystem.MagicType.XpSkill
+                           : BattleSystem.MagicType.Normal;
 
             if (mOwner is Character pRole)
-            {
                 if (pRole.UserPackage[Item.ItemPosition.RightHand] != null && magic.WeaponHit == 2 &&
                     pRole.UserPackage[Item.ItemPosition.RightHand].Itemtype.MagicAtk > 0)
-                {
-                    return magic.UseXp == BattleSystem.MagicType.XpSkill ? BattleSystem.MagicType.XpSkill : BattleSystem.MagicType.Normal;
-                }
-            }
+                    return magic.UseXp == BattleSystem.MagicType.XpSkill
+                               ? BattleSystem.MagicType.XpSkill
+                               : BattleSystem.MagicType.Normal;
 
             return BattleSystem.MagicType.None;
         }
 
         private uint GetDieMode()
         {
-            return (uint)(HitByMagic(QueryMagic) > 0 ? 3 : mOwner.IsBowman ? 5 : 1);
+            return (uint) (HitByMagic(QueryMagic) > 0 ? 3 : mOwner.IsBowman ? 5 : 1);
         }
 
         public bool HitByWeapon()
@@ -178,7 +177,7 @@ namespace Comet.Game.States
             }
             else
             {
-                magic.OldLevel = (byte)magic.Level;
+                magic.OldLevel = (byte) magic.Level;
                 magic.Level = 0;
                 magic.Experience = 0;
                 magic.Unlearn = true;
@@ -189,7 +188,7 @@ namespace Comet.Game.States
             {
                 Identity = mOwner.Identity,
                 Command = type,
-                Action = MsgAction.ActionType.SpellRemove
+                Action = MsgAction<Client>.ActionType.SpellRemove
             });
 
             return Magics.TryRemove(type, out _);
@@ -201,7 +200,7 @@ namespace Comet.Game.States
             if (magic == null)
                 return false;
 
-            magic.OldLevel = (byte)magic.Level;
+            magic.OldLevel = (byte) magic.Level;
             magic.Level = 0;
             magic.Experience = 0;
             await magic.SaveAsync();
@@ -213,9 +212,10 @@ namespace Comet.Game.States
 
         #region Experience
 
-        public async Task<bool> AwardExpOfLifeAsync(Role pTarget, int nLifeLost, Magic magic = null, bool bMagicRecruit = false)
+        public async Task<bool> AwardExpOfLifeAsync(Role pTarget, int nLifeLost, Magic magic = null,
+                                                    bool bMagicRecruit = false)
         {
-            Character pOwner = mOwner as Character;
+            var pOwner = mOwner as Character;
             if (pOwner != null && (pTarget.IsMonster() || pTarget is DynamicNpc dynamicNpc && dynamicNpc.IsGoal()))
             {
                 int exp = nLifeLost;
@@ -223,14 +223,15 @@ namespace Comet.Game.States
 
                 if (!pTarget.IsAlive && !bMagicRecruit)
                 {
-                    int nBonusExp = (int)(pTarget.MaxLife * (5 / 100));
+                    var nBonusExp = (int) (pTarget.MaxLife * (5 / 100));
                     battleExp += nBonusExp;
                     if (!pOwner.Map.IsTrainingMap() && nBonusExp > 0)
                         await pOwner.SendAsync(string.Format(Language.StrKillingExperience, nBonusExp));
                 }
 
-                await AwardExpAsync(0, (int)battleExp, exp, magic);
+                await AwardExpAsync(0, (int) battleExp, exp, magic);
             }
+
             return true;
         }
 
@@ -248,14 +249,12 @@ namespace Comet.Game.States
             pMagic ??= QueryMagic;
 
             if (mOwner.Map.IsTrainingMap())
-            {
                 if (nBattleExp > 0)
                 {
                     if (mOwner.IsBowman)
                         nBattleExp /= 2;
                     nBattleExp = Calculations.CutTrail(1, Calculations.MulDiv(nBattleExp, 10, 100));
                 }
-            }
 
             if (nBattleExp > 0 && mOwner is Character user)
                 await user.AwardBattleExpAsync(nBattleExp, true);
@@ -269,7 +268,8 @@ namespace Comet.Game.States
             if (mOwner.Map.Identity == TC_PK_ARENA_ID)
                 return true;
 
-            if (mOwner.Map.IsTrainingMap() && pMagic.AutoActive == 0 && m_autoAttackNum > 0 && m_autoAttackNum % 10 != 0)
+            if (mOwner.Map.IsTrainingMap() && pMagic.AutoActive == 0 && m_autoAttackNum > 0 &&
+                m_autoAttackNum % 10 != 0)
                 return true;
 
             if (pMagic.NeedExp > 0
@@ -277,9 +277,9 @@ namespace Comet.Game.States
                 || bIgnoreFlag)
             {
                 if (mOwner is Character owner)
-                    nExp = (int)(nExp * ((1 + (owner.MoonGemBonus / 100d))));
+                    nExp = (int) (nExp * (1 + owner.MoonGemBonus / 100d));
 
-                pMagic.Experience += (uint)nExp;
+                pMagic.Experience += (uint) nExp;
 
                 //if ((pMagic.AutoActive & 8) == 0)
                 await pMagic.FlushAsync();
@@ -293,9 +293,9 @@ namespace Comet.Game.States
                 && pMagic.Target == 4)
             {
                 if (mOwner is Character owner)
-                    nExp = (int)(nExp * ((1 + (owner.MoonGemBonus / 100d))));
+                    nExp = (int) (nExp * (1 + owner.MoonGemBonus / 100d));
 
-                pMagic.Experience += (uint)nExp;
+                pMagic.Experience += (uint) nExp;
 
                 //if ((pMagic.AutoActive & 8) == 0)
                 await pMagic.FlushAsync();
@@ -322,7 +322,7 @@ namespace Comet.Game.States
                       && pMagic.Level < pMagic.OldLevel)))
                 return false;
 
-            ushort nNewLevel = (ushort)(pMagic.Level + 1);
+            var nNewLevel = (ushort) (pMagic.Level + 1);
             pMagic.Experience = 0;
             pMagic.Level = nNewLevel;
             if (synchro)
@@ -360,7 +360,7 @@ namespace Comet.Game.States
             if (magic.Crime <= 0)
                 return false;
 
-            foreach (var pRole in pRoleSet.Values)
+            foreach (Role pRole in pRoleSet.Values)
                 if (mOwner.Identity != pRole.Identity && await mOwner.CheckCrimeAsync(pRole))
                     return true;
             return false;
@@ -372,17 +372,14 @@ namespace Comet.Game.States
 
         public async Task SendAllAsync()
         {
-            foreach (var magic in Magics.Values.Where(x => !x.Unlearn))
-            {
-                await magic.SendAsync();
-            }
+            foreach (Magic magic in Magics.Values.Where(x => !x.Unlearn)) await magic.SendAsync();
         }
 
         #endregion
 
-        public Magic QueryMagic => Magics.TryGetValue(m_typeMagic, out var magic) ? magic : null;
+        public Magic QueryMagic => Magics.TryGetValue(m_typeMagic, out Magic magic) ? magic : null;
 
-        public Magic this[ushort nType] => Magics.TryGetValue(nType, out var ret) ? ret : null;
+        public Magic this[ushort nType] => Magics.TryGetValue(nType, out Magic ret) ? ret : null;
 
         public enum MagicSort
         {
@@ -394,24 +391,24 @@ namespace Comet.Game.States
             Attachstatus = 6,
             Detachstatus = 7,
             Square = 8,
-            Jumpattack = 9, // move, a-lock
+            Jumpattack = 9,   // move, a-lock
             Randomtrans = 10, // move, a-lock
             Dispatchxp = 11,
-            Collide = 12, // move, a-lock & b-synchro
+            Collide = 12,   // move, a-lock & b-synchro
             Serialcut = 13, // auto active only.
-            Line = 14, // support auto active(random).
-            Atkrange = 15, // auto active only, forever active.
+            Line = 14,      // support auto active(random).
+            Atkrange = 15,  // auto active only, forever active.
             Atkstatus = 16, // support auto active, random active.
             Callteammember = 17,
             Recordtransspell = 18,
             Transform = 19,
             Addmana = 20, // support self target only.
             Laytrap = 21,
-            Dance = 22, // ÌøÎè(only use for client)
-            Callpet = 23, // ÕÙ»½ÊÞ
-            Vampire = 24, // ÎüÑª£¬power is percent award. use for call pet
-            Instead = 25, // ÌæÉí. use for call pet
-            Declife = 26, // ¿ÛÑª(µ±Ç°ÑªµÄ±ÈÀý)
+            Dance = 22,       // ÌøÎè(only use for client)
+            Callpet = 23,     // ÕÙ»½ÊÞ
+            Vampire = 24,     // ÎüÑª£¬power is percent award. use for call pet
+            Instead = 25,     // ÌæÉí. use for call pet
+            Declife = 26,     // ¿ÛÑª(µ±Ç°ÑªµÄ±ÈÀý)
             Groundsting = 27, // µØ´Ì,
             Vortex = 28,
             Activateswitch = 29,

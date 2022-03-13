@@ -17,53 +17,46 @@ namespace Comet.Game.Packets
             switch (Mode)
             {
                 case TaskStatusMode.Update:
-                    {
-                        await user.Statistic.InitializeAsync();
-                        await user.TaskDetail.InitializeAsync();
+                {
+                    await user.Statistic.InitializeAsync();
+                    await user.TaskDetail.InitializeAsync();
 
-                        foreach (var item in Tasks)
-                        {
-                            DbTaskDetail task = user.TaskDetail.QueryTaskData((uint)item.Identity);
-                            if (task == null)
-                            {
-                                item.Status = TaskItemStatus.Available;
-                            }
-                            else if (task.CompleteFlag != 0)
-                            {
-                                item.Status = TaskItemStatus.Done;
-                            }
-                            else if (task.NotifyFlag != 0)
-                            {
-                                item.Status = TaskItemStatus.AcceptedWithoutTrace;
-                            }
-                            else
-                            {
-                                item.Status = TaskItemStatus.Accepted;
-                            }
-                        }
-                        await client.SendAsync(this);
-                        break;
+                    foreach (TaskItemStruct item in Tasks)
+                    {
+                        DbTaskDetail task = user.TaskDetail.QueryTaskData((uint) item.Identity);
+                        if (task == null)
+                            item.Status = TaskItemStatus.Available;
+                        else if (task.CompleteFlag != 0)
+                            item.Status = TaskItemStatus.Done;
+                        else if (task.NotifyFlag != 0)
+                            item.Status = TaskItemStatus.AcceptedWithoutTrace;
+                        else
+                            item.Status = TaskItemStatus.Accepted;
                     }
+
+                    await client.SendAsync(this);
+                    break;
+                }
 
                 case TaskStatusMode.Add:
+                {
+                    foreach (TaskItemStruct item in Tasks)
                     {
-                        foreach (var item in Tasks)
-                        {
-                            DbTaskDetail task = user.TaskDetail.QueryTaskData((uint)item.Identity);
-                            if (task == null)
-                                await user.TaskDetail.CreateNewAsync((uint)item.Identity);
-                        }
-                        await client.SendAsync(this);
-                        break;
+                        DbTaskDetail task = user.TaskDetail.QueryTaskData((uint) item.Identity);
+                        if (task == null)
+                            await user.TaskDetail.CreateNewAsync((uint) item.Identity);
                     }
 
+                    await client.SendAsync(this);
+                    break;
+                }
+
                 default:
-                    {
-                        await Log.WriteLogAsync(LogLevel.Socket, $"Unhandled MsgTaskStatus Mode {Mode}");
-                        await Log.WriteLogAsync(PacketDump.Hex(Encode()));
-                        break;
-                    }
-                    
+                {
+                    await Log.WriteLogAsync(LogLevel.Socket, $"Unhandled MsgTaskStatus Mode {Mode}");
+                    await Log.WriteLogAsync(PacketDump.Hex(Encode()));
+                    break;
+                }
             }
         }
     }

@@ -1,6 +1,6 @@
-﻿using Comet.Game.States;
+﻿using System.Threading.Tasks;
+using Comet.Game.States;
 using Comet.Network.Packets.Game;
-using System.Threading.Tasks;
 
 namespace Comet.Game.Packets
 {
@@ -13,50 +13,50 @@ namespace Comet.Game.Packets
             switch (Action)
             {
                 case MsgGodExpAction.Query:
-                    {
-                        GodTimeExp = (int)user.GodTimeExp;
-                        HuntExp = (int)user.OnlineTrainingExp;
-                        await client.SendAsync(this);
-                        break;
-                    }
+                {
+                    GodTimeExp = (int) user.GodTimeExp;
+                    HuntExp = (int) user.OnlineTrainingExp;
+                    await client.SendAsync(this);
+                    break;
+                }
 
                 case MsgGodExpAction.ClaimHuntTraining:
+                {
+                    if (user.OnlineTrainingExp > 0)
                     {
-                        if (user.OnlineTrainingExp > 0)
+                        await user.AwardExperienceAsync(user.CalculateExpBall((int) user.OnlineTrainingExp), true);
+                        user.OnlineTrainingExp = 0;
+                        await user.SaveAsync();
+
+                        await client.SendAsync(new MsgGodExp
                         {
-                            await user.AwardExperienceAsync(user.CalculateExpBall((int)user.OnlineTrainingExp), true);
-                            user.OnlineTrainingExp = 0;
-                            await user.SaveAsync();
-
-                            await client.SendAsync(new MsgGodExp
-                            {
-                                Action = MsgGodExpAction.Query,
-                                GodTimeExp = (int)user.GodTimeExp,
-                                HuntExp = (int)user.OnlineTrainingExp
-                            });
-                        }
-
-                        break;
+                            Action = MsgGodExpAction.Query,
+                            GodTimeExp = (int) user.GodTimeExp,
+                            HuntExp = (int) user.OnlineTrainingExp
+                        });
                     }
+
+                    break;
+                }
 
                 case MsgGodExpAction.ClaimOnlineTraining:
+                {
+                    if (user.GodTimeExp > 0)
                     {
-                        if (user.GodTimeExp > 0)
+                        await user.AwardExperienceAsync(user.CalculateExpBall((int) user.GodTimeExp), true);
+                        user.GodTimeExp = 0;
+                        await user.SaveAsync();
+
+                        await client.SendAsync(new MsgGodExp
                         {
-                            await user.AwardExperienceAsync(user.CalculateExpBall((int)user.GodTimeExp), true);
-                            user.GodTimeExp = 0;
-                            await user.SaveAsync();
-
-                            await client.SendAsync(new MsgGodExp
-                            {
-                                Action = MsgGodExpAction.Query,
-                                GodTimeExp = (int)user.GodTimeExp,
-                                HuntExp = (int)user.OnlineTrainingExp
-                            });
-                        }
-
-                        break;
+                            Action = MsgGodExpAction.Query,
+                            GodTimeExp = (int) user.GodTimeExp,
+                            HuntExp = (int) user.OnlineTrainingExp
+                        });
                     }
+
+                    break;
+                }
             }
         }
     }

@@ -1,9 +1,9 @@
-﻿using Comet.Game.States;
+﻿using System.Threading.Tasks;
+using Comet.Game.States;
 using Comet.Game.World.Managers;
 using Comet.Network.Packets;
 using Comet.Network.Packets.Game;
 using Comet.Shared;
-using System.Threading.Tasks;
 
 namespace Comet.Game.Packets
 {

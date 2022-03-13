@@ -1,4 +1,9 @@
-﻿using Comet.Core;
+﻿using System;
+using System.Collections.Concurrent;
+using System.Globalization;
+using System.Linq;
+using System.Threading.Tasks;
+using Comet.Core;
 using Comet.Database.Entities;
 using Comet.Game.Database;
 using Comet.Game.Packets;
@@ -6,19 +11,14 @@ using Comet.Game.States.Syndicates;
 using Comet.Game.World.Managers;
 using Comet.Network.Packets.Game;
 using Comet.Shared;
-using System;
-using System.Collections.Concurrent;
-using System.Globalization;
-using System.Linq;
-using System.Threading.Tasks;
 
 namespace Comet.Game.States.Npcs
 {
     public sealed class DynamicNpc : BaseNpc
     {
         private readonly DbDynanpc m_dbNpc;
-        private readonly ConcurrentDictionary<uint, Score> m_dicScores = new ConcurrentDictionary<uint, Score>();
-        private readonly TimeOut m_Death = new TimeOut(5);
+        private readonly ConcurrentDictionary<uint, Score> m_dicScores = new();
+        private readonly TimeOut m_Death = new(5);
 
         public DynamicNpc(DbDynanpc npc)
             : base(npc.Id)
@@ -33,7 +33,7 @@ namespace Comet.Game.States.Npcs
 
             if (IsSynFlag() && OwnerIdentity > 0)
             {
-                Syndicate syn = SyndicateManager.GetSyndicate((int)OwnerIdentity);
+                Syndicate syn = SyndicateManager.GetSyndicate((int) OwnerIdentity);
                 if (syn != null)
                     Name = syn.Name;
             }
@@ -53,18 +53,24 @@ namespace Comet.Game.States.Npcs
         public override uint Mesh
         {
             get => m_dbNpc.Lookface;
-            set => m_dbNpc.Lookface = (ushort)value;
+            set => m_dbNpc.Lookface = (ushort) value;
         }
 
         public override ushort Type => m_dbNpc.Type;
 
-        public void SetType(ushort type) => m_dbNpc.Type = type;
+        public void SetType(ushort type)
+        {
+            m_dbNpc.Type = type;
+        }
 
-        public override NpcSort Sort => (NpcSort)m_dbNpc.Sort;
+        public override NpcSort Sort => (NpcSort) m_dbNpc.Sort;
 
-        public override int Base => (int)m_dbNpc.Base;
+        public override int Base => (int) m_dbNpc.Base;
 
-        public void SetSort(ushort sort) => m_dbNpc.Sort = sort;
+        public void SetSort(ushort sort)
+        {
+            m_dbNpc.Sort = sort;
+        }
 
         public override uint OwnerType
         {
@@ -104,6 +110,7 @@ namespace Comet.Game.States.Npcs
                 await SaveAsync();
                 return true;
             }
+
             return false;
         }
 
@@ -121,20 +128,21 @@ namespace Comet.Game.States.Npcs
             switch (type)
             {
                 case ClientUpdateType.Mesh:
-                    Mesh = (uint)value;
+                    Mesh = (uint) value;
                     await BroadcastRoomMsgAsync(new MsgNpcInfoEx(this), false);
                     return await SaveAsync();
 
                 case ClientUpdateType.Hitpoints:
-                    m_dbNpc.Life = Math.Min((uint)value, MaxLife);
+                    m_dbNpc.Life = Math.Min((uint) value, MaxLife);
                     await BroadcastRoomMsgAsync(new MsgUserAttrib(Identity, ClientUpdateType.Hitpoints, Life), false);
                     return await SaveAsync();
 
                 case ClientUpdateType.MaxHitpoints:
-                    m_dbNpc.Maxlife = (uint)value;
+                    m_dbNpc.Maxlife = (uint) value;
                     await BroadcastRoomMsgAsync(new MsgNpcInfoEx(this), false);
                     return await SaveAsync();
             }
+
             return await base.SetAttributesAsync(type, value) && await SaveAsync();
         }
 
@@ -162,14 +170,30 @@ namespace Comet.Game.States.Npcs
         {
             switch (id)
             {
-                case 0: m_dbNpc.Task0 = task; break;
-                case 1: m_dbNpc.Task1 = task; break;
-                case 2: m_dbNpc.Task2 = task; break;
-                case 3: m_dbNpc.Task3 = task; break;
-                case 4: m_dbNpc.Task4 = task; break;
-                case 5: m_dbNpc.Task5 = task; break;
-                case 6: m_dbNpc.Task6 = task; break;
-                case 7: m_dbNpc.Task7 = task; break;
+                case 0:
+                    m_dbNpc.Task0 = task;
+                    break;
+                case 1:
+                    m_dbNpc.Task1 = task;
+                    break;
+                case 2:
+                    m_dbNpc.Task2 = task;
+                    break;
+                case 3:
+                    m_dbNpc.Task3 = task;
+                    break;
+                case 4:
+                    m_dbNpc.Task4 = task;
+                    break;
+                case 5:
+                    m_dbNpc.Task5 = task;
+                    break;
+                case 6:
+                    m_dbNpc.Task6 = task;
+                    break;
+                case 7:
+                    m_dbNpc.Task7 = task;
+                    break;
             }
         }
 
@@ -222,13 +246,8 @@ namespace Comet.Game.States.Npcs
             m_Death.Update();
 
             if (IsSynFlag() || IsCtfFlag())
-            {
                 await Map.SetStatusAsync(1, false);
-            }
-            else if (!IsGoal())
-            {
-                await DeleteAsync();
-            }
+            else if (!IsGoal()) await DeleteAsync();
 
             await LeaveMapAsync();
         }
@@ -248,7 +267,7 @@ namespace Comet.Game.States.Npcs
             OwnerIdentity = idOwner;
             if (IsSynFlag())
             {
-                Syndicate syn = SyndicateManager.GetSyndicate((int)OwnerIdentity);
+                Syndicate syn = SyndicateManager.GetSyndicate((int) OwnerIdentity);
                 if (syn == null)
                 {
                     OwnerIdentity = 0;
@@ -270,7 +289,7 @@ namespace Comet.Game.States.Npcs
             }*/
 
             await SaveAsync();
-            await BroadcastRoomMsgAsync(new MsgNpcInfoEx(this) { Lookface = m_dbNpc.Lookface }, false);
+            await BroadcastRoomMsgAsync(new MsgNpcInfoEx(this) {Lookface = m_dbNpc.Lookface}, false);
             return true;
         }
 
@@ -286,9 +305,9 @@ namespace Comet.Game.States.Npcs
             if (Data1 == 0 || Data2 == 0)
                 return;
 
-            string strNow = "";
+            var strNow = "";
             DateTime now = DateTime.Now;
-            strNow += (now.DayOfWeek == 0 ? 7 : (int)now.DayOfWeek).ToString(CultureInfo.InvariantCulture);
+            strNow += (now.DayOfWeek == 0 ? 7 : (int) now.DayOfWeek).ToString(CultureInfo.InvariantCulture);
             strNow += now.Hour.ToString("00");
             strNow += now.Minute.ToString("00");
             strNow += now.Second.ToString("00");
@@ -321,14 +340,14 @@ namespace Comet.Game.States.Npcs
                 return;
 
             await Map.BroadcastMsgAsync(Language.StrWarRankingStart, TalkChannel.GuildWarRight1);
-            int i = 0;
-            foreach (var score in m_dicScores.Values.OrderByDescending(x => x.Points))
+            var i = 0;
+            foreach (Score score in m_dicScores.Values.OrderByDescending(x => x.Points))
             {
                 if (i++ >= 5)
                     break;
 
                 await Map.BroadcastMsgAsync(string.Format(Language.StrWarRankingNo, i, score.Name, score.Points),
-                    TalkChannel.GuildWarRight2);
+                                            TalkChannel.GuildWarRight2);
             }
         }
 
@@ -357,20 +376,19 @@ namespace Comet.Game.States.Npcs
 
         #region Battle
 
-        public override async Task<bool> BeAttackAsync(BattleSystem.MagicType magic, Role attacker, int nPower, bool bReflectEnable)
+        public override async Task<bool> BeAttackAsync(BattleSystem.MagicType magic, Role attacker, int nPower,
+                                                       bool bReflectEnable)
         {
-            int decreaseLife = (int)Calculations.CutOverflow(Life, nPower);
+            var decreaseLife = (int) Calculations.CutOverflow(Life, nPower);
             await AddAttributesAsync(ClientUpdateType.Hitpoints, decreaseLife * -1);
             if (IsSynNpc() && OwnerIdentity != 0)
             {
                 Syndicate syn = SyndicateManager.GetSyndicate(OwnerIdentity);
                 if (syn != null && attacker is Character user)
-                {
                     if (user.SyndicateIdentity != OwnerIdentity)
                     {
                         //await user.AwardMoneyAsync();
                     }
-                }
             }
 
             if (!IsAlive)
@@ -388,13 +406,13 @@ namespace Comet.Game.States.Npcs
 
         public int GetMaxFixMoney()
         {
-            return (int)Calculations.CutRange(Calculations.MulDiv(MaxLife - 1, 1, 1) + 1, 0, MaxLife);
+            return (int) Calculations.CutRange(Calculations.MulDiv(MaxLife - 1, 1, 1) + 1, 0, MaxLife);
         }
 
         public int GetLostFixMoney()
         {
-            int nLostLifeTmp = (int)(MaxLife - Life);
-            return (int)Calculations.CutRange(Calculations.MulDiv(nLostLifeTmp - 1, 1, 1) + 1, 0, MaxLife);
+            var nLostLifeTmp = (int) (MaxLife - Life);
+            return (int) Calculations.CutRange(Calculations.MulDiv(nLostLifeTmp - 1, 1, 1) + 1, 0, MaxLife);
         }
 
         #endregion

@@ -1,19 +1,18 @@
-﻿using Comet.Game.Packets;
-using Comet.Network.Packets.Game;
-using System;
+﻿using System;
 using System.Collections.Generic;
 using System.Linq;
+using Comet.Network.Packets.Game;
 
 namespace Comet.Game.States
 {
     public static class MessageBoard
     {
-        private static Dictionary<uint, MessageInfo> m_dicTrade = new Dictionary<uint, MessageInfo>();
-        private static Dictionary<uint, MessageInfo> m_dicTTeam = new Dictionary<uint, MessageInfo>();
-        private static Dictionary<uint, MessageInfo> m_dicFriend = new Dictionary<uint, MessageInfo>();
-        private static Dictionary<uint, MessageInfo> m_dicSyndicate = new Dictionary<uint, MessageInfo>();
-        private static Dictionary<uint, MessageInfo> m_dicOther = new Dictionary<uint, MessageInfo>();
-        private static Dictionary<uint, MessageInfo> m_dicSystem = new Dictionary<uint, MessageInfo>();
+        private static readonly Dictionary<uint, MessageInfo> m_dicTrade = new();
+        private static readonly Dictionary<uint, MessageInfo> m_dicTTeam = new();
+        private static readonly Dictionary<uint, MessageInfo> m_dicFriend = new();
+        private static readonly Dictionary<uint, MessageInfo> m_dicSyndicate = new();
+        private static readonly Dictionary<uint, MessageInfo> m_dicOther = new();
+        private static readonly Dictionary<uint, MessageInfo> m_dicSystem = new();
 
         public static bool AddMessage(Character user, string message, TalkChannel channel)
         {
@@ -119,7 +118,8 @@ namespace Comet.Game.States
                     return string.Empty;
             }
 
-            return msgs.FirstOrDefault(x => x.Sender.Equals(name, StringComparison.InvariantCultureIgnoreCase)).Message ?? string.Empty;
+            return msgs.FirstOrDefault(x => x.Sender.Equals(name, StringComparison.InvariantCultureIgnoreCase))
+                       .Message ?? string.Empty;
         }
     }
 

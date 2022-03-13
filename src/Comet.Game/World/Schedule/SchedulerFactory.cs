@@ -1,14 +1,14 @@
-﻿using Quartz;
+﻿using System;
+using System.Threading.Tasks;
+using Quartz;
 using Quartz.Impl;
 using Quartz.Logging;
-using System;
-using System.Threading.Tasks;
 
 namespace Comet.Game.World.Schedule
 {
     public sealed class SchedulerFactory
     {
-        private StdSchedulerFactory mFactory;
+        private readonly StdSchedulerFactory mFactory;
         private IScheduler mScheduler;
 
         public SchedulerFactory()
@@ -32,16 +32,16 @@ namespace Comet.Game.World.Schedule
         public async Task ScheduleAsync<T>(string cron) where T : IJob
         {
             string name = typeof(T).Name;
-            JobKey key = new JobKey(name);
+            var key = new JobKey(name);
             IJobDetail job = JobBuilder.Create<AutomaticActionJob>()
-                .WithIdentity(key)
-                .Build();
+                                       .WithIdentity(key)
+                                       .Build();
 
             ITrigger trigger = TriggerBuilder.Create()
-                .WithIdentity(name)
-                .StartNow()
-                .WithCronSchedule(cron)
-                .Build();
+                                             .WithIdentity(name)
+                                             .StartNow()
+                                             .WithCronSchedule(cron)
+                                             .Build();
 
             await mScheduler.ScheduleJob(job, trigger);
         }
@@ -53,9 +53,7 @@ namespace Comet.Game.World.Schedule
                 return (level, func, exception, parameters) =>
                 {
                     if (level >= LogLevel.Info && func != null)
-                    {
                         Console.WriteLine($"{DateTime.Now:HH:mm:ss.fff} [{level,-10}] - {func()}", parameters);
-                    }
                     return true;
                 };
             }
@@ -72,9 +70,11 @@ namespace Comet.Game.World.Schedule
                 return new DisposableDummy();
             }
 
-            class DisposableDummy : IDisposable
+            private class DisposableDummy : IDisposable
             {
-                void IDisposable.Dispose() { }
+                void IDisposable.Dispose()
+                {
+                }
             }
         }
     }

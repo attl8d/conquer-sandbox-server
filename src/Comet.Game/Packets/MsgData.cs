@@ -1,6 +1,6 @@
-﻿using Comet.Game.States;
+﻿using System;
+using Comet.Game.States;
 using Comet.Network.Packets.Game;
-using System;
 
 namespace Comet.Game.Packets
 {
@@ -9,7 +9,6 @@ namespace Comet.Game.Packets
         public MsgData()
             : base(DateTime.Now)
         {
-
         }
     }
 }

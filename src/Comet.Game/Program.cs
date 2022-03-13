@@ -13,10 +13,10 @@ using Comet.Shared;
 namespace Comet.Game
 {
     /// <summary>
-    /// The game server listens for authentication players with a valid access token from
-    /// the account server, and hosts the game world. The game world in this project has 
-    /// been simplified into a single server executable. For an n-server distributed 
-    /// systems implementation of a Conquer Online server, see Chimera. 
+    ///     The game server listens for authentication players with a valid access token from
+    ///     the account server, and hosts the game world. The game world in this project has
+    ///     been simplified into a single server executable. For an n-server distributed
+    ///     systems implementation of a Conquer Online server, see Chimera.
     /// </summary>
     internal static class Program
     {
@@ -35,7 +35,7 @@ namespace Comet.Game
 
             // Read configuration file and command-line arguments
             var config = new ServerConfiguration(args);
-            if (!config.Valid) 
+            if (!config.Valid)
             {
                 await Log.WriteLogAsync(LogLevel.Error, "Invalid server configuration file");
                 return;
@@ -60,7 +60,7 @@ namespace Comet.Game
             {
                 Kernel.Services.Randomness.StartAsync(CancellationToken.None),
                 DiffieHellman.ProbablePrimes.StartAsync(CancellationToken.None),
-                Kernel.Services.Processor.StartAsync(CancellationToken.None),
+                Kernel.Services.Processor.StartAsync(CancellationToken.None)
             };
             Task.WaitAll(tasks.ToArray());
 
@@ -79,7 +79,7 @@ namespace Comet.Game
             // Start the game server listener
             var server = new Server(config);
             _ = server.StartAsync(config.GameNetwork.Port, config.GameNetwork.IPAddress)
-                .ConfigureAwait(false);
+                      .ConfigureAwait(false);
 
             // Output all clear and wait for user input
             await Log.WriteLogAsync("Listening for new connections");
@@ -107,7 +107,7 @@ namespace Comet.Game
                     return true;
                 }
 
-                string[] full = text.Split(new[] { ' ' }, StringSplitOptions.RemoveEmptyEntries);
+                string[] full = text.Split(new[] {' '}, StringSplitOptions.RemoveEmptyEntries);
 
                 if (full.Length <= 0)
                     continue;
@@ -115,9 +115,9 @@ namespace Comet.Game
                 switch (full[0].ToLower())
                 {
                     case "exit":
-                        {
-                            return true;
-                        }
+                    {
+                        return true;
+                    }
                 }
             }
         }

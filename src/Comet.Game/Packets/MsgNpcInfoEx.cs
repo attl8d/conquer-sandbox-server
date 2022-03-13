@@ -13,9 +13,9 @@ namespace Comet.Game.Packets
             Life = npc.Life;
             PosX = npc.MapX;
             PosY = npc.MapY;
-            Lookface = (ushort)npc.Mesh;
+            Lookface = (ushort) npc.Mesh;
             NpcType = npc.Type;
-            Sort = (ushort)npc.Sort;
+            Sort = (ushort) npc.Sort;
             Name = npc.IsSynFlag() ? npc.Name : "";
         }
 
@@ -26,9 +26,9 @@ namespace Comet.Game.Packets
             Life = npc.Life;
             PosX = npc.MapX;
             PosY = npc.MapY;
-            Lookface = (ushort)npc.Mesh;
+            Lookface = (ushort) npc.Mesh;
             NpcType = npc.Type;
-            Sort = (ushort)npc.Sort;
+            Sort = (ushort) npc.Sort;
             Name = npc.Name;
         }
     }

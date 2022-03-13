@@ -18,13 +18,15 @@ namespace Comet.Game.States.Guide
         public const int BETRAYAL_FLAG_TIMEOUT = 60 * 60 * 24 * 3;
         public const int STUDENT_BETRAYAL_VALUE = 50000;
 
-        private TimeOut m_betrayCheck = new TimeOut();
+        private readonly TimeOut m_betrayCheck = new();
 
         private DbTutor m_tutor;
         private DbTutorContribution m_access;
 
-        private Tutor() { }
-        
+        private Tutor()
+        {
+        }
+
         public static async Task<Tutor> CreateAsync(DbTutor tutor)
         {
             var guide = new Tutor
@@ -85,6 +87,7 @@ namespace Comet.Game.States.Guide
                 tutorAccess.Experience += addExpTime;
                 await ServerDbContext.SaveAsync(tutorAccess);
             }
+
             return await SaveAsync();
         }
 
@@ -107,6 +110,7 @@ namespace Comet.Game.States.Guide
                 tutorAccess.Blessing += addGodTime;
                 await ServerDbContext.SaveAsync(tutorAccess);
             }
+
             return await SaveAsync();
         }
 
@@ -129,6 +133,7 @@ namespace Comet.Game.States.Guide
                 tutorAccess.Composition += addTime;
                 await ServerDbContext.SaveAsync(tutorAccess);
             }
+
             return await SaveAsync();
         }
 
@@ -143,15 +148,17 @@ namespace Comet.Game.States.Guide
                 if (mentor.PureBattlePower < student.PureBattlePower)
                     return 0;
 
-                var limit = TutorManager.GetTutorBattleLimitType(student.PureBattlePower);
+                DbTutorBattleLimitType limit = TutorManager.GetTutorBattleLimitType(student.PureBattlePower);
                 if (limit == null)
                     return 0;
 
-                var type = TutorManager.GetTutorType(mentor.Level);
+                DbTutorType type = TutorManager.GetTutorType(mentor.Level);
                 if (type == null)
                     return 0;
-                
-                return (int) Math.Min(limit.BattleLevelLimit, (mentor.PureBattlePower - student.PureBattlePower) * (type.BattleLevelShare / 100f));
+
+                return (int) Math.Min(limit.BattleLevelLimit,
+                                      (mentor.PureBattlePower - student.PureBattlePower) *
+                                      (type.BattleLevelShare / 100f));
             }
         }
 
@@ -175,9 +182,9 @@ namespace Comet.Game.States.Guide
                 Experience = m_access.Experience,
                 IsOnline = Guide != null,
                 Mesh = Guide?.Mesh ?? 0,
-                Mode = MsgGuideInfo.RequestMode.Mentor,
+                Mode = MsgGuideInfo<Client>.RequestMode.Mentor,
                 Syndicate = Guide?.SyndicateIdentity ?? 0,
-                SyndicatePosition = (ushort)(Guide?.SyndicateRank ?? SyndicateMember.SyndicateRank.None),
+                SyndicatePosition = (ushort) (Guide?.SyndicateRank ?? SyndicateMember.SyndicateRank.None),
                 Names = new List<string>
                 {
                     GuideName,
@@ -187,7 +194,7 @@ namespace Comet.Game.States.Guide
                 EnroleDate = uint.Parse(m_tutor.Date?.ToString("yyyyMMdd") ?? "0"),
                 PkPoints = Guide?.PkPoints ?? 0,
                 Profession = Guide?.Profession ?? 0,
-                SharedBattlePower = (uint) (SharedBattlePower),
+                SharedBattlePower = (uint) SharedBattlePower,
                 SenderIdentity = GuideIdentity,
                 Unknown24 = 999999
             });
@@ -203,13 +210,13 @@ namespace Comet.Game.States.Guide
                 Identity = StudentIdentity,
                 Level = Student?.Level ?? 0,
                 Blessing = m_access.GodTime,
-                Composition = (ushort)m_access.PlusStone,
+                Composition = (ushort) m_access.PlusStone,
                 Experience = m_access.Experience,
                 IsOnline = Student != null,
                 Mesh = Student?.Mesh ?? 0,
-                Mode = MsgGuideInfo.RequestMode.Apprentice,
+                Mode = MsgGuideInfo<Client>.RequestMode.Apprentice,
                 Syndicate = Student?.SyndicateIdentity ?? 0,
-                SyndicatePosition = (ushort)(Student?.SyndicateRank ?? SyndicateMember.SyndicateRank.None),
+                SyndicatePosition = (ushort) (Student?.SyndicateRank ?? SyndicateMember.SyndicateRank.None),
                 Names = new List<string>
                 {
                     GuideName,
@@ -232,7 +239,6 @@ namespace Comet.Game.States.Guide
              * to see it can be checked.
              */
             if (m_tutor.BetrayalFlag != 0)
-            {
                 if (m_tutor.BetrayalFlag + BETRAYAL_FLAG_TIMEOUT < UnixTimestamp.Now()) // expired, leave mentor
                 {
                     if (Guide != null)
@@ -240,6 +246,7 @@ namespace Comet.Game.States.Guide
                         await Guide.SendAsync(string.Format(Language.StrGuideExpelTutor, StudentName));
                         Guide.RemoveApprentice(StudentIdentity);
                     }
+
                     if (Student != null)
                     {
                         await Student.SendAsync(string.Format(Language.StrGuideExpelStudent, GuideName));
@@ -249,7 +256,6 @@ namespace Comet.Game.States.Guide
 
                     await DeleteAsync();
                 }
-            }
         }
 
         public async Task<bool> SaveAsync()

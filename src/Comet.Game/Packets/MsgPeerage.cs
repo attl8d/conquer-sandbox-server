@@ -1,8 +1,8 @@
-﻿using Comet.Core;
+﻿using System.Threading.Tasks;
+using Comet.Core;
 using Comet.Game.States;
 using Comet.Game.World.Managers;
 using Comet.Network.Packets.Game;
-using System.Threading.Tasks;
 
 namespace Comet.Game.Packets
 {
@@ -19,6 +19,7 @@ namespace Comet.Game.Packets
             DataLow2 = maxPages;
             DataHigh = maxPerPage;
         }
+
         public override async Task ProcessAsync(Client client)
         {
             Character user = client.Character;
@@ -45,7 +46,7 @@ namespace Comet.Game.Packets
                     }
                     else
                     {
-                        if (!await user.SpendConquerPointsAsync((int)(Data/50000), true))
+                        if (!await user.SpendConquerPointsAsync((int) (Data / 50000), true))
                             return;
                     }
 

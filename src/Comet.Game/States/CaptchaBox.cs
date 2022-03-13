@@ -1,14 +1,14 @@
-﻿using Comet.Core;
+﻿using System.Threading.Tasks;
+using Comet.Core;
 using Comet.Game.World.Managers;
 using Comet.Shared;
-using System.Threading.Tasks;
 
 namespace Comet.Game.States
 {
     public sealed class CaptchaBox : MessageBox
     {
-        private TimeOut m_Expiration = new TimeOut();
-        private Character m_Owner;
+        private readonly TimeOut m_Expiration = new();
+        private readonly Character m_Owner;
 
         public CaptchaBox(Character owner)
             : base(owner)

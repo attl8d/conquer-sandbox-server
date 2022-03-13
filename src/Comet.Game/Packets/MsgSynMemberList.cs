@@ -1,6 +1,6 @@
-﻿using Comet.Game.States;
+﻿using System.Threading.Tasks;
+using Comet.Game.States;
 using Comet.Network.Packets.Game;
-using System.Threading.Tasks;
 
 namespace Comet.Game.Packets
 {

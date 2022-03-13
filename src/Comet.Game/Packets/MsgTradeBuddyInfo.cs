@@ -8,8 +8,8 @@ namespace Comet.Game.Packets
     {
         public override byte[] Encode()
         {
-            PacketWriter writer = new PacketWriter();
-            writer.Write((ushort)PacketType.MsgTradeBuffyInfo);
+            var writer = new PacketWriter();
+            writer.Write((ushort) PacketType.MsgTradeBuffyInfo);
             writer.Write(Identity);
             writer.Write(Lookface);
             writer.Write(Level);

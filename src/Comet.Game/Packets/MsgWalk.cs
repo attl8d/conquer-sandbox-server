@@ -1,7 +1,7 @@
-﻿using Comet.Game.States;
+﻿using System.Threading.Tasks;
+using Comet.Game.States;
 using Comet.Game.World.Managers;
 using Comet.Network.Packets.Game;
-using System.Threading.Tasks;
 
 namespace Comet.Game.Packets
 {
@@ -26,6 +26,7 @@ namespace Comet.Game.Packets
                     await client.Character.Screen.UpdateAsync(this);
                     await Kernel.BroadcastWorldMsgAsync(this);
                 }
+
                 return;
             }
 

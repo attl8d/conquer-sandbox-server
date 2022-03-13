@@ -1,10 +1,10 @@
-﻿using Comet.Core;
+﻿using System;
+using System.Threading.Tasks;
+using Comet.Core;
 using Comet.Game.States;
 using Comet.Game.States.Items;
 using Comet.Network.Packets.Game;
 using Comet.Shared;
-using System;
-using System.Threading.Tasks;
 
 namespace Comet.Game.Packets
 {
@@ -34,15 +34,14 @@ namespace Comet.Game.Packets
                         return;
                     }
 
-                    Item.SocketGem gem = (Item.SocketGem)(minor.Type % 1000);
-                    if (!Enum.IsDefined(typeof(Item.SocketGem), (byte)gem))
+                    var gem = (Item.SocketGem) (minor.Type % 1000);
+                    if (!Enum.IsDefined(typeof(Item.SocketGem), (byte) gem))
                     {
                         await user.SendAsync(Language.StrNoGemEmbed);
                         return;
                     }
 
                     if (main.GetItemSubType() == 201)
-                    {
                         switch (gem)
                         {
                             case Item.SocketGem.NormalThunderGem:
@@ -53,9 +52,7 @@ namespace Comet.Game.Packets
                                 await user.SendAsync(Language.StrNoGemEmbed);
                                 return;
                         }
-                    }
                     else if (main.GetItemSubType() == 202)
-                    {
                         switch (gem)
                         {
                             case Item.SocketGem.NormalGloryGem:
@@ -66,9 +63,8 @@ namespace Comet.Game.Packets
                                 await user.SendAsync(Language.StrNoGemEmbed);
                                 return;
                         }
-                    }
 
-                    if (Position == 1 || (Position == 2 && main.SocketOne == Item.SocketGem.EmptySocket))
+                    if (Position == 1 || Position == 2 && main.SocketOne == Item.SocketGem.EmptySocket)
                     {
                         if (main.SocketOne == Item.SocketGem.NoSocket)
                         {
@@ -118,7 +114,6 @@ namespace Comet.Game.Packets
 
                         main.SocketTwo = gem;
                         await main.SaveAsync();
-                        break;
                     }
 
                     break;
@@ -152,13 +147,12 @@ namespace Comet.Game.Packets
 
                         main.SocketTwo = Item.SocketGem.EmptySocket;
                         await main.SaveAsync();
-                        break;
                     }
 
                     break;
             }
 
-            await user.SendAsync(new MsgItemInfo(main, MsgItemInfo.ItemMode.Update));
+            await user.SendAsync(new MsgItemInfo(main, MsgItemInfo<Client>.ItemMode.Update));
             await user.SendAsync(this);
         }
     }

@@ -1,8 +1,8 @@
-﻿using Comet.Core;
+﻿using System.Threading.Tasks;
+using Comet.Core;
 using Comet.Game.States;
 using Comet.Game.States.Items;
 using Comet.Network.Packets.Game;
-using System.Threading.Tasks;
 
 namespace Comet.Game.Packets
 {
@@ -20,44 +20,44 @@ namespace Comet.Game.Packets
             switch (Action)
             {
                 case LockMode.RequestLock:
+                {
+                    if (item.IsLocked() && !item.IsUnlocking())
                     {
-                        if (item.IsLocked() && !item.IsUnlocking())
-                        {
-                            await client.Character.SendAsync(Language.StrEquipLockAlreadyLocked);
-                            return;
-                        }
-
-                        if (!item.IsEquipment() && !item.IsMount())
-                        {
-                            await client.Character.SendAsync(Language.StrEquipLockCantLock);
-                            return;
-                        }
-
-                        await item.SetLockAsync();
-                        await client.SendAsync(this);
-                        await client.SendAsync(new MsgItemInfo(item, MsgItemInfo.ItemMode.Update));
-                        break;
+                        await client.Character.SendAsync(Language.StrEquipLockAlreadyLocked);
+                        return;
                     }
+
+                    if (!item.IsEquipment() && !item.IsMount())
+                    {
+                        await client.Character.SendAsync(Language.StrEquipLockCantLock);
+                        return;
+                    }
+
+                    await item.SetLockAsync();
+                    await client.SendAsync(this);
+                    await client.SendAsync(new MsgItemInfo(item, MsgItemInfo<Client>.ItemMode.Update));
+                    break;
+                }
 
                 case LockMode.RequestUnlock:
+                {
+                    if (!item.IsLocked())
                     {
-                        if (!item.IsLocked())
-                        {
-                            await client.Character.SendAsync(Language.StrEquipLockNotLocked);
-                            return;
-                        }
-
-                        if (item.IsUnlocking())
-                        {
-                            await client.Character.SendAsync(Language.StrEquipLockAlreadyUnlocking);
-                            return;
-                        }
-
-                        await item.SetUnlockAsync();
-                        await client.SendAsync(new MsgItemInfo(item, MsgItemInfo.ItemMode.Update));
-                        await item.TryUnlockAsync();
-                        break;
+                        await client.Character.SendAsync(Language.StrEquipLockNotLocked);
+                        return;
                     }
+
+                    if (item.IsUnlocking())
+                    {
+                        await client.Character.SendAsync(Language.StrEquipLockAlreadyUnlocking);
+                        return;
+                    }
+
+                    await item.SetUnlockAsync();
+                    await client.SendAsync(new MsgItemInfo(item, MsgItemInfo<Client>.ItemMode.Update));
+                    await item.TryUnlockAsync();
+                    break;
+                }
             }
         }
     }

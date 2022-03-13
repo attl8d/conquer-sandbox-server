@@ -1,8 +1,8 @@
-﻿using Comet.Game.Internal.Auth;
+﻿using System.Threading.Tasks;
+using Comet.Game.Internal.Auth;
 using Comet.Game.States;
 using Comet.Game.World.Managers;
 using Comet.Network.Packets.Internal;
-using System.Threading.Tasks;
 
 namespace Comet.Game.Packets
 {
@@ -17,20 +17,20 @@ namespace Comet.Game.Packets
             switch (Action)
             {
                 case ServerAction.Disconnect:
-                    {
-                        await RoleManager.KickOutAsync(account.Identity, "REALM MANAGER REQUEST");
-                        break;
-                    }
+                {
+                    await RoleManager.KickOutAsync(account.Identity, "REALM MANAGER REQUEST");
+                    break;
+                }
                 case ServerAction.Ban:
-                    {
-                        await RoleManager.KickOutAsync(account.Identity, "Account banned!");
-                        break;
-                    }
+                {
+                    await RoleManager.KickOutAsync(account.Identity, "Account banned!");
+                    break;
+                }
                 case ServerAction.Maintenance:
-                    {
-                        // TODO maintenance manager
-                        break;
-                    }
+                {
+                    // TODO maintenance manager
+                    break;
+                }
             }
         }
     }

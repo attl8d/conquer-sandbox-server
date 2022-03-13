@@ -1,16 +1,16 @@
-﻿using Comet.Network.Sockets;
-using System;
+﻿using System;
 using System.Net.Sockets;
 using System.Threading.Tasks;
+using Comet.Network.Sockets;
 
 namespace Comet.Game.Internal.AI
 {
     public sealed class AiClient : TcpServerActor
     {
         /// <summary>
-        /// Instantiates a new instance of <see cref="Client"/> using the Accepted event's
-        /// resulting socket and preallocated buffer. Initializes all account server
-        /// states, such as the cipher used to decrypt and encrypt data.
+        ///     Instantiates a new instance of <see cref="Client" /> using the Accepted event's
+        ///     resulting socket and preallocated buffer. Initializes all account server
+        ///     states, such as the cipher used to decrypt and encrypt data.
         /// </summary>
         /// <param name="socket">Accepted remote client socket</param>
         /// <param name="buffer">Preallocated buffer from the server listener</param>

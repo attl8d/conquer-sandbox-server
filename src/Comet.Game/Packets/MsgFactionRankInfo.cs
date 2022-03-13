@@ -1,8 +1,8 @@
-﻿using Comet.Game.States;
+﻿using System.Collections.Generic;
+using System.Threading.Tasks;
+using Comet.Game.States;
 using Comet.Game.States.Syndicates;
 using Comet.Network.Packets.Game;
-using System.Collections.Generic;
-using System.Threading.Tasks;
 
 namespace Comet.Game.Packets
 {
@@ -17,9 +17,9 @@ namespace Comet.Game.Packets
                 return;
 
             List<SyndicateMember> members = syn.QueryRank(DonationType);
-            for (int i = 0; i < MAX_COUNT && i < members.Count; i++)
+            for (var i = 0; i < MAX_COUNT && i < members.Count; i++)
             {
-                var member = members[i];
+                SyndicateMember member = members[i];
                 Members.Add(new MemberListInfoStruct
                 {
                     PlayerIdentity = member.UserIdentity,
@@ -33,10 +33,10 @@ namespace Comet.Game.Packets
                     WhiteRose = member.WhiteRoseDonation,
                     Orchid = member.OrchidDonation,
                     Tulip = member.TulipDonation,
-                    TotalDonation = (uint)member.TotalDonation,
+                    TotalDonation = (uint) member.TotalDonation,
                     UsableDonation = member.UsableDonation,
                     Position = i,
-                    Rank = (int)member.Rank
+                    Rank = (int) member.Rank
                 });
             }
 

@@ -1,15 +1,15 @@
+using Comet.Database;
+using Microsoft.Extensions.Configuration;
+
 namespace Comet.Game.Database
 {
-    using Comet.Database;
-    using Microsoft.Extensions.Configuration;
-
     /// <summary>
-    /// Defines the configuration file structure for the Game Server. App Configuration 
-    /// files are copied to the build output directory on successful build, containing all
-    /// default configuration settings for the server, only if the file is newer than the
-    /// file bring replaced.
+    ///     Defines the configuration file structure for the Game Server. App Configuration
+    ///     files are copied to the build output directory on successful build, containing all
+    ///     default configuration settings for the server, only if the file is newer than the
+    ///     file bring replaced.
     /// </summary>
-    public class ServerConfiguration 
+    public class ServerConfiguration
     {
         // Properties and fields
         public DatabaseConfiguration Database { get; set; }
@@ -19,7 +19,7 @@ namespace Comet.Game.Database
         public AuthenticationConfiguration Authentication { get; set; }
 
         /// <summary>
-        /// Encapsulates network configuration for the game server listener.
+        ///     Encapsulates network configuration for the game server listener.
         /// </summary>
         public class GameNetworkConfiguration
         {
@@ -33,7 +33,7 @@ namespace Comet.Game.Database
         }
 
         /// <summary>
-        /// Encapsulates network configuration for the RPC server listener.
+        ///     Encapsulates network configuration for the RPC server listener.
         /// </summary>
         public class RpcNetworkConfiguration
         {
@@ -42,7 +42,7 @@ namespace Comet.Game.Database
         }
 
         /// <summary>
-        /// Encapsulates network configuration for the RPC server listener.
+        ///     Encapsulates network configuration for the RPC server listener.
         /// </summary>
         public class AiNetworkConfiguration
         {
@@ -53,8 +53,8 @@ namespace Comet.Game.Database
         }
 
         /// <summary>
-        /// Encapsulates authentication settings for client authentication between the
-        /// account server and game server.
+        ///     Encapsulates authentication settings for client authentication between the
+        ///     account server and game server.
         /// </summary>
         public class AuthenticationConfiguration
         {
@@ -62,9 +62,9 @@ namespace Comet.Game.Database
         }
 
         /// <summary>
-        /// Instantiates a new instance of <see cref="ServerConfiguration"/> with command-line
-        /// arguments from the user and a configuration file for the application. Builds the
-        /// configuration file and binds to this instance of the ServerConfiguration class.
+        ///     Instantiates a new instance of <see cref="ServerConfiguration" /> with command-line
+        ///     arguments from the user and a configuration file for the application. Builds the
+        ///     configuration file and binds to this instance of the ServerConfiguration class.
         /// </summary>
         /// <param name="args">Command-line arguments from the user</param>
         public ServerConfiguration(string[] args)
@@ -77,12 +77,12 @@ namespace Comet.Game.Database
         }
 
         /// <summary>
-        /// Returns true if the server configuration is valid after reading.
+        ///     Returns true if the server configuration is valid after reading.
         /// </summary>
-        public bool Valid => 
-            this.Database != null && 
-            this.GameNetwork != null &&
-            this.RpcNetwork != null &&
-            this.Authentication != null;
+        public bool Valid =>
+            Database != null &&
+            GameNetwork != null &&
+            RpcNetwork != null &&
+            Authentication != null;
     }
 }

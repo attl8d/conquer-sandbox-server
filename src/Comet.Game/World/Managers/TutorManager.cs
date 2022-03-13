@@ -1,9 +1,9 @@
-﻿using Comet.Database.Entities;
-using Comet.Game.Database.Repositories;
-using System;
+﻿using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
+using Comet.Database.Entities;
+using Comet.Game.Database.Repositories;
 
 namespace Comet.Game.World.Managers
 {

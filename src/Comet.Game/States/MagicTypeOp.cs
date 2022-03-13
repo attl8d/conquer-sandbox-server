@@ -1,5 +1,5 @@
-﻿using Comet.Database.Entities;
-using System.Collections.Generic;
+﻿using System.Collections.Generic;
+using Comet.Database.Entities;
 
 namespace Comet.Game.States
 {
@@ -25,7 +25,7 @@ namespace Comet.Game.States
             RebirthTime = dbOp.RebirthTime;
             ProfessionAgo = dbOp.ProfessionAgo;
             ProfessionNow = dbOp.ProfessionNow;
-            Operation = (MagictypeOperation)dbOp.MagictypeOp;
+            Operation = (MagictypeOperation) dbOp.MagictypeOp;
 
             if (dbOp.Skill1 != 0)
                 AppendMagic(dbOp.Skill1);

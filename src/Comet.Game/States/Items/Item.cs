@@ -1,4 +1,7 @@
-﻿using Comet.Core;
+﻿using System;
+using System.Text;
+using System.Threading.Tasks;
+using Comet.Core;
 using Comet.Database.Entities;
 using Comet.Game.Database;
 using Comet.Game.Packets;
@@ -6,9 +9,6 @@ using Comet.Game.World.Managers;
 using Comet.Network.Packets.Game;
 using Comet.Shared;
 using Newtonsoft.Json;
-using System;
-using System.Text;
-using System.Threading.Tasks;
 using static Comet.Game.States.Items.MapItem;
 
 namespace Comet.Game.States.Items
@@ -19,7 +19,6 @@ namespace Comet.Game.States.Items
 
         private readonly Character m_user;
         private DbItem m_dbItem;
-        private DbItemtype m_dbItemtype;
         private DbItemAddition m_dbItemAddition;
 
         public Item()
@@ -40,17 +39,17 @@ namespace Comet.Game.States.Items
             {
                 PlayerId = m_user.Identity,
                 Type = type.Type,
-                Position = (byte)position,
+                Position = (byte) position,
                 Amount = type.Amount,
                 AmountLimit = type.AmountLimit,
-                Magic1 = (byte)type.Magic1,
+                Magic1 = (byte) type.Magic1,
                 Magic2 = type.Magic2,
                 Magic3 = type.Magic3,
                 Color = 3,
                 Monopoly = 0
             };
 
-            m_dbItemtype = type;
+            Itemtype = type;
             m_dbItemAddition = ItemManager.GetItemAddition(Type, Plus);
 
             return await SaveAsync() && (m_user.LastAddItemIdentity = Identity) != 0;
@@ -62,9 +61,9 @@ namespace Comet.Game.States.Items
                 return false;
 
             m_dbItem = item;
-            m_dbItemtype = ItemManager.GetItemtype(item.Type);
+            Itemtype = ItemManager.GetItemtype(item.Type);
 
-            if (m_dbItemtype == null)
+            if (Itemtype == null)
                 return false;
 
             m_dbItemAddition = ItemManager.GetItemAddition(item.Type, item.Magic3);
@@ -74,6 +73,7 @@ namespace Comet.Game.States.Items
                 await SaveAsync();
                 m_user.LastAddItemIdentity = Identity;
             }
+
             return true;
         }
 
@@ -89,23 +89,17 @@ namespace Comet.Game.States.Items
             {
                 rand = await Kernel.NextAsync(100);
                 if (rand >= 0 && rand < 30)
-                {
                     quality = 5;
-                }
                 else if (rand >= 30 && rand < 70)
-                {
                     quality = 4;
-                }
                 else
-                {
                     quality = 3;
-                }
             }
 
             rand = await Kernel.NextAsync(1250);
-            int itemSort = 0;
-            int itemLevel = 0;
-            ItemColor itemColor = ItemColor.Orange;
+            var itemSort = 0;
+            var itemLevel = 0;
+            var itemColor = ItemColor.Orange;
             if (rand >= 0 && rand < 20)
             {
                 // shoes
@@ -171,7 +165,7 @@ namespace Comet.Game.States.Items
                     // weapons
                     int[] weapons =
                     {
-                        410,420,421,422,430,440,450,460,480,481,490
+                        410, 420, 421, 422, 430, 440, 450, 460, 480, 481, 490
                     };
                     itemSort = weapons[await Kernel.NextAsync(weapons.Length) % weapons.Length];
                     itemLevel = monstertype.DropWeapon;
@@ -181,7 +175,7 @@ namespace Comet.Game.States.Items
                     // weapons
                     int[] weapons =
                     {
-                        510,511,530,540,560,561,562,580
+                        510, 511, 530, 540, 560, 561, 562, 580
                     };
                     itemSort = weapons[await Kernel.NextAsync(weapons.Length) % weapons.Length];
                     itemLevel = monstertype.DropWeapon;
@@ -190,7 +184,7 @@ namespace Comet.Game.States.Items
                 {
                     itemSort = 900;
                     itemLevel = monstertype.DropShield;
-                    itemColor = (ItemColor)(await Kernel.NextAsync(6)) + 3;
+                    itemColor = (ItemColor) await Kernel.NextAsync(6) + 3;
                 }
             }
             else
@@ -222,81 +216,61 @@ namespace Comet.Game.States.Items
             }
             else if (rand >= 80) // up one lev
             {
-                if ((itemSort >= 110 && itemSort <= 119)
-                    || (itemSort >= 130 && itemSort <= 139)
-                    || (itemSort >= 900 && itemSort <= 999))
-                {
+                if (itemSort >= 110 && itemSort <= 119
+                    || itemSort >= 130 && itemSort <= 139
+                    || itemSort >= 900 && itemSort <= 999)
                     itemLevel = Math.Min(itemLevel + 1, 9);
-                }
                 else
-                {
                     itemLevel = Math.Min(itemLevel + 1, 23);
-                }
             }
 
             int idItemType = itemSort * 1000 + itemLevel * 10 + quality;
-            DbItemtype itemtype = ItemManager.GetItemtype((uint)idItemType);
+            DbItemtype itemtype = ItemManager.GetItemtype((uint) idItemType);
             if (itemtype == null)
                 return default;
 
             ushort amount;
-            ushort amountLimit = (ushort)Math.Max(1, itemtype.AmountLimit * await Kernel.NextRateAsync(0.3d));
+            var amountLimit = (ushort) Math.Max(1, itemtype.AmountLimit * await Kernel.NextRateAsync(0.3d));
             if (quality > 5)
-            {
-                amount = (ushort)(amountLimit * (15 + await Kernel.NextAsync(20)) / 100);
-            }
+                amount = (ushort) (amountLimit * (15 + await Kernel.NextAsync(20)) / 100);
             else
-            {
-                amount = (ushort)(amountLimit * (15 + await Kernel.NextAsync(35)) / 100);
-            }
+                amount = (ushort) (amountLimit * (15 + await Kernel.NextAsync(35)) / 100);
 
-            int socketNum = 0;
+            var socketNum = 0;
             if (itemSort >= 400 && itemSort < 700)
             {
                 rand = await Kernel.NextAsync(100);
                 if (rand < 5)
-                {
                     socketNum = 2;
-                }
-                else if (rand < 20)
-                {
-                    socketNum = 1;
-                }
+                else if (rand < 20) socketNum = 1;
             }
 
-            int addition = 0;
+            var addition = 0;
             rand = await Kernel.NextAsync(1000);
-            if (rand < 8)
-            {
-                addition = 1;
-            }
+            if (rand < 8) addition = 1;
 
-            int reduceDamage = 0;
+            var reduceDamage = 0;
             if (itemSort != 201 && itemSort != 202)
             {
                 rand = await Kernel.NextAsync(100);
                 if (rand < 3)
-                {
                     reduceDamage = 5;
-                }
-                else if (rand < 15)
-                {
-                    reduceDamage = 3;
-                }
+                else if (rand < 15) reduceDamage = 3;
             }
 
 #if DEBUG
             var mapItem = new MapItemInfo
             {
                 Type = itemtype.Type,
-                Addition = (byte)addition,
+                Addition = (byte) addition,
                 Color = itemColor,
                 MaximumDurability = amountLimit,
                 Durability = amount,
-                ReduceDamage = (byte)reduceDamage,
-                SocketNum = (byte)socketNum
+                ReduceDamage = (byte) reduceDamage,
+                SocketNum = (byte) socketNum
             };
-            await Log.WriteLogAsync("dropitem", LogLevel.Debug, $"Dropitem >> {JsonConvert.SerializeObject(mapItem, Formatting.None).Replace("{", "{{").Replace("}", "}}")}");
+            await Log.WriteLogAsync("dropitem", LogLevel.Debug,
+                                    $"Dropitem >> {JsonConvert.SerializeObject(mapItem, Formatting.None).Replace("{", "{{").Replace("}", "}}")}");
             return mapItem;
 #else
             return new MapItemInfo
@@ -362,9 +336,9 @@ namespace Comet.Game.States.Items
             if (itemtype == null)
                 return null;
 
-            DbItem entity = new DbItem
+            var entity = new DbItem
             {
-                Magic1 = (byte)itemtype.Magic1,
+                Magic1 = (byte) itemtype.Magic1,
                 Magic2 = itemtype.Magic2,
                 Magic3 = itemtype.Magic3,
                 Type = type,
@@ -372,8 +346,8 @@ namespace Comet.Game.States.Items
                 AmountLimit = itemtype.AmountLimit,
                 Gem1 = itemtype.Gem1,
                 Gem2 = itemtype.Gem2,
-                Monopoly = (byte)(bound ? 3 : 0),
-                Color = (byte)ItemColor.Orange
+                Monopoly = (byte) (bound ? 3 : 0),
+                Color = (byte) ItemColor.Orange
             };
             return entity;
         }
@@ -382,57 +356,51 @@ namespace Comet.Game.States.Items
 
         #region Attributes
 
-        public DbItemtype Itemtype => m_dbItemtype;
+        public DbItemtype Itemtype { get; private set; }
 
         public uint Identity => m_dbItem.Id;
 
-        public string Name => m_dbItemtype?.Name ?? Language.StrNone;
+        public string Name => Itemtype?.Name ?? Language.StrNone;
 
         public string FullName
         {
             get
             {
-                StringBuilder builder = new StringBuilder();
+                var builder = new StringBuilder();
                 switch (GetQuality())
                 {
-                    case 9: builder.Append("Super"); break;
-                    case 8: builder.Append("Elite"); break;
-                    case 7: builder.Append("Unique"); break;
-                    case 6: builder.Append("Refined"); break;
+                    case 9:
+                        builder.Append("Super");
+                        break;
+                    case 8:
+                        builder.Append("Elite");
+                        break;
+                    case 7:
+                        builder.Append("Unique");
+                        break;
+                    case 6:
+                        builder.Append("Refined");
+                        break;
                 }
+
                 builder.Append(Name);
-                if (Plus > 0)
-                {
-                    builder.Append($"(+{Plus})");
-                }
+                if (Plus > 0) builder.Append($"(+{Plus})");
                 if (SocketOne != SocketGem.NoSocket)
                 {
                     if (SocketTwo != SocketGem.NoSocket)
-                    {
                         builder.Append(" 2-Socketed");
-                    }
                     else
-                    {
                         builder.Append(" 1-Socketed");
-                    }
                 }
-                if (ReduceDamage > 0)
-                {
-                    builder.Append($" -{ReduceDamage}%");
-                }
-                if (Enchantment > 0)
-                {
-                    builder.Append($" +{Enchantment}HP");
-                }
-                if (Effect != ItemEffect.None && !IsMount())
-                {
-                    builder.Append($" {Effect}");
-                }
+
+                if (ReduceDamage > 0) builder.Append($" -{ReduceDamage}%");
+                if (Enchantment > 0) builder.Append($" +{Enchantment}HP");
+                if (Effect != ItemEffect.None && !IsMount()) builder.Append($" {Effect}");
                 return builder.ToString();
             }
         }
 
-        public uint Type => m_dbItemtype?.Type ?? 0;
+        public uint Type => Itemtype?.Type ?? 0;
 
         /// <summary>
         ///     May be an NPC or Sash ID.
@@ -468,7 +436,7 @@ namespace Comet.Game.States.Items
                     case SocketGem.NormalKylinGem:
                     case SocketGem.RefinedKylinGem:
                     case SocketGem.SuperKylinGem:
-                        result += (ushort)(OriginalMaximumDurability * (CalculateGemPercentage(SocketOne) / 100.0d));
+                        result += (ushort) (OriginalMaximumDurability * (CalculateGemPercentage(SocketOne) / 100.0d));
                         break;
                 }
 
@@ -477,7 +445,7 @@ namespace Comet.Game.States.Items
                     case SocketGem.NormalKylinGem:
                     case SocketGem.RefinedKylinGem:
                     case SocketGem.SuperKylinGem:
-                        result += (ushort)(OriginalMaximumDurability * (CalculateGemPercentage(SocketTwo) / 100.0d));
+                        result += (ushort) (OriginalMaximumDurability * (CalculateGemPercentage(SocketTwo) / 100.0d));
                         break;
                 }
 
@@ -486,29 +454,29 @@ namespace Comet.Game.States.Items
             set => m_dbItem.AmountLimit = value;
         }
 
-        public ushort OriginalMaximumDurability => m_dbItemtype.AmountLimit;
+        public ushort OriginalMaximumDurability => Itemtype.AmountLimit;
 
         public SocketGem SocketOne
         {
-            get => (SocketGem)m_dbItem.Gem1;
-            set => m_dbItem.Gem1 = (byte)value;
+            get => (SocketGem) m_dbItem.Gem1;
+            set => m_dbItem.Gem1 = (byte) value;
         }
 
         public SocketGem SocketTwo
         {
-            get => (SocketGem)m_dbItem.Gem2;
-            set => m_dbItem.Gem2 = (byte)value;
+            get => (SocketGem) m_dbItem.Gem2;
+            set => m_dbItem.Gem2 = (byte) value;
         }
 
         public ItemPosition Position
         {
-            get => (ItemPosition)m_dbItem.Position;
-            set => m_dbItem.Position = (byte)value;
+            get => (ItemPosition) m_dbItem.Position;
+            set => m_dbItem.Position = (byte) value;
         }
 
         public byte Plus
         {
-            get => (byte)(GetItemSubType() == 730 ? Type % 100 : m_dbItem.Magic3);
+            get => (byte) (GetItemSubType() == 730 ? Type % 100 : m_dbItem.Magic3);
             set => m_dbItem.Magic3 = value;
         }
 
@@ -526,8 +494,8 @@ namespace Comet.Game.States.Items
 
         public ItemEffect Effect
         {
-            get => (ItemEffect)m_dbItem.Magic1;
-            set => m_dbItem.Magic1 = (byte)value;
+            get => (ItemEffect) m_dbItem.Magic1;
+            set => m_dbItem.Magic1 = (byte) value;
         }
 
         public byte ReduceDamage
@@ -538,7 +506,7 @@ namespace Comet.Game.States.Items
 
         public byte Enchantment
         {
-            get => (byte)(Position != ItemPosition.Steed ? m_dbItem.AddLife : 0);
+            get => (byte) (Position != ItemPosition.Steed ? m_dbItem.AddLife : 0);
             set => m_dbItem.AddLife = value;
         }
 
@@ -550,8 +518,8 @@ namespace Comet.Game.States.Items
 
         public ItemColor Color
         {
-            get => (ItemColor)m_dbItem.Color;
-            set => m_dbItem.Color = (byte)value;
+            get => (ItemColor) m_dbItem.Color;
+            set => m_dbItem.Color = (byte) value;
         }
 
         public bool IsBound
@@ -567,13 +535,13 @@ namespace Comet.Game.States.Items
                 {
                     int monopoly = m_dbItem.Monopoly;
                     monopoly &= ~ITEM_MONOPOLY_MASK;
-                    m_dbItem.Monopoly = (byte)monopoly;
+                    m_dbItem.Monopoly = (byte) monopoly;
                 }
             }
         }
 
         /// <summary>
-        /// If jar, the amount of monsters killed
+        ///     If jar, the amount of monsters killed
         /// </summary>
         public uint Data
         {
@@ -593,27 +561,27 @@ namespace Comet.Game.States.Items
             set => m_dbItem.AccumulateNum = value;
         }
 
-        public uint MaxAccumulateNum => m_dbItemtype?.AccumulateLimit ?? 1u;
+        public uint MaxAccumulateNum => Itemtype?.AccumulateLimit ?? 1u;
 
         #endregion
 
         #region Requirements
 
-        public int RequiredLevel => m_dbItemtype?.ReqLevel ?? 0;
+        public int RequiredLevel => Itemtype?.ReqLevel ?? 0;
 
-        public int RequiredProfession => (int)(m_dbItemtype?.ReqProfession ?? 0);
+        public int RequiredProfession => (int) (Itemtype?.ReqProfession ?? 0);
 
-        public int RequiredGender => m_dbItemtype?.ReqSex ?? 0;
+        public int RequiredGender => Itemtype?.ReqSex ?? 0;
 
-        public int RequiredWeaponSkill => m_dbItemtype?.ReqWeaponskill ?? 0;
+        public int RequiredWeaponSkill => Itemtype?.ReqWeaponskill ?? 0;
 
-        public int RequiredForce => m_dbItemtype?.ReqForce ?? 0;
+        public int RequiredForce => Itemtype?.ReqForce ?? 0;
 
-        public int RequiredAgility => m_dbItemtype?.ReqSpeed ?? 0;
+        public int RequiredAgility => Itemtype?.ReqSpeed ?? 0;
 
-        public int RequiredVitality => m_dbItemtype?.ReqHealth ?? 0;
+        public int RequiredVitality => Itemtype?.ReqHealth ?? 0;
 
-        public int RequiredSpirit => m_dbItemtype?.ReqSoul ?? 0;
+        public int RequiredSpirit => Itemtype?.ReqSoul ?? 0;
 
         #endregion
 
@@ -657,22 +625,22 @@ namespace Comet.Game.States.Items
         {
             get
             {
-                int result = m_dbItemtype?.Life ?? 0;
+                int result = Itemtype?.Life ?? 0;
                 result += Enchantment;
                 result += m_dbItemAddition?.Life ?? 0;
                 return result;
             }
         }
 
-        public int Mana => m_dbItemtype?.Mana ?? 0;
+        public int Mana => Itemtype?.Mana ?? 0;
 
         public int MinAttack
         {
             get
             {
-                int result = m_dbItemtype?.AttackMin ?? 0;
+                int result = Itemtype?.AttackMin ?? 0;
                 result += m_dbItemAddition?.AttackMin ?? 0;
-                DbWeaponSkill ws = m_user.WeaponSkill[(ushort)GetItemSubType()];
+                DbWeaponSkill ws = m_user.WeaponSkill[(ushort) GetItemSubType()];
                 if (ws != null && ws.Level > 12)
                     result += result * (1 + (Role.MAX_WEAPONSKILLLEVEL - ws.Level) / 100);
                 return result;
@@ -683,11 +651,11 @@ namespace Comet.Game.States.Items
         {
             get
             {
-                int result = m_dbItemtype?.AttackMax ?? 0;
+                int result = Itemtype?.AttackMax ?? 0;
                 if (Position == ItemPosition.LeftHand && !IsShield())
                     result /= 2;
                 result += m_dbItemAddition?.AttackMax ?? 0;
-                DbWeaponSkill ws = m_user.WeaponSkill[(ushort)GetItemSubType()];
+                DbWeaponSkill ws = m_user.WeaponSkill[(ushort) GetItemSubType()];
                 if (ws != null && ws.Level > 12)
                     result += result * (1 + (Role.MAX_WEAPONSKILLLEVEL - ws.Level) / 100);
                 return result;
@@ -700,7 +668,7 @@ namespace Comet.Game.States.Items
             {
                 if (Position == ItemPosition.AttackTalisman)
                 {
-                    int result = m_dbItemtype?.AttackMax ?? 0;
+                    int result = Itemtype?.AttackMax ?? 0;
                     result += m_dbItemAddition?.AttackMax ?? 0;
                     return result;
                 }
@@ -713,9 +681,9 @@ namespace Comet.Game.States.Items
         {
             get
             {
-                int result = m_dbItemtype?.MagicAtk ?? 0;
+                int result = Itemtype?.MagicAtk ?? 0;
                 result += m_dbItemAddition?.MagicAtk ?? 0;
-                DbWeaponSkill ws = m_user.WeaponSkill[(ushort)GetItemSubType()];
+                DbWeaponSkill ws = m_user.WeaponSkill[(ushort) GetItemSubType()];
                 if (ws != null && ws.Type == 421 && ws.Level > 12)
                     result += result * (1 + (Role.MAX_WEAPONSKILLLEVEL - ws.Level) / 100);
                 return result;
@@ -728,7 +696,7 @@ namespace Comet.Game.States.Items
             {
                 if (Position == ItemPosition.AttackTalisman)
                 {
-                    int result = m_dbItemtype?.MagicAtk ?? 0;
+                    int result = Itemtype?.MagicAtk ?? 0;
                     result += m_dbItemAddition?.MagicAtk ?? 0;
                     return result;
                 }
@@ -741,7 +709,7 @@ namespace Comet.Game.States.Items
         {
             get
             {
-                int result = m_dbItemtype?.Defense ?? 0;
+                int result = Itemtype?.Defense ?? 0;
                 if (IsArrowSort())
                     return result;
                 result += m_dbItemAddition?.Defense ?? 0;
@@ -755,7 +723,7 @@ namespace Comet.Game.States.Items
             {
                 if (Position == ItemPosition.DefenceTalisman)
                 {
-                    int result = m_dbItemtype?.Defense ?? 0;
+                    int result = Itemtype?.Defense ?? 0;
                     result += m_dbItemAddition?.Defense ?? 0;
                     return result;
                 }
@@ -768,12 +736,10 @@ namespace Comet.Game.States.Items
         {
             get
             {
-                if (Position == ItemPosition.Armor || Position == ItemPosition.Headwear || Position == ItemPosition.Necklace)
-                {
-                    return m_dbItemAddition?.MagicDef ?? 0;
-                }
+                if (Position == ItemPosition.Armor || Position == ItemPosition.Headwear ||
+                    Position == ItemPosition.Necklace) return m_dbItemAddition?.MagicDef ?? 0;
 
-                return m_dbItemtype?.MagicDef ?? 0;
+                return Itemtype?.MagicDef ?? 0;
             }
         }
 
@@ -783,7 +749,7 @@ namespace Comet.Game.States.Items
             {
                 if (Position == ItemPosition.DefenceTalisman)
                 {
-                    int result = m_dbItemtype?.MagicDef ?? 0;
+                    int result = Itemtype?.MagicDef ?? 0;
                     result += m_dbItemAddition?.MagicDef ?? 0;
                     return result;
                 }
@@ -796,10 +762,7 @@ namespace Comet.Game.States.Items
         {
             get
             {
-                if (Position == ItemPosition.Armor || Position == ItemPosition.Headwear)
-                {
-                    return m_dbItemtype?.MagicDef ?? 0;
-                }
+                if (Position == ItemPosition.Armor || Position == ItemPosition.Headwear) return Itemtype?.MagicDef ?? 0;
 
                 return 0;
             }
@@ -812,8 +775,8 @@ namespace Comet.Game.States.Items
                 if (Position == ItemPosition.Steed)
                     return 0;
 
-                int result = m_dbItemtype?.Dexterity ?? 0;
-                result += (m_dbItemAddition?.Dexterity ?? 0);
+                int result = Itemtype?.Dexterity ?? 0;
+                result += m_dbItemAddition?.Dexterity ?? 0;
                 if (IsWeaponTwoHand())
                     result *= 2;
                 if (IsBow())
@@ -826,7 +789,7 @@ namespace Comet.Game.States.Items
         {
             get
             {
-                int result = m_dbItemtype?.Dodge ?? 0;
+                int result = Itemtype?.Dodge ?? 0;
                 result += m_dbItemAddition?.Dodge ?? 0;
                 return result;
             }
@@ -838,7 +801,7 @@ namespace Comet.Game.States.Items
         {
             get
             {
-                int result = 0;
+                var result = 0;
                 switch (SocketOne)
                 {
                     case SocketGem.NormalDragonGem:
@@ -865,7 +828,7 @@ namespace Comet.Game.States.Items
         {
             get
             {
-                int result = 0;
+                var result = 0;
                 switch (SocketOne)
                 {
                     case SocketGem.NormalPhoenixGem:
@@ -892,7 +855,7 @@ namespace Comet.Game.States.Items
         {
             get
             {
-                int result = 0;
+                var result = 0;
                 switch (SocketOne)
                 {
                     case SocketGem.NormalRainbowGem:
@@ -919,7 +882,7 @@ namespace Comet.Game.States.Items
         {
             get
             {
-                int result = 0;
+                var result = 0;
                 switch (SocketOne)
                 {
                     case SocketGem.NormalVioletGem:
@@ -946,7 +909,7 @@ namespace Comet.Game.States.Items
         {
             get
             {
-                int result = 0;
+                var result = 0;
                 switch (SocketOne)
                 {
                     case SocketGem.NormalFuryGem:
@@ -973,7 +936,7 @@ namespace Comet.Game.States.Items
         {
             get
             {
-                int result = 0;
+                var result = 0;
                 switch (SocketOne)
                 {
                     case SocketGem.NormalMoonGem:
@@ -1000,7 +963,7 @@ namespace Comet.Game.States.Items
         {
             get
             {
-                int result = 0;
+                var result = 0;
                 switch (SocketOne)
                 {
                     case SocketGem.NormalTortoiseGem:
@@ -1023,13 +986,13 @@ namespace Comet.Game.States.Items
             }
         }
 
-        public int AttackRange => m_dbItemtype?.AtkRange ?? 1;
+        public int AttackRange => Itemtype?.AtkRange ?? 1;
 
         public int Vigor
         {
             get
             {
-                int result = m_dbItemtype.Dexterity;
+                int result = Itemtype.Dexterity;
                 result += m_dbItemAddition?.Dexterity ?? 0;
                 return result;
             }
@@ -1045,7 +1008,7 @@ namespace Comet.Game.States.Items
             {
                 OldOwnerIdentity = PlayerIdentity,
                 NewOwnerIdentity = idNewOwner,
-                Operation = (byte)type,
+                Operation = (byte) type,
                 Time = DateTime.Now,
                 ItemIdentity = Identity
             });
@@ -1064,10 +1027,10 @@ namespace Comet.Game.States.Items
             }
 
             m_dbItem.Type = itemtype.Type;
-            m_dbItemtype = itemtype;
+            Itemtype = itemtype;
 
             m_dbItemAddition = ItemManager.GetItemAddition(newType, m_dbItem.Magic3);
-            await m_user.SendAsync(new MsgItemInfo(this, MsgItemInfo.ItemMode.Update));
+            await m_user.SendAsync(new MsgItemInfo(this, MsgItemInfo<Client>.ItemMode.Update));
             await SaveAsync();
             return true;
         }
@@ -1075,18 +1038,18 @@ namespace Comet.Game.States.Items
         public bool ChangeAddition(int level = -1)
         {
             if (level < 0)
-                level = (byte)(Plus + 1);
+                level = (byte) (Plus + 1);
 
             DbItemAddition add = null;
             if (level > 0)
             {
                 uint type = Type;
-                add = ItemManager.GetItemAddition(type, (byte)level);
+                add = ItemManager.GetItemAddition(type, (byte) level);
                 if (add == null)
                     return false;
             }
 
-            Plus = (byte)level;
+            Plus = (byte) level;
             m_dbItemAddition = add;
             return true;
         }
@@ -1099,13 +1062,13 @@ namespace Comet.Game.States.Items
         {
             nextId = 0;
             chance = 0;
-            int sort = (int)(Type / 10000), subtype = (int)(Type / 1000);
+            int sort = (int) (Type / 10000), subtype = (int) (Type / 1000);
 
-            DbItemtype info = NextItemLevel((int)Type);
+            DbItemtype info = NextItemLevel((int) Type);
             if (info == null)
                 return false;
 
-            nextId = (int)info.Type;
+            nextId = (int) info.Type;
 
             if (info.ReqLevel >= 120)
                 return false;
@@ -1113,7 +1076,7 @@ namespace Comet.Game.States.Items
             chance = 100.00;
             if (sort == 11 || sort == 14 || sort == 13 || sort == 90 || subtype == 123) //Head || Armor || Shield
             {
-                switch ((Int32)(info.Type % 100 / 10))
+                switch ((int) (info.Type % 100 / 10))
                 {
                     //case 5:
                     //    nChance = 50.00;
@@ -1153,7 +1116,7 @@ namespace Comet.Game.States.Items
             }
             else
             {
-                switch ((Int32)(info.Type % 1000 / 10))
+                switch ((int) (info.Type % 1000 / 10))
                 {
                     //case 11:
                     //    nChance = 95.00;
@@ -1218,30 +1181,30 @@ namespace Comet.Game.States.Items
 
         public DbItemtype NextItemLevel()
         {
-            return NextItemLevel((int)Type);
+            return NextItemLevel((int) Type);
         }
 
-        public DbItemtype NextItemLevel(Int32 id)
+        public DbItemtype NextItemLevel(int id)
         {
             // By CptSky
-            Int32 nextId = id;
+            int nextId = id;
 
-            var sort = (Byte)(id / 100000);
-            var type = (Byte)(id / 10000);
-            var subType = (Int16)(id / 1000);
+            var sort = (byte) (id / 100000);
+            var type = (byte) (id / 10000);
+            var subType = (short) (id / 1000);
 
             if (sort == 1) //!Weapon
             {
                 if (type == 12 && (subType == 120 || subType == 121) || type == 15 || type == 16
-                ) //Necklace || Ring || Boots
+                   ) //Necklace || Ring || Boots
                 {
-                    var level = (Byte)((id % 1000 - id % 10) / 10);
+                    var level = (byte) ((id % 1000 - id % 10) / 10);
                     if (type == 12 && level < 8 || type == 15 && subType != 152 && level > 0 && level < 21 ||
                         type == 15 && subType == 152 && level >= 4 && level < 22 ||
                         type == 16 && level > 0 && level < 21)
                     {
                         //Check if it's still the same type of item...
-                        if ((Int16)((nextId + 20) / 1000) == subType)
+                        if ((short) ((nextId + 20) / 1000) == subType)
                             nextId += 20;
                     }
                     else if (type == 12 && level == 8 || type == 12 && level >= 21 ||
@@ -1250,25 +1213,25 @@ namespace Comet.Game.States.Items
                              type == 15 && subType == 152 && level >= 22 || type == 16 && level >= 21)
                     {
                         //Check if it's still the same type of item...
-                        if ((Int16)((nextId + 10) / 1000) == subType)
+                        if ((short) ((nextId + 10) / 1000) == subType)
                             nextId += 10;
                     }
                     else if (type == 12 && level >= 9 && level < 21 || type == 15 && subType == 152 && level == 1)
                     {
                         //Check if it's still the same type of item...
-                        if ((Int16)((nextId + 30) / 1000) == subType)
+                        if ((short) ((nextId + 30) / 1000) == subType)
                             nextId += 30;
                     }
                 }
                 else
                 {
-                    var Quality = (Byte)(id % 10);
+                    var Quality = (byte) (id % 10);
                     if (type == 11 || type == 14 || type == 13 || subType == 123) //Head || Armor
                     {
-                        var level = (Byte)((id % 100 - id % 10) / 10);
+                        var level = (byte) ((id % 100 - id % 10) / 10);
 
                         //Check if it's still the same type of item...
-                        if ((Int16)((nextId + 10) / 1000) == subType)
+                        if ((short) ((nextId + 10) / 1000) == subType)
                             nextId += 10;
                     }
                 }
@@ -1276,7 +1239,7 @@ namespace Comet.Game.States.Items
             else if (sort == 4 || sort == 5 || sort == 6) //Weapon
             {
                 //Check if it's still the same type of item...
-                if ((Int16)((nextId + 10) / 1000) == subType)
+                if ((short) ((nextId + 10) / 1000) == subType)
                     nextId += 10;
 
                 //Invalid Backsword ID
@@ -1285,16 +1248,14 @@ namespace Comet.Game.States.Items
             }
             else if (sort == 9)
             {
-                var Level = (Byte)((id % 100 - id % 10) / 10);
+                var Level = (byte) ((id % 100 - id % 10) / 10);
                 if (Level != 30) //!Max...
-                {
                     //Check if it's still the same type of item...
-                    if ((Int16)((nextId + 10) / 1000) == subType)
+                    if ((short) ((nextId + 10) / 1000) == subType)
                         nextId += 10;
-                }
             }
 
-            return ItemManager.GetItemtype((uint)nextId);
+            return ItemManager.GetItemtype((uint) nextId);
         }
 
         public uint ChkUpEqQuality(uint type)
@@ -1349,7 +1310,7 @@ namespace Comet.Game.States.Items
             uint nFactor = itemtype.ReqLevel;
 
             if (nFactor > 70)
-                nChance = (uint)(nChance * (100 - (nFactor - 70) * 1.0) / 100);
+                nChance = (uint) (nChance * (100 - (nFactor - 70) * 1.0) / 100);
 
             nChance = Math.Max(1, nChance);
             return true;
@@ -1359,9 +1320,9 @@ namespace Comet.Game.States.Items
         {
             uint firstId = Type;
 
-            var sort = (byte)(Type / 100000);
-            var type = (byte)(Type / 10000);
-            var subType = (short)(Type / 1000);
+            var sort = (byte) (Type / 100000);
+            var type = (byte) (Type / 10000);
+            var subType = (short) (Type / 1000);
 
             if (Type == 150000 || Type == 150310 || Type == 150320 || Type == 410301 || Type == 421301 || Type == 500301
                 || Type == 601301 || Type == 610301)
@@ -1373,17 +1334,19 @@ namespace Comet.Game.States.Items
             if (sort == 1) //!Weapon
             {
                 if (subType == 120 || subType == 121) //Necklace
+                {
                     firstId = Type - Type % 1000 + Type % 10;
+                }
                 else if (type == 15 || type == 16) //Ring || Boots
+                {
                     firstId = Type - Type % 1000 + 10 + Type % 10;
+                }
                 else if (type == 11 || subType == 114 || subType == 123 || type == 14) //Head
                 {
                     if (subType != 112 && subType != 115 && subType != 116)
                         firstId = Type - Type % 1000 + Type % 10;
                     else
-                    {
                         firstId = Type - Type % 1000 + Type % 10;
-                    }
                 }
                 else if (type == 14)
                 {
@@ -1395,25 +1358,29 @@ namespace Comet.Game.States.Items
                 }
             }
             else if (sort == 4 || sort == 5 || sort == 6) //Weapon
+            {
                 firstId = Type - Type % 1000 + 20 + Type % 10;
+            }
             else if (sort == 9)
+            {
                 firstId = Type - Type % 1000 + Type % 10;
+            }
 
             return ItemManager.GetItemtype(firstId)?.Type ?? Type;
         }
 
         public uint GetUpQualityGemAmount()
         {
-            if (!GetUpEpQualityInfo(out var nChance, out _))
+            if (!GetUpEpQualityInfo(out double nChance, out _))
                 return 0;
-            return (uint)(100 / nChance + 1) * 12 / 10;
+            return (uint) (100 / nChance + 1) * 12 / 10;
         }
 
         public uint GetUpgradeGemAmount()
         {
-            if (!GetUpLevelChance(out var nChance, out _))
+            if (!GetUpLevelChance(out double nChance, out _))
                 return 0;
-            return (uint)(100 / nChance + 1) * 12 / 10;
+            return (uint) (100 / nChance + 1) * 12 / 10;
         }
 
         public async Task<bool> DegradeItemAsync(bool bCheckDura = true)
@@ -1442,7 +1409,7 @@ namespace Comet.Game.States.Items
                 return false;
             }
 
-            if (!GetUpEpQualityInfo(out var nChance, out var newId))
+            if (!GetUpEpQualityInfo(out double nChance, out uint newId))
             {
                 await m_user.SendAsync(Language.StrItemErrMaxQuality);
                 return false;
@@ -1455,7 +1422,7 @@ namespace Comet.Game.States.Items
                 return false;
             }
 
-            int gemCost = (int)(100 / nChance + 1) * 12 / 10;
+            int gemCost = (int) (100 / nChance + 1) * 12 / 10;
 
             if (!await m_user.UserPackage.SpendDragonBallsAsync(gemCost, IsBound))
             {
@@ -1475,7 +1442,7 @@ namespace Comet.Game.States.Items
         }
 
         /// <summary>
-        /// This method will upgrade an equipment level using meteors.
+        ///     This method will upgrade an equipment level using meteors.
         /// </summary>
         /// <returns></returns>
         public async Task<bool> UpEquipmentLevelAsync()
@@ -1486,14 +1453,14 @@ namespace Comet.Game.States.Items
                 return false;
             }
 
-            if (!GetUpLevelChance(out var nChance, out var newId))
+            if (!GetUpLevelChance(out double nChance, out int newId))
             {
                 await m_user.SendAsync(Language.StrItemErrMaxLevel);
                 return false;
             }
 
 
-            DbItemtype newType = ItemManager.GetItemtype((uint)newId);
+            DbItemtype newType = ItemManager.GetItemtype((uint) newId);
             if (newType == null)
             {
                 await m_user.SendAsync(Language.StrItemErrMaxLevel);
@@ -1506,7 +1473,7 @@ namespace Comet.Game.States.Items
                 return false;
             }
 
-            int gemCost = (int)(100 / nChance + 1) * 12 / 10;
+            int gemCost = (int) (100 / nChance + 1) * 12 / 10;
             if (!await m_user.UserPackage.SpendMeteorsAsync(gemCost))
             {
                 await m_user.SendAsync(string.Format(Language.StrItemErrNotEnoughMeteors, gemCost));
@@ -1534,7 +1501,7 @@ namespace Comet.Game.States.Items
                 return false;
             }
 
-            DbItemtype newType = NextItemLevel((int)Type);
+            DbItemtype newType = NextItemLevel((int) Type);
 
             if (newType == null || newType.Type == Type)
             {
@@ -1555,7 +1522,7 @@ namespace Comet.Game.States.Items
         {
             if (Durability > 0 && Durability < OriginalMaximumDurability)
             {
-                var price = (int)m_dbItemtype.Price;
+                var price = (int) Itemtype.Price;
                 double qualityMultiplier = 0;
 
                 switch (Type % 10)
@@ -1577,7 +1544,9 @@ namespace Comet.Game.States.Items
                         break;
                 }
 
-                return (int)Math.Ceiling(price * ((OriginalMaximumDurability - Durability) / (float)OriginalMaximumDurability) * qualityMultiplier);
+                return (int) Math.Ceiling(
+                    price * ((OriginalMaximumDurability - Durability) / (float) OriginalMaximumDurability) *
+                    qualityMultiplier);
             }
 
             return 0;
@@ -1586,7 +1555,7 @@ namespace Comet.Game.States.Items
         public async Task<bool> RecoverDurabilityAsync()
         {
             MaximumDurability = OriginalMaximumDurability;
-            await m_user.SendAsync(new MsgItemInfo(this, MsgItemInfo.ItemMode.Update));
+            await m_user.SendAsync(new MsgItemInfo(this, MsgItemInfo<Client>.ItemMode.Update));
             await SaveAsync();
             return true;
         }
@@ -1613,12 +1582,15 @@ namespace Comet.Game.States.Items
 
                 Durability = MaximumDurability;
                 await SaveAsync();
-                await m_user.SendAsync(new MsgItemInfo(this, MsgItemInfo.ItemMode.Update));
-                await Log.GmLogAsync("Repair", string.Format("User [{2}] repaired broken [{0}][{1}] with 5 meteors.", Type, Identity, PlayerIdentity));
+                await m_user.SendAsync(new MsgItemInfo(this, MsgItemInfo<Client>.ItemMode.Update));
+                await Log.GmLogAsync(
+                    "Repair",
+                    string.Format("User [{2}] repaired broken [{0}][{1}] with 5 meteors.", Type, Identity,
+                                  PlayerIdentity));
                 return;
             }
 
-            var nRecoverDurability = (ushort)(Math.Max(0u, MaximumDurability) - Durability);
+            var nRecoverDurability = (ushort) (Math.Max(0u, MaximumDurability) - Durability);
             if (nRecoverDurability == 0)
                 return;
 
@@ -1629,8 +1601,11 @@ namespace Comet.Game.States.Items
 
             Durability = MaximumDurability;
             await SaveAsync();
-            await m_user.SendAsync(new MsgItemInfo(this, MsgItemInfo.ItemMode.Update));
-            await Log.GmLogAsync("Repair", string.Format("User [{2}] repaired broken [{0}][{1}] with {3} silvers.", Type, Identity, PlayerIdentity, nRepairCost));
+            await m_user.SendAsync(new MsgItemInfo(this, MsgItemInfo<Client>.ItemMode.Update));
+            await Log.GmLogAsync(
+                "Repair",
+                string.Format("User [{2}] repaired broken [{0}][{1}] with {3} silvers.", Type, Identity, PlayerIdentity,
+                              nRepairCost));
         }
 
         #endregion
@@ -1641,8 +1616,10 @@ namespace Comet.Game.States.Items
         {
             if (HasUnlocked())
             {
-                await m_user.SendAsync(new MsgEquipLock { Action = MsgEquipLock.LockMode.UnlockedItem, Identity = Identity });
-                await m_user.SendAsync(new MsgEquipLock { Action = MsgEquipLock.LockMode.RequestUnlock, Identity = Identity });
+                await m_user.SendAsync(new MsgEquipLock
+                                           {Action = MsgEquipLock<Client>.LockMode.UnlockedItem, Identity = Identity});
+                await m_user.SendAsync(new MsgEquipLock
+                                           {Action = MsgEquipLock<Client>.LockMode.RequestUnlock, Identity = Identity});
 
                 await DoUnlockAsync();
                 return true;
@@ -1652,10 +1629,11 @@ namespace Comet.Game.States.Items
             {
                 await m_user.SendAsync(new MsgEquipLock
                 {
-                    Action = MsgEquipLock.LockMode.RequestUnlock,
+                    Action = MsgEquipLock<Client>.LockMode.RequestUnlock,
                     Identity = Identity,
                     Mode = 3,
-                    Param = (uint)(m_dbItem.Plunder.Value.Year * 10000 + m_dbItem.Plunder.Value.Day * 100 + m_dbItem.Plunder.Value.Month)
+                    Param = (uint) (m_dbItem.Plunder.Value.Year * 10000 + m_dbItem.Plunder.Value.Day * 100 +
+                                    m_dbItem.Plunder.Value.Month)
                 });
                 return false;
             }
@@ -1683,7 +1661,8 @@ namespace Comet.Game.States.Items
 
         public bool HasUnlocked()
         {
-            return m_dbItem.Plunder != null && m_dbItem.Plunder != DateTime.MinValue && m_dbItem.Plunder <= DateTime.Now;
+            return m_dbItem.Plunder != null && m_dbItem.Plunder != DateTime.MinValue &&
+                   m_dbItem.Plunder <= DateTime.Now;
         }
 
         public bool IsLocked()
@@ -1753,7 +1732,7 @@ namespace Comet.Game.States.Items
             if (IsBroken() || IsArrowSort() || IsBound || IsLocked())
                 return 0;
 
-            int price = (int)(m_dbItemtype?.Price ?? 0) / 3 * Durability / MaximumDurability;
+            int price = (int) (Itemtype?.Price ?? 0) / 3 * Durability / MaximumDurability;
             return price;
         }
 
@@ -1788,10 +1767,10 @@ namespace Comet.Game.States.Items
             if (GetQuality() >= 8)
                 return true;
 
-            int nGem1 = (int)SocketOne % 10;
-            int nGem2 = (int)SocketTwo % 10;
+            int nGem1 = (int) SocketOne % 10;
+            int nGem2 = (int) SocketTwo % 10;
 
-            bool isNonSuchItem = false;
+            var isNonSuchItem = false;
 
             if (IsWeapon())
             {
@@ -1808,16 +1787,19 @@ namespace Comet.Game.States.Items
             return isNonSuchItem;
         }
 
-        public bool IsSuspicious() => (m_dbItem.Specialflag & SPECIAL_FLAG_SUSPICIOUS) != 0;
+        public bool IsSuspicious()
+        {
+            return (m_dbItem.Specialflag & SPECIAL_FLAG_SUSPICIOUS) != 0;
+        }
 
         public bool IsMonopoly()
         {
-            return (m_dbItemtype.Monopoly & ITEM_MONOPOLY_MASK) != 0;
+            return (Itemtype.Monopoly & ITEM_MONOPOLY_MASK) != 0;
         }
 
         public bool IsNeverDropWhenDead()
         {
-            return (m_dbItemtype.Monopoly & ITEM_NEVER_DROP_WHEN_DEAD_MASK) != 0 || IsMonopoly() || Plus > 5 || IsLocked();
+            return (Itemtype.Monopoly & ITEM_NEVER_DROP_WHEN_DEAD_MASK) != 0 || IsMonopoly() || Plus > 5 || IsLocked();
         }
 
         public bool IsDisappearWhenDropped()
@@ -1832,7 +1814,7 @@ namespace Comet.Game.States.Items
 
         public bool CanBeStored()
         {
-            return (m_dbItemtype.Monopoly & ITEM_STORAGE_MASK) == 0;
+            return (Itemtype.Monopoly & ITEM_STORAGE_MASK) == 0;
         }
 
         public bool IsHoldEnable()
@@ -1910,7 +1892,8 @@ namespace Comet.Game.States.Items
 
         public bool IsEquipment()
         {
-            return IsHelmet() || IsNeck() || IsRing() || IsBangle() || IsWeapon() || IsArmor() || IsShoes() || IsShield() || IsTalisman();
+            return IsHelmet() || IsNeck() || IsRing() || IsBangle() || IsWeapon() || IsArmor() || IsShoes() ||
+                   IsShield() || IsTalisman();
         }
 
         public static bool IsMount(uint type)
@@ -1985,7 +1968,8 @@ namespace Comet.Game.States.Items
 
         public static bool IsHelmet(uint type)
         {
-            return type >= 110000 && type < 120000 || type >= 140000 && type < 150000 || type >= 123000 && type < 124000;
+            return type >= 110000 && type < 120000 || type >= 140000 && type < 150000 ||
+                   type >= 123000 && type < 124000;
         }
 
         public bool IsNeck()
@@ -2118,7 +2102,7 @@ namespace Comet.Game.States.Items
 
         public static int GetQuality(uint type)
         {
-            return (int)(type % 10);
+            return (int) (type % 10);
         }
 
         public static bool IsBow(uint type)
@@ -2133,20 +2117,20 @@ namespace Comet.Game.States.Items
 
         public static ItemSort GetItemSort(uint type)
         {
-            return (ItemSort)(type % 10000000 / 100000);
+            return (ItemSort) (type % 10000000 / 100000);
         }
 
         public static int GetItemtype(uint type)
         {
             if (GetItemSort(type) == ItemSort.ItemsortWeaponSingleHand
                 || GetItemSort(type) == ItemSort.ItemsortWeaponDoubleHand)
-                return (int)(type % 100000 / 1000 * 1000);
-            return (int)(type % 100000 / 10000 * 10000);
+                return (int) (type % 100000 / 1000 * 1000);
+            return (int) (type % 100000 / 10000 * 10000);
         }
 
         public static int GetItemSubType(uint type)
         {
-            return (int)(type % 1000000 / 1000);
+            return (int) (type % 1000000 / 1000);
         }
 
         public int GetLevel()
@@ -2156,7 +2140,7 @@ namespace Comet.Game.States.Items
 
         public static int GetLevel(uint type)
         {
-            return (int)type % 1000 / 10;
+            return (int) type % 1000 / 10;
         }
 
         #endregion
@@ -2203,13 +2187,13 @@ namespace Comet.Game.States.Items
             if (m_user == null)
                 return;
 
-            MsgInteract msg = new MsgInteract
+            var msg = new MsgInteract
             {
                 Action = MsgInteractType.Chop,
                 SenderIdentity = PlayerIdentity,
                 TargetIdentity = Identity,
                 PosX = MaximumDurability,
-                Command = (int)Data * 2
+                Command = (int) Data * 2
             };
             await m_user.SendAsync(msg);
         }
@@ -2380,7 +2364,7 @@ namespace Comet.Game.States.Items
 
         #region Constants
 
-        private readonly uint[] TALISMAN_SOCKET_QUALITY_ADDITION = { 0, 0, 0, 0, 0, 0, 5, 10, 40, 1000 };
+        private readonly uint[] TALISMAN_SOCKET_QUALITY_ADDITION = {0, 0, 0, 0, 0, 0, 5, 10, 40, 1000};
 
         private readonly uint[] TALISMAN_SOCKET_PLUS_ADDITION =
         {
@@ -2388,25 +2372,29 @@ namespace Comet.Game.States.Items
             66000, 72000
         };
 
-        private readonly uint[] TALISMAN_SOCKET_HOLE_ADDITION0 = { 0, 160, 960 };
-        private readonly uint[] TALISMAN_SOCKET_HOLE_ADDITION1 = { 0, 2000, 8000 };
+        private readonly uint[] TALISMAN_SOCKET_HOLE_ADDITION0 = {0, 160, 960};
+        private readonly uint[] TALISMAN_SOCKET_HOLE_ADDITION1 = {0, 2000, 8000};
 
         /// <summary>
-        /// Item is owned by the holder. Cannot be traded or dropped.
+        ///     Item is owned by the holder. Cannot be traded or dropped.
         /// </summary>
         public const int ITEM_MONOPOLY_MASK = 1;
+
         /// <summary>
-        /// Item cannot be stored.
+        ///     Item cannot be stored.
         /// </summary>
         public const int ITEM_STORAGE_MASK = 2;
+
         /// <summary>
-        /// Item cannot be dropped.
+        ///     Item cannot be dropped.
         /// </summary>
         public const int ITEM_DROP_HINT_MASK = 4;
+
         /// <summary>
-        /// Item cannot be sold.
+        ///     Item cannot be sold.
         /// </summary>
         public const int ITEM_SELL_HINT_MASK = 8;
+
         public const int ITEM_NEVER_DROP_WHEN_DEAD_MASK = 16;
         public const int ITEM_SELL_DISABLE_MASK = 32;
         public const int ITEM_STATUS_NONE = 0;
@@ -2425,7 +2413,7 @@ namespace Comet.Game.States.Items
 
         //
         public const uint TYPE_DRAGONBALL_SCROLL = 720028; // Amount 10
-        public const uint TYPE_METEOR_SCROLL = 720027; // Amount 10
+        public const uint TYPE_METEOR_SCROLL = 720027;     // Amount 10
 
         public const uint TYPE_METEORTEAR_PACK = 723711; // Amount 5
 
@@ -2470,15 +2458,15 @@ namespace Comet.Game.States.Items
 
         public const uint TYPE_JAR = 750000;
 
-        const int ITEMTYPE_PHYSIC = 10000;//Ò©Æ·
-        const int ITEMTYPE_MEDICINE_HP = 10000;//²¹ÑªÒ©
-        const int ITEMTYPE_MEDICINE_MP = 11000;//²¹Ä§·¨Ò©
-        const int ITEMTYPE_POISON = 12000;//¶¾Ò©
-        const int ITEMTYPE_SCROLL = 20000;//¾íÖá
-        const int ITEMTYPE_SCROLL_SPECIAL = 20000;//ÌØÊâ¾íÖá£¬Èç£º»Ø³Ç¾í¡¢×£¸£¾íÖáµÈ
-        const int ITEMTYPE_SCROLL_MSKILL = 21000;//Ä§·¨Ê¦¼¼ÄÜ¾íÖá
-        const int ITEMTYPE_SCROLL_SSKILL = 22000;//Õ½Ê¿¼¼ÄÜ¾íÖá
-        const int ITEMTYPE_SCROLL_BSKILL = 23000;//¹­¼ýÊÖ¼¼ÄÜ¾íÖá <== ¸ÄÎªÒìÄÜÕß
+        private const int ITEMTYPE_PHYSIC = 10000;         //Ò©Æ·
+        private const int ITEMTYPE_MEDICINE_HP = 10000;    //²¹ÑªÒ©
+        private const int ITEMTYPE_MEDICINE_MP = 11000;    //²¹Ä§·¨Ò©
+        private const int ITEMTYPE_POISON = 12000;         //¶¾Ò©
+        private const int ITEMTYPE_SCROLL = 20000;         //¾íÖá
+        private const int ITEMTYPE_SCROLL_SPECIAL = 20000; //ÌØÊâ¾íÖá£¬Èç£º»Ø³Ç¾í¡¢×£¸£¾íÖáµÈ
+        private const int ITEMTYPE_SCROLL_MSKILL = 21000;  //Ä§·¨Ê¦¼¼ÄÜ¾íÖá
+        private const int ITEMTYPE_SCROLL_SSKILL = 22000;  //Õ½Ê¿¼¼ÄÜ¾íÖá
+        private const int ITEMTYPE_SCROLL_BSKILL = 23000;  //¹­¼ýÊÖ¼¼ÄÜ¾íÖá <== ¸ÄÎªÒìÄÜÕß
 
         #endregion
     }

@@ -40,14 +40,14 @@ namespace Comet.Game.States
                 int nRate = IntervalAtkRate;
                 IStatus pStatus = m_pOwner.QueryStatus(StatusSet.CYCLONE);
                 if (pStatus != null)
-                    nRate = Calculations.CutTrail(0, Calculations.AdjustDataEx(nRate, pStatus.Power, 0));
+                    nRate = Calculations.CutTrail(0, Calculations.AdjustDataEx(nRate, pStatus.Power));
                 return nRate;
             }
         }
 
         public int IntervalAtkRate => m_dbMonster.AttackSpeed;
 
-        public int MagicHitRate => (int)m_dbMonster.MagicHitrate;
+        public int MagicHitRate => (int) m_dbMonster.MagicHitrate;
 
         public int Lookface => m_dbMonster.Lookface;
 
@@ -61,14 +61,14 @@ namespace Comet.Game.States
                 return false;
 
             m_dbMonster = pTrans;
-            Life = (ushort)Calculations.CutTrail(1, Calculations.MulDiv(m_pOwner.Life, MaxLife, m_pOwner.MaxLife));
+            Life = (ushort) Calculations.CutTrail(1, Calculations.MulDiv(m_pOwner.Life, MaxLife, m_pOwner.MaxLife));
 
             return true;
         }
 
         public int GetAttackRange(int nTargetSizeAdd)
         {
-            return (int)((m_dbMonster.AttackRange + GetSizeAdd() + nTargetSizeAdd + 1) / 2);
+            return (int) ((m_dbMonster.AttackRange + GetSizeAdd() + nTargetSizeAdd + 1) / 2);
         }
 
         public uint GetSizeAdd()

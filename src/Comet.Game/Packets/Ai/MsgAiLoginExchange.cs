@@ -1,7 +1,7 @@
-﻿using Comet.Game.Internal.AI;
+﻿using System.Threading.Tasks;
+using Comet.Game.Internal.AI;
 using Comet.Network.Packets.Ai;
 using Comet.Shared;
-using System.Threading.Tasks;
 
 namespace Comet.Game.Packets.Ai
 {
@@ -11,7 +11,8 @@ namespace Comet.Game.Packets.Ai
         {
             if (client.Stage != AiClient.ConnectionStage.AwaitingAuth)
             {
-                await Log.WriteLogAsync($"MsgAiLoginExchange.ProcessAsync >> Client {client.GUID} is already logged in");
+                await Log.WriteLogAsync(
+                    $"MsgAiLoginExchange.ProcessAsync >> Client {client.GUID} is already logged in");
                 await client.SendAsync(new MsgAiLoginExchangeEx
                 {
                     Result = MsgAiLoginExchangeEx<AiClient>.AiLoginResult.AlreadySignedIn
@@ -20,9 +21,11 @@ namespace Comet.Game.Packets.Ai
             }
 
 
-            if (!UserName.Equals(Kernel.Configuration.AiNetwork.Username) || !Password.Equals(Kernel.Configuration.AiNetwork.Password))
+            if (!UserName.Equals(Kernel.Configuration.AiNetwork.Username) ||
+                !Password.Equals(Kernel.Configuration.AiNetwork.Password))
             {
-                await Log.WriteLogAsync($"MsgAiLoginExchange.ProcessAsync >> Invalid username or password for {client.GUID} [{client.IPAddress}]");
+                await Log.WriteLogAsync(
+                    $"MsgAiLoginExchange.ProcessAsync >> Invalid username or password for {client.GUID} [{client.IPAddress}]");
                 await client.SendAsync(new MsgAiLoginExchangeEx
                 {
                     Result = MsgAiLoginExchangeEx<AiClient>.AiLoginResult.InvalidPassword
@@ -33,7 +36,8 @@ namespace Comet.Game.Packets.Ai
 
             if (!Kernel.AiClients.IsEmpty)
             {
-                await Log.WriteLogAsync($"MsgAiLoginExchange.ProcessAsync >> Server has bound an NPC Server already {client.GUID} [{client.IPAddress}]");
+                await Log.WriteLogAsync(
+                    $"MsgAiLoginExchange.ProcessAsync >> Server has bound an NPC Server already {client.GUID} [{client.IPAddress}]");
                 await client.SendAsync(new MsgAiLoginExchangeEx
                 {
                     Result = MsgAiLoginExchangeEx<AiClient>.AiLoginResult.AlreadyBound

@@ -1,13 +1,13 @@
-﻿using Comet.Database.Entities;
+﻿using System.Threading.Tasks;
+using Comet.Database.Entities;
 using Comet.Game.Database;
 using Comet.Game.Packets;
-using System.Threading.Tasks;
 
 namespace Comet.Game.States.Npcs
 {
     public sealed class Npc : BaseNpc
     {
-        private DbNpc m_dbNpc;
+        private readonly DbNpc m_dbNpc;
 
         public Npc(DbNpc npc)
             : base(npc.Id)
@@ -25,7 +25,7 @@ namespace Comet.Game.States.Npcs
 
         public override ushort Type => m_dbNpc.Type;
 
-        public override NpcSort Sort => (NpcSort)m_dbNpc.Sort;
+        public override NpcSort Sort => (NpcSort) m_dbNpc.Sort;
 
         public override uint OwnerIdentity
         {
@@ -47,6 +47,7 @@ namespace Comet.Game.States.Npcs
                 await SaveAsync();
                 return true;
             }
+
             return false;
         }
 
@@ -63,11 +64,35 @@ namespace Comet.Game.States.Npcs
         public override uint Task6 => m_dbNpc.Task6;
         public override uint Task7 => m_dbNpc.Task7;
 
-        public override int Data0 { get => m_dbNpc.Data0; set => m_dbNpc.Data0 = value; }
-        public override int Data1 { get => m_dbNpc.Data1; set => m_dbNpc.Data1 = value; }
-        public override int Data2 { get => m_dbNpc.Data2; set => m_dbNpc.Data2 = value; }
-        public override int Data3 { get => m_dbNpc.Data3; set => m_dbNpc.Data3 = value; }
-        public override string DataStr { get => m_dbNpc.Datastr; set => m_dbNpc.Datastr = value; }
+        public override int Data0
+        {
+            get => m_dbNpc.Data0;
+            set => m_dbNpc.Data0 = value;
+        }
+
+        public override int Data1
+        {
+            get => m_dbNpc.Data1;
+            set => m_dbNpc.Data1 = value;
+        }
+
+        public override int Data2
+        {
+            get => m_dbNpc.Data2;
+            set => m_dbNpc.Data2 = value;
+        }
+
+        public override int Data3
+        {
+            get => m_dbNpc.Data3;
+            set => m_dbNpc.Data3 = value;
+        }
+
+        public override string DataStr
+        {
+            get => m_dbNpc.Datastr;
+            set => m_dbNpc.Datastr = value;
+        }
 
         #endregion
 

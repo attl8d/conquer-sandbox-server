@@ -1,9 +1,9 @@
-﻿using Comet.Core;
+﻿using System.Threading.Tasks;
+using Comet.Core;
 using Comet.Game.States;
 using Comet.Network.Packets;
 using Comet.Network.Packets.Game;
 using Comet.Shared;
-using System.Threading.Tasks;
 
 namespace Comet.Game.Packets
 {
@@ -34,13 +34,14 @@ namespace Comet.Game.Packets
                         await user.PickMapItemAsync(Identity);
                         await user.BroadcastRoomMsgAsync(this, true);
                     }
+
                     break;
                 default:
                     await client.SendAsync(new MsgTalk(client.Identity, TalkChannel.Service,
-                        $"Missing packet {Type}, Action {Mode}, Length {Length}"));
+                                                       $"Missing packet {Type}, Action {Mode}, Length {Length}"));
                     await Log.WriteLogAsync(LogLevel.Warning,
-                        "Missing packet {0}, Action {1}, Length {2}\n{3}",
-                        Type, Mode, Length, PacketDump.Hex(Encode()));
+                                            "Missing packet {0}, Action {1}, Length {2}\n{3}",
+                                            Type, Mode, Length, PacketDump.Hex(Encode()));
                     break;
             }
         }

@@ -1,8 +1,8 @@
-﻿using Comet.Game.Internal.AI;
+﻿using System;
+using System.Threading.Tasks;
+using Comet.Game.Internal.AI;
 using Comet.Network.Packets.Ai;
 using Comet.Shared;
-using System;
-using System.Threading.Tasks;
 
 namespace Comet.Game.Packets.Ai
 {
@@ -22,9 +22,7 @@ namespace Comet.Game.Packets.Ai
             long pingMs = (Environment.TickCount64 - TimestampMs) / 2;
 
             if (ping > 2000 || pingMs > 2000)
-            {
                 return Log.WriteLogAsync($"Inter server network lag detected! Ping: {ping}s ({pingMs}ms)");
-            }
             return Task.CompletedTask;
         }
     }

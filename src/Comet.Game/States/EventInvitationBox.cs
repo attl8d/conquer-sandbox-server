@@ -1,5 +1,6 @@
-﻿using Comet.Game.Packets;
-using System.Threading.Tasks;
+﻿using System.Threading.Tasks;
+using Comet.Game.Packets;
+using Comet.Network.Packets.Game;
 
 namespace Comet.Game.States
 {
@@ -16,8 +17,8 @@ namespace Comet.Game.States
         public int Priority { get; set; }
 
         public uint TargetMapIdentity { get; set; } = 1002;
-        public ushort[] TargetMapX { get; set; } = { 430 };
-        public ushort[] TargetMapY { get; set; } = { 378 };
+        public ushort[] TargetMapX { get; set; } = {430};
+        public ushort[] TargetMapY { get; set; } = {378};
 
         public override async Task OnAcceptAsync()
         {
@@ -44,7 +45,7 @@ namespace Comet.Game.States
             m_expiration.Startup(TimeOut);
             return m_owner.SendAsync(new MsgInviteTrans
             {
-                Mode = MsgInviteTrans.Action.Pop,
+                Mode = MsgInviteTrans<Client>.Action.Pop,
                 Message = MessageId,
                 Priority = Priority,
                 Seconds = TimeOut

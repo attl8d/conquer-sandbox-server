@@ -1,29 +1,29 @@
-using Comet.Network.Services;
+using System;
+using System.Collections.Concurrent;
 using System.Collections.Generic;
+using System.Linq;
+using System.Reflection;
 using System.Runtime.Caching;
+using System.Threading;
 using System.Threading.Tasks;
 using Comet.Game.Database;
-using Comet.Shared;
-using System.Reflection;
-using System.Linq;
-using System;
+using Comet.Game.Internal.AI;
+using Comet.Game.Internal.Auth;
 using Comet.Game.World;
 using Comet.Game.World.Managers;
 using Comet.Game.World.Schedule;
 using Comet.Game.World.Threading;
-using System.Threading;
-using Comet.Game.Internal.Auth;
-using System.Collections.Concurrent;
-using Comet.Game.Internal.AI;
 using Comet.Network.Packets;
+using Comet.Network.Services;
+using Comet.Shared;
 
 namespace Comet.Game
 {
     /// <summary>
-    /// Kernel for the server, acting as a central core for pools of models and states
-    /// initialized by the server. Used in database repositories to load data into memory
-    /// from essential tables or tables which require heavy post-processing. Used in the
-    /// server packet process methods for tracking client and world states.
+    ///     Kernel for the server, acting as a central core for pools of models and states
+    ///     initialized by the server. Used in database repositories to load data into memory
+    ///     from essential tables or tables which require heavy post-processing. Used in the
+    ///     server packet process methods for tracking client and world states.
     /// </summary>
     public static class Kernel
     {
@@ -35,30 +35,30 @@ namespace Comet.Game
         }
 
         // State caches
-        public readonly static MemoryCache Logins = MemoryCache.Default;
-        public readonly static List<uint> Registration = new();
+        public static readonly MemoryCache Logins = MemoryCache.Default;
+        public static readonly List<uint> Registration = new();
 
         #region Login
+
         /// <summary>
-        /// The account server client object.
+        ///     The account server client object.
         /// </summary>
         public static AccountServer AccountServer;
+
         /// <summary>
-        /// The account server client socket.
+        ///     The account server client socket.
         /// </summary>
         public static AccountClient AccountClient;
+
         #endregion
 
         #region AI
 
-        public readonly static ConcurrentDictionary<string, AiClient> AiClients = new ConcurrentDictionary<string, AiClient>();
-        
+        public static readonly ConcurrentDictionary<string, AiClient> AiClients = new();
+
         public static async Task BroadcastWorldMsgAsync(IPacket msg)
         {
-            foreach (var server in AiClients.Values)
-            {
-                await server.SendAsync(msg);
-            }
+            foreach (AiClient server in AiClients.Values) await server.SendAsync(msg);
         }
 
         #endregion
@@ -66,28 +66,28 @@ namespace Comet.Game
         public static ServerConfiguration.GameNetworkConfiguration GameConfiguration => Configuration.GameNetwork;
         public static ServerConfiguration Configuration { get; set; }
 
-        public readonly static NetworkMonitor NetworkMonitor = new ();
+        public static readonly NetworkMonitor NetworkMonitor = new();
 
-        public readonly static SystemProcessor SystemThread = new ();
-        public readonly static UserProcessing UserThread = new ();
-        public readonly static EventProcessing EventThread = new ();
-        public readonly static RoleProcessing RoleThread = new ();
+        public static readonly SystemProcessor SystemThread = new();
+        public static readonly UserProcessing UserThread = new();
+        public static readonly EventProcessing EventThread = new();
+        public static readonly RoleProcessing RoleThread = new();
 
         private static SchedulerFactory schedulerFactory { get; set; }
 
         // Background services
         public static class Services
         {
-            public readonly static RandomnessService Randomness = new ();
+            public static readonly RandomnessService Randomness = new();
 #if DEBUG
-            public readonly static ServerProcessor Processor = new ();
+            public static readonly ServerProcessor Processor = new();
 #else
             public readonly static ServerProcessor Processor = new ();
 #endif
         }
 
         /// <summary>
-        /// Returns the next random number from the generator.
+        ///     Returns the next random number from the generator.
         /// </summary>
         /// <param name="maxValue">One greater than the greatest legal return value.</param>
         public static Task<int> NextAsync(int maxValue)
@@ -102,8 +102,10 @@ namespace Comet.Game
 
         /// <summary>Writes random numbers from the generator to a buffer.</summary>
         /// <param name="buffer">Buffer to write bytes to.</param>
-        public static Task NextBytesAsync(byte[] buffer) =>
-            Services.Randomness.NextBytesAsync(buffer);
+        public static Task NextBytesAsync(byte[] buffer)
+        {
+            return Services.Randomness.NextBytesAsync(buffer);
+        }
 
         /// <summary>
         ///     Returns the next random number from the generator.
@@ -169,17 +171,18 @@ namespace Comet.Game
             await Services.Processor.StopAsync(new CancellationToken(true)).ConfigureAwait(true);
             await RoleManager.KickOutAllAsync("Server is now closing", true).ConfigureAwait(true);
 
-            for (int i = 0; i < 5; i++)
+            for (var i = 0; i < 5; i++)
             {
                 await Log.WriteLogAsync(LogLevel.Info, $"Server will shutdown in {5 - i} seconds...");
                 await Task.Delay(1000);
             }
+
             await SystemThread.CloseAsync();
             return true;
         }
 
         /// <summary>
-        /// Calculates the chance of success based in a rate.
+        ///     Calculates the chance of success based in a rate.
         /// </summary>
         /// <param name="chance">Rate in percent.</param>
         /// <returns>True if the rate is successful.</returns>
@@ -193,7 +196,7 @@ namespace Comet.Game
             }
             catch (Exception ex)
             {
-                await Log.WriteLogAsync(LogLevel.Error, $"Chance Calc error!");
+                await Log.WriteLogAsync(LogLevel.Error, "Chance Calc error!");
                 await Log.WriteLogAsync(LogLevel.Exception, ex.ToString());
                 return false;
             }
@@ -201,7 +204,7 @@ namespace Comet.Game
 
         public static bool IsValidName(string szName)
         {
-            foreach (var c in szName)
+            foreach (char c in szName)
             {
                 if (c < ' ')
                     return false;

@@ -6,6 +6,7 @@ using Comet.Game.Database;
 using Comet.Game.Database.Repositories;
 using Comet.Game.Packets;
 using Comet.Game.World.Managers;
+using Comet.Network.Packets.Game;
 using Comet.Shared;
 
 namespace Comet.Game.States.Relationship
@@ -13,7 +14,7 @@ namespace Comet.Game.States.Relationship
     public sealed class Enemy
     {
         private DbEnemy m_DbEnemy;
-        private Character m_owner;
+        private readonly Character m_owner;
 
         public Enemy(Character owner)
         {
@@ -50,7 +51,7 @@ namespace Comet.Game.States.Relationship
             {
                 Identity = Identity,
                 Name = Name,
-                Action = MsgFriend.MsgFriendAction.AddEnemy,
+                Action = MsgFriend<Client>.MsgFriendAction.AddEnemy,
                 Online = Online
             });
         }
@@ -74,7 +75,7 @@ namespace Comet.Game.States.Relationship
         {
             try
             {
-                await using ServerDbContext ctx = new ServerDbContext();
+                await using var ctx = new ServerDbContext();
                 if (m_DbEnemy.Identity == 0)
                     await ctx.Enemies.AddAsync(m_DbEnemy);
                 else
@@ -93,7 +94,7 @@ namespace Comet.Game.States.Relationship
         {
             try
             {
-                await using ServerDbContext ctx = new ServerDbContext();
+                await using var ctx = new ServerDbContext();
                 if (m_DbEnemy.Identity == 0)
                     return false;
                 ctx.Enemies.Remove(m_DbEnemy);

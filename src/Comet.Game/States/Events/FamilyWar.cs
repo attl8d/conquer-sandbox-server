@@ -1,12 +1,13 @@
-﻿using Comet.Game.States.Families;
-using Comet.Game.States.Npcs;
-using Comet.Game.World.Managers;
-using Comet.Game.World.Maps;
-using System;
+﻿using System;
 using System.Collections.Generic;
 using System.Globalization;
 using System.Threading;
 using System.Threading.Tasks;
+using Comet.Database.Entities;
+using Comet.Game.States.Families;
+using Comet.Game.States.Npcs;
+using Comet.Game.World.Managers;
+using Comet.Game.World.Maps;
 
 namespace Comet.Game.States.Events
 {
@@ -14,35 +15,35 @@ namespace Comet.Game.States.Events
     {
         private const uint REWARD_STC_U = 100020;
 
-        private readonly Dictionary<uint, uint[]> m_prizePool = new Dictionary<uint, uint[]>
+        private readonly Dictionary<uint, uint[]> m_prizePool = new()
         {
-            { 10026, new uint[]{ 722458, 722457, 722456, 722455, 722454 }},
-            { 10027, new uint[]{ 722458, 722457, 722456, 722455, 722454 }},
-            { 10028, new uint[]{ 722478, 722477, 722476, 722475, 722474 }},
-            { 10029, new uint[]{ 722478, 722477, 722476, 722475, 722474 }},
-            { 10030, new uint[]{ 722473, 722472, 722471, 722470, 722469 }},
-            { 10031, new uint[]{ 722473, 722472, 722471, 722470, 722469 }},
-            { 10032, new uint[]{ 722468, 722467, 722466, 722465, 722464 }},
-            { 10033, new uint[]{ 722468, 722467, 722466, 722465, 722464 }},
-            { 10034, new uint[]{ 722463, 722462, 722461, 722460, 722459 }},
-            { 10035, new uint[]{ 722463, 722462, 722461, 722460, 722459 }}
+            {10026, new uint[] {722458, 722457, 722456, 722455, 722454}},
+            {10027, new uint[] {722458, 722457, 722456, 722455, 722454}},
+            {10028, new uint[] {722478, 722477, 722476, 722475, 722474}},
+            {10029, new uint[] {722478, 722477, 722476, 722475, 722474}},
+            {10030, new uint[] {722473, 722472, 722471, 722470, 722469}},
+            {10031, new uint[] {722473, 722472, 722471, 722470, 722469}},
+            {10032, new uint[] {722468, 722467, 722466, 722465, 722464}},
+            {10033, new uint[] {722468, 722467, 722466, 722465, 722464}},
+            {10034, new uint[] {722463, 722462, 722461, 722460, 722459}},
+            {10035, new uint[] {722463, 722462, 722461, 722460, 722459}}
         };
 
-        private readonly Dictionary<uint, uint> m_goldFee = new Dictionary<uint, uint>
+        private readonly Dictionary<uint, uint> m_goldFee = new()
         {
-            { 10026, 1000000 },
-            { 10027, 1000000 },
-            { 10028, 200000 },
-            { 10029, 200000 },
-            { 10030, 400000 },
-            { 10031, 400000 },
-            { 10032, 600000 },
-            { 10033, 600000 },
-            { 10034, 800000 },
-            { 10035, 800000 }
+            {10026, 1000000},
+            {10027, 1000000},
+            {10028, 200000},
+            {10029, 200000},
+            {10030, 400000},
+            {10031, 400000},
+            {10032, 600000},
+            {10033, 600000},
+            {10034, 800000},
+            {10035, 800000}
         };
 
-        private readonly List<double> m_expRewards = new List<double>
+        private readonly List<double> m_expRewards = new()
         {
             0.01,
             0.015d,
@@ -56,7 +57,7 @@ namespace Comet.Game.States.Events
         private int m_lastUpdate;
 
         public FamilyWar()
-            : base("Clan War", 1000)
+            : base("Clan War")
         {
         }
 
@@ -73,9 +74,10 @@ namespace Comet.Game.States.Events
 
         public override async Task OnTimerAsync()
         {
-            if (int.Parse(DateTime.Now.ToString("HHmm")) == 2100 && m_lastUpdate != int.Parse(DateTime.Now.ToString("yyyyMMdd")))
+            if (int.Parse(DateTime.Now.ToString("HHmm")) == 2100 &&
+                m_lastUpdate != int.Parse(DateTime.Now.ToString("yyyyMMdd")))
             {
-                foreach (var family in FamilyManager.QueryFamilies(x => x.ChallengeMap != 0))
+                foreach (Family family in FamilyManager.QueryFamilies(x => x.ChallengeMap != 0))
                 {
                     family.ChallengeMap = 0;
                     await family.SaveAsync();
@@ -89,13 +91,13 @@ namespace Comet.Game.States.Events
 
         private int GetRewardIdx(uint occupyDays)
         {
-            return (int)Math.Max(0, Math.Min(4, occupyDays / 7));
+            return (int) Math.Max(0, Math.Min(4, occupyDays / 7));
         }
 
         private int GetExpRewardIdx(uint occupyDays)
         {
             occupyDays = Math.Max(1, occupyDays);
-            return (int)((occupyDays - 1) % m_expRewards.Count);
+            return (int) ((occupyDays - 1) % m_expRewards.Count);
         }
 
         public uint GetNextReward(Character sender, uint idNpc = 0)
@@ -136,7 +138,8 @@ namespace Comet.Game.States.Events
             if (sender.Family == null || sender.Family.FamilyMap == 0 || sender.Family.FamilyMap != npc.Data1)
                 return m_prizePool[npc.Identity][m_prizePool[npc.Identity].Length - 1];
 
-            return m_prizePool[npc.Identity][Math.Min(GetRewardIdx(sender.Family.OccupyDays) + 1, m_prizePool[npc.Identity].Length - 1)];
+            return m_prizePool[npc.Identity][
+                Math.Min(GetRewardIdx(sender.Family.OccupyDays) + 1, m_prizePool[npc.Identity].Length - 1)];
         }
 
         public Family GetFamilyOwner(uint idNpc)
@@ -144,21 +147,23 @@ namespace Comet.Game.States.Events
             var npc = RoleManager.FindRole<DynamicNpc>(idNpc);
             if (npc == null)
                 return null;
-            return FamilyManager.GetOccupyOwner((uint)npc.Data1);
+            return FamilyManager.GetOccupyOwner((uint) npc.Data1);
         }
 
         public DynamicNpc GetChallengeNpc(Family family)
         {
             if (family == null || family.ChallengeMap == 0)
                 return null;
-            return RoleManager.FindRole<DynamicNpc>(x => x.Type == BaseNpc.ROLE_FAMILY_WAR_FLAG && x.Data1 == family.ChallengeMap);
+            return RoleManager.FindRole<DynamicNpc>(x => x.Type == BaseNpc.ROLE_FAMILY_WAR_FLAG &&
+                                                         x.Data1 == family.ChallengeMap);
         }
 
         public DynamicNpc GetDominatingNpc(Family family)
         {
             if (family == null || family.FamilyMap == 0)
                 return null;
-            return RoleManager.FindRole<DynamicNpc>(x => x.Type == BaseNpc.ROLE_FAMILY_WAR_FLAG && x.Data1 == family.FamilyMap);
+            return RoleManager.FindRole<DynamicNpc>(x => x.Type == BaseNpc.ROLE_FAMILY_WAR_FLAG &&
+                                                         x.Data1 == family.FamilyMap);
         }
 
         public uint GetGoldFee(uint idNpc)
@@ -183,7 +188,7 @@ namespace Comet.Game.States.Events
             if (idNpc == 0)
                 return false;
 
-            var challengers = GetChallengers(idNpc);
+            List<Family> challengers = GetChallengers(idNpc);
             return challengers != null && challengers.Count > 0;
         }
 
@@ -211,6 +216,7 @@ namespace Comet.Game.States.Events
                 if (nowTime >= 210000)
                     return true;
             }
+
             // may be error - must fix manually
             return false;
         }
@@ -223,11 +229,11 @@ namespace Comet.Game.States.Events
             if (user?.Family == null)
                 return false;
 
-            var npc = GetDominatingNpc(user.Family);
+            DynamicNpc npc = GetDominatingNpc(user.Family);
             if (npc == null)
                 return false;
 
-            var last = user.Statistic.GetStc(REWARD_STC_U)?.Timestamp;
+            DateTime? last = user.Statistic.GetStc(REWARD_STC_U)?.Timestamp;
             if (last.HasValue)
                 return ValidateRewardTime(last.Value);
             return true;
@@ -235,7 +241,7 @@ namespace Comet.Game.States.Events
 
         public async Task SetExpRewardAwardedAsync(Character user)
         {
-            var currStc = user.Statistic.GetStc(REWARD_STC_U);
+            DbStatistic currStc = user.Statistic.GetStc(REWARD_STC_U);
             if (currStc == null)
             {
                 if (!await user.Statistic.AddOrUpdateAsync(REWARD_STC_U, 0, 0, true))
@@ -264,22 +270,23 @@ namespace Comet.Game.States.Events
             if (user?.Family == null)
                 return false;
 
-            var npc = GetDominatingNpc(user.Family);
+            DynamicNpc npc = GetDominatingNpc(user.Family);
             if (npc == null)
                 return false;
 
-            if (DateTime.TryParseExact(npc.DataStr, "O", Thread.CurrentThread.CurrentCulture, DateTimeStyles.AssumeLocal, out var date) && !ValidateRewardTime(date))
+            if (DateTime.TryParseExact(npc.DataStr, "O", Thread.CurrentThread.CurrentCulture,
+                                       DateTimeStyles.AssumeLocal, out DateTime date) && !ValidateRewardTime(date))
                 return false;
             return true;
         }
 
         public async Task SetRewardAwardedAsync(Character user)
         {
-            var npc = GetDominatingNpc(user.Family);
+            DynamicNpc npc = GetDominatingNpc(user.Family);
             if (npc == null)
                 return;
 
-            var currStc = user.Statistic.GetStc(REWARD_STC_U, 1);
+            DbStatistic currStc = user.Statistic.GetStc(REWARD_STC_U, 1);
             if (currStc == null)
             {
                 if (!await user.Statistic.AddOrUpdateAsync(REWARD_STC_U, 1, 0, true))

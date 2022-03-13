@@ -1,13 +1,13 @@
-﻿using Comet.Database.Entities;
+﻿using System;
+using System.Drawing;
+using System.Runtime.InteropServices;
+using System.Threading.Tasks;
+using Comet.Database.Entities;
 using Comet.Game.Packets;
 using Comet.Game.World;
 using Comet.Game.World.Managers;
 using Comet.Game.World.Maps;
 using Comet.Shared;
-using System;
-using System.Drawing;
-using System.Runtime.InteropServices;
-using System.Threading.Tasks;
 using static Comet.Network.Packets.Game.MsgMapItem<Comet.Game.States.Client>;
 
 namespace Comet.Game.States.Items
@@ -15,20 +15,18 @@ namespace Comet.Game.States.Items
     public sealed class MapItem : Role
     {
         /// <summary>
-        /// Timer to keep the object alive in the map.
+        ///     Timer to keep the object alive in the map.
         /// </summary>
-        private TimeOut m_tAlive = new TimeOut();
+        private TimeOut m_tAlive = new();
+
         /// <summary>
-        /// Time to lock object so non-teammates cannot pick it up.
+        ///     Time to lock object so non-teammates cannot pick it up.
         /// </summary>
-        private TimeOut mProtection = new TimeOut();
+        private TimeOut mProtection = new();
 
-        private MapItemInfo mInfo = default;
-        private Item mItemInfo = null;
-        private DbItemtype mItemType = null;
-
-        private uint mIdOwner = 0;
-        private uint m_moneyAmount = 0;
+        private MapItemInfo mInfo;
+        private Item mItemInfo;
+        private DbItemtype mItemType;
 
         public MapItem(uint idRole)
         {
@@ -50,15 +48,15 @@ namespace Comet.Game.States.Items
 
             m_idMap = map.Identity;
             Map = map;
-            MapX = (ushort)pos.X;
-            MapY = (ushort)pos.Y;
+            MapX = (ushort) pos.X;
+            MapY = (ushort) pos.Y;
 
             mInfo = info;
             Name = mItemType.Name;
 
             if (idOwner != 0)
             {
-                mIdOwner = idOwner;
+                OwnerIdentity = idOwner;
                 mProtection = new TimeOut(_MAPITEM_PRIV_SECS);
                 mProtection.Startup(_MAPITEM_PRIV_SECS);
                 mProtection.Update();
@@ -69,15 +67,15 @@ namespace Comet.Game.States.Items
         }
 
         public async Task<bool> CreateAsync(GameMap map, Point pos, uint idType, uint idOwner, byte nPlus, byte nDmg,
-            short nDura, DropMode mode)
+                                            short nDura, DropMode mode)
         {
             mItemType = ItemManager.GetItemtype(idType);
             return mItemType != null && await CreateAsync(map, pos, mItemType, idOwner, nPlus, nDmg, nDura, mode);
         }
 
         public async Task<bool> CreateAsync(GameMap map, Point pos, DbItemtype itemType, uint idOwner, byte nPlus,
-            byte nDmg,
-            short nDura, DropMode mode)
+                                            byte nDmg,
+                                            short nDura, DropMode mode)
         {
             if (map == null || itemType == null) return false;
 
@@ -86,22 +84,22 @@ namespace Comet.Game.States.Items
 
             m_idMap = map.Identity;
             Map = map;
-            MapX = (ushort)pos.X;
-            MapY = (ushort)pos.Y;
+            MapX = (ushort) pos.X;
+            MapY = (ushort) pos.Y;
 
             mInfo.Addition = nPlus;
             mInfo.ReduceDamage = nDmg;
 
             ushort amount;
-            ushort amountLimit = (ushort)Math.Max(1, itemType.AmountLimit * await Kernel.NextRateAsync(0.3d));
-            if (itemType.Type%10 > 5)
+            var amountLimit = (ushort) Math.Max(1, itemType.AmountLimit * await Kernel.NextRateAsync(0.3d));
+            if (itemType.Type % 10 > 5)
             {
-                amount = (ushort)(amountLimit * (50 + await Kernel.NextAsync(50)) / 100);
+                amount = (ushort) (amountLimit * (50 + await Kernel.NextAsync(50)) / 100);
             }
             else
             {
-                int price = (int)Math.Max(1, itemType.Price);
-                amount = (ushort)Math.Max(1, Math.Min(amountLimit, 3 * amountLimit * price / price));
+                var price = (int) Math.Max(1, itemType.Price);
+                amount = (ushort) Math.Max(1, Math.Min(amountLimit, 3 * amountLimit * price / price));
             }
 
             mInfo.Durability = amount;
@@ -116,7 +114,7 @@ namespace Comet.Game.States.Items
 
             if (idOwner != 0)
             {
-                mIdOwner = idOwner;
+                OwnerIdentity = idOwner;
                 mProtection = new TimeOut(_MAPITEM_PRIV_SECS);
                 mProtection.Startup(_MAPITEM_PRIV_SECS);
                 mProtection.Update();
@@ -132,7 +130,7 @@ namespace Comet.Game.States.Items
 
             int nAliveSecs = _MAPITEM_USERMAX_ALIVESECS;
             if (pInfo.Itemtype != null)
-                nAliveSecs = (int)(pInfo.Itemtype.Price / _MAPITEM_ALIVESECS_PERPRICE + _MAPITEM_USERMIN_ALIVESECS);
+                nAliveSecs = (int) (pInfo.Itemtype.Price / _MAPITEM_ALIVESECS_PERPRICE + _MAPITEM_USERMIN_ALIVESECS);
 
             if (nAliveSecs > _MAPITEM_USERMAX_ALIVESECS)
                 nAliveSecs = _MAPITEM_USERMAX_ALIVESECS;
@@ -142,8 +140,8 @@ namespace Comet.Game.States.Items
 
             m_idMap = map.Identity;
             Map = map;
-            MapX = (ushort)pos.X;
-            MapY = (ushort)pos.Y;
+            MapX = (ushort) pos.X;
+            MapY = (ushort) pos.Y;
 
             Name = pInfo.Itemtype?.Name ?? "";
 
@@ -163,7 +161,7 @@ namespace Comet.Game.States.Items
             int nAliveSecs = _MAPITEM_MONSTER_ALIVESECS;
             if (idOwner == 0)
             {
-                nAliveSecs = (int)(dwMoney / _MAPITEM_ALIVESECS_PERPRICE + _MAPITEM_USERMIN_ALIVESECS);
+                nAliveSecs = (int) (dwMoney / _MAPITEM_ALIVESECS_PERPRICE + _MAPITEM_USERMIN_ALIVESECS);
                 if (nAliveSecs > _MAPITEM_USERMAX_ALIVESECS)
                     nAliveSecs = _MAPITEM_USERMAX_ALIVESECS;
             }
@@ -173,8 +171,8 @@ namespace Comet.Game.States.Items
 
             m_idMap = map.Identity;
             Map = map;
-            MapX = (ushort)pos.X;
-            MapY = (ushort)pos.Y;
+            MapX = (ushort) pos.X;
+            MapY = (ushort) pos.Y;
 
             uint idType;
             if (dwMoney < _ITEM_SILVER_MAX)
@@ -190,13 +188,13 @@ namespace Comet.Game.States.Items
             else
                 idType = 1091020;
 
-            m_moneyAmount = dwMoney;
+            Money = dwMoney;
 
             mInfo.Type = idType;
 
             if (idOwner != 0)
             {
-                mIdOwner = idOwner;
+                OwnerIdentity = idOwner;
                 mProtection = new TimeOut(_MAPITEM_PRIV_SECS);
                 mProtection.Startup(_MAPITEM_PRIV_SECS);
                 mProtection.Update();
@@ -218,9 +216,9 @@ namespace Comet.Game.States.Items
             private set => mInfo.Type = value;
         }
 
-        public uint OwnerIdentity => mIdOwner;
+        public uint OwnerIdentity { get; private set; }
 
-        public uint Money => m_moneyAmount;
+        public uint Money { get; private set; }
 
         public bool IsPrivate()
         {
@@ -229,7 +227,7 @@ namespace Comet.Game.States.Items
 
         public bool IsMoney()
         {
-            return m_moneyAmount > 0;
+            return Money > 0;
         }
 
         public bool IsJewel()
@@ -273,7 +271,7 @@ namespace Comet.Game.States.Items
                     mItemInfo.SocketOne = Item.SocketGem.EmptySocket;
                 if (mInfo.SocketNum > 1)
                     mItemInfo.SocketTwo = Item.SocketGem.EmptySocket;
-                
+
                 mItemInfo.Durability = mInfo.Durability;
                 mItemInfo.MaximumDurability = mInfo.MaximumDurability;
             }
@@ -343,6 +341,7 @@ namespace Comet.Game.States.Items
                 await Map.RemoveAsync(Identity);
                 RoleManager.RemoveRole(Identity);
             }
+
             Map = null;
         }
 
@@ -353,12 +352,7 @@ namespace Comet.Game.States.Items
         public override Task OnTimerAsync()
         {
             if (CanDisappear())
-            {
-                QueueAction(async () =>
-                {
-                    await DisappearAsync();
-                });
-            }
+                QueueAction(async () => { await DisappearAsync(); });
             return Task.CompletedTask;
         }
 
@@ -378,7 +372,7 @@ namespace Comet.Game.States.Items
                 MapY = MapY,
                 Itemtype = Itemtype,
                 Mode = DropType.LayItem,
-                Color = (ushort)mInfo.Color
+                Color = (ushort) mInfo.Color
             });
         }
 
@@ -406,7 +400,8 @@ namespace Comet.Game.States.Items
         private const int _MAPITEM_USERMAX_ALIVESECS = 90;
         private const int _MAPITEM_USERMIN_ALIVESECS = 60;
 
-        private const int _MAPITEM_ALIVESECS_PERPRICE = 1000 / (_MAPITEM_USERMAX_ALIVESECS - _MAPITEM_USERMIN_ALIVESECS);
+        private const int _MAPITEM_ALIVESECS_PERPRICE =
+            1000 / (_MAPITEM_USERMAX_ALIVESECS - _MAPITEM_USERMIN_ALIVESECS);
 
         private const int _MAPITEM_PRIV_SECS = 30;
         private const int _PICKMAPITEMDIST_LIMIT = 0;

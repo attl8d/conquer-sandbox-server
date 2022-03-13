@@ -1,7 +1,7 @@
-﻿using Comet.Game.Internal.Auth;
+﻿using System.Threading.Tasks;
+using Comet.Game.Internal.Auth;
 using Comet.Game.World.Managers;
 using Comet.Network.Packets.Internal;
-using System.Threading.Tasks;
 
 namespace Comet.Game.Packets
 {

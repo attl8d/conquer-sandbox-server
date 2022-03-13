@@ -1,39 +1,34 @@
-﻿using Comet.Database.Entities;
-using Comet.Game.Database.Repositories;
-using Comet.Game.States.Families;
-using System;
+﻿using System;
 using System.Collections.Concurrent;
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
+using Comet.Database.Entities;
+using Comet.Game.Database.Repositories;
+using Comet.Game.States.Families;
 
 namespace Comet.Game.World.Managers
 {
     public static class FamilyManager
     {
-        private static ConcurrentDictionary<uint, Family> m_dicFamilies = new ConcurrentDictionary<uint, Family>();
-        private static ConcurrentDictionary<uint, DbFamilyBattleEffectShareLimit> m_familyBpLimit = new ConcurrentDictionary<uint, DbFamilyBattleEffectShareLimit>();
+        private static readonly ConcurrentDictionary<uint, Family> m_dicFamilies = new();
+        private static readonly ConcurrentDictionary<uint, DbFamilyBattleEffectShareLimit> m_familyBpLimit = new();
 
         public static async Task<bool> InitializeAsync()
         {
-            var dbFamilies = await FamilyRepository.GetAsync();
-            foreach (var dbFamily in dbFamilies)
+            List<DbFamily> dbFamilies = await FamilyRepository.GetAsync();
+            foreach (DbFamily dbFamily in dbFamilies)
             {
                 var family = await Family.CreateAsync(dbFamily);
                 if (family != null)
                     m_dicFamilies.TryAdd(family.Identity, family);
             }
 
-            foreach (var family in m_dicFamilies.Values)
-            {
-                family.LoadRelations();
-            }
+            foreach (Family family in m_dicFamilies.Values) family.LoadRelations();
 
-            foreach (var limit in await FamilyBattleEffectShareLimitRepository.GetAsync())
-            {
+            foreach (DbFamilyBattleEffectShareLimit limit in await FamilyBattleEffectShareLimitRepository.GetAsync())
                 if (!m_familyBpLimit.ContainsKey(limit.Identity))
                     m_familyBpLimit.TryAdd(limit.Identity, limit);
-            }
             return true;
         }
 
@@ -44,12 +39,13 @@ namespace Comet.Game.World.Managers
 
         public static Family GetFamily(uint idFamily)
         {
-            return m_dicFamilies.TryGetValue((ushort)idFamily, out var family) ? family : null;
+            return m_dicFamilies.TryGetValue((ushort) idFamily, out Family family) ? family : null;
         }
 
         public static Family GetFamily(string name)
         {
-            return m_dicFamilies.Values.FirstOrDefault(x => x.Name.Equals(name, StringComparison.InvariantCultureIgnoreCase));
+            return m_dicFamilies.Values.FirstOrDefault(
+                x => x.Name.Equals(name, StringComparison.InvariantCultureIgnoreCase));
         }
 
         public static Family GetOccupyOwner(uint idMap)
@@ -58,7 +54,7 @@ namespace Comet.Game.World.Managers
         }
 
         /// <summary>
-        /// Find the family a user is in.
+        ///     Find the family a user is in.
         /// </summary>
         public static Family FindByUser(uint idUser)
         {

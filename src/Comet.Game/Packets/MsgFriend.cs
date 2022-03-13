@@ -1,8 +1,8 @@
-﻿using Comet.Core;
+﻿using System.Threading.Tasks;
+using Comet.Core;
 using Comet.Game.States;
 using Comet.Game.World.Managers;
 using Comet.Network.Packets.Game;
-using System.Threading.Tasks;
 
 namespace Comet.Game.Packets
 {
@@ -51,6 +51,7 @@ namespace Comet.Game.Packets
                         });
                         await user.SendAsync(Language.StrMakeFriendSent);
                     }
+
                     break;
 
                 case MsgFriendAction.RemoveFriend:

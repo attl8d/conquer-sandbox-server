@@ -1,69 +1,60 @@
-﻿using Comet.Database.Entities;
+﻿using System.Collections.Generic;
+using System.Linq;
+using System.Threading.Tasks;
+using Comet.Database.Entities;
 using Comet.Game.Database;
 using Comet.Game.Database.Repositories;
 using Comet.Game.States;
-using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
 
 namespace Comet.Game.World.Managers
 {
     public static class ExperienceManager
     {
-        private static readonly Dictionary<byte, DbLevelExperience> m_dicLevExp = new Dictionary<byte, DbLevelExperience>();
-        private static readonly Dictionary<uint, DbPointAllot> m_dicPointAllot = new Dictionary<uint, DbPointAllot>();
-        private static Dictionary<uint, DbSuperman> m_superman = new Dictionary<uint, DbSuperman>();
-        private static readonly List<DbRebirth> m_dicRebirths = new List<DbRebirth>();
-        private static readonly List<MagicTypeOp> m_magicOps = new List<MagicTypeOp>();
+        private static readonly Dictionary<byte, DbLevelExperience> m_dicLevExp = new();
+        private static readonly Dictionary<uint, DbPointAllot> m_dicPointAllot = new();
+        private static Dictionary<uint, DbSuperman> m_superman = new();
+        private static readonly List<DbRebirth> m_dicRebirths = new();
+        private static readonly List<MagicTypeOp> m_magicOps = new();
 
         public static async Task<bool> InitializeAsync()
         {
-            foreach (var auto in await PointAllotRepository.GetAsync())
-            {
+            foreach (DbPointAllot auto in await PointAllotRepository.GetAsync())
                 m_dicPointAllot.TryAdd(AllotIndex(auto.Profession, auto.Level), auto);
-            }
 
-            foreach (var lev in await LevelExperienceRepository.GetAsync())
-            {
+            foreach (DbLevelExperience lev in await LevelExperienceRepository.GetAsync())
                 m_dicLevExp.TryAdd(lev.Level, lev);
-            }
 
             m_dicRebirths.AddRange(await RebirthRepository.GetAsync());
 
-            foreach (var dbOp in await MagictypeOpRepository.GetAsync())
-            {
+            foreach (DbMagictypeOp dbOp in await MagictypeOpRepository.GetAsync())
                 m_magicOps.Add(new MagicTypeOp(dbOp));
-            }
 
             m_superman = (await SupermanRepository.GetAsync()).ToDictionary(superman => superman.UserIdentity);
 
             return true;
         }
+
         public static Task AddOrUpdateSupermanAsync(uint idUser, int amount)
         {
-            if (!m_superman.TryGetValue(idUser, out var superman))
-            {
+            if (!m_superman.TryGetValue(idUser, out DbSuperman superman))
                 m_superman.Add(idUser, superman = new DbSuperman
                 {
                     UserIdentity = idUser
                 });
-            }
 
-            superman.Amount = (uint)amount;
+            superman.Amount = (uint) amount;
             return ServerDbContext.SaveAsync(superman);
         }
 
         public static int GetSupermanPoints(uint idUser)
         {
-            return (int)(m_superman.TryGetValue(idUser, out var value) ? value.Amount : 0);
+            return (int) (m_superman.TryGetValue(idUser, out DbSuperman value) ? value.Amount : 0);
         }
 
         public static int GetSupermanRank(uint idUser)
         {
-            int result = 1;
-            foreach (var super in m_superman.Values.OrderByDescending(x => x.Amount))
+            var result = 1;
+            foreach (DbSuperman super in m_superman.Values.OrderByDescending(x => x.Amount))
             {
                 if (super.UserIdentity == idUser)
                     return result;
@@ -75,19 +66,22 @@ namespace Comet.Game.World.Managers
 
         public static DbRebirth GetRebirth(int profNow, int profNext, int currMete)
         {
-            profNow = (profNow / 10 * 1000) + profNow % 10;
-            profNext = (profNext / 10 * 1000) + profNext % 10;
-            return m_dicRebirths.FirstOrDefault(x => x.NeedProfession == profNow && x.NewProfession == profNext && x.Metempsychosis == currMete);
+            profNow = profNow / 10 * 1000 + profNow % 10;
+            profNext = profNext / 10 * 1000 + profNext % 10;
+            return m_dicRebirths.FirstOrDefault(x => x.NeedProfession == profNow && x.NewProfession == profNext &&
+                                                     x.Metempsychosis == currMete);
         }
 
-        public static MagicTypeOp GetMagictypeOp(MagicTypeOp.MagictypeOperation op, int profNow, int profNext, int metempsychosis)
+        public static MagicTypeOp GetMagictypeOp(MagicTypeOp.MagictypeOperation op, int profNow, int profNext,
+                                                 int metempsychosis)
         {
-            return m_magicOps.FirstOrDefault(x => x.ProfessionAgo == profNow && x.ProfessionNow == profNext && x.RebirthTime == metempsychosis && x.Operation == op);
+            return m_magicOps.FirstOrDefault(x => x.ProfessionAgo == profNow && x.ProfessionNow == profNext &&
+                                                  x.RebirthTime == metempsychosis && x.Operation == op);
         }
 
         public static DbLevelExperience GetLevelExperience(byte level)
         {
-            return m_dicLevExp.TryGetValue(level, out var value) ? value : null;
+            return m_dicLevExp.TryGetValue(level, out DbLevelExperience value) ? value : null;
         }
 
         public static int GetLevelLimit()
@@ -97,12 +91,12 @@ namespace Comet.Game.World.Managers
 
         public static DbPointAllot GetPointAllot(ushort profession, ushort level)
         {
-            return m_dicPointAllot.TryGetValue(AllotIndex(profession, level), out var point) ? point : null;
+            return m_dicPointAllot.TryGetValue(AllotIndex(profession, level), out DbPointAllot point) ? point : null;
         }
 
         private static uint AllotIndex(ushort prof, ushort level)
         {
-            return (uint)((prof << 16) + level);
+            return (uint) ((prof << 16) + level);
         }
     }
 }

@@ -1,7 +1,7 @@
-﻿using Comet.Game.States.Items;
+﻿using System.Threading.Tasks;
+using Comet.Game.States.Items;
 using Comet.Game.World.Maps;
 using Comet.Shared;
-using System.Threading.Tasks;
 
 namespace Comet.Game.States.Events
 {
@@ -28,7 +28,7 @@ namespace Comet.Game.States.Events
 
         public const int RANK_REFRESH_RATE_MS = 10000;
 
-        private TimeOutMS m_eventCheck;
+        private readonly TimeOutMS m_eventCheck;
 
         protected GameEvent(string name, int timeCheck = 1000)
         {
@@ -48,9 +48,15 @@ namespace Comet.Game.States.Events
         public virtual bool IsActive { get; } = false;
         public virtual bool IsEnded { get; } = false;
 
-        public virtual bool IsAttackEnable(Role sender) => true;
+        public virtual bool IsAttackEnable(Role sender)
+        {
+            return true;
+        }
 
-        public bool ToNextTime() => m_eventCheck.ToNextTime();
+        public bool ToNextTime()
+        {
+            return m_eventCheck.ToNextTime();
+        }
 
         public virtual bool IsAllowedToJoin(Role sender)
         {

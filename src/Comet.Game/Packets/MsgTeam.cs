@@ -1,10 +1,10 @@
-﻿using Comet.Core;
+﻿using System.Threading.Tasks;
+using Comet.Core;
 using Comet.Game.States;
 using Comet.Game.World.Managers;
 using Comet.Game.World.Maps;
 using Comet.Network.Packets.Game;
 using Comet.Shared;
-using System.Threading.Tasks;
 
 namespace Comet.Game.Packets
 {
@@ -16,7 +16,7 @@ namespace Comet.Game.Packets
             Character target = RoleManager.GetUser(Identity);
             if (target == null && Identity != 0)
             {
-                await Log.WriteLogAsync(LogLevel.Error, $"Team no target");
+                await Log.WriteLogAsync(LogLevel.Error, "Team no target");
                 return;
             }
 
@@ -40,7 +40,7 @@ namespace Comet.Game.Packets
                     if (user.Team != null)
                         return;
 
-                    Team team = new Team(user);
+                    var team = new Team(user);
                     if (!team.Create())
                         return;
 
@@ -57,6 +57,7 @@ namespace Comet.Game.Packets
                         await user.SendAsync(this);
                         await user.DetachStatusAsync(StatusSet.TEAM_LEADER);
                     }
+
                     break;
 
                 case TeamAction.RequestJoin:
@@ -158,6 +159,7 @@ namespace Comet.Game.Packets
                     {
                         await user.SendAsync(Language.StrTeamTargetHasNotApplied);
                     }
+
                     break;
 
                 case TeamAction.RequestInvite:
@@ -214,10 +216,8 @@ namespace Comet.Game.Packets
 
                 case TeamAction.AcceptInvite:
                     if (user.Team != null)
-                    {
                         // ?? send message
                         return;
-                    }
 
                     if (target == null)
                     {

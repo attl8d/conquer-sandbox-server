@@ -1,10 +1,10 @@
-﻿using Comet.Shared;
-using Microsoft.Extensions.Hosting;
-using System;
+﻿using System;
 using System.Linq;
 using System.Threading;
 using System.Threading.Channels;
 using System.Threading.Tasks;
+using Comet.Shared;
+using Microsoft.Extensions.Hosting;
 
 namespace Comet.Game.World
 {
@@ -31,9 +31,9 @@ namespace Comet.Game.World
 
         protected override Task ExecuteAsync(CancellationToken token)
         {
-            for (int i = 0; i < Count; i++)
+            for (var i = 0; i < Count; i++)
             {
-                mPartitions[i] = new Partition { ID = (uint)i, Weight = 0 };
+                mPartitions[i] = new Partition {ID = (uint) i, Weight = 0};
                 mChannels[i] = Channel.CreateUnbounded<Func<Task>>();
                 mBackgroundTasks[i] = DequeueAsync(i, mChannels[i]);
             }
@@ -43,28 +43,24 @@ namespace Comet.Game.World
 
         public void Queue(int partition, Func<Task> task)
         {
-            if (!mCancelWrites.IsCancellationRequested)
-            {
-                mChannels[partition].Writer.TryWrite(task);
-            }
+            if (!mCancelWrites.IsCancellationRequested) mChannels[partition].Writer.TryWrite(task);
         }
 
         protected virtual async Task DequeueAsync(int partition, Channel<Func<Task>> channel)
         {
             while (!mCancelReads.IsCancellationRequested)
             {
-                var action = await channel.Reader.ReadAsync(mCancelReads);
+                Func<Task> action = await channel.Reader.ReadAsync(mCancelReads);
                 if (action != null)
-                {
                     try
                     {
-                        await action.Invoke(); //.ConfigureAwait(true); // THE QUEUE MUST BE EXECUTED IN ORDER, NO CONCURRENCY
+                        await action
+                            .Invoke(); //.ConfigureAwait(true); // THE QUEUE MUST BE EXECUTED IN ORDER, NO CONCURRENCY
                     }
                     catch (Exception ex)
                     {
                         await Log.WriteLogAsync(LogLevel.Exception, $"{ex.Message}\r\n\t{ex}");
                     }
-                }
             }
         }
 
@@ -76,11 +72,9 @@ namespace Comet.Game.World
         public new async Task StopAsync(CancellationToken cancellationToken)
         {
             mCancelWrites = new CancellationToken(true);
-            foreach (var channel in mChannels)
-            {
+            foreach (Channel<Func<Task>> channel in mChannels)
                 if (channel.Reader.Count > 0)
                     await channel.Reader.Completion;
-            }
             mCancelReads = new CancellationToken(true);
         }
 
@@ -92,7 +86,9 @@ namespace Comet.Game.World
         public uint SelectPartition()
         {
             uint partition = mPartitions.Where(x => x.ID > 0).Aggregate((aggr, next) =>
-                next.Weight.CompareTo(aggr.Weight) < 0 ? next : aggr).ID;
+                                                                            next.Weight.CompareTo(aggr.Weight) < 0
+                                                                                ? next
+                                                                                : aggr).ID;
             Interlocked.Increment(ref mPartitions[partition].Weight);
             return partition;
         }

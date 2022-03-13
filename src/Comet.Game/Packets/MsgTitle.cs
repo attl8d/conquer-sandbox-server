@@ -1,6 +1,6 @@
-﻿using Comet.Game.States;
+﻿using System.Threading.Tasks;
+using Comet.Game.States;
 using Comet.Network.Packets.Game;
-using System.Threading.Tasks;
 
 namespace Comet.Game.Packets
 {
@@ -15,21 +15,21 @@ namespace Comet.Game.Packets
             switch (Action)
             {
                 case TitleAction.Query:
-                    {
-                        await user.SendTitlesAsync();
-                        break;
-                    }
+                {
+                    await user.SendTitlesAsync();
+                    break;
+                }
 
                 case TitleAction.Select:
-                    {
-                        if (Title != 0 && !user.HasTitle((Character.UserTitles)Title))
-                            return;
+                {
+                    if (Title != 0 && !user.HasTitle((Character.UserTitles) Title))
+                        return;
 
-                        user.UserTitle = Title;
-                        await user.BroadcastRoomMsgAsync(this, true);
-                        await user.SaveAsync();
-                        break;
-                    }
+                    user.UserTitle = Title;
+                    await user.BroadcastRoomMsgAsync(this, true);
+                    await user.SaveAsync();
+                    break;
+                }
             }
         }
     }

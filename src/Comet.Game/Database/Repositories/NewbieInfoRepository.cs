@@ -1,6 +1,6 @@
-﻿using Comet.Database.Entities;
+﻿using System.Threading.Tasks;
+using Comet.Database.Entities;
 using Microsoft.EntityFrameworkCore;
-using System.Threading.Tasks;
 
 namespace Comet.Game.Database.Repositories
 {

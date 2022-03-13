@@ -1,6 +1,6 @@
-﻿using Comet.Game.World.Managers;
+﻿using System.Threading.Tasks;
+using Comet.Game.World.Managers;
 using Comet.Shared;
-using System.Threading.Tasks;
 
 namespace Comet.Game.World.Threading
 {

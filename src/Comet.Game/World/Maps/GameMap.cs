@@ -10,14 +10,18 @@ using Comet.Core.World.Maps.Enums;
 using Comet.Database.Entities;
 using Comet.Game.Database;
 using Comet.Game.Database.Repositories;
+using Comet.Game.Internal.AI;
 using Comet.Game.Packets;
+using Comet.Game.Packets.Ai;
 using Comet.Game.States;
 using Comet.Game.States.Items;
 using Comet.Game.States.Npcs;
 using Comet.Game.World.Managers;
 using Comet.Network.Packets;
+using Comet.Network.Packets.Ai;
 using Comet.Network.Packets.Game;
 using Comet.Shared;
+using MsgAction = Comet.Game.Packets.MsgAction;
 
 namespace Comet.Game.World.Maps
 {
@@ -31,11 +35,11 @@ namespace Comet.Game.World.Maps
 
         private GameBlock[,] m_blocks;
 
-        private ConcurrentDictionary<uint, Character> m_users = new ConcurrentDictionary<uint, Character>();
-        private ConcurrentDictionary<uint, Role> m_roles = new ConcurrentDictionary<uint, Role>();
+        private readonly ConcurrentDictionary<uint, Character> m_users = new();
+        private readonly ConcurrentDictionary<uint, Role> m_roles = new();
 
-        private List<Passway> m_passway = new List<Passway>();
-        private List<DbRegion> m_regions = new List<DbRegion>();
+        private readonly List<Passway> m_passway = new();
+        private List<DbRegion> m_regions = new();
 
         public Weather Weather;
 
@@ -52,6 +56,7 @@ namespace Comet.Game.World.Maps
         public int Partition { get; private set; }
         public uint Identity => m_dbMap?.Identity ?? m_dbDynamap?.Identity ?? 0;
         public string Name => m_dbMap?.Name ?? m_dbDynamap?.Name ?? "Invalid";
+
         public uint OwnerIdentity
         {
             get => m_dbMap?.OwnerIdentity ?? m_dbDynamap?.OwnerIdentity ?? 0;
@@ -75,6 +80,7 @@ namespace Comet.Game.World.Maps
                     m_dbDynamap.MapDoc = value;
             }
         }
+
         public ulong Type => m_dbMap?.Type ?? m_dbDynamap?.Type ?? 0;
 
         public ushort PortalX
@@ -133,7 +139,7 @@ namespace Comet.Game.World.Maps
 
         public ulong Flag { get; set; }
         public int PlayerCount => m_users.Count;
-        
+
         public async Task<bool> InitializeAsync()
         {
             if (m_dbMap == null && m_dbDynamap == null) return false;
@@ -141,37 +147,35 @@ namespace Comet.Game.World.Maps
             mMapData = MapDataManager.GetMapData(MapDoc);
             if (mMapData == null)
             {
-                await Log.WriteLogAsync(LogLevel.Warning, $"Could not load map {Identity}({MapDoc}): map data not found");
+                await Log.WriteLogAsync(LogLevel.Warning,
+                                        $"Could not load map {Identity}({MapDoc}): map data not found");
                 return false;
             }
 
             Weather = new Weather(this);
 
             m_blocks = new GameBlock[BlocksX, BlocksY];
-            for (int y = 0; y < BlocksY; y++)
-            {
-                for (int x = 0; x < BlocksX; x++)
-                {
-                    m_blocks[x, y] = new GameBlock();
-                }
-            }
+            for (var y = 0; y < BlocksY; y++)
+            for (var x = 0; x < BlocksX; x++)
+                m_blocks[x, y] = new GameBlock();
 
             List<DbPassway> passways = await PasswayRepository.GetAsync(Identity);
-            foreach (var dbPassway in passways)
+            foreach (DbPassway dbPassway in passways)
             {
                 DbPortal portal = await PortalRepository.GetAsync(dbPassway.TargetMapId, dbPassway.TargetPortal);
                 if (portal == null)
                 {
-                    await Log.WriteLogAsync(LogLevel.Error, $"Could not find portal for passway [{dbPassway.Identity}]");
+                    await Log.WriteLogAsync(LogLevel.Error,
+                                            $"Could not find portal for passway [{dbPassway.Identity}]");
                     continue;
                 }
 
                 m_passway.Add(new Passway
                 {
-                    Index = (int)dbPassway.MapIndex,
+                    Index = (int) dbPassway.MapIndex,
                     TargetMap = dbPassway.TargetMapId,
-                    TargetX = (ushort)portal.PortalX,
-                    TargetY = (ushort)portal.PortalY
+                    TargetX = (ushort) portal.PortalX,
+                    TargetY = (ushort) portal.PortalY
                 });
             }
 
@@ -183,13 +187,13 @@ namespace Comet.Game.World.Maps
 
         public async Task LoadTrapsAsync()
         {
-            foreach (var dbTrap in (await TrapRepository.GetAsync()).Where(x => x.MapId == Identity))
+            foreach (DbTrap dbTrap in (await TrapRepository.GetAsync()).Where(x => x.MapId == Identity))
             {
-                MapTrap trap = new MapTrap(dbTrap);
+                var trap = new MapTrap(dbTrap);
                 if (!await trap.InitializeAsync())
                 {
-                    await Log.WriteLogAsync(LogLevel.Error, $"Could not start system map trap for {Identity} > Trap {dbTrap.Id}");
-                    continue;
+                    await Log.WriteLogAsync(LogLevel.Error,
+                                            $"Could not start system map trap for {Identity} > Trap {dbTrap.Id}");
                 }
             }
         }
@@ -198,12 +202,12 @@ namespace Comet.Game.World.Maps
 
         public Role QueryRole(uint target)
         {
-            return m_roles.TryGetValue(target, out var value) ? value : null;
+            return m_roles.TryGetValue(target, out Role value) ? value : null;
         }
 
         public T QueryRole<T>(uint target) where T : Role
         {
-            return m_roles.TryGetValue(target, out var value) && value is T role ? role : null;
+            return m_roles.TryGetValue(target, out Role value) && value is T role ? role : null;
         }
 
         public T QueryRole<T>(Func<T, bool> pred) where T : Role
@@ -221,9 +225,9 @@ namespace Comet.Game.World.Maps
         public DynamicNpc QueryStatuary(Role sender, uint lookface, uint task)
         {
             return Query9BlocksByPos(sender.MapX, sender.MapY)
-                .Where(x => x is DynamicNpc)
-                .Cast<DynamicNpc>()
-                .FirstOrDefault(x => x.Task0 == task && (x.Mesh - x.Mesh % 10) == (lookface - lookface % 10));
+                   .Where(x => x is DynamicNpc)
+                   .Cast<DynamicNpc>()
+                   .FirstOrDefault(x => x.Task0 == task && x.Mesh - x.Mesh % 10 == lookface - lookface % 10);
         }
 
         public List<Character> QueryPlayers(Func<Character, bool> pred)
@@ -261,17 +265,13 @@ namespace Comet.Game.World.Maps
                     RoleManager.AddRole(role);
 
                     if (role.Screen != null)
-                    {
                         await role.Screen.UpdateAsync();
-                    }
                     else
-                    {
-                        foreach (var user in m_users.Values.Where(x =>
-                            Calculations.GetDistance(x.MapX, x.MapY, role.MapX, role.MapY) <= Screen.BROADCAST_SIZE))
-                        {
+                        foreach (Character user in m_users.Values.Where(x =>
+                                                                            Calculations.GetDistance(
+                                                                                x.MapX, x.MapY, role.MapX, role.MapY) <=
+                                                                            Screen.BROADCAST_SIZE))
                             await user.Screen.SpawnAsync(role);
-                        }
-                    }
                 }
 
                 return true;
@@ -282,7 +282,7 @@ namespace Comet.Game.World.Maps
 
         public async Task<bool> RemoveAsync(uint idRole)
         {
-            if (m_roles.TryRemove(idRole, out var role))
+            if (m_roles.TryRemove(idRole, out Role role))
             {
                 m_users.TryRemove(idRole, out _);
                 LeaveBlock(role);
@@ -290,7 +290,7 @@ namespace Comet.Game.World.Maps
                 if (!(role is Character))
                     RoleManager.RemoveRole(idRole);
 
-                foreach (var user in m_users.Values)
+                foreach (Character user in m_users.Values)
                 {
                     if (Calculations.GetDistance(role.MapX, role.MapY, user.MapX, user.MapY) > Screen.BROADCAST_SIZE)
                         continue;
@@ -308,9 +308,9 @@ namespace Comet.Game.World.Maps
 
         public async Task SendMapInfoAsync(Character user)
         {
-            MsgAction action = new MsgAction
+            var action = new MsgAction
             {
-                Action = MsgAction.ActionType.MapArgb,
+                Action = MsgAction<Client>.ActionType.MapArgb,
                 Identity = 1,
                 Command = Light,
                 Argument = 0
@@ -326,7 +326,7 @@ namespace Comet.Game.World.Maps
 
         public async Task BroadcastMsgAsync(IPacket msg, uint exclude = 0)
         {
-            foreach (var user in m_users.Values)
+            foreach (Character user in m_users.Values)
             {
                 if (user.Identity == exclude)
                     continue;
@@ -335,17 +335,15 @@ namespace Comet.Game.World.Maps
             }
         }
 
-        public async Task BroadcastMsgAsync(string message, TalkChannel channel = TalkChannel.TopLeft, Color? color = null)
+        public async Task BroadcastMsgAsync(string message, TalkChannel channel = TalkChannel.TopLeft,
+                                            Color? color = null)
         {
-            foreach (var user in m_users.Values)
-            {
-                await user.SendAsync(message, channel, color);
-            }
+            foreach (Character user in m_users.Values) await user.SendAsync(message, channel, color);
         }
 
         public async Task BroadcastRoomMsgAsync(int x, int y, IPacket msg, uint exclude = 0)
         {
-            foreach (var user in m_users.Values)
+            foreach (Character user in m_users.Values)
             {
                 if (user.Identity == exclude ||
                     Calculations.GetDistance(x, y, user.MapX, user.MapY) > Screen.BROADCAST_SIZE)
@@ -396,10 +394,10 @@ namespace Comet.Game.World.Maps
 
         public List<Role> Query9Blocks(int x, int y)
         {
-            List<Role> result = new List<Role>();
+            var result = new List<Role>();
 
             //Console.WriteLine(@"============== Query Block Begin =================");
-            for (int aroundBlock = 0; aroundBlock < GameMapData.WalkXCoords.Length; aroundBlock++)
+            for (var aroundBlock = 0; aroundBlock < GameMapData.WalkXCoords.Length; aroundBlock++)
             {
                 int viewBlockX = x + GameMapData.WalkXCoords[aroundBlock];
                 int viewBlockY = y + GameMapData.WalkYCoords[aroundBlock];
@@ -560,16 +558,17 @@ namespace Comet.Game.World.Maps
         #region Position Check
 
         /// <summary>
-        /// Determinate if a coordinate has already been occupied by another object.
+        ///     Determinate if a coordinate has already been occupied by another object.
         /// </summary>
         /// <returns>False if the block is empty.</returns>
         public bool IsSuperPosition(int x, int y)
         {
-            return GetBlock(GetBlockX(x), GetBlockY(y))?.RoleSet.Values.Any(a => a.MapX == x && a.MapY == y && a.IsAlive) != false;
+            return GetBlock(GetBlockX(x), GetBlockY(y))?.RoleSet.Values
+                                                       .Any(a => a.MapX == x && a.MapY == y && a.IsAlive) != false;
         }
 
         /// <summary>
-        /// Determinate if a coordinate is valid inside of a map.
+        ///     Determinate if a coordinate is valid inside of a map.
         /// </summary>
         /// <returns></returns>
         public bool IsValidPoint(int x, int y)
@@ -625,7 +624,9 @@ namespace Comet.Game.World.Maps
 
         public bool IsLayItemEnable(int x, int y)
         {
-            return IsStandEnable(x, y) && IsMoveEnable(x, y) && m_roles.All(role => role.Value != null && !(role.Value is MapItem) && !(role.Value is BaseNpc) || role.Value.MapX != x || role.Value.MapY != y);
+            return IsStandEnable(x, y) && IsMoveEnable(x, y) && m_roles.All(
+                       role => role.Value != null && !(role.Value is MapItem) && !(role.Value is BaseNpc) ||
+                               role.Value.MapX != x || role.Value.MapY != y);
         }
 
         public bool FindDropItemCell(int range, ref Point sender)
@@ -636,7 +637,7 @@ namespace Comet.Game.World.Maps
             int size = range * 2 + 1;
             int bufSize = size ^ 2;
 
-            for (int i = 0; i < 8; i++)
+            for (var i = 0; i < 8; i++)
             {
                 int newX = sender.X + GameMapData.WalkXCoords[i];
                 int newY = sender.Y + GameMapData.WalkYCoords[i];
@@ -649,30 +650,32 @@ namespace Comet.Game.World.Maps
             }
 
             Point pos = sender;
-            var setItem = Query9BlocksByPos(sender.X, sender.Y).Where(x => x is MapItem && x.GetDistance(pos.X, pos.Y) <= range).Cast<MapItem>().ToList();
+            List<MapItem> setItem = Query9BlocksByPos(sender.X, sender.Y)
+                                    .Where(x => x is MapItem && x.GetDistance(pos.X, pos.Y) <= range).Cast<MapItem>()
+                                    .ToList();
             int nMinRange = range + 1;
-            bool ret = false;
+            var ret = false;
             var posFree = new Point();
             for (int i = Math.Max(sender.X - range, 0); i <= sender.X + range && i < Width; i++)
+            for (int j = Math.Max(sender.Y - range, 0); j <= sender.Y + range && j < Height; j++)
             {
-                for (int j = Math.Max(sender.Y - range, 0); j <= sender.Y + range && j < Height; j++)
+                int idx = GameMapData.Pos2Index(i - (sender.X - range), j - (sender.Y - range), size, size);
+
+                if (idx >= 0 && idx < bufSize)
+                    if (setItem.FirstOrDefault(
+                            x => GameMapData.Pos2Index(x.MapX - i + range, x.MapY - j + range, range, range) == idx) !=
+                        null)
+                        continue;
+
+                if (IsLayItemEnable(sender.X, sender.Y))
                 {
-                    int idx = GameMapData.Pos2Index(i - (sender.X - range), j - (sender.Y - range), size, size);
-
-                    if (idx >= 0 && idx < bufSize)
-                        if (setItem.FirstOrDefault(x => GameMapData.Pos2Index(x.MapX - i + range, x.MapY - j + range, range, range) == idx) != null)
-                            continue;
-
-                    if (IsLayItemEnable(sender.X, sender.Y))
+                    double nDistance = Calculations.GetDistance(i, j, sender.X, sender.Y);
+                    if (nDistance < nMinRange)
                     {
-                        double nDistance = Calculations.GetDistance(i, j, sender.X, sender.Y);
-                        if (nDistance < nMinRange)
-                        {
-                            nMinRange = (int)nDistance;
-                            posFree.X = i;
-                            posFree.Y = j;
-                            ret = true;
-                        }
+                        nMinRange = (int) nDistance;
+                        posFree.X = i;
+                        posFree.Y = j;
+                        ret = true;
                     }
                 }
             }
@@ -682,6 +685,7 @@ namespace Comet.Game.World.Maps
                 sender = posFree;
                 return true;
             }
+
             return false;
         }
 
@@ -700,13 +704,9 @@ namespace Comet.Game.World.Maps
             }
 
             if (m_dbMap.LinkX == 0 || m_dbMap.LinkY == 0)
-            {
                 target = new Point(targetMap.PortalX, targetMap.PortalY);
-            }
             else
-            {
                 target = new Point(m_dbMap.LinkX, m_dbMap.LinkY);
-            }
 
             return true;
         }
@@ -740,7 +740,9 @@ namespace Comet.Game.World.Maps
 
         public bool QueryRegion(RegionTypes regionType, ushort x, ushort y)
         {
-            return m_regions.Where(re => (x > re.BoundX && x < re.BoundX + re.BoundCX) && (y > re.BoundY && y < re.BoundY + re.BoundCY)).Any(region => region.Type == (int)regionType);
+            return m_regions
+                   .Where(re => x > re.BoundX && x < re.BoundX + re.BoundCX && y > re.BoundY &&
+                                y < re.BoundY + re.BoundCY).Any(region => region.Type == (int) regionType);
         }
 
         #endregion
@@ -756,17 +758,18 @@ namespace Comet.Game.World.Maps
         {
             if (mMapData.AddTerrainItem(owner, x, y, idTerrainType))
             {
-                await Kernel.BroadcastWorldMsgAsync(new Packets.Ai.MsgAiAction
+                await Kernel.BroadcastWorldMsgAsync(new MsgAiAction
                 {
-                    Action = Network.Packets.Ai.MsgAiAction<Internal.AI.AiClient>.AiAction.AddTerrainObj,
-                    Data = (int)Identity,
-                    Command = (int)idTerrainType,
-                    Param = (int)owner,
-                    X = (ushort)x,
-                    Y = (ushort)y
+                    Action = MsgAiAction<AiClient>.AiAction.AddTerrainObj,
+                    Data = (int) Identity,
+                    Command = (int) idTerrainType,
+                    Param = (int) owner,
+                    X = (ushort) x,
+                    Y = (ushort) y
                 });
                 return true;
             }
+
             return false;
         }
 
@@ -774,14 +777,15 @@ namespace Comet.Game.World.Maps
         {
             if (mMapData.DelTerrainItem(idOwner))
             {
-                await Kernel.BroadcastWorldMsgAsync(new Packets.Ai.MsgAiAction
+                await Kernel.BroadcastWorldMsgAsync(new MsgAiAction
                 {
-                    Action = Network.Packets.Ai.MsgAiAction<Internal.AI.AiClient>.AiAction.DelTerrainObj,
-                    Data = (int)Identity,
-                    Param = (int)idOwner,
+                    Action = MsgAiAction<AiClient>.AiAction.DelTerrainObj,
+                    Data = (int) Identity,
+                    Param = (int) idOwner
                 });
                 return true;
             }
+
             return false;
         }
 
@@ -803,7 +807,7 @@ namespace Comet.Game.World.Maps
 
         public void ResetBattle()
         {
-            foreach (var player in m_users.Values)
+            foreach (Character player in m_users.Values)
             {
                 //player.BattleSystem.ResetBattle();
             }
@@ -836,14 +840,14 @@ namespace Comet.Game.World.Maps
         public Task SendAddToNpcServerAsync()
         {
             if (m_dbDynamap != null)
-                return Kernel.BroadcastWorldMsgAsync(new Packets.Ai.MsgAiDynaMap(m_dbDynamap));
+                return Kernel.BroadcastWorldMsgAsync(new MsgAiDynaMap(m_dbDynamap));
             return Task.CompletedTask;
         }
 
         public Task SendRemoveToNpcServerAsync()
         {
             if (m_dbDynamap != null)
-                return Kernel.BroadcastWorldMsgAsync(new Packets.Ai.MsgAiDynaMap(Identity));
+                return Kernel.BroadcastWorldMsgAsync(new MsgAiDynaMap(Identity));
             return Task.CompletedTask;
         }
 

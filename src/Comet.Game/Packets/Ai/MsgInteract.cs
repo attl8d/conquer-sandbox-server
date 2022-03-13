@@ -1,10 +1,10 @@
-﻿using Comet.Game.Internal.AI;
+﻿using System.Threading.Tasks;
+using Comet.Game.Internal.AI;
 using Comet.Game.States;
 using Comet.Game.World.Managers;
 using Comet.Network.Packets;
 using Comet.Network.Packets.Game;
 using Comet.Shared;
-using System.Threading.Tasks;
 
 namespace Comet.Game.Packets.Ai
 {
@@ -36,31 +36,31 @@ namespace Comet.Game.Packets.Ai
             {
                 case MsgInteractType.Attack:
                 case MsgInteractType.Shoot:
-                    {
-                        if (!sender.IsAlive)
-                            return;
+                {
+                    if (!sender.IsAlive)
+                        return;
 
-                        if (sender.SetAttackTarget(target))
-                            sender.BattleSystem.CreateBattle(TargetIdentity);
-                        break;
-                    }
+                    if (sender.SetAttackTarget(target))
+                        sender.BattleSystem.CreateBattle(TargetIdentity);
+                    break;
+                }
 
                 case MsgInteractType.MagicAttack:
-                    {
-                        if (!sender.IsAlive)
-                            return;
+                {
+                    if (!sender.IsAlive)
+                        return;
 
-                        await sender.ProcessMagicAttackAsync((ushort)Data, TargetIdentity, PosX, PosY);
-                        break;
-                    }
+                    await sender.ProcessMagicAttackAsync((ushort) Data, TargetIdentity, PosX, PosY);
+                    break;
+                }
 
                 default:
-                    {
-                        await Log.WriteLogAsync(LogLevel.Warning,
-                          "Missing packet {0}, Action {1}, Length {2}\n{3}",
-                          Type, Action, Length, PacketDump.Hex(Encode()));
-                        break;
-                    }
+                {
+                    await Log.WriteLogAsync(LogLevel.Warning,
+                                            "Missing packet {0}, Action {1}, Length {2}\n{3}",
+                                            Type, Action, Length, PacketDump.Hex(Encode()));
+                    break;
+                }
             }
         }
     }

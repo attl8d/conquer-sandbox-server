@@ -1,8 +1,8 @@
-﻿using Comet.Game.States;
+﻿using System;
+using Comet.Game.States;
 using Comet.Game.States.Items;
 using Comet.Network.Packets;
 using Comet.Network.Packets.Game;
-using System;
 
 namespace Comet.Game.Packets
 {
@@ -16,42 +16,42 @@ namespace Comet.Game.Packets
             MapX = x == 0 ? user.MapX : x;
             MapY = y == 0 ? user.MapY : y;
 
-            Status = (uint)user.StatusFlag;
+            Status = (uint) user.StatusFlag;
 
             Hairstyle = user.Hairstyle;
-            Direction = (byte)user.Direction;
-            Pose = (byte)user.Action;
+            Direction = (byte) user.Direction;
+            Pose = (byte) user.Action;
             Metempsychosis = user.Metempsychosis;
             Level = user.Level;
 
             SyndicateIdentity = user.SyndicateIdentity;
-            SyndicatePosition = (ushort)user.SyndicateRank;
+            SyndicatePosition = (ushort) user.SyndicateRank;
 
-            NobilityRank = (uint)user.NobilityRank;
+            NobilityRank = (uint) user.NobilityRank;
 
             Helmet = user.Headgear?.Type ?? 0;
-            HelmetColor = (ushort)(user.Headgear?.Color ?? Item.ItemColor.None);
+            HelmetColor = (ushort) (user.Headgear?.Color ?? Item.ItemColor.None);
             RightHand = user.RightHand?.Type ?? 0;
             LeftHand = user.LeftHand?.Type ?? 0;
-            LeftHandColor = (ushort)(user.LeftHand?.Color ?? Item.ItemColor.None);
+            LeftHandColor = (ushort) (user.LeftHand?.Color ?? Item.ItemColor.None);
             Armor = user.Armor?.Type ?? 0;
-            ArmorColor = (ushort)(user.Armor?.Color ?? Item.ItemColor.None);
+            ArmorColor = (ushort) (user.Armor?.Color ?? Item.ItemColor.None);
             Garment = user.Garment?.Type ?? 0;
 
             FlowerRanking = user.FlowerCharm;
             QuizPoints = user.QuizPoints;
             UserTitle = user.UserTitle;
 
-            EnlightenPoints = (ushort)user.EnlightenPoints;
-            CanBeEnlightened = (ushort)(user.CanBeEnlightened ? 1 : 0);
+            EnlightenPoints = (ushort) user.EnlightenPoints;
+            CanBeEnlightened = (ushort) (user.CanBeEnlightened ? 1 : 0);
 
             Away = user.IsAway;
 
             if (user.Syndicate != null)
-                SharedBattlePower = (uint)user.Syndicate.GetSharedBattlePower(user.SyndicateRank);
+                SharedBattlePower = (uint) user.Syndicate.GetSharedBattlePower(user.SyndicateRank);
 
             FamilyIdentity = user.FamilyIdentity;
-            FamilyRank = (uint)user.FamilyPosition;
+            FamilyRank = (uint) user.FamilyPosition;
             FamilyBattlePower = user.FamilyBattlePower;
 
             Name = user.Name;
@@ -69,20 +69,16 @@ namespace Comet.Game.Packets
             MapX = x == 0 ? monster.MapX : x;
             MapY = y == 0 ? monster.MapY : y;
 
-            Status = (uint)monster.StatusFlag;
+            Status = (uint) monster.StatusFlag;
 
-            Direction = (byte)monster.Direction;
-            Pose = (byte)monster.Action;
+            Direction = (byte) monster.Direction;
+            Pose = (byte) monster.Action;
 
             MonsterLevel = monster.Level;
-            if (monster.Life > ushort.MaxValue )
-            {
-                MonsterLife = (ushort)(ushort.MaxValue / monster.Life * 100);
-            }
+            if (monster.Life > ushort.MaxValue)
+                MonsterLife = (ushort) (ushort.MaxValue / monster.Life * 100);
             else
-            {
-                MonsterLife = (ushort)Math.Min(ushort.MaxValue, monster.Life);
-            }
+                MonsterLife = (ushort) Math.Min(ushort.MaxValue, monster.Life);
 
             Name = monster.Name;
             FamilyName = "";

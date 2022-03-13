@@ -1,8 +1,8 @@
-﻿using Comet.Database.Entities;
-using Microsoft.EntityFrameworkCore;
-using System.Collections.Generic;
+﻿using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
+using Comet.Database.Entities;
+using Microsoft.EntityFrameworkCore;
 
 namespace Comet.Game.Database.Repositories
 {
@@ -11,7 +11,8 @@ namespace Comet.Game.Database.Repositories
         public static async Task<List<DbCard>> GetAsync(uint accountId)
         {
             await using var ctx = new ServerDbContext();
-            return await ctx.Cards.Where(x => x.AccountId == accountId && x.Flag == 0 && x.Timestamp == null).ToListAsync();
+            return await ctx.Cards.Where(x => x.AccountId == accountId && x.Flag == 0 && x.Timestamp == null)
+                            .ToListAsync();
         }
 
         public static async Task<int> CountAsync(uint account)

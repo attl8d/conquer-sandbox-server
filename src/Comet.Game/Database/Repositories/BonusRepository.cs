@@ -1,6 +1,6 @@
-﻿using Comet.Database.Entities;
+﻿using System.Threading.Tasks;
+using Comet.Database.Entities;
 using Microsoft.EntityFrameworkCore;
-using System.Threading.Tasks;
 
 namespace Comet.Game.Database.Repositories
 {
@@ -9,7 +9,8 @@ namespace Comet.Game.Database.Repositories
         public static async Task<DbBonus> GetAsync(uint account)
         {
             await using var db = new ServerDbContext();
-            return await db.Bonus.FirstOrDefaultAsync(x => x.AccountIdentity == account && x.Flag == 0 && x.Time == null);
+            return await db.Bonus.FirstOrDefaultAsync(
+                       x => x.AccountIdentity == account && x.Flag == 0 && x.Time == null);
         }
 
         public static async Task<int> CountAsync(uint account)

@@ -1,9 +1,9 @@
-﻿using Comet.Database.Entities;
-using Microsoft.EntityFrameworkCore;
-using System;
+﻿using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
+using Comet.Database.Entities;
+using Microsoft.EntityFrameworkCore;
 
 namespace Comet.Game.Database.Repositories
 {
@@ -13,8 +13,8 @@ namespace Comet.Game.Database.Repositories
         {
             await using var ctx = new ServerDbContext();
             return await ctx.UserTitle
-                .Where(x => x.PlayerId == idPlayer && x.DelTime > DateTime.Now)
-                .ToListAsync();
+                            .Where(x => x.PlayerId == idPlayer && x.DelTime > DateTime.Now)
+                            .ToListAsync();
         }
     }
 }

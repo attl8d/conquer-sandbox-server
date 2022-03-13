@@ -1,15 +1,14 @@
-﻿using Comet.Database.Entities;
+﻿using System;
+using System.Collections.Generic;
+using System.Drawing;
+using System.Threading.Tasks;
+using Comet.Database.Entities;
 using Comet.Game.Database.Repositories;
-using Comet.Game.Packets;
 using Comet.Game.States.Syndicates;
 using Comet.Game.World.Managers;
 using Comet.Game.World.Maps;
 using Comet.Network.Packets.Game;
 using Comet.Shared;
-using System;
-using System.Collections.Generic;
-using System.Drawing;
-using System.Threading.Tasks;
 
 namespace Comet.Game.States.Npcs
 {
@@ -18,21 +17,22 @@ namespace Comet.Game.States.Npcs
         #region Constants
 
         public const int
-            NPC_NONE = 0, // Í¨ÓÃNPC
+            NPC_NONE = 0,       // Í¨ÓÃNPC
             SHOPKEEPER_NPC = 1, // ÉÌµêNPC
-            TASK_NPC = 2, // ÈÎÎñNPC(ÒÑ×÷·Ï£¬½öÓÃÓÚ¼æÈÝ¾ÉÊý¾Ý)
-            STORAGE_NPC = 3, // ¼Ä´æ´¦NPC
-            TRUNCK_NPC = 4, // Ïä×ÓNPC
-            FACE_NPC = 5, // ±äÍ·ÏñNPC
-            FORGE_NPC = 6, // ¶ÍÔìNPC		(only use for client)
-            EMBED_NPC = 7, // ÏâÇ¶NPC
-            STATUARY_NPC = 9, // µñÏñNPC
-            SYNFLAG_NPC = 10, // °ïÅÉ±ê¼ÇNPC
-            ROLE_PLAYER = 11, // ÆäËûÍæ¼Ò		(only use for client)
-            ROLE_HERO = 12, // ×Ô¼º			(only use for client)
-            ROLE_MONSTER = 13, // ¹ÖÎï			(only use for client)
-            BOOTH_NPC = 14, // °ÚÌ¯NPC		(CBooth class)
-            SYNTRANS_NPC = 15, // °ïÅÉ´«ËÍNPC, ¹Ì¶¨ÄÇ¸ö²»ÒªÓÃ´ËÀàÐÍ! (ÓÃÓÚ00:00ÊÕ·Ñ)(LINKIDÎª¹Ì¶¨NPCµÄID£¬ÓëÆäËüÊ¹ÓÃLINKIDµÄ»¥³â)
+            TASK_NPC = 2,       // ÈÎÎñNPC(ÒÑ×÷·Ï£¬½öÓÃÓÚ¼æÈÝ¾ÉÊý¾Ý)
+            STORAGE_NPC = 3,    // ¼Ä´æ´¦NPC
+            TRUNCK_NPC = 4,     // Ïä×ÓNPC
+            FACE_NPC = 5,       // ±äÍ·ÏñNPC
+            FORGE_NPC = 6,      // ¶ÍÔìNPC		(only use for client)
+            EMBED_NPC = 7,      // ÏâÇ¶NPC
+            STATUARY_NPC = 9,   // µñÏñNPC
+            SYNFLAG_NPC = 10,   // °ïÅÉ±ê¼ÇNPC
+            ROLE_PLAYER = 11,   // ÆäËûÍæ¼Ò		(only use for client)
+            ROLE_HERO = 12,     // ×Ô¼º			(only use for client)
+            ROLE_MONSTER = 13,  // ¹ÖÎï			(only use for client)
+            BOOTH_NPC = 14,     // °ÚÌ¯NPC		(CBooth class)
+            SYNTRANS_NPC =
+                15, // °ïÅÉ´«ËÍNPC, ¹Ì¶¨ÄÇ¸ö²»ÒªÓÃ´ËÀàÐÍ! (ÓÃÓÚ00:00ÊÕ·Ñ)(LINKIDÎª¹Ì¶¨NPCµÄID£¬ÓëÆäËüÊ¹ÓÃLINKIDµÄ»¥³â)
             ROLE_BOOTH_FLAG_NPC = 16, // Ì¯Î»±êÖ¾NPC	(only use for client)
             ROLE_MOUSE_NPC = 17, // Êó±êÉÏµÄNPC	(only use for client)
             ROLE_MAGICITEM = 18, // ÏÝÚå»ðÇ½		(only use for client)
@@ -51,26 +51,26 @@ namespace Comet.Game.States.Npcs
             ROLE_FAMILY_WAR_FLAG = 31,
             ROLE_CTFBASE_NPC = 40,
             ROLE_3DFURNITURE_NPC = 101, // 3D¼Ò¾ßNPC 
-            SYN_NPC_WARLETTER = 110; //Ôö¼ÓÐÂµÄ£Î£Ð£ÃÀàÐÍ¡¡×¨ÃÅÓÃÀ´¡¡ÏÂÕ½ÊéµÄ¡¡°ïÅÉ£Î£Ð£Ã
+            SYN_NPC_WARLETTER = 110;    //Ôö¼ÓÐÂµÄ£Î£Ð£ÃÀàÐÍ¡¡×¨ÃÅÓÃÀ´¡¡ÏÂÕ½ÊéµÄ¡¡°ïÅÉ£Î£Ð£Ã
 
         [Flags]
         public enum NpcSort
         {
             None = 0,
-            Task = 1,           // ÈÎÎñÀà
-            Recycle = 2,            // ¿É»ØÊÕÀà
-            Scene = 4,          // ³¡¾°Àà(´øµØÍ¼Îï¼þ)
-            LinkMap = 8,            // ¹ÒµØÍ¼Àà(LINKIDÎªµØÍ¼ID£¬ÓëÆäËüÊ¹ÓÃLINKIDµÄ»¥³â)
-            DieAction = 16,         // ´øËÀÍöÈÎÎñ(LINKIDÎªACTION_ID£¬ÓëÆäËüÊ¹ÓÃLINKIDµÄ»¥³â)
-            DelEnable = 32,         // ¿ÉÒÔÊÖ¶¯É¾³ý(²»ÊÇÖ¸Í¨¹ýÈÎÎñ)
-            Event = 64,         // ´ø¶¨Ê±ÈÎÎñ, Ê±¼äÔÚdata3ÖÐ£¬¸ñÊ½ÎªMMWWHHMMSS¡£(LINKIDÎªACTION_ID£¬ÓëÆäËüÊ¹ÓÃLINKIDµÄ»¥³â)
-            Table = 128,            // ´øÊý¾Ý±íÀàÐÍ
+            Task = 1,       // ÈÎÎñÀà
+            Recycle = 2,    // ¿É»ØÊÕÀà
+            Scene = 4,      // ³¡¾°Àà(´øµØÍ¼Îï¼þ)
+            LinkMap = 8,    // ¹ÒµØÍ¼Àà(LINKIDÎªµØÍ¼ID£¬ÓëÆäËüÊ¹ÓÃLINKIDµÄ»¥³â)
+            DieAction = 16, // ´øËÀÍöÈÎÎñ(LINKIDÎªACTION_ID£¬ÓëÆäËüÊ¹ÓÃLINKIDµÄ»¥³â)
+            DelEnable = 32, // ¿ÉÒÔÊÖ¶¯É¾³ý(²»ÊÇÖ¸Í¨¹ýÈÎÎñ)
+            Event = 64,     // ´ø¶¨Ê±ÈÎÎñ, Ê±¼äÔÚdata3ÖÐ£¬¸ñÊ½ÎªMMWWHHMMSS¡£(LINKIDÎªACTION_ID£¬ÓëÆäËüÊ¹ÓÃLINKIDµÄ»¥³â)
+            Table = 128,    // ´øÊý¾Ý±íÀàÐÍ
 
             //		NPCSORT_SHOP		= ,			// ÉÌµêÀà
             //		NPCSORT_DICE		= ,			// ÷»×ÓNPC
 
-            NpcsortUseLinkId = LinkMap | DieAction | Event,
-        };
+            NpcsortUseLinkId = LinkMap | DieAction | Event
+        }
 
         #endregion
 
@@ -81,10 +81,7 @@ namespace Comet.Game.States.Npcs
 
         public virtual async Task<bool> InitializeAsync()
         {
-            if (IsShopNpc())
-            {
-                ShopGoods = await GoodsRepository.GetAsync(Identity);
-            }
+            if (IsShopNpc()) ShopGoods = await GoodsRepository.GetAsync(Identity);
 
             if (IsSceneNpc())
             {
@@ -96,7 +93,7 @@ namespace Comet.Game.States.Npcs
                     return false;
                 }
 
-                if (!await map.AddTerrainObjectAsync(0, MapX, MapY, (uint)(Base * 10 + (int) Direction)))
+                if (!await map.AddTerrainObjectAsync(0, MapX, MapY, (uint) (Base * 10 + (int) Direction)))
                     return false;
             }
 
@@ -133,6 +130,7 @@ namespace Comet.Game.States.Npcs
                 await EnterMapAsync();
                 return true;
             }
+
             return false;
         }
 
@@ -143,18 +141,12 @@ namespace Comet.Game.States.Npcs
         public override async Task EnterMapAsync()
         {
             Map = MapManager.GetMap(MapIdentity);
-            if (Map != null)
-            {
-                await Map.AddAsync(this);
-            }
+            if (Map != null) await Map.AddAsync(this);
         }
 
         public override async Task LeaveMapAsync()
         {
-            if (Map != null)
-            {
-                await Map.RemoveAsync(Identity);
-            }
+            if (Map != null) await Map.RemoveAsync(Identity);
         }
 
         #endregion
@@ -170,6 +162,7 @@ namespace Comet.Game.States.Npcs
                 case "data2": return Data2;
                 case "data3": return Data3;
             }
+
             return 0;
         }
 
@@ -177,10 +170,18 @@ namespace Comet.Game.States.Npcs
         {
             switch (szAttr.ToLower())
             {
-                case "data0": Data0 = value; return true;
-                case "data1": Data1 = value; return true;
-                case "data2": Data2 = value; return true;
-                case "data3": Data3 = value; return true;
+                case "data0":
+                    Data0 = value;
+                    return true;
+                case "data1":
+                    Data1 = value;
+                    return true;
+                case "data2":
+                    Data2 = value;
+                    return true;
+                case "data3":
+                    Data3 = value;
+                    return true;
             }
 
             return false;
@@ -190,10 +191,18 @@ namespace Comet.Game.States.Npcs
         {
             switch (szAttr.ToLower())
             {
-                case "data0": Data0 += value; return true;
-                case "data1": Data1 += value; return true;
-                case "data2": Data2 += value; return true;
-                case "data3": Data3 += value; return true;
+                case "data0":
+                    Data0 += value;
+                    return true;
+                case "data1":
+                    Data1 += value;
+                    return true;
+                case "data2":
+                    Data2 += value;
+                    return true;
+                case "data3":
+                    Data3 += value;
+                    return true;
             }
 
             return false;
@@ -211,7 +220,7 @@ namespace Comet.Game.States.Npcs
                 case "task5": return Task5;
                 case "task6": return Task6;
                 case "task7": return Task7;
-                default: return 0;
+                default:      return 0;
             }
         }
 
@@ -239,7 +248,7 @@ namespace Comet.Game.States.Npcs
 
         #region Shop
 
-        public List<DbGoods> ShopGoods = new List<DbGoods>();
+        public List<DbGoods> ShopGoods = new();
 
         #endregion
 
@@ -247,27 +256,28 @@ namespace Comet.Game.States.Npcs
 
         public async Task<bool> ActivateNpc(Character user)
         {
-            bool result = false;
+            var result = false;
 
             uint task = await TestTasks(user);
             if (task != 0)
                 result = await GameAction.ExecuteActionAsync(task, user, this, null, "");
             else if (user.IsPm())
-            {
-                await user.SendAsync($"Unhandled NPC[{Identity}:{Name}]->{Task0},{Task1},{Task2},{Task3},{Task4},{Task5},{Task6},{Task6},{Task7}", TalkChannel.Talk, Color.Red);
-            }
+                await user.SendAsync(
+                    $"Unhandled NPC[{Identity}:{Name}]->{Task0},{Task1},{Task2},{Task3},{Task4},{Task5},{Task6},{Task6},{Task7}",
+                    TalkChannel.Talk, Color.Red);
 
             return result;
         }
 
         private async Task<uint> TestTasks(Character user)
         {
-            for (int i = 0; i < 8; i++)
+            for (var i = 0; i < 8; i++)
             {
                 DbTask task = EventManager.GetTask(GetTask($"task{i}"));
                 if (task != null && await user.TestTaskAsync(task))
                     return task.IdNext;
             }
+
             return 0;
         }
 
@@ -342,7 +352,7 @@ namespace Comet.Game.States.Npcs
             if (!IsSynFlag())
                 return false;
 
-            Syndicate syn = SyndicateManager.GetSyndicate((int)OwnerIdentity);
+            Syndicate syn = SyndicateManager.GetSyndicate((int) OwnerIdentity);
             return syn != null && syn.Money <= 0;
         }
 
@@ -368,7 +378,6 @@ namespace Comet.Game.States.Npcs
         {
             return Task.FromResult(true);
         }
-
 
         #endregion
     }

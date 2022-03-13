@@ -11,7 +11,7 @@ namespace Comet.Game.States.Syndicates
     {
         private DbTotemAdd m_Enhancement;
 
-        public ConcurrentDictionary<uint, Totem> Totems = new ConcurrentDictionary<uint, Totem>();
+        public ConcurrentDictionary<uint, Totem> Totems = new();
 
         public TotemPole(Syndicate.TotemPoleType flag, DbTotemAdd enhance = null)
         {
@@ -26,8 +26,8 @@ namespace Comet.Game.States.Syndicates
         public int Enhancement
         {
             get => EnhancementExpiration.HasValue && EnhancementExpiration.Value > DateTime.Now
-                ? m_Enhancement.BattleAddition
-                : 0;
+                       ? m_Enhancement.BattleAddition
+                       : 0;
             set => m_Enhancement.BattleAddition = (byte) Math.Min(2, Math.Max(0, value));
         }
 
@@ -37,7 +37,7 @@ namespace Comet.Game.States.Syndicates
         {
             get
             {
-                int result = 0;
+                var result = 0;
                 long donation = Donation;
                 if (donation >= 2000000)
                     result++;
@@ -72,6 +72,7 @@ namespace Comet.Game.States.Syndicates
                 m_Enhancement = null;
                 return true;
             }
+
             return true;
         }
     }

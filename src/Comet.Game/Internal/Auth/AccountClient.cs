@@ -1,11 +1,11 @@
-﻿using Comet.Game.Packets;
-using Comet.Network.Packets;
-using Comet.Network.Sockets;
-using Comet.Shared;
-using System;
+﻿using System;
 using System.Net.Sockets;
 using System.Threading;
 using System.Threading.Tasks;
+using Comet.Game.Packets;
+using Comet.Network.Packets;
+using Comet.Network.Sockets;
+using Comet.Shared;
 using static Comet.Game.Database.ServerConfiguration;
 
 namespace Comet.Game.Internal.Auth
@@ -39,6 +39,7 @@ namespace Comet.Game.Internal.Auth
                 });
                 return client;
             }
+
             return null;
         }
 
@@ -55,7 +56,7 @@ namespace Comet.Game.Internal.Auth
                 return;
 
             var length = BitConverter.ToUInt16(packet, 0);
-            PacketType type = (PacketType)BitConverter.ToUInt16(packet, 2);
+            var type = (PacketType) BitConverter.ToUInt16(packet, 2);
 
             try
             {
@@ -84,8 +85,8 @@ namespace Comet.Game.Internal.Auth
 
                     default:
                         await Log.WriteLogAsync(LogLevel.Warning,
-                            "Missing packet {0}, Length {1}\n{2}",
-                            type, length, PacketDump.Hex(packet));
+                                                "Missing packet {0}, Length {1}\n{2}",
+                                                type, length, PacketDump.Hex(packet));
                         return;
                 }
 

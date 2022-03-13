@@ -1,8 +1,10 @@
-﻿using Comet.Game.Database.Repositories;
+﻿using System;
+using System.Collections.Generic;
+using System.Threading.Tasks;
+using Comet.Database.Entities;
+using Comet.Game.Database.Repositories;
 using Comet.Game.States;
 using Comet.Network.Packets.Game;
-using System;
-using System.Threading.Tasks;
 
 namespace Comet.Game.Packets
 {
@@ -10,10 +12,9 @@ namespace Comet.Game.Packets
     {
         public override async Task ProcessAsync(Client client)
         {
-            var rank = await ArenicRepository.GetSeasonRankAsync(DateTime.Now.AddDays(-1));
+            List<DbArenic> rank = await ArenicRepository.GetSeasonRankAsync(DateTime.Now.AddDays(-1));
             ushort pos = 1;
-            foreach (var obj in rank)
-            {
+            foreach (DbArenic obj in rank)
                 Members.Add(new QualifyingSeasonRankStruct
                 {
                     Rank = pos++,
@@ -21,12 +22,11 @@ namespace Comet.Game.Packets
                     Name = obj.User.Name,
                     Level = obj.User.Level,
                     Profession = obj.User.Profession,
-                    Win = (int)obj.DayWins,
-                    Lose = (int)obj.DayLoses,
+                    Win = (int) obj.DayWins,
+                    Lose = (int) obj.DayLoses,
                     Mesh = obj.User.Mesh,
-                    Score = (int)obj.AthletePoint
+                    Score = (int) obj.AthletePoint
                 });
-            }
             await client.SendAsync(this);
         }
     }

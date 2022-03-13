@@ -49,7 +49,7 @@ namespace Comet.Game.States.Syndicates
                     case 6: return 4;
                     case 7:
                     case 8: return 6;
-                    case 9: return 8;
+                    case 9:  return 8;
                     default: return 0;
                 }
             }
@@ -81,9 +81,9 @@ namespace Comet.Game.States.Syndicates
         #endregion
 
         public const uint HONORARY_DEPUTY_LEADER_PRICE = 6500,
-            HONORARY_MANAGER_PRICE = 3200,
-            HONORARY_SUPERVISOR_PRICE = 2500,
-            HONORARY_STEWARD_PRICE = 1000;
+                          HONORARY_MANAGER_PRICE = 3200,
+                          HONORARY_SUPERVISOR_PRICE = 2500,
+                          HONORARY_STEWARD_PRICE = 1000;
 
         private const int MEMBER_MIN_LEVEL = 15;
         private const int MAX_MEMBER_SIZE = 800;
@@ -96,14 +96,9 @@ namespace Comet.Game.States.Syndicates
 
         private DbSyndicate m_syndicate;
         private SyndicateMember m_leader;
-        private ConcurrentDictionary<uint, SyndicateMember> m_dicMembers = new ConcurrentDictionary<uint, SyndicateMember>();
-        private ConcurrentDictionary<ushort, Syndicate> m_dicAllies = new ConcurrentDictionary<ushort, Syndicate>();
-        private ConcurrentDictionary<ushort, Syndicate> m_dicEnemies = new ConcurrentDictionary<ushort, Syndicate>();
-
-        public Syndicate()
-        {
-            
-        }
+        private readonly ConcurrentDictionary<uint, SyndicateMember> m_dicMembers = new();
+        private readonly ConcurrentDictionary<ushort, Syndicate> m_dicAllies = new();
+        private readonly ConcurrentDictionary<ushort, Syndicate> m_dicEnemies = new();
 
         public ushort Identity => m_syndicate.Identity;
         public string Name => m_syndicate.Name;
@@ -131,7 +126,7 @@ namespace Comet.Game.States.Syndicates
         {
             get => m_syndicate.Announce;
             set => m_syndicate.Announce = value;
-        }     
+        }
 
         public DateTime AnnounceDate
         {
@@ -143,15 +138,25 @@ namespace Comet.Game.States.Syndicates
 
         public bool Deleted => m_syndicate.DelFlag != null;
 
-        public SyndicateMember Leader => m_dicMembers.Values.FirstOrDefault(x => x.Rank == SyndicateMember.SyndicateRank.GuildLeader);
+        public SyndicateMember Leader =>
+            m_dicMembers.Values.FirstOrDefault(x => x.Rank == SyndicateMember.SyndicateRank.GuildLeader);
 
         #region Position Count
 
-        public int DeputyLeaderCount => m_dicMembers.Values.Count(x => x.Rank == SyndicateMember.SyndicateRank.DeputyLeader);
-        public int HonoraryDeputyLeaderCount => m_dicMembers.Values.Count(x => x.Rank == SyndicateMember.SyndicateRank.HonoraryDeputyLeader);
-        public int HonoraryManagerCount => m_dicMembers.Values.Count(x => x.Rank == SyndicateMember.SyndicateRank.HonoraryManager);
-        public int HonorarySupervisorCount => m_dicMembers.Values.Count(x => x.Rank == SyndicateMember.SyndicateRank.HonorarySupervisor);
-        public int HonoraryStewardCount => m_dicMembers.Values.Count(x => x.Rank == SyndicateMember.SyndicateRank.HonorarySteward);
+        public int DeputyLeaderCount =>
+            m_dicMembers.Values.Count(x => x.Rank == SyndicateMember.SyndicateRank.DeputyLeader);
+
+        public int HonoraryDeputyLeaderCount =>
+            m_dicMembers.Values.Count(x => x.Rank == SyndicateMember.SyndicateRank.HonoraryDeputyLeader);
+
+        public int HonoraryManagerCount =>
+            m_dicMembers.Values.Count(x => x.Rank == SyndicateMember.SyndicateRank.HonoraryManager);
+
+        public int HonorarySupervisorCount =>
+            m_dicMembers.Values.Count(x => x.Rank == SyndicateMember.SyndicateRank.HonorarySupervisor);
+
+        public int HonoraryStewardCount =>
+            m_dicMembers.Values.Count(x => x.Rank == SyndicateMember.SyndicateRank.HonorarySteward);
 
         #endregion
 
@@ -165,17 +170,15 @@ namespace Comet.Game.States.Syndicates
                 return true;
 
             List<DbSyndicateAttr> members = await SyndicateAttrRepository.GetAsync(Identity);
-            foreach (var dbMember in members)
+            foreach (DbSyndicateAttr dbMember in members)
             {
-                SyndicateMember member = new SyndicateMember();
+                var member = new SyndicateMember();
                 if (!await member.CreateAsync(dbMember, this))
                     continue;
 
                 if (m_dicMembers.TryAdd(member.UserIdentity, member))
-                {
                     if (member.Rank == SyndicateMember.SyndicateRank.GuildLeader)
                         m_leader = member;
-                }
             }
 
             if (MemberCount == 0)
@@ -185,28 +188,43 @@ namespace Comet.Game.States.Syndicates
 
             Level = 1;
 
-            var totemAdds = await TotemRepository.GetAsync(Identity);
-            var items = await ItemRepository.GetBySyndicateAsync(Identity) ?? new List<DbItem>();            
-            for (TotemPoleType totemPole = TotemPoleType.Headgear; totemPole < TotemPoleType.None; totemPole++)
+            List<DbTotemAdd> totemAdds = await TotemRepository.GetAsync(Identity);
+            List<DbItem> items = await ItemRepository.GetBySyndicateAsync(Identity) ?? new List<DbItem>();
+            for (var totemPole = TotemPoleType.Headgear; totemPole < TotemPoleType.None; totemPole++)
             {
-                TotemPole pole = new TotemPole(totemPole, totemAdds.FirstOrDefault(x => x.TotemType == (int)totemPole));
+                var pole = new TotemPole(totemPole, totemAdds.FirstOrDefault(x => x.TotemType == (int) totemPole));
                 switch (totemPole)
                 {
-                    case TotemPoleType.Headgear: pole.Locked = !HasTotemHeadgear; break;
-                    case TotemPoleType.Necklace: pole.Locked = !HasTotemNecklace; break;
-                    case TotemPoleType.Ring: pole.Locked = !HasTotemRing; break;
-                    case TotemPoleType.Weapon: pole.Locked = !HasTotemWeapon; break;
-                    case TotemPoleType.Armor: pole.Locked = !HasTotemArmor; break;
-                    case TotemPoleType.Boots: pole.Locked = !HasTotemBoots; break;
-                    case TotemPoleType.Fan: pole.Locked = !HasTotemFan; break;
-                    case TotemPoleType.Tower: pole.Locked = !HasTotemTower; break;
+                    case TotemPoleType.Headgear:
+                        pole.Locked = !HasTotemHeadgear;
+                        break;
+                    case TotemPoleType.Necklace:
+                        pole.Locked = !HasTotemNecklace;
+                        break;
+                    case TotemPoleType.Ring:
+                        pole.Locked = !HasTotemRing;
+                        break;
+                    case TotemPoleType.Weapon:
+                        pole.Locked = !HasTotemWeapon;
+                        break;
+                    case TotemPoleType.Armor:
+                        pole.Locked = !HasTotemArmor;
+                        break;
+                    case TotemPoleType.Boots:
+                        pole.Locked = !HasTotemBoots;
+                        break;
+                    case TotemPoleType.Fan:
+                        pole.Locked = !HasTotemFan;
+                        break;
+                    case TotemPoleType.Tower:
+                        pole.Locked = !HasTotemTower;
+                        break;
                 }
 
                 if (!pole.Locked)
-                {
-                    foreach (var item in items.Where(x => GetTotemPoleType(x.Type) == totemPole))
+                    foreach (DbItem item in items.Where(x => GetTotemPoleType(x.Type) == totemPole))
                     {
-                        if (!m_dicMembers.TryGetValue(item.PlayerId, out var member))
+                        if (!m_dicMembers.TryGetValue(item.PlayerId, out SyndicateMember member))
                         {
                             item.Syndicate = 0;
                             await ServerDbContext.SaveAsync(item);
@@ -215,7 +233,6 @@ namespace Comet.Game.States.Syndicates
 
                         pole.Totems.TryAdd(item.Id, new Totem(item, member.UserName));
                     }
-                }
 
                 m_totemPoles.TryAdd(totemPole, pole);
 
@@ -225,9 +242,9 @@ namespace Comet.Game.States.Syndicates
 
             UpdateBattlePower();
 
-            foreach (var member in m_dicMembers.Values.Where(x => !IsUserSetPosition(x.Rank)))
+            foreach (SyndicateMember member in m_dicMembers.Values.Where(x => !IsUserSetPosition(x.Rank)))
             {
-                if (Leader.MateIdentity == member.UserIdentity 
+                if (Leader.MateIdentity == member.UserIdentity
                     && member.Rank != SyndicateMember.SyndicateRank.LeaderSpouse)
                 {
                     member.Rank = SyndicateMember.SyndicateRank.LeaderSpouse;
@@ -243,10 +260,10 @@ namespace Comet.Game.States.Syndicates
 
             #region Manager
 
-            foreach (var member in m_dicMembers
-                .Values
-                .Where(x => x.Rank == SyndicateMember.SyndicateRank.Member)
-                .OrderByDescending(x => x.UsableDonation))
+            foreach (SyndicateMember member in m_dicMembers
+                                               .Values
+                                               .Where(x => x.Rank == SyndicateMember.SyndicateRank.Member)
+                                               .OrderByDescending(x => x.UsableDonation))
             {
                 if (amount++ >= maxAmount)
                     break;
@@ -261,10 +278,10 @@ namespace Comet.Game.States.Syndicates
             amount = 0;
             maxAmount = MaxPositionAmount(SyndicateMember.SyndicateRank.RoseSupervisor);
 
-            foreach (var member in m_dicMembers
-                .Values
-                .Where(x => x.Rank == SyndicateMember.SyndicateRank.Member)
-                .OrderByDescending(x => x.RedRoseDonation))
+            foreach (SyndicateMember member in m_dicMembers
+                                               .Values
+                                               .Where(x => x.Rank == SyndicateMember.SyndicateRank.Member)
+                                               .OrderByDescending(x => x.RedRoseDonation))
             {
                 if (amount++ >= maxAmount)
                     break;
@@ -273,15 +290,16 @@ namespace Comet.Game.States.Syndicates
             }
 
             #endregion
+
             #region White Rose Supervisor
 
             amount = 0;
             maxAmount = MaxPositionAmount(SyndicateMember.SyndicateRank.LilySupervisor);
 
-            foreach (var member in m_dicMembers
-                .Values
-                .Where(x => x.Rank == SyndicateMember.SyndicateRank.Member)
-                .OrderByDescending(x => x.WhiteRoseDonation))
+            foreach (SyndicateMember member in m_dicMembers
+                                               .Values
+                                               .Where(x => x.Rank == SyndicateMember.SyndicateRank.Member)
+                                               .OrderByDescending(x => x.WhiteRoseDonation))
             {
                 if (amount++ >= maxAmount)
                     break;
@@ -290,15 +308,16 @@ namespace Comet.Game.States.Syndicates
             }
 
             #endregion
+
             #region Orchid Supervisor
 
             amount = 0;
             maxAmount = MaxPositionAmount(SyndicateMember.SyndicateRank.OrchidSupervisor);
 
-            foreach (var member in m_dicMembers
-                .Values
-                .Where(x => x.Rank == SyndicateMember.SyndicateRank.Member)
-                .OrderByDescending(x => x.OrchidDonation))
+            foreach (SyndicateMember member in m_dicMembers
+                                               .Values
+                                               .Where(x => x.Rank == SyndicateMember.SyndicateRank.Member)
+                                               .OrderByDescending(x => x.OrchidDonation))
             {
                 if (amount++ >= maxAmount)
                     break;
@@ -307,15 +326,16 @@ namespace Comet.Game.States.Syndicates
             }
 
             #endregion
+
             #region Tulip Supervisor
 
             amount = 0;
             maxAmount = MaxPositionAmount(SyndicateMember.SyndicateRank.TulipSupervisor);
 
-            foreach (var member in m_dicMembers
-                .Values
-                .Where(x => x.Rank == SyndicateMember.SyndicateRank.Member)
-                .OrderByDescending(x => x.TulipDonation))
+            foreach (SyndicateMember member in m_dicMembers
+                                               .Values
+                                               .Where(x => x.Rank == SyndicateMember.SyndicateRank.Member)
+                                               .OrderByDescending(x => x.TulipDonation))
             {
                 if (amount++ >= maxAmount)
                     break;
@@ -324,15 +344,16 @@ namespace Comet.Game.States.Syndicates
             }
 
             #endregion
+
             #region Pk Supervisor
 
             amount = 0;
             maxAmount = MaxPositionAmount(SyndicateMember.SyndicateRank.PkSupervisor);
 
-            foreach (var member in m_dicMembers
-                .Values
-                .Where(x => x.Rank == SyndicateMember.SyndicateRank.Member)
-                .OrderByDescending(x => x.PkDonation))
+            foreach (SyndicateMember member in m_dicMembers
+                                               .Values
+                                               .Where(x => x.Rank == SyndicateMember.SyndicateRank.Member)
+                                               .OrderByDescending(x => x.PkDonation))
             {
                 if (amount++ >= maxAmount)
                     break;
@@ -341,15 +362,16 @@ namespace Comet.Game.States.Syndicates
             }
 
             #endregion
+
             #region Guide Supervisor
 
             amount = 0;
             maxAmount = MaxPositionAmount(SyndicateMember.SyndicateRank.GuideSupervisor);
 
-            foreach (var member in m_dicMembers
-                .Values
-                .Where(x => x.Rank == SyndicateMember.SyndicateRank.Member)
-                .OrderByDescending(x => x.GuideDonation))
+            foreach (SyndicateMember member in m_dicMembers
+                                               .Values
+                                               .Where(x => x.Rank == SyndicateMember.SyndicateRank.Member)
+                                               .OrderByDescending(x => x.GuideDonation))
             {
                 if (amount++ >= maxAmount)
                     break;
@@ -358,15 +380,16 @@ namespace Comet.Game.States.Syndicates
             }
 
             #endregion
+
             #region Silver Supervisor
 
             amount = 0;
             maxAmount = MaxPositionAmount(SyndicateMember.SyndicateRank.SilverSupervisor);
 
-            foreach (var member in m_dicMembers
-                .Values
-                .Where(x => x.Rank == SyndicateMember.SyndicateRank.Member)
-                .OrderByDescending(x => x.Silvers))
+            foreach (SyndicateMember member in m_dicMembers
+                                               .Values
+                                               .Where(x => x.Rank == SyndicateMember.SyndicateRank.Member)
+                                               .OrderByDescending(x => x.Silvers))
             {
                 if (amount++ >= maxAmount)
                     break;
@@ -375,15 +398,16 @@ namespace Comet.Game.States.Syndicates
             }
 
             #endregion
+
             #region CPs Supervisor
 
             amount = 0;
             maxAmount = MaxPositionAmount(SyndicateMember.SyndicateRank.CpSupervisor);
 
-            foreach (var member in m_dicMembers
-                .Values
-                .Where(x => x.Rank == SyndicateMember.SyndicateRank.Member)
-                .OrderByDescending(x => x.ConquerPointsDonation))
+            foreach (SyndicateMember member in m_dicMembers
+                                               .Values
+                                               .Where(x => x.Rank == SyndicateMember.SyndicateRank.Member)
+                                               .OrderByDescending(x => x.ConquerPointsDonation))
             {
                 if (amount++ >= maxAmount)
                     break;
@@ -392,15 +416,16 @@ namespace Comet.Game.States.Syndicates
             }
 
             #endregion
+
             #region Arsenal Supervisor
 
             amount = 0;
             maxAmount = MaxPositionAmount(SyndicateMember.SyndicateRank.ArsenalSupervisor);
 
-            foreach (var member in m_dicMembers
-                .Values
-                .Where(x => x.Rank == SyndicateMember.SyndicateRank.Member)
-                .OrderByDescending(x => x.ArsenalDonation))
+            foreach (SyndicateMember member in m_dicMembers
+                                               .Values
+                                               .Where(x => x.Rank == SyndicateMember.SyndicateRank.Member)
+                                               .OrderByDescending(x => x.ArsenalDonation))
             {
                 if (amount++ >= maxAmount)
                     break;
@@ -409,15 +434,16 @@ namespace Comet.Game.States.Syndicates
             }
 
             #endregion
+
             #region Supervisor
 
             amount = 0;
             maxAmount = MaxPositionAmount(SyndicateMember.SyndicateRank.Supervisor);
 
-            foreach (var member in m_dicMembers
-                .Values
-                .Where(x => x.Rank == SyndicateMember.SyndicateRank.Member)
-                .OrderByDescending(x => x.UsableDonation))
+            foreach (SyndicateMember member in m_dicMembers
+                                               .Values
+                                               .Where(x => x.Rank == SyndicateMember.SyndicateRank.Member)
+                                               .OrderByDescending(x => x.UsableDonation))
             {
                 if (amount++ >= maxAmount)
                     break;
@@ -432,10 +458,10 @@ namespace Comet.Game.States.Syndicates
             amount = 0;
             maxAmount = MaxPositionAmount(SyndicateMember.SyndicateRank.Steward);
 
-            foreach (var member in m_dicMembers
-                .Values
-                .Where(x => x.Rank == SyndicateMember.SyndicateRank.Member)
-                .OrderByDescending(x => x.UsableDonation))
+            foreach (SyndicateMember member in m_dicMembers
+                                               .Values
+                                               .Where(x => x.Rank == SyndicateMember.SyndicateRank.Member)
+                                               .OrderByDescending(x => x.UsableDonation))
             {
                 if (amount++ >= maxAmount)
                     break;
@@ -444,11 +470,13 @@ namespace Comet.Game.States.Syndicates
             }
 
             #endregion
+
             #region Deputy Steward
 
-            foreach (var member in m_dicMembers
-                .Values
-                .Where(x => x.Rank == SyndicateMember.SyndicateRank.Member && x.UsableDonation >= 170000))
+            foreach (SyndicateMember member in m_dicMembers
+                                               .Values
+                                               .Where(x => x.Rank == SyndicateMember.SyndicateRank.Member &&
+                                                           x.UsableDonation >= 170000))
             {
                 member.Rank = SyndicateMember.SyndicateRank.DeputySteward;
                 await member.SaveAsync();
@@ -461,10 +489,10 @@ namespace Comet.Game.States.Syndicates
             amount = 0;
             maxAmount = MaxPositionAmount(SyndicateMember.SyndicateRank.RoseAgent);
 
-            foreach (var member in m_dicMembers
-                .Values
-                .Where(x => x.Rank == SyndicateMember.SyndicateRank.Member)
-                .OrderByDescending(x => x.RedRoseDonation))
+            foreach (SyndicateMember member in m_dicMembers
+                                               .Values
+                                               .Where(x => x.Rank == SyndicateMember.SyndicateRank.Member)
+                                               .OrderByDescending(x => x.RedRoseDonation))
             {
                 if (amount++ >= maxAmount)
                     break;
@@ -473,15 +501,16 @@ namespace Comet.Game.States.Syndicates
             }
 
             #endregion
+
             #region White Rose Agent
 
             amount = 0;
             maxAmount = MaxPositionAmount(SyndicateMember.SyndicateRank.LilyAgent);
 
-            foreach (var member in m_dicMembers
-                .Values
-                .Where(x => x.Rank == SyndicateMember.SyndicateRank.Member)
-                .OrderByDescending(x => x.WhiteRoseDonation))
+            foreach (SyndicateMember member in m_dicMembers
+                                               .Values
+                                               .Where(x => x.Rank == SyndicateMember.SyndicateRank.Member)
+                                               .OrderByDescending(x => x.WhiteRoseDonation))
             {
                 if (amount++ >= maxAmount)
                     break;
@@ -490,15 +519,16 @@ namespace Comet.Game.States.Syndicates
             }
 
             #endregion
+
             #region Orchid Agent
 
             amount = 0;
             maxAmount = MaxPositionAmount(SyndicateMember.SyndicateRank.OrchidAgent);
 
-            foreach (var member in m_dicMembers
-                .Values
-                .Where(x => x.Rank == SyndicateMember.SyndicateRank.Member)
-                .OrderByDescending(x => x.OrchidDonation))
+            foreach (SyndicateMember member in m_dicMembers
+                                               .Values
+                                               .Where(x => x.Rank == SyndicateMember.SyndicateRank.Member)
+                                               .OrderByDescending(x => x.OrchidDonation))
             {
                 if (amount++ >= maxAmount)
                     break;
@@ -507,15 +537,16 @@ namespace Comet.Game.States.Syndicates
             }
 
             #endregion
+
             #region Tulip Agent
 
             amount = 0;
             maxAmount = MaxPositionAmount(SyndicateMember.SyndicateRank.TulipAgent);
 
-            foreach (var member in m_dicMembers
-                .Values
-                .Where(x => x.Rank == SyndicateMember.SyndicateRank.Member)
-                .OrderByDescending(x => x.TulipDonation))
+            foreach (SyndicateMember member in m_dicMembers
+                                               .Values
+                                               .Where(x => x.Rank == SyndicateMember.SyndicateRank.Member)
+                                               .OrderByDescending(x => x.TulipDonation))
             {
                 if (amount++ >= maxAmount)
                     break;
@@ -524,15 +555,16 @@ namespace Comet.Game.States.Syndicates
             }
 
             #endregion
+
             #region Pk Agent
 
             amount = 0;
             maxAmount = MaxPositionAmount(SyndicateMember.SyndicateRank.PkAgent);
 
-            foreach (var member in m_dicMembers
-                .Values
-                .Where(x => x.Rank == SyndicateMember.SyndicateRank.Member)
-                .OrderByDescending(x => x.PkDonation))
+            foreach (SyndicateMember member in m_dicMembers
+                                               .Values
+                                               .Where(x => x.Rank == SyndicateMember.SyndicateRank.Member)
+                                               .OrderByDescending(x => x.PkDonation))
             {
                 if (amount++ >= maxAmount)
                     break;
@@ -541,15 +573,16 @@ namespace Comet.Game.States.Syndicates
             }
 
             #endregion
+
             #region Guide Agent
 
             amount = 0;
             maxAmount = MaxPositionAmount(SyndicateMember.SyndicateRank.GuideAgent);
 
-            foreach (var member in m_dicMembers
-                .Values
-                .Where(x => x.Rank == SyndicateMember.SyndicateRank.Member)
-                .OrderByDescending(x => x.GuideDonation))
+            foreach (SyndicateMember member in m_dicMembers
+                                               .Values
+                                               .Where(x => x.Rank == SyndicateMember.SyndicateRank.Member)
+                                               .OrderByDescending(x => x.GuideDonation))
             {
                 if (amount++ >= maxAmount)
                     break;
@@ -558,15 +591,16 @@ namespace Comet.Game.States.Syndicates
             }
 
             #endregion
+
             #region Silver Agent
 
             amount = 0;
             maxAmount = MaxPositionAmount(SyndicateMember.SyndicateRank.SilverAgent);
 
-            foreach (var member in m_dicMembers
-                .Values
-                .Where(x => x.Rank == SyndicateMember.SyndicateRank.Member)
-                .OrderByDescending(x => x.Silvers))
+            foreach (SyndicateMember member in m_dicMembers
+                                               .Values
+                                               .Where(x => x.Rank == SyndicateMember.SyndicateRank.Member)
+                                               .OrderByDescending(x => x.Silvers))
             {
                 if (amount++ >= maxAmount)
                     break;
@@ -575,15 +609,16 @@ namespace Comet.Game.States.Syndicates
             }
 
             #endregion
+
             #region CPs Agent
 
             amount = 0;
             maxAmount = MaxPositionAmount(SyndicateMember.SyndicateRank.CpAgent);
 
-            foreach (var member in m_dicMembers
-                .Values
-                .Where(x => x.Rank == SyndicateMember.SyndicateRank.Member)
-                .OrderByDescending(x => x.ConquerPointsDonation))
+            foreach (SyndicateMember member in m_dicMembers
+                                               .Values
+                                               .Where(x => x.Rank == SyndicateMember.SyndicateRank.Member)
+                                               .OrderByDescending(x => x.ConquerPointsDonation))
             {
                 if (amount++ >= maxAmount)
                     break;
@@ -592,15 +627,16 @@ namespace Comet.Game.States.Syndicates
             }
 
             #endregion
+
             #region Arsenal Agent
 
             amount = 0;
             maxAmount = MaxPositionAmount(SyndicateMember.SyndicateRank.ArsenalAgent);
 
-            foreach (var member in m_dicMembers
-                .Values
-                .Where(x => x.Rank == SyndicateMember.SyndicateRank.Member)
-                .OrderByDescending(x => x.ArsenalDonation))
+            foreach (SyndicateMember member in m_dicMembers
+                                               .Values
+                                               .Where(x => x.Rank == SyndicateMember.SyndicateRank.Member)
+                                               .OrderByDescending(x => x.ArsenalDonation))
             {
                 if (amount++ >= maxAmount)
                     break;
@@ -609,15 +645,16 @@ namespace Comet.Game.States.Syndicates
             }
 
             #endregion
+
             #region Agent
 
             amount = 0;
             maxAmount = MaxPositionAmount(SyndicateMember.SyndicateRank.Agent);
 
-            foreach (var member in m_dicMembers
-                .Values
-                .Where(x => x.Rank == SyndicateMember.SyndicateRank.Member)
-                .OrderByDescending(x => x.UsableDonation))
+            foreach (SyndicateMember member in m_dicMembers
+                                               .Values
+                                               .Where(x => x.Rank == SyndicateMember.SyndicateRank.Member)
+                                               .OrderByDescending(x => x.UsableDonation))
             {
                 if (amount++ >= maxAmount)
                     break;
@@ -632,10 +669,10 @@ namespace Comet.Game.States.Syndicates
             amount = 0;
             maxAmount = MaxPositionAmount(SyndicateMember.SyndicateRank.RoseFollower);
 
-            foreach (var member in m_dicMembers
-                .Values
-                .Where(x => x.Rank == SyndicateMember.SyndicateRank.Member)
-                .OrderByDescending(x => x.RedRoseDonation))
+            foreach (SyndicateMember member in m_dicMembers
+                                               .Values
+                                               .Where(x => x.Rank == SyndicateMember.SyndicateRank.Member)
+                                               .OrderByDescending(x => x.RedRoseDonation))
             {
                 if (amount++ >= maxAmount)
                     break;
@@ -644,15 +681,16 @@ namespace Comet.Game.States.Syndicates
             }
 
             #endregion
+
             #region White Rose Follower
 
             amount = 0;
             maxAmount = MaxPositionAmount(SyndicateMember.SyndicateRank.LilyFollower);
 
-            foreach (var member in m_dicMembers
-                .Values
-                .Where(x => x.Rank == SyndicateMember.SyndicateRank.Member)
-                .OrderByDescending(x => x.WhiteRoseDonation))
+            foreach (SyndicateMember member in m_dicMembers
+                                               .Values
+                                               .Where(x => x.Rank == SyndicateMember.SyndicateRank.Member)
+                                               .OrderByDescending(x => x.WhiteRoseDonation))
             {
                 if (amount++ >= maxAmount)
                     break;
@@ -661,15 +699,16 @@ namespace Comet.Game.States.Syndicates
             }
 
             #endregion
+
             #region Orchid Follower
 
             amount = 0;
             maxAmount = MaxPositionAmount(SyndicateMember.SyndicateRank.OrchidFollower);
 
-            foreach (var member in m_dicMembers
-                .Values
-                .Where(x => x.Rank == SyndicateMember.SyndicateRank.Member)
-                .OrderByDescending(x => x.OrchidDonation))
+            foreach (SyndicateMember member in m_dicMembers
+                                               .Values
+                                               .Where(x => x.Rank == SyndicateMember.SyndicateRank.Member)
+                                               .OrderByDescending(x => x.OrchidDonation))
             {
                 if (amount++ >= maxAmount)
                     break;
@@ -678,15 +717,16 @@ namespace Comet.Game.States.Syndicates
             }
 
             #endregion
+
             #region Tulip Follower
 
             amount = 0;
             maxAmount = MaxPositionAmount(SyndicateMember.SyndicateRank.TulipFollower);
 
-            foreach (var member in m_dicMembers
-                .Values
-                .Where(x => x.Rank == SyndicateMember.SyndicateRank.Member)
-                .OrderByDescending(x => x.TulipDonation))
+            foreach (SyndicateMember member in m_dicMembers
+                                               .Values
+                                               .Where(x => x.Rank == SyndicateMember.SyndicateRank.Member)
+                                               .OrderByDescending(x => x.TulipDonation))
             {
                 if (amount++ >= maxAmount)
                     break;
@@ -695,15 +735,16 @@ namespace Comet.Game.States.Syndicates
             }
 
             #endregion
+
             #region Pk Follower
 
             amount = 0;
             maxAmount = MaxPositionAmount(SyndicateMember.SyndicateRank.PkFollower);
 
-            foreach (var member in m_dicMembers
-                .Values
-                .Where(x => x.Rank == SyndicateMember.SyndicateRank.Member)
-                .OrderByDescending(x => x.PkDonation))
+            foreach (SyndicateMember member in m_dicMembers
+                                               .Values
+                                               .Where(x => x.Rank == SyndicateMember.SyndicateRank.Member)
+                                               .OrderByDescending(x => x.PkDonation))
             {
                 if (amount++ >= maxAmount)
                     break;
@@ -712,15 +753,16 @@ namespace Comet.Game.States.Syndicates
             }
 
             #endregion
+
             #region Guide Follower
 
             amount = 0;
             maxAmount = MaxPositionAmount(SyndicateMember.SyndicateRank.GuideFollower);
 
-            foreach (var member in m_dicMembers
-                .Values
-                .Where(x => x.Rank == SyndicateMember.SyndicateRank.Member)
-                .OrderByDescending(x => x.GuideDonation))
+            foreach (SyndicateMember member in m_dicMembers
+                                               .Values
+                                               .Where(x => x.Rank == SyndicateMember.SyndicateRank.Member)
+                                               .OrderByDescending(x => x.GuideDonation))
             {
                 if (amount++ >= maxAmount)
                     break;
@@ -729,15 +771,16 @@ namespace Comet.Game.States.Syndicates
             }
 
             #endregion
+
             #region Silver Follower
 
             amount = 0;
             maxAmount = MaxPositionAmount(SyndicateMember.SyndicateRank.SilverFollower);
 
-            foreach (var member in m_dicMembers
-                .Values
-                .Where(x => x.Rank == SyndicateMember.SyndicateRank.Member)
-                .OrderByDescending(x => x.Silvers))
+            foreach (SyndicateMember member in m_dicMembers
+                                               .Values
+                                               .Where(x => x.Rank == SyndicateMember.SyndicateRank.Member)
+                                               .OrderByDescending(x => x.Silvers))
             {
                 if (amount++ >= maxAmount)
                     break;
@@ -746,15 +789,16 @@ namespace Comet.Game.States.Syndicates
             }
 
             #endregion
+
             #region CPs Follower
 
             amount = 0;
             maxAmount = MaxPositionAmount(SyndicateMember.SyndicateRank.CpFollower);
 
-            foreach (var member in m_dicMembers
-                .Values
-                .Where(x => x.Rank == SyndicateMember.SyndicateRank.Member)
-                .OrderByDescending(x => x.ConquerPointsDonation))
+            foreach (SyndicateMember member in m_dicMembers
+                                               .Values
+                                               .Where(x => x.Rank == SyndicateMember.SyndicateRank.Member)
+                                               .OrderByDescending(x => x.ConquerPointsDonation))
             {
                 if (amount++ >= maxAmount)
                     break;
@@ -763,15 +807,16 @@ namespace Comet.Game.States.Syndicates
             }
 
             #endregion
+
             #region Arsenal Follower
 
             amount = 0;
             maxAmount = MaxPositionAmount(SyndicateMember.SyndicateRank.ArsenalFollower);
 
-            foreach (var member in m_dicMembers
-                .Values
-                .Where(x => x.Rank == SyndicateMember.SyndicateRank.Member)
-                .OrderByDescending(x => x.ArsenalDonation))
+            foreach (SyndicateMember member in m_dicMembers
+                                               .Values
+                                               .Where(x => x.Rank == SyndicateMember.SyndicateRank.Member)
+                                               .OrderByDescending(x => x.ArsenalDonation))
             {
                 if (amount++ >= maxAmount)
                     break;
@@ -780,15 +825,16 @@ namespace Comet.Game.States.Syndicates
             }
 
             #endregion
+
             #region Follower
 
             amount = 0;
             maxAmount = MaxPositionAmount(SyndicateMember.SyndicateRank.Follower);
 
-            foreach (var member in m_dicMembers
-                .Values
-                .Where(x => x.Rank == SyndicateMember.SyndicateRank.Member)
-                .OrderByDescending(x => x.UsableDonation))
+            foreach (SyndicateMember member in m_dicMembers
+                                               .Values
+                                               .Where(x => x.Rank == SyndicateMember.SyndicateRank.Member)
+                                               .OrderByDescending(x => x.UsableDonation))
             {
                 if (amount++ >= maxAmount)
                     break;
@@ -820,7 +866,7 @@ namespace Comet.Game.States.Syndicates
                 CreationDate = DateTime.Now,
                 LeaderIdentity = leader.Identity,
                 LeaderName = leader.Name,
-                Money = investment/2,
+                Money = investment / 2,
                 Name = name,
                 ReqClass = 0,
                 ReqMetempsychosis = 0,
@@ -843,21 +889,20 @@ namespace Comet.Game.States.Syndicates
 
             m_dicMembers.TryAdd(m_leader.UserIdentity, m_leader);
 
-            for (TotemPoleType totemPole = TotemPoleType.Headgear; totemPole < TotemPoleType.None; totemPole++)
-            {
+            for (var totemPole = TotemPoleType.Headgear; totemPole < TotemPoleType.None; totemPole++)
                 m_totemPoles.TryAdd(totemPole, new TotemPole(totemPole));
-            }
 
             return true;
         }
 
         public async Task LoadRelationAsync()
         {
-            var dbAllies = await SyndicateAllyRepository.GetAsync(Identity);
-            foreach (var ally in dbAllies)
+            List<DbSyndicateAlly> dbAllies = await SyndicateAllyRepository.GetAsync(Identity);
+            foreach (DbSyndicateAlly ally in dbAllies)
             {
                 // validate alliance
-                if ((await SyndicateAllyRepository.GetAsync(ally.AllyIdentity)).All(x => x.AllyIdentity != ally.SyndicateIdentity))
+                if ((await SyndicateAllyRepository.GetAsync(ally.AllyIdentity)).All(
+                        x => x.AllyIdentity != ally.SyndicateIdentity))
                 {
                     await ServerDbContext.DeleteAsync(ally);
                     continue;
@@ -874,10 +919,10 @@ namespace Comet.Game.States.Syndicates
                 m_dicAllies.TryAdd(syndicate.Identity, syndicate);
             }
 
-            var dbEnemies = await SyndicateEnemyRepository.GetAsync(Identity);
-            foreach (var enemy in dbEnemies)
+            List<DbSyndicateEnemy> dbEnemies = await SyndicateEnemyRepository.GetAsync(Identity);
+            foreach (DbSyndicateEnemy enemy in dbEnemies)
             {
-                Syndicate syndicate = SyndicateManager.GetSyndicate((int)enemy.EnemyIdentity);
+                Syndicate syndicate = SyndicateManager.GetSyndicate((int) enemy.EnemyIdentity);
                 if (syndicate == null || syndicate.Deleted)
                 {
                     // invalid ally
@@ -901,39 +946,28 @@ namespace Comet.Game.States.Syndicates
             if (MemberCount > 1)
                 return false;
 
-            if (Money < DISBAND_MONEY)
-            {
-                return false;
-            }
+            if (Money < DISBAND_MONEY) return false;
 
             user.Syndicate = null;
 
-            if (m_dicMembers.TryRemove(user.Identity, out var member))
-            {
-                await member.DeleteAsync();
-            }
+            if (m_dicMembers.TryRemove(user.Identity, out SyndicateMember member)) await member.DeleteAsync();
 
             ExitFromEvents();
 
             await UnsubscribeAllAsync(user.Identity);
 
             // additional clean up
-            await new ServerDbContext().Database.ExecuteSqlRawAsync($"DELETE FROM `cq_synattr` WHERE `syn_id`={Identity}");
+            await new ServerDbContext().Database.ExecuteSqlRawAsync(
+                $"DELETE FROM `cq_synattr` WHERE `syn_id`={Identity}");
 
-            foreach (var ally in m_dicAllies.Values)
-            {
-                await RemoveAllyAsync(ally.Identity);
-            }
+            foreach (Syndicate ally in m_dicAllies.Values) await RemoveAllyAsync(ally.Identity);
 
-            foreach (var enemy in m_dicEnemies.Values)
-            {
-                await PeaceAsync(user, enemy);
-            }
+            foreach (Syndicate enemy in m_dicEnemies.Values) await PeaceAsync(user, enemy);
 
             await user.SendAsync(new MsgSyndicate
             {
                 Identity = Identity,
-                Mode = MsgSyndicate.SyndicateRequest.Disband
+                Mode = MsgSyndicate<Client>.SyndicateRequest.Disband
             });
 
             await user.Screen.SynchroScreenAsync();
@@ -947,10 +981,7 @@ namespace Comet.Game.States.Syndicates
 
         public async Task<bool> AppendMemberAsync(Character target, Character caller, JoinMode mode)
         {
-            if ((mode == JoinMode.Invite || mode == JoinMode.Request) && caller == null)
-            {
-                return false;
-            }
+            if ((mode == JoinMode.Invite || mode == JoinMode.Request) && caller == null) return false;
 
             if (target.SyndicateIdentity != 0)
                 return false;
@@ -967,10 +998,7 @@ namespace Comet.Game.States.Syndicates
             if (target.Metempsychosis < MetempsychosisRequirement)
                 return false;
 
-            if (target.CurrentEvent != null)
-            {
-                return false; // cannot join while in event
-            }
+            if (target.CurrentEvent != null) return false; // cannot join while in event
 
             switch (target.ProfessionSort)
             {
@@ -1025,19 +1053,22 @@ namespace Comet.Game.States.Syndicates
             switch (mode)
             {
                 case JoinMode.Invite:
-                    await SendAsync(string.Format(Language.StrSynInviteGuild, caller.SyndicateMember.RankName, caller.Name, target.Name));
+                    await SendAsync(string.Format(Language.StrSynInviteGuild, caller.SyndicateMember.RankName,
+                                                  caller.Name, target.Name));
                     break;
                 case JoinMode.Request:
-                    await SendAsync(string.Format(Language.StrSynJoinGuild, caller.SyndicateMember.RankName, caller.Name, target.Name));
+                    await SendAsync(string.Format(Language.StrSynJoinGuild, caller.SyndicateMember.RankName,
+                                                  caller.Name, target.Name));
                     break;
                 case JoinMode.Recruitment:
                     break;
             }
 
-            if (m_dicMembers.TryGetValue(target.MateIdentity, out var mate))
+            if (m_dicMembers.TryGetValue(target.MateIdentity, out SyndicateMember mate))
             {
-                var matePos = GetSpousePosition(mate.Rank);
-                if (matePos != SyndicateMember.SyndicateRank.None && matePos > mate.Rank && IsSystemDefinedPosition(mate.Rank))
+                SyndicateMember.SyndicateRank matePos = GetSpousePosition(mate.Rank);
+                if (matePos != SyndicateMember.SyndicateRank.None && matePos > mate.Rank &&
+                    IsSystemDefinedPosition(mate.Rank))
                     await SetSpouseAsync(target.SyndicateMember, matePos);
             }
 
@@ -1049,7 +1080,7 @@ namespace Comet.Game.States.Syndicates
             if (target.SyndicateRank == SyndicateMember.SyndicateRank.GuildLeader)
                 return false;
 
-            if (!m_dicMembers.TryGetValue(target.Identity, out var member))
+            if (!m_dicMembers.TryGetValue(target.Identity, out SyndicateMember member))
                 return false;
 
             if (target.CurrentEvent != null)
@@ -1068,7 +1099,7 @@ namespace Comet.Game.States.Syndicates
             await target.SendAsync(new MsgSyndicate
             {
                 Identity = Identity,
-                Mode = MsgSyndicate.SyndicateRequest.Disband
+                Mode = MsgSyndicate<Client>.SyndicateRequest.Disband
             });
 
             m_syndicate.Amount = (uint) MemberCount;
@@ -1082,7 +1113,7 @@ namespace Comet.Game.States.Syndicates
                 JoinDate = member.JoinDate,
                 LeaveDate = DateTime.Now,
                 SyndicateIdentity = Identity,
-                Rank = (ushort)member.Rank,
+                Rank = (ushort) member.Rank,
                 Silver = member.Silvers,
                 ConquerPoints = 0,
                 Guide = 0,
@@ -1096,11 +1127,9 @@ namespace Comet.Game.States.Syndicates
 
             await UnsubscribeAllAsync(target.Identity);
 
-            if (m_dicMembers.TryGetValue(member.MateIdentity, out var mate))
-            {
+            if (m_dicMembers.TryGetValue(member.MateIdentity, out SyndicateMember mate))
                 if (IsSpousePosition(mate.Rank))
                     await SetSpouseAsync(mate, SyndicateMember.SyndicateRank.Member);
-            }
 
             return true;
         }
@@ -1116,7 +1145,7 @@ namespace Comet.Game.States.Syndicates
                 return false;
             }
 
-            var member = QueryMember(name);
+            SyndicateMember member = QueryMember(name);
             if (member == null)
                 return false;
 
@@ -1133,7 +1162,7 @@ namespace Comet.Game.States.Syndicates
                 await target.SendAsync(new MsgSyndicate
                 {
                     Identity = Identity,
-                    Mode = MsgSyndicate.SyndicateRequest.Disband
+                    Mode = MsgSyndicate<Client>.SyndicateRequest.Disband
                 });
                 await target.Screen.SynchroScreenAsync();
                 await target.SendAsync(string.Format(Language.StrSynYouBeenKicked, sender.Name));
@@ -1154,18 +1183,17 @@ namespace Comet.Game.States.Syndicates
                 PkPoints = 0
             });
 
-            m_syndicate.Amount = (uint)MemberCount;
+            m_syndicate.Amount = (uint) MemberCount;
             await SaveAsync();
             await member.DeleteAsync();
-            await SendAsync(string.Format(Language.StrSynMemberKickout, sender.SyndicateMember.RankName, sender.Name, member.UserName));
+            await SendAsync(string.Format(Language.StrSynMemberKickout, sender.SyndicateMember.RankName, sender.Name,
+                                          member.UserName));
 
             await UnsubscribeAllAsync(member.UserIdentity);
 
-            if (m_dicMembers.TryGetValue(member.MateIdentity, out var mate))
-            {
+            if (m_dicMembers.TryGetValue(member.MateIdentity, out SyndicateMember mate))
                 if (IsSpousePosition(mate.Rank))
                     await SetSpouseAsync(mate, SyndicateMember.SyndicateRank.Member);
-            }
 
             return true;
         }
@@ -1272,7 +1300,7 @@ namespace Comet.Game.States.Syndicates
                     if (!IsMasterPosition(sender.SyndicateRank))
                         return false;
 
-                    var assistant = GetAssistantPosition(sender.SyndicateRank);
+                    SyndicateMember.SyndicateRank assistant = GetAssistantPosition(sender.SyndicateRank);
                     if (assistant != position)
                         return false;
 
@@ -1314,8 +1342,9 @@ namespace Comet.Game.States.Syndicates
             }
             else
             {
-                await SendAsync(string.Format(Language.StrSynPromoted, sender.SyndicateMember.RankName, sender.Name, target.Name,
-                    position));
+                await SendAsync(string.Format(Language.StrSynPromoted, sender.SyndicateMember.RankName, sender.Name,
+                                              target.Name,
+                                              position));
             }
 
             target.SyndicateMember.Rank = position;
@@ -1327,10 +1356,11 @@ namespace Comet.Game.States.Syndicates
             await target.Screen.SynchroScreenAsync();
             await target.SyndicateMember.SaveAsync();
 
-            if (m_dicMembers.TryGetValue(target.MateIdentity, out var mate))
+            if (m_dicMembers.TryGetValue(target.MateIdentity, out SyndicateMember mate))
             {
-                var matePos = GetSpousePosition(mate.Rank);
-                if (matePos != SyndicateMember.SyndicateRank.None && matePos > mate.Rank && IsSystemDefinedPosition(mate.Rank))
+                SyndicateMember.SyndicateRank matePos = GetSpousePosition(mate.Rank);
+                if (matePos != SyndicateMember.SyndicateRank.None && matePos > mate.Rank &&
+                    IsSystemDefinedPosition(mate.Rank))
                     await SetSpouseAsync(target.SyndicateMember, matePos);
             }
 
@@ -1339,7 +1369,7 @@ namespace Comet.Game.States.Syndicates
 
         public Task<bool> DemoteAsync(Character sender, string name)
         {
-            var member = QueryMember(name);
+            SyndicateMember member = QueryMember(name);
             if (member == null)
                 return Task.FromResult(false);
             return DemoteAsync(sender, member);
@@ -1347,7 +1377,7 @@ namespace Comet.Game.States.Syndicates
 
         public Task<bool> DemoteAsync(Character sender, uint target)
         {
-            var member = QueryMember(target);
+            SyndicateMember member = QueryMember(target);
             if (member == null)
                 return Task.FromResult(false);
             return DemoteAsync(sender, member);
@@ -1369,10 +1399,7 @@ namespace Comet.Game.States.Syndicates
                 if (IsAssistantPosition(member.Rank) && sender.Identity != member.MasterIdentity)
                     return false;
 
-                if (IsSystemDefinedPosition(member.Rank))
-                {
-                    return false;
-                }
+                if (IsSystemDefinedPosition(member.Rank)) return false;
             }
 
             if (Money < SYNDICATE_ACTION_COST)
@@ -1391,13 +1418,12 @@ namespace Comet.Game.States.Syndicates
                 await member.User.SendSyndicateAsync();
                 await member.User.Screen.SynchroScreenAsync();
             }
+
             await member.SaveAsync();
 
-            if (m_dicMembers.TryGetValue(member.MateIdentity, out var mate))
-            {
+            if (m_dicMembers.TryGetValue(member.MateIdentity, out SyndicateMember mate))
                 if (IsSpousePosition(mate.Rank))
                     await SetSpouseAsync(mate, SyndicateMember.SyndicateRank.Member);
-            }
             return true;
         }
 
@@ -1410,24 +1436,31 @@ namespace Comet.Game.States.Syndicates
                 await member.User.SendSyndicateAsync();
                 await member.User.Screen.SynchroScreenAsync();
             }
+
             await member.SaveAsync();
         }
 
         public Task SendPromotionListAsync(Character target)
         {
-            MsgSyndicate msg = new MsgSyndicate
+            var msg = new MsgSyndicate
             {
-                Mode = MsgSyndicate.SyndicateRequest.PromotionList
+                Mode = MsgSyndicate<Client>.SyndicateRequest.PromotionList
             };
 
             if (target.SyndicateRank == SyndicateMember.SyndicateRank.GuildLeader)
             {
-                msg.Strings.Add($"{(int) SyndicateMember.SyndicateRank.GuildLeader} 1 1 {GetSharedBattlePower(SyndicateMember.SyndicateRank.GuildLeader)} 0");
-                msg.Strings.Add($"{(int) SyndicateMember.SyndicateRank.DeputyLeader} {DeputyLeaderCount} {MaxDeputyLeader} {GetSharedBattlePower(SyndicateMember.SyndicateRank.DeputyLeader)} 0");
-                msg.Strings.Add($"{(int) SyndicateMember.SyndicateRank.HonoraryDeputyLeader} {HonoraryDeputyLeaderCount} {MaxHonoraryDeputyLeader} {GetSharedBattlePower(SyndicateMember.SyndicateRank.HonoraryDeputyLeader)} {HONORARY_DEPUTY_LEADER_PRICE}");
-                msg.Strings.Add($"{(int) SyndicateMember.SyndicateRank.HonoraryManager} {HonoraryManagerCount} {MaxHonoraryManager} {GetSharedBattlePower(SyndicateMember.SyndicateRank.HonoraryManager)} {HONORARY_MANAGER_PRICE}");
-                msg.Strings.Add($"{(int) SyndicateMember.SyndicateRank.HonorarySupervisor} {HonorarySupervisorCount} {MaxHonorarySupervisor} {GetSharedBattlePower(SyndicateMember.SyndicateRank.HonorarySupervisor)} {HONORARY_SUPERVISOR_PRICE}");
-                msg.Strings.Add($"{(int) SyndicateMember.SyndicateRank.HonorarySteward} {HonoraryStewardCount} {MaxHonorarySteward} {GetSharedBattlePower(SyndicateMember.SyndicateRank.HonorarySteward)} {HONORARY_STEWARD_PRICE}");
+                msg.Strings.Add(
+                    $"{(int) SyndicateMember.SyndicateRank.GuildLeader} 1 1 {GetSharedBattlePower(SyndicateMember.SyndicateRank.GuildLeader)} 0");
+                msg.Strings.Add(
+                    $"{(int) SyndicateMember.SyndicateRank.DeputyLeader} {DeputyLeaderCount} {MaxDeputyLeader} {GetSharedBattlePower(SyndicateMember.SyndicateRank.DeputyLeader)} 0");
+                msg.Strings.Add(
+                    $"{(int) SyndicateMember.SyndicateRank.HonoraryDeputyLeader} {HonoraryDeputyLeaderCount} {MaxHonoraryDeputyLeader} {GetSharedBattlePower(SyndicateMember.SyndicateRank.HonoraryDeputyLeader)} {HONORARY_DEPUTY_LEADER_PRICE}");
+                msg.Strings.Add(
+                    $"{(int) SyndicateMember.SyndicateRank.HonoraryManager} {HonoraryManagerCount} {MaxHonoraryManager} {GetSharedBattlePower(SyndicateMember.SyndicateRank.HonoraryManager)} {HONORARY_MANAGER_PRICE}");
+                msg.Strings.Add(
+                    $"{(int) SyndicateMember.SyndicateRank.HonorarySupervisor} {HonorarySupervisorCount} {MaxHonorarySupervisor} {GetSharedBattlePower(SyndicateMember.SyndicateRank.HonorarySupervisor)} {HONORARY_SUPERVISOR_PRICE}");
+                msg.Strings.Add(
+                    $"{(int) SyndicateMember.SyndicateRank.HonorarySteward} {HonoraryStewardCount} {MaxHonorarySteward} {GetSharedBattlePower(SyndicateMember.SyndicateRank.HonorarySteward)} {HONORARY_STEWARD_PRICE}");
             }
 
             if (IsMasterPosition(target.SyndicateRank))
@@ -1447,422 +1480,422 @@ namespace Comet.Game.States.Syndicates
                 #region Level 1
 
                 case 1:
+                {
+                    switch (pos)
                     {
-                        switch (pos)
-                        {
-                            case SyndicateMember.SyndicateRank.Manager:
-                            case SyndicateMember.SyndicateRank.ManagerAide:
-                                return 1;
-                            case SyndicateMember.SyndicateRank.Supervisor:
-                            case SyndicateMember.SyndicateRank.ArsenalSupervisor:
-                            case SyndicateMember.SyndicateRank.CpSupervisor:
-                            case SyndicateMember.SyndicateRank.GuideSupervisor:
-                            case SyndicateMember.SyndicateRank.LilySupervisor:
-                            case SyndicateMember.SyndicateRank.OrchidSupervisor:
-                            case SyndicateMember.SyndicateRank.PkSupervisor:
-                            case SyndicateMember.SyndicateRank.SilverSupervisor:
-                            case SyndicateMember.SyndicateRank.TulipSupervisor:
-                            case SyndicateMember.SyndicateRank.Steward:
-                                return 0;
-                            case SyndicateMember.SyndicateRank.Agent:
-                            case SyndicateMember.SyndicateRank.ArsenalAgent:
-                            case SyndicateMember.SyndicateRank.CpAgent:
-                            case SyndicateMember.SyndicateRank.GuideAgent:
-                            case SyndicateMember.SyndicateRank.LilyAgent:
-                            case SyndicateMember.SyndicateRank.OrchidAgent:
-                            case SyndicateMember.SyndicateRank.PkAgent:
-                            case SyndicateMember.SyndicateRank.SilverAgent:
-                            case SyndicateMember.SyndicateRank.TulipAgent:
-                            case SyndicateMember.SyndicateRank.Follower:
-                            case SyndicateMember.SyndicateRank.ArsenalFollower:
-                            case SyndicateMember.SyndicateRank.CpFollower:
-                            case SyndicateMember.SyndicateRank.GuideFollower:
-                            case SyndicateMember.SyndicateRank.LilyFollower:
-                            case SyndicateMember.SyndicateRank.OrchidFollower:
-                            case SyndicateMember.SyndicateRank.PkFollower:
-                            case SyndicateMember.SyndicateRank.SilverFollower:
-                            case SyndicateMember.SyndicateRank.TulipFollower:
-                                return 1;
-                            default:
-                                return 0;
-                        }
+                        case SyndicateMember.SyndicateRank.Manager:
+                        case SyndicateMember.SyndicateRank.ManagerAide:
+                            return 1;
+                        case SyndicateMember.SyndicateRank.Supervisor:
+                        case SyndicateMember.SyndicateRank.ArsenalSupervisor:
+                        case SyndicateMember.SyndicateRank.CpSupervisor:
+                        case SyndicateMember.SyndicateRank.GuideSupervisor:
+                        case SyndicateMember.SyndicateRank.LilySupervisor:
+                        case SyndicateMember.SyndicateRank.OrchidSupervisor:
+                        case SyndicateMember.SyndicateRank.PkSupervisor:
+                        case SyndicateMember.SyndicateRank.SilverSupervisor:
+                        case SyndicateMember.SyndicateRank.TulipSupervisor:
+                        case SyndicateMember.SyndicateRank.Steward:
+                            return 0;
+                        case SyndicateMember.SyndicateRank.Agent:
+                        case SyndicateMember.SyndicateRank.ArsenalAgent:
+                        case SyndicateMember.SyndicateRank.CpAgent:
+                        case SyndicateMember.SyndicateRank.GuideAgent:
+                        case SyndicateMember.SyndicateRank.LilyAgent:
+                        case SyndicateMember.SyndicateRank.OrchidAgent:
+                        case SyndicateMember.SyndicateRank.PkAgent:
+                        case SyndicateMember.SyndicateRank.SilverAgent:
+                        case SyndicateMember.SyndicateRank.TulipAgent:
+                        case SyndicateMember.SyndicateRank.Follower:
+                        case SyndicateMember.SyndicateRank.ArsenalFollower:
+                        case SyndicateMember.SyndicateRank.CpFollower:
+                        case SyndicateMember.SyndicateRank.GuideFollower:
+                        case SyndicateMember.SyndicateRank.LilyFollower:
+                        case SyndicateMember.SyndicateRank.OrchidFollower:
+                        case SyndicateMember.SyndicateRank.PkFollower:
+                        case SyndicateMember.SyndicateRank.SilverFollower:
+                        case SyndicateMember.SyndicateRank.TulipFollower:
+                            return 1;
+                        default:
+                            return 0;
                     }
+                }
 
                 #endregion
 
                 #region Level 2
 
                 case 2:
+                {
+                    switch (pos)
                     {
-                        switch (pos)
-                        {
-                            case SyndicateMember.SyndicateRank.Manager:
-                            case SyndicateMember.SyndicateRank.ManagerAide:
-                                return 1;
-                            case SyndicateMember.SyndicateRank.Supervisor:
-                            case SyndicateMember.SyndicateRank.ArsenalSupervisor:
-                            case SyndicateMember.SyndicateRank.CpSupervisor:
-                            case SyndicateMember.SyndicateRank.GuideSupervisor:
-                            case SyndicateMember.SyndicateRank.LilySupervisor:
-                            case SyndicateMember.SyndicateRank.OrchidSupervisor:
-                            case SyndicateMember.SyndicateRank.PkSupervisor:
-                            case SyndicateMember.SyndicateRank.SilverSupervisor:
-                            case SyndicateMember.SyndicateRank.TulipSupervisor:
-                                return 0;
-                            case SyndicateMember.SyndicateRank.Steward:
-                                return 1;
-                            case SyndicateMember.SyndicateRank.Agent:
-                            case SyndicateMember.SyndicateRank.ArsenalAgent:
-                            case SyndicateMember.SyndicateRank.CpAgent:
-                            case SyndicateMember.SyndicateRank.GuideAgent:
-                            case SyndicateMember.SyndicateRank.LilyAgent:
-                            case SyndicateMember.SyndicateRank.OrchidAgent:
-                            case SyndicateMember.SyndicateRank.PkAgent:
-                            case SyndicateMember.SyndicateRank.SilverAgent:
-                            case SyndicateMember.SyndicateRank.TulipAgent:
-                            case SyndicateMember.SyndicateRank.Follower:
-                            case SyndicateMember.SyndicateRank.ArsenalFollower:
-                            case SyndicateMember.SyndicateRank.CpFollower:
-                            case SyndicateMember.SyndicateRank.GuideFollower:
-                            case SyndicateMember.SyndicateRank.LilyFollower:
-                            case SyndicateMember.SyndicateRank.OrchidFollower:
-                            case SyndicateMember.SyndicateRank.PkFollower:
-                            case SyndicateMember.SyndicateRank.SilverFollower:
-                            case SyndicateMember.SyndicateRank.TulipFollower:
-                                return 1;
-                            default:
-                                return 0;
-                        }
+                        case SyndicateMember.SyndicateRank.Manager:
+                        case SyndicateMember.SyndicateRank.ManagerAide:
+                            return 1;
+                        case SyndicateMember.SyndicateRank.Supervisor:
+                        case SyndicateMember.SyndicateRank.ArsenalSupervisor:
+                        case SyndicateMember.SyndicateRank.CpSupervisor:
+                        case SyndicateMember.SyndicateRank.GuideSupervisor:
+                        case SyndicateMember.SyndicateRank.LilySupervisor:
+                        case SyndicateMember.SyndicateRank.OrchidSupervisor:
+                        case SyndicateMember.SyndicateRank.PkSupervisor:
+                        case SyndicateMember.SyndicateRank.SilverSupervisor:
+                        case SyndicateMember.SyndicateRank.TulipSupervisor:
+                            return 0;
+                        case SyndicateMember.SyndicateRank.Steward:
+                            return 1;
+                        case SyndicateMember.SyndicateRank.Agent:
+                        case SyndicateMember.SyndicateRank.ArsenalAgent:
+                        case SyndicateMember.SyndicateRank.CpAgent:
+                        case SyndicateMember.SyndicateRank.GuideAgent:
+                        case SyndicateMember.SyndicateRank.LilyAgent:
+                        case SyndicateMember.SyndicateRank.OrchidAgent:
+                        case SyndicateMember.SyndicateRank.PkAgent:
+                        case SyndicateMember.SyndicateRank.SilverAgent:
+                        case SyndicateMember.SyndicateRank.TulipAgent:
+                        case SyndicateMember.SyndicateRank.Follower:
+                        case SyndicateMember.SyndicateRank.ArsenalFollower:
+                        case SyndicateMember.SyndicateRank.CpFollower:
+                        case SyndicateMember.SyndicateRank.GuideFollower:
+                        case SyndicateMember.SyndicateRank.LilyFollower:
+                        case SyndicateMember.SyndicateRank.OrchidFollower:
+                        case SyndicateMember.SyndicateRank.PkFollower:
+                        case SyndicateMember.SyndicateRank.SilverFollower:
+                        case SyndicateMember.SyndicateRank.TulipFollower:
+                            return 1;
+                        default:
+                            return 0;
                     }
+                }
 
                 #endregion
 
                 #region Level 3
 
                 case 3:
+                {
+                    switch (pos)
                     {
-                        switch (pos)
-                        {
-                            case SyndicateMember.SyndicateRank.Manager:
-                            case SyndicateMember.SyndicateRank.ManagerAide:
-                                return 2;
-                            case SyndicateMember.SyndicateRank.Supervisor:
-                            case SyndicateMember.SyndicateRank.ArsenalSupervisor:
-                            case SyndicateMember.SyndicateRank.CpSupervisor:
-                            case SyndicateMember.SyndicateRank.GuideSupervisor:
-                            case SyndicateMember.SyndicateRank.LilySupervisor:
-                            case SyndicateMember.SyndicateRank.OrchidSupervisor:
-                            case SyndicateMember.SyndicateRank.PkSupervisor:
-                            case SyndicateMember.SyndicateRank.SilverSupervisor:
-                            case SyndicateMember.SyndicateRank.TulipSupervisor:
-                                return 0;
-                            case SyndicateMember.SyndicateRank.Steward:
-                                return 2;
-                            case SyndicateMember.SyndicateRank.Agent:
-                            case SyndicateMember.SyndicateRank.ArsenalAgent:
-                            case SyndicateMember.SyndicateRank.CpAgent:
-                            case SyndicateMember.SyndicateRank.GuideAgent:
-                            case SyndicateMember.SyndicateRank.LilyAgent:
-                            case SyndicateMember.SyndicateRank.OrchidAgent:
-                            case SyndicateMember.SyndicateRank.PkAgent:
-                            case SyndicateMember.SyndicateRank.SilverAgent:
-                            case SyndicateMember.SyndicateRank.TulipAgent:
-                            case SyndicateMember.SyndicateRank.Follower:
-                            case SyndicateMember.SyndicateRank.ArsenalFollower:
-                            case SyndicateMember.SyndicateRank.CpFollower:
-                            case SyndicateMember.SyndicateRank.GuideFollower:
-                            case SyndicateMember.SyndicateRank.LilyFollower:
-                            case SyndicateMember.SyndicateRank.OrchidFollower:
-                            case SyndicateMember.SyndicateRank.PkFollower:
-                            case SyndicateMember.SyndicateRank.SilverFollower:
-                            case SyndicateMember.SyndicateRank.TulipFollower:
-                                return 1;
-                            default:
-                                return 0;
-                        }
+                        case SyndicateMember.SyndicateRank.Manager:
+                        case SyndicateMember.SyndicateRank.ManagerAide:
+                            return 2;
+                        case SyndicateMember.SyndicateRank.Supervisor:
+                        case SyndicateMember.SyndicateRank.ArsenalSupervisor:
+                        case SyndicateMember.SyndicateRank.CpSupervisor:
+                        case SyndicateMember.SyndicateRank.GuideSupervisor:
+                        case SyndicateMember.SyndicateRank.LilySupervisor:
+                        case SyndicateMember.SyndicateRank.OrchidSupervisor:
+                        case SyndicateMember.SyndicateRank.PkSupervisor:
+                        case SyndicateMember.SyndicateRank.SilverSupervisor:
+                        case SyndicateMember.SyndicateRank.TulipSupervisor:
+                            return 0;
+                        case SyndicateMember.SyndicateRank.Steward:
+                            return 2;
+                        case SyndicateMember.SyndicateRank.Agent:
+                        case SyndicateMember.SyndicateRank.ArsenalAgent:
+                        case SyndicateMember.SyndicateRank.CpAgent:
+                        case SyndicateMember.SyndicateRank.GuideAgent:
+                        case SyndicateMember.SyndicateRank.LilyAgent:
+                        case SyndicateMember.SyndicateRank.OrchidAgent:
+                        case SyndicateMember.SyndicateRank.PkAgent:
+                        case SyndicateMember.SyndicateRank.SilverAgent:
+                        case SyndicateMember.SyndicateRank.TulipAgent:
+                        case SyndicateMember.SyndicateRank.Follower:
+                        case SyndicateMember.SyndicateRank.ArsenalFollower:
+                        case SyndicateMember.SyndicateRank.CpFollower:
+                        case SyndicateMember.SyndicateRank.GuideFollower:
+                        case SyndicateMember.SyndicateRank.LilyFollower:
+                        case SyndicateMember.SyndicateRank.OrchidFollower:
+                        case SyndicateMember.SyndicateRank.PkFollower:
+                        case SyndicateMember.SyndicateRank.SilverFollower:
+                        case SyndicateMember.SyndicateRank.TulipFollower:
+                            return 1;
+                        default:
+                            return 0;
                     }
+                }
 
                 #endregion
 
                 #region Level 4
 
                 case 4:
+                {
+                    switch (pos)
                     {
-                        switch (pos)
-                        {
-                            case SyndicateMember.SyndicateRank.Manager:
-                            case SyndicateMember.SyndicateRank.ManagerAide:
-                                return 2;
-                            case SyndicateMember.SyndicateRank.Supervisor:
-                            case SyndicateMember.SyndicateRank.ArsenalSupervisor:
-                            case SyndicateMember.SyndicateRank.CpSupervisor:
-                            case SyndicateMember.SyndicateRank.GuideSupervisor:
-                            case SyndicateMember.SyndicateRank.LilySupervisor:
-                            case SyndicateMember.SyndicateRank.OrchidSupervisor:
-                            case SyndicateMember.SyndicateRank.PkSupervisor:
-                            case SyndicateMember.SyndicateRank.SilverSupervisor:
-                            case SyndicateMember.SyndicateRank.TulipSupervisor:
-                                return 1;
-                            case SyndicateMember.SyndicateRank.Steward:
-                                return 3;
-                            case SyndicateMember.SyndicateRank.Agent:
-                            case SyndicateMember.SyndicateRank.ArsenalAgent:
-                            case SyndicateMember.SyndicateRank.CpAgent:
-                            case SyndicateMember.SyndicateRank.GuideAgent:
-                            case SyndicateMember.SyndicateRank.LilyAgent:
-                            case SyndicateMember.SyndicateRank.OrchidAgent:
-                            case SyndicateMember.SyndicateRank.PkAgent:
-                            case SyndicateMember.SyndicateRank.SilverAgent:
-                            case SyndicateMember.SyndicateRank.TulipAgent:
-                            case SyndicateMember.SyndicateRank.Follower:
-                            case SyndicateMember.SyndicateRank.ArsenalFollower:
-                            case SyndicateMember.SyndicateRank.CpFollower:
-                            case SyndicateMember.SyndicateRank.GuideFollower:
-                            case SyndicateMember.SyndicateRank.LilyFollower:
-                            case SyndicateMember.SyndicateRank.OrchidFollower:
-                            case SyndicateMember.SyndicateRank.PkFollower:
-                            case SyndicateMember.SyndicateRank.SilverFollower:
-                            case SyndicateMember.SyndicateRank.TulipFollower:
-                                return 1;
-                            default:
-                                return 0;
-                        }
+                        case SyndicateMember.SyndicateRank.Manager:
+                        case SyndicateMember.SyndicateRank.ManagerAide:
+                            return 2;
+                        case SyndicateMember.SyndicateRank.Supervisor:
+                        case SyndicateMember.SyndicateRank.ArsenalSupervisor:
+                        case SyndicateMember.SyndicateRank.CpSupervisor:
+                        case SyndicateMember.SyndicateRank.GuideSupervisor:
+                        case SyndicateMember.SyndicateRank.LilySupervisor:
+                        case SyndicateMember.SyndicateRank.OrchidSupervisor:
+                        case SyndicateMember.SyndicateRank.PkSupervisor:
+                        case SyndicateMember.SyndicateRank.SilverSupervisor:
+                        case SyndicateMember.SyndicateRank.TulipSupervisor:
+                            return 1;
+                        case SyndicateMember.SyndicateRank.Steward:
+                            return 3;
+                        case SyndicateMember.SyndicateRank.Agent:
+                        case SyndicateMember.SyndicateRank.ArsenalAgent:
+                        case SyndicateMember.SyndicateRank.CpAgent:
+                        case SyndicateMember.SyndicateRank.GuideAgent:
+                        case SyndicateMember.SyndicateRank.LilyAgent:
+                        case SyndicateMember.SyndicateRank.OrchidAgent:
+                        case SyndicateMember.SyndicateRank.PkAgent:
+                        case SyndicateMember.SyndicateRank.SilverAgent:
+                        case SyndicateMember.SyndicateRank.TulipAgent:
+                        case SyndicateMember.SyndicateRank.Follower:
+                        case SyndicateMember.SyndicateRank.ArsenalFollower:
+                        case SyndicateMember.SyndicateRank.CpFollower:
+                        case SyndicateMember.SyndicateRank.GuideFollower:
+                        case SyndicateMember.SyndicateRank.LilyFollower:
+                        case SyndicateMember.SyndicateRank.OrchidFollower:
+                        case SyndicateMember.SyndicateRank.PkFollower:
+                        case SyndicateMember.SyndicateRank.SilverFollower:
+                        case SyndicateMember.SyndicateRank.TulipFollower:
+                            return 1;
+                        default:
+                            return 0;
                     }
+                }
 
                 #endregion
 
                 #region Level 5
 
                 case 5:
+                {
+                    switch (pos)
                     {
-                        switch (pos)
-                        {
-                            case SyndicateMember.SyndicateRank.Manager:
-                            case SyndicateMember.SyndicateRank.ManagerAide:
-                                return 4;
-                            case SyndicateMember.SyndicateRank.Supervisor:
-                            case SyndicateMember.SyndicateRank.ArsenalSupervisor:
-                            case SyndicateMember.SyndicateRank.CpSupervisor:
-                            case SyndicateMember.SyndicateRank.GuideSupervisor:
-                            case SyndicateMember.SyndicateRank.LilySupervisor:
-                            case SyndicateMember.SyndicateRank.OrchidSupervisor:
-                            case SyndicateMember.SyndicateRank.PkSupervisor:
-                            case SyndicateMember.SyndicateRank.SilverSupervisor:
-                            case SyndicateMember.SyndicateRank.TulipSupervisor:
-                                return 1;
-                            case SyndicateMember.SyndicateRank.Steward:
-                                return 4;
-                            case SyndicateMember.SyndicateRank.Agent:
-                            case SyndicateMember.SyndicateRank.ArsenalAgent:
-                            case SyndicateMember.SyndicateRank.CpAgent:
-                            case SyndicateMember.SyndicateRank.GuideAgent:
-                            case SyndicateMember.SyndicateRank.LilyAgent:
-                            case SyndicateMember.SyndicateRank.OrchidAgent:
-                            case SyndicateMember.SyndicateRank.PkAgent:
-                            case SyndicateMember.SyndicateRank.SilverAgent:
-                            case SyndicateMember.SyndicateRank.TulipAgent:
-                            case SyndicateMember.SyndicateRank.Follower:
-                            case SyndicateMember.SyndicateRank.ArsenalFollower:
-                            case SyndicateMember.SyndicateRank.CpFollower:
-                            case SyndicateMember.SyndicateRank.GuideFollower:
-                            case SyndicateMember.SyndicateRank.LilyFollower:
-                            case SyndicateMember.SyndicateRank.OrchidFollower:
-                            case SyndicateMember.SyndicateRank.PkFollower:
-                            case SyndicateMember.SyndicateRank.SilverFollower:
-                            case SyndicateMember.SyndicateRank.TulipFollower:
-                                return 1;
-                            default:
-                                return 0;
-                        }
+                        case SyndicateMember.SyndicateRank.Manager:
+                        case SyndicateMember.SyndicateRank.ManagerAide:
+                            return 4;
+                        case SyndicateMember.SyndicateRank.Supervisor:
+                        case SyndicateMember.SyndicateRank.ArsenalSupervisor:
+                        case SyndicateMember.SyndicateRank.CpSupervisor:
+                        case SyndicateMember.SyndicateRank.GuideSupervisor:
+                        case SyndicateMember.SyndicateRank.LilySupervisor:
+                        case SyndicateMember.SyndicateRank.OrchidSupervisor:
+                        case SyndicateMember.SyndicateRank.PkSupervisor:
+                        case SyndicateMember.SyndicateRank.SilverSupervisor:
+                        case SyndicateMember.SyndicateRank.TulipSupervisor:
+                            return 1;
+                        case SyndicateMember.SyndicateRank.Steward:
+                            return 4;
+                        case SyndicateMember.SyndicateRank.Agent:
+                        case SyndicateMember.SyndicateRank.ArsenalAgent:
+                        case SyndicateMember.SyndicateRank.CpAgent:
+                        case SyndicateMember.SyndicateRank.GuideAgent:
+                        case SyndicateMember.SyndicateRank.LilyAgent:
+                        case SyndicateMember.SyndicateRank.OrchidAgent:
+                        case SyndicateMember.SyndicateRank.PkAgent:
+                        case SyndicateMember.SyndicateRank.SilverAgent:
+                        case SyndicateMember.SyndicateRank.TulipAgent:
+                        case SyndicateMember.SyndicateRank.Follower:
+                        case SyndicateMember.SyndicateRank.ArsenalFollower:
+                        case SyndicateMember.SyndicateRank.CpFollower:
+                        case SyndicateMember.SyndicateRank.GuideFollower:
+                        case SyndicateMember.SyndicateRank.LilyFollower:
+                        case SyndicateMember.SyndicateRank.OrchidFollower:
+                        case SyndicateMember.SyndicateRank.PkFollower:
+                        case SyndicateMember.SyndicateRank.SilverFollower:
+                        case SyndicateMember.SyndicateRank.TulipFollower:
+                            return 1;
+                        default:
+                            return 0;
                     }
+                }
 
                 #endregion
 
                 #region Level 6
 
                 case 6:
+                {
+                    switch (pos)
                     {
-                        switch (pos)
-                        {
-                            case SyndicateMember.SyndicateRank.Manager:
-                            case SyndicateMember.SyndicateRank.ManagerAide:
-                                return 4;
-                            case SyndicateMember.SyndicateRank.Supervisor:
-                            case SyndicateMember.SyndicateRank.ArsenalSupervisor:
-                            case SyndicateMember.SyndicateRank.CpSupervisor:
-                            case SyndicateMember.SyndicateRank.GuideSupervisor:
-                            case SyndicateMember.SyndicateRank.LilySupervisor:
-                            case SyndicateMember.SyndicateRank.OrchidSupervisor:
-                            case SyndicateMember.SyndicateRank.PkSupervisor:
-                            case SyndicateMember.SyndicateRank.SilverSupervisor:
-                            case SyndicateMember.SyndicateRank.TulipSupervisor:
-                                return 1;
-                            case SyndicateMember.SyndicateRank.Steward:
-                                return 5;
-                            case SyndicateMember.SyndicateRank.Agent:
-                            case SyndicateMember.SyndicateRank.ArsenalAgent:
-                            case SyndicateMember.SyndicateRank.CpAgent:
-                            case SyndicateMember.SyndicateRank.GuideAgent:
-                            case SyndicateMember.SyndicateRank.LilyAgent:
-                            case SyndicateMember.SyndicateRank.OrchidAgent:
-                            case SyndicateMember.SyndicateRank.PkAgent:
-                            case SyndicateMember.SyndicateRank.SilverAgent:
-                            case SyndicateMember.SyndicateRank.TulipAgent:
-                            case SyndicateMember.SyndicateRank.Follower:
-                            case SyndicateMember.SyndicateRank.ArsenalFollower:
-                            case SyndicateMember.SyndicateRank.CpFollower:
-                            case SyndicateMember.SyndicateRank.GuideFollower:
-                            case SyndicateMember.SyndicateRank.LilyFollower:
-                            case SyndicateMember.SyndicateRank.OrchidFollower:
-                            case SyndicateMember.SyndicateRank.PkFollower:
-                            case SyndicateMember.SyndicateRank.SilverFollower:
-                            case SyndicateMember.SyndicateRank.TulipFollower:
-                                return 1;
-                            default:
-                                return 0;
-                        }
+                        case SyndicateMember.SyndicateRank.Manager:
+                        case SyndicateMember.SyndicateRank.ManagerAide:
+                            return 4;
+                        case SyndicateMember.SyndicateRank.Supervisor:
+                        case SyndicateMember.SyndicateRank.ArsenalSupervisor:
+                        case SyndicateMember.SyndicateRank.CpSupervisor:
+                        case SyndicateMember.SyndicateRank.GuideSupervisor:
+                        case SyndicateMember.SyndicateRank.LilySupervisor:
+                        case SyndicateMember.SyndicateRank.OrchidSupervisor:
+                        case SyndicateMember.SyndicateRank.PkSupervisor:
+                        case SyndicateMember.SyndicateRank.SilverSupervisor:
+                        case SyndicateMember.SyndicateRank.TulipSupervisor:
+                            return 1;
+                        case SyndicateMember.SyndicateRank.Steward:
+                            return 5;
+                        case SyndicateMember.SyndicateRank.Agent:
+                        case SyndicateMember.SyndicateRank.ArsenalAgent:
+                        case SyndicateMember.SyndicateRank.CpAgent:
+                        case SyndicateMember.SyndicateRank.GuideAgent:
+                        case SyndicateMember.SyndicateRank.LilyAgent:
+                        case SyndicateMember.SyndicateRank.OrchidAgent:
+                        case SyndicateMember.SyndicateRank.PkAgent:
+                        case SyndicateMember.SyndicateRank.SilverAgent:
+                        case SyndicateMember.SyndicateRank.TulipAgent:
+                        case SyndicateMember.SyndicateRank.Follower:
+                        case SyndicateMember.SyndicateRank.ArsenalFollower:
+                        case SyndicateMember.SyndicateRank.CpFollower:
+                        case SyndicateMember.SyndicateRank.GuideFollower:
+                        case SyndicateMember.SyndicateRank.LilyFollower:
+                        case SyndicateMember.SyndicateRank.OrchidFollower:
+                        case SyndicateMember.SyndicateRank.PkFollower:
+                        case SyndicateMember.SyndicateRank.SilverFollower:
+                        case SyndicateMember.SyndicateRank.TulipFollower:
+                            return 1;
+                        default:
+                            return 0;
                     }
+                }
 
                 #endregion
 
                 #region Level 7
 
                 case 7:
+                {
+                    switch (pos)
                     {
-                        switch (pos)
-                        {
-                            case SyndicateMember.SyndicateRank.Manager:
-                            case SyndicateMember.SyndicateRank.ManagerAide:
-                                return 6;
-                            case SyndicateMember.SyndicateRank.Supervisor:
-                            case SyndicateMember.SyndicateRank.ArsenalSupervisor:
-                            case SyndicateMember.SyndicateRank.CpSupervisor:
-                            case SyndicateMember.SyndicateRank.GuideSupervisor:
-                            case SyndicateMember.SyndicateRank.LilySupervisor:
-                            case SyndicateMember.SyndicateRank.OrchidSupervisor:
-                            case SyndicateMember.SyndicateRank.PkSupervisor:
-                            case SyndicateMember.SyndicateRank.SilverSupervisor:
-                            case SyndicateMember.SyndicateRank.TulipSupervisor:
-                                return 1;
-                            case SyndicateMember.SyndicateRank.Steward:
-                                return 6;
-                            case SyndicateMember.SyndicateRank.Agent:
-                            case SyndicateMember.SyndicateRank.ArsenalAgent:
-                            case SyndicateMember.SyndicateRank.CpAgent:
-                            case SyndicateMember.SyndicateRank.GuideAgent:
-                            case SyndicateMember.SyndicateRank.LilyAgent:
-                            case SyndicateMember.SyndicateRank.OrchidAgent:
-                            case SyndicateMember.SyndicateRank.PkAgent:
-                            case SyndicateMember.SyndicateRank.SilverAgent:
-                            case SyndicateMember.SyndicateRank.TulipAgent:
-                            case SyndicateMember.SyndicateRank.Follower:
-                            case SyndicateMember.SyndicateRank.ArsenalFollower:
-                            case SyndicateMember.SyndicateRank.CpFollower:
-                            case SyndicateMember.SyndicateRank.GuideFollower:
-                            case SyndicateMember.SyndicateRank.LilyFollower:
-                            case SyndicateMember.SyndicateRank.OrchidFollower:
-                            case SyndicateMember.SyndicateRank.PkFollower:
-                            case SyndicateMember.SyndicateRank.SilverFollower:
-                            case SyndicateMember.SyndicateRank.TulipFollower:
-                                return 1;
-                            default:
-                                return 0;
-                        }
+                        case SyndicateMember.SyndicateRank.Manager:
+                        case SyndicateMember.SyndicateRank.ManagerAide:
+                            return 6;
+                        case SyndicateMember.SyndicateRank.Supervisor:
+                        case SyndicateMember.SyndicateRank.ArsenalSupervisor:
+                        case SyndicateMember.SyndicateRank.CpSupervisor:
+                        case SyndicateMember.SyndicateRank.GuideSupervisor:
+                        case SyndicateMember.SyndicateRank.LilySupervisor:
+                        case SyndicateMember.SyndicateRank.OrchidSupervisor:
+                        case SyndicateMember.SyndicateRank.PkSupervisor:
+                        case SyndicateMember.SyndicateRank.SilverSupervisor:
+                        case SyndicateMember.SyndicateRank.TulipSupervisor:
+                            return 1;
+                        case SyndicateMember.SyndicateRank.Steward:
+                            return 6;
+                        case SyndicateMember.SyndicateRank.Agent:
+                        case SyndicateMember.SyndicateRank.ArsenalAgent:
+                        case SyndicateMember.SyndicateRank.CpAgent:
+                        case SyndicateMember.SyndicateRank.GuideAgent:
+                        case SyndicateMember.SyndicateRank.LilyAgent:
+                        case SyndicateMember.SyndicateRank.OrchidAgent:
+                        case SyndicateMember.SyndicateRank.PkAgent:
+                        case SyndicateMember.SyndicateRank.SilverAgent:
+                        case SyndicateMember.SyndicateRank.TulipAgent:
+                        case SyndicateMember.SyndicateRank.Follower:
+                        case SyndicateMember.SyndicateRank.ArsenalFollower:
+                        case SyndicateMember.SyndicateRank.CpFollower:
+                        case SyndicateMember.SyndicateRank.GuideFollower:
+                        case SyndicateMember.SyndicateRank.LilyFollower:
+                        case SyndicateMember.SyndicateRank.OrchidFollower:
+                        case SyndicateMember.SyndicateRank.PkFollower:
+                        case SyndicateMember.SyndicateRank.SilverFollower:
+                        case SyndicateMember.SyndicateRank.TulipFollower:
+                            return 1;
+                        default:
+                            return 0;
                     }
+                }
 
                 #endregion
 
                 #region Level 8
 
                 case 8:
+                {
+                    switch (pos)
                     {
-                        switch (pos)
-                        {
-                            case SyndicateMember.SyndicateRank.Manager:
-                            case SyndicateMember.SyndicateRank.ManagerAide:
-                                return 6;
-                            case SyndicateMember.SyndicateRank.Supervisor:
-                            case SyndicateMember.SyndicateRank.ArsenalSupervisor:
-                            case SyndicateMember.SyndicateRank.CpSupervisor:
-                            case SyndicateMember.SyndicateRank.GuideSupervisor:
-                            case SyndicateMember.SyndicateRank.LilySupervisor:
-                            case SyndicateMember.SyndicateRank.OrchidSupervisor:
-                            case SyndicateMember.SyndicateRank.PkSupervisor:
-                            case SyndicateMember.SyndicateRank.SilverSupervisor:
-                            case SyndicateMember.SyndicateRank.TulipSupervisor:
-                                return 2;
-                            case SyndicateMember.SyndicateRank.Steward:
-                                return 7;
-                            case SyndicateMember.SyndicateRank.Agent:
-                            case SyndicateMember.SyndicateRank.ArsenalAgent:
-                            case SyndicateMember.SyndicateRank.CpAgent:
-                            case SyndicateMember.SyndicateRank.GuideAgent:
-                            case SyndicateMember.SyndicateRank.LilyAgent:
-                            case SyndicateMember.SyndicateRank.OrchidAgent:
-                            case SyndicateMember.SyndicateRank.PkAgent:
-                            case SyndicateMember.SyndicateRank.SilverAgent:
-                            case SyndicateMember.SyndicateRank.TulipAgent:
-                            case SyndicateMember.SyndicateRank.Follower:
-                            case SyndicateMember.SyndicateRank.ArsenalFollower:
-                            case SyndicateMember.SyndicateRank.CpFollower:
-                            case SyndicateMember.SyndicateRank.GuideFollower:
-                            case SyndicateMember.SyndicateRank.LilyFollower:
-                            case SyndicateMember.SyndicateRank.OrchidFollower:
-                            case SyndicateMember.SyndicateRank.PkFollower:
-                            case SyndicateMember.SyndicateRank.SilverFollower:
-                            case SyndicateMember.SyndicateRank.TulipFollower:
-                                return 1;
-                            default:
-                                return 0;
-                        }
+                        case SyndicateMember.SyndicateRank.Manager:
+                        case SyndicateMember.SyndicateRank.ManagerAide:
+                            return 6;
+                        case SyndicateMember.SyndicateRank.Supervisor:
+                        case SyndicateMember.SyndicateRank.ArsenalSupervisor:
+                        case SyndicateMember.SyndicateRank.CpSupervisor:
+                        case SyndicateMember.SyndicateRank.GuideSupervisor:
+                        case SyndicateMember.SyndicateRank.LilySupervisor:
+                        case SyndicateMember.SyndicateRank.OrchidSupervisor:
+                        case SyndicateMember.SyndicateRank.PkSupervisor:
+                        case SyndicateMember.SyndicateRank.SilverSupervisor:
+                        case SyndicateMember.SyndicateRank.TulipSupervisor:
+                            return 2;
+                        case SyndicateMember.SyndicateRank.Steward:
+                            return 7;
+                        case SyndicateMember.SyndicateRank.Agent:
+                        case SyndicateMember.SyndicateRank.ArsenalAgent:
+                        case SyndicateMember.SyndicateRank.CpAgent:
+                        case SyndicateMember.SyndicateRank.GuideAgent:
+                        case SyndicateMember.SyndicateRank.LilyAgent:
+                        case SyndicateMember.SyndicateRank.OrchidAgent:
+                        case SyndicateMember.SyndicateRank.PkAgent:
+                        case SyndicateMember.SyndicateRank.SilverAgent:
+                        case SyndicateMember.SyndicateRank.TulipAgent:
+                        case SyndicateMember.SyndicateRank.Follower:
+                        case SyndicateMember.SyndicateRank.ArsenalFollower:
+                        case SyndicateMember.SyndicateRank.CpFollower:
+                        case SyndicateMember.SyndicateRank.GuideFollower:
+                        case SyndicateMember.SyndicateRank.LilyFollower:
+                        case SyndicateMember.SyndicateRank.OrchidFollower:
+                        case SyndicateMember.SyndicateRank.PkFollower:
+                        case SyndicateMember.SyndicateRank.SilverFollower:
+                        case SyndicateMember.SyndicateRank.TulipFollower:
+                            return 1;
+                        default:
+                            return 0;
                     }
+                }
 
                 #endregion
 
                 #region Level 9
 
                 case 9:
+                {
+                    switch (pos)
                     {
-                        switch (pos)
-                        {
-                            case SyndicateMember.SyndicateRank.Manager:
-                            case SyndicateMember.SyndicateRank.ManagerAide:
-                                return 8;
-                            case SyndicateMember.SyndicateRank.Supervisor:
-                            case SyndicateMember.SyndicateRank.ArsenalSupervisor:
-                            case SyndicateMember.SyndicateRank.CpSupervisor:
-                            case SyndicateMember.SyndicateRank.GuideSupervisor:
-                            case SyndicateMember.SyndicateRank.LilySupervisor:
-                            case SyndicateMember.SyndicateRank.OrchidSupervisor:
-                            case SyndicateMember.SyndicateRank.PkSupervisor:
-                            case SyndicateMember.SyndicateRank.SilverSupervisor:
-                            case SyndicateMember.SyndicateRank.TulipSupervisor:
-                                return 2;
-                            case SyndicateMember.SyndicateRank.Steward:
-                                return 8;
-                            case SyndicateMember.SyndicateRank.Agent:
-                            case SyndicateMember.SyndicateRank.ArsenalAgent:
-                            case SyndicateMember.SyndicateRank.CpAgent:
-                            case SyndicateMember.SyndicateRank.GuideAgent:
-                            case SyndicateMember.SyndicateRank.LilyAgent:
-                            case SyndicateMember.SyndicateRank.OrchidAgent:
-                            case SyndicateMember.SyndicateRank.PkAgent:
-                            case SyndicateMember.SyndicateRank.SilverAgent:
-                            case SyndicateMember.SyndicateRank.TulipAgent:
-                            case SyndicateMember.SyndicateRank.Follower:
-                            case SyndicateMember.SyndicateRank.ArsenalFollower:
-                            case SyndicateMember.SyndicateRank.CpFollower:
-                            case SyndicateMember.SyndicateRank.GuideFollower:
-                            case SyndicateMember.SyndicateRank.LilyFollower:
-                            case SyndicateMember.SyndicateRank.OrchidFollower:
-                            case SyndicateMember.SyndicateRank.PkFollower:
-                            case SyndicateMember.SyndicateRank.SilverFollower:
-                            case SyndicateMember.SyndicateRank.TulipFollower:
-                                return 1;
-                            default:
-                                return 0;
-                        }
+                        case SyndicateMember.SyndicateRank.Manager:
+                        case SyndicateMember.SyndicateRank.ManagerAide:
+                            return 8;
+                        case SyndicateMember.SyndicateRank.Supervisor:
+                        case SyndicateMember.SyndicateRank.ArsenalSupervisor:
+                        case SyndicateMember.SyndicateRank.CpSupervisor:
+                        case SyndicateMember.SyndicateRank.GuideSupervisor:
+                        case SyndicateMember.SyndicateRank.LilySupervisor:
+                        case SyndicateMember.SyndicateRank.OrchidSupervisor:
+                        case SyndicateMember.SyndicateRank.PkSupervisor:
+                        case SyndicateMember.SyndicateRank.SilverSupervisor:
+                        case SyndicateMember.SyndicateRank.TulipSupervisor:
+                            return 2;
+                        case SyndicateMember.SyndicateRank.Steward:
+                            return 8;
+                        case SyndicateMember.SyndicateRank.Agent:
+                        case SyndicateMember.SyndicateRank.ArsenalAgent:
+                        case SyndicateMember.SyndicateRank.CpAgent:
+                        case SyndicateMember.SyndicateRank.GuideAgent:
+                        case SyndicateMember.SyndicateRank.LilyAgent:
+                        case SyndicateMember.SyndicateRank.OrchidAgent:
+                        case SyndicateMember.SyndicateRank.PkAgent:
+                        case SyndicateMember.SyndicateRank.SilverAgent:
+                        case SyndicateMember.SyndicateRank.TulipAgent:
+                        case SyndicateMember.SyndicateRank.Follower:
+                        case SyndicateMember.SyndicateRank.ArsenalFollower:
+                        case SyndicateMember.SyndicateRank.CpFollower:
+                        case SyndicateMember.SyndicateRank.GuideFollower:
+                        case SyndicateMember.SyndicateRank.LilyFollower:
+                        case SyndicateMember.SyndicateRank.OrchidFollower:
+                        case SyndicateMember.SyndicateRank.PkFollower:
+                        case SyndicateMember.SyndicateRank.SilverFollower:
+                        case SyndicateMember.SyndicateRank.TulipFollower:
+                            return 1;
+                        default:
+                            return 0;
                     }
+                }
 
                 #endregion
 
@@ -1944,11 +1977,12 @@ namespace Comet.Game.States.Syndicates
             switch (rank)
             {
                 case SyndicateMember.SyndicateRank.GuildLeader: return SyndicateMember.SyndicateRank.LeaderSpouse;
-                case SyndicateMember.SyndicateRank.DeputyLeader: return SyndicateMember.SyndicateRank.DeputyLeaderSpouse;
-                case SyndicateMember.SyndicateRank.Manager: return SyndicateMember.SyndicateRank.ManagerSpouse;
-                case SyndicateMember.SyndicateRank.Steward: return SyndicateMember.SyndicateRank.StewardSpouse;
+                case SyndicateMember.SyndicateRank.DeputyLeader:
+                    return SyndicateMember.SyndicateRank.DeputyLeaderSpouse;
+                case SyndicateMember.SyndicateRank.Manager:    return SyndicateMember.SyndicateRank.ManagerSpouse;
+                case SyndicateMember.SyndicateRank.Steward:    return SyndicateMember.SyndicateRank.StewardSpouse;
                 case SyndicateMember.SyndicateRank.Supervisor: return SyndicateMember.SyndicateRank.SupervisorSpouse;
-                default: return SyndicateMember.SyndicateRank.None;
+                default:                                       return SyndicateMember.SyndicateRank.None;
             }
         }
 
@@ -1984,11 +2018,11 @@ namespace Comet.Game.States.Syndicates
 
             return SyndicateMember.SyndicateRank.None;
         }
-        
+
         #endregion
 
         #region Positions
-        
+
         public static bool IsMasterPosition(SyndicateMember.SyndicateRank rank)
         {
             switch (rank)
@@ -2029,13 +2063,13 @@ namespace Comet.Game.States.Syndicates
                     return false;
             }
         }
-        
+
         #endregion
 
         #region Alliance
 
         public int AlliesCount => m_dicAllies.Count;
-        
+
 
         public async Task<bool> CreateAllianceAsync(Character user, Syndicate target)
         {
@@ -2057,10 +2091,7 @@ namespace Comet.Game.States.Syndicates
                 return false;
             }
 
-            if (AlliesCount >= MAX_ALLY)
-            {
-                return false;
-            }
+            if (AlliesCount >= MAX_ALLY) return false;
 
             await ServerDbContext.SaveAsync(new DbSyndicateAlly
             {
@@ -2125,7 +2156,7 @@ namespace Comet.Game.States.Syndicates
             await SendAsync(new MsgSyndicate
             {
                 Identity = target.Identity,
-                Mode = MsgSyndicate.SyndicateRequest.Ally
+                Mode = MsgSyndicate<Client>.SyndicateRequest.Ally
             });
             await SendAsync(new MsgName
             {
@@ -2144,7 +2175,7 @@ namespace Comet.Game.States.Syndicates
             await SendAsync(new MsgSyndicate
             {
                 Identity = idAlly,
-                Mode = MsgSyndicate.SyndicateRequest.Unally
+                Mode = MsgSyndicate<Client>.SyndicateRequest.Unally
             });
         }
 
@@ -2157,10 +2188,10 @@ namespace Comet.Game.States.Syndicates
         {
             switch (Level)
             {
-                case 1: return 5;
-                case 2: return 7;
-                case 3: return 9;
-                case 4: return 12;
+                case 1:  return 5;
+                case 2:  return 7;
+                case 3:  return 9;
+                case 4:  return 12;
                 default: return 15;
             }
         }
@@ -2192,19 +2223,17 @@ namespace Comet.Game.States.Syndicates
             }
 
             if (EnemyCount >= MAX_ENEMY)
-            {
                 // ? message
                 return false;
-            }
 
             if (!await ServerDbContext.SaveAsync(new DbSyndicateEnemy
-            {
-                SyndicateIdentity = Identity,
-                SyndicateName = Name,
-                EnemyIdentity = target.Identity,
-                EnemyName = target.Name,
-                EstabilishDate = DateTime.Now
-            }))
+                {
+                    SyndicateIdentity = Identity,
+                    SyndicateName = Name,
+                    EnemyIdentity = target.Identity,
+                    EnemyName = target.Name,
+                    EstabilishDate = DateTime.Now
+                }))
                 return false;
 
             m_dicEnemies.TryAdd(target.Identity, target);
@@ -2212,7 +2241,7 @@ namespace Comet.Game.States.Syndicates
             await SendAsync(new MsgSyndicate
             {
                 Identity = target.Identity,
-                Mode = MsgSyndicate.SyndicateRequest.Enemy
+                Mode = MsgSyndicate<Client>.SyndicateRequest.Enemy
             });
             await SendAsync(new MsgName
             {
@@ -2255,7 +2284,7 @@ namespace Comet.Game.States.Syndicates
             await SendAsync(new MsgSyndicate
             {
                 Identity = target.Identity,
-                Mode = MsgSyndicate.SyndicateRequest.Unenemy
+                Mode = MsgSyndicate<Client>.SyndicateRequest.Unenemy
             });
 
             await SendAsync(string.Format(Language.StrSynRemoveEnemy, user.Name, target.Name));
@@ -2266,17 +2295,17 @@ namespace Comet.Game.States.Syndicates
 
         public bool IsEnemy(uint id)
         {
-            return m_dicEnemies.ContainsKey((ushort)id);
+            return m_dicEnemies.ContainsKey((ushort) id);
         }
 
         public ushort MaxEnemies()
         {
             switch (Level)
             {
-                case 1: return 5;
-                case 2: return 7;
-                case 3: return 9;
-                case 4: return 12;
+                case 1:  return 5;
+                case 2:  return 7;
+                case 3:  return 9;
+                case 4:  return 12;
                 default: return 15;
             }
         }
@@ -2343,31 +2372,31 @@ namespace Comet.Game.States.Syndicates
                 if (value)
                     m_syndicate.TotemPole |= (int) TotemPoleFlag.Headgear;
                 else
-                    m_syndicate.TotemPole &= ~(int)TotemPoleFlag.Headgear;
+                    m_syndicate.TotemPole &= ~(int) TotemPoleFlag.Headgear;
             }
         }
 
         public bool HasTotemNecklace
         {
-            get => (m_syndicate.TotemPole & (int)TotemPoleFlag.Necklace) != 0;
+            get => (m_syndicate.TotemPole & (int) TotemPoleFlag.Necklace) != 0;
             set
             {
                 if (value)
-                    m_syndicate.TotemPole |= (int)TotemPoleFlag.Necklace;
+                    m_syndicate.TotemPole |= (int) TotemPoleFlag.Necklace;
                 else
-                    m_syndicate.TotemPole &= ~(int)TotemPoleFlag.Necklace;
+                    m_syndicate.TotemPole &= ~(int) TotemPoleFlag.Necklace;
             }
         }
 
         public bool HasTotemRing
         {
-            get => (m_syndicate.TotemPole & (int)TotemPoleFlag.Ring) != 0;
+            get => (m_syndicate.TotemPole & (int) TotemPoleFlag.Ring) != 0;
             set
             {
                 if (value)
-                    m_syndicate.TotemPole |= (int)TotemPoleFlag.Ring;
+                    m_syndicate.TotemPole |= (int) TotemPoleFlag.Ring;
                 else
-                    m_syndicate.TotemPole &= ~(int)TotemPoleFlag.Ring;
+                    m_syndicate.TotemPole &= ~(int) TotemPoleFlag.Ring;
             }
         }
 
@@ -2379,65 +2408,65 @@ namespace Comet.Game.States.Syndicates
                 if (value)
                     m_syndicate.TotemPole |= (int) TotemPoleFlag.Weapon;
                 else
-                    m_syndicate.TotemPole &= ~(int)TotemPoleFlag.Weapon;
+                    m_syndicate.TotemPole &= ~(int) TotemPoleFlag.Weapon;
             }
         }
 
         public bool HasTotemArmor
         {
-            get => (m_syndicate.TotemPole & (int)TotemPoleFlag.Armor) != 0;
+            get => (m_syndicate.TotemPole & (int) TotemPoleFlag.Armor) != 0;
             set
             {
                 if (value)
-                    m_syndicate.TotemPole |= (int)TotemPoleFlag.Armor;
+                    m_syndicate.TotemPole |= (int) TotemPoleFlag.Armor;
                 else
-                    m_syndicate.TotemPole &= ~(int)TotemPoleFlag.Armor;
+                    m_syndicate.TotemPole &= ~(int) TotemPoleFlag.Armor;
             }
         }
 
         public bool HasTotemBoots
         {
-            get => (m_syndicate.TotemPole & (int)TotemPoleFlag.Boots) != 0;
+            get => (m_syndicate.TotemPole & (int) TotemPoleFlag.Boots) != 0;
             set
             {
                 if (value)
-                    m_syndicate.TotemPole |= (int)TotemPoleFlag.Boots;
+                    m_syndicate.TotemPole |= (int) TotemPoleFlag.Boots;
                 else
-                    m_syndicate.TotemPole &= ~(int)TotemPoleFlag.Boots;
+                    m_syndicate.TotemPole &= ~(int) TotemPoleFlag.Boots;
             }
         }
 
         public bool HasTotemFan
         {
-            get => (m_syndicate.TotemPole & (int)TotemPoleFlag.Fan) != 0;
+            get => (m_syndicate.TotemPole & (int) TotemPoleFlag.Fan) != 0;
             set
             {
                 if (value)
-                    m_syndicate.TotemPole |= (int)TotemPoleFlag.Fan;
+                    m_syndicate.TotemPole |= (int) TotemPoleFlag.Fan;
                 else
-                    m_syndicate.TotemPole &= ~(int)TotemPoleFlag.Fan;
+                    m_syndicate.TotemPole &= ~(int) TotemPoleFlag.Fan;
             }
         }
 
         public bool HasTotemTower
         {
-            get => (m_syndicate.TotemPole & (int)TotemPoleFlag.Tower) != 0;
+            get => (m_syndicate.TotemPole & (int) TotemPoleFlag.Tower) != 0;
             set
             {
                 if (value)
-                    m_syndicate.TotemPole |= (int)TotemPoleFlag.Tower;
+                    m_syndicate.TotemPole |= (int) TotemPoleFlag.Tower;
                 else
-                    m_syndicate.TotemPole &= ~(int)TotemPoleFlag.Tower;
+                    m_syndicate.TotemPole &= ~(int) TotemPoleFlag.Tower;
             }
         }
 
-        public int TotemSharedBattlePower { get; private set; } = 0;
+        public int TotemSharedBattlePower { get; private set; }
 
-        private ConcurrentDictionary<TotemPoleType, TotemPole> m_totemPoles = new ConcurrentDictionary<TotemPoleType, TotemPole>();
+        private readonly ConcurrentDictionary<TotemPoleType, TotemPole> m_totemPoles = new();
 
         public async Task<bool> OpenTotemPoleAsync(TotemPoleType type)
         {
-            if (m_totemPoles.TryGetValue(type, out var pole) && !pole.Locked)
+            if (m_totemPoles.TryGetValue(type, out TotemPole pole) && !pole.Locked)
                 return false;
 
             if (pole == null)
@@ -2450,14 +2479,30 @@ namespace Comet.Game.States.Syndicates
 
             switch (type)
             {
-                case TotemPoleType.Headgear: HasTotemHeadgear = true; break;
-                case TotemPoleType.Necklace: HasTotemNecklace = true; break;
-                case TotemPoleType.Ring: HasTotemRing = true; break;
-                case TotemPoleType.Weapon: HasTotemWeapon = true; break;
-                case TotemPoleType.Armor: HasTotemArmor = true; break;
-                case TotemPoleType.Boots: HasTotemBoots = true; break;
-                case TotemPoleType.Fan: HasTotemFan = true; break;
-                case TotemPoleType.Tower: HasTotemTower = true; break;
+                case TotemPoleType.Headgear:
+                    HasTotemHeadgear = true;
+                    break;
+                case TotemPoleType.Necklace:
+                    HasTotemNecklace = true;
+                    break;
+                case TotemPoleType.Ring:
+                    HasTotemRing = true;
+                    break;
+                case TotemPoleType.Weapon:
+                    HasTotemWeapon = true;
+                    break;
+                case TotemPoleType.Armor:
+                    HasTotemArmor = true;
+                    break;
+                case TotemPoleType.Boots:
+                    HasTotemBoots = true;
+                    break;
+                case TotemPoleType.Fan:
+                    HasTotemFan = true;
+                    break;
+                case TotemPoleType.Tower:
+                    HasTotemTower = true;
+                    break;
             }
 
             pole.Locked = false;
@@ -2473,7 +2518,7 @@ namespace Comet.Game.States.Syndicates
             if (type == TotemPoleType.None)
                 return false;
 
-            if (!m_totemPoles.TryGetValue(type, out var pole) || pole.Locked)
+            if (!m_totemPoles.TryGetValue(type, out TotemPole pole) || pole.Locked)
                 return false;
 
             if (user.UserPackage[item.Identity] == null)
@@ -2506,20 +2551,21 @@ namespace Comet.Game.States.Syndicates
                 await SynchronizeBattlePowerAsync();
 
             await RefreshMemberArsenalDonationAsync(user.SyndicateMember);
-            await user.SendAsync(new MsgItemInfo(item, MsgItemInfo.ItemMode.Update));
+            await user.SendAsync(new MsgItemInfo(item, MsgItemInfo<Client>.ItemMode.Update));
             await SendTotemPolesAsync(user);
 
             await Log.GmLogAsync("arsenal_inscribe", $"{user.Identity},{item.Identity},{item.Type},{Identity}");
             return true;
         }
 
-        public async Task<bool> UnsubscribeItemAsync(uint idItem, uint idUser, bool synchro = true, bool isSystem = false)
+        public async Task<bool> UnsubscribeItemAsync(uint idItem, uint idUser, bool synchro = true,
+                                                     bool isSystem = false)
         {
             Character user = RoleManager.GetUser(idUser);
             if (user == null && !isSystem)
                 return false;
 
-            m_dicMembers.TryGetValue(idUser, out var member);
+            m_dicMembers.TryGetValue(idUser, out SyndicateMember member);
 
             DbItem dbItem = null;
             Item item = null;
@@ -2545,10 +2591,10 @@ namespace Comet.Game.States.Syndicates
             if (type == TotemPoleType.None)
                 return false;
 
-            if (!m_totemPoles.TryGetValue(type, out var pole) || pole.Locked)
+            if (!m_totemPoles.TryGetValue(type, out TotemPole pole) || pole.Locked)
                 return false;
 
-            if (!pole.Totems.TryGetValue(idItem, out var totem) || totem.PlayerIdentity != idUser)
+            if (!pole.Totems.TryGetValue(idItem, out Totem totem) || totem.PlayerIdentity != idUser)
                 return false;
 
             pole.Totems.TryRemove(idItem, out _);
@@ -2577,7 +2623,7 @@ namespace Comet.Game.States.Syndicates
                     if (member != null)
                         await RefreshMemberArsenalDonationAsync(member);
 
-                    await user.SendAsync(new MsgItemInfo(item, MsgItemInfo.ItemMode.Update));
+                    await user.SendAsync(new MsgItemInfo(item, MsgItemInfo<Client>.ItemMode.Update));
                     await SendTotemPolesAsync(user);
                 }
             }
@@ -2588,18 +2634,14 @@ namespace Comet.Game.States.Syndicates
 
         public async Task UnsubscribeAllAsync(uint idUser, bool isSystem = false)
         {
-            List<Totem> totems = new List<Totem>();
-            for (TotemPoleType type = TotemPoleType.Headgear; type < TotemPoleType.None; type++)
-            {
-                if (m_totemPoles.TryGetValue(type, out var pole))
-                {
+            var totems = new List<Totem>();
+            for (var type = TotemPoleType.Headgear; type < TotemPoleType.None; type++)
+                if (m_totemPoles.TryGetValue(type, out TotemPole pole))
                     totems.AddRange(pole.Totems.Values.Where(x => x.PlayerIdentity == idUser));
-                }
-            }
 
             int battlePower = TotemSharedBattlePower;
 
-            foreach (var totem in totems)
+            foreach (Totem totem in totems)
                 await UnsubscribeItemAsync(totem.ItemIdentity, totem.PlayerIdentity, false, isSystem);
 
             UpdateBattlePower();
@@ -2610,16 +2652,15 @@ namespace Comet.Game.States.Syndicates
         public async Task RefreshMemberArsenalDonationAsync(SyndicateMember member)
         {
             member.ArsenalDonation = 0;
-            foreach (var pole in m_totemPoles.Values.Where(x => !x.Locked))
-            {
-                member.ArsenalDonation += (uint)pole.Totems.Values.Where(x => x.PlayerIdentity == member.UserIdentity).Sum(x => x.Points);
-            }
+            foreach (TotemPole pole in m_totemPoles.Values.Where(x => !x.Locked))
+                member.ArsenalDonation += (uint) pole.Totems.Values.Where(x => x.PlayerIdentity == member.UserIdentity)
+                                                     .Sum(x => x.Points);
             await member.SaveAsync();
         }
 
         public async Task<bool> EnhanceTotemPoleAsync(TotemPoleType type, byte power)
         {
-            if (!m_totemPoles.TryGetValue(type, out var pole))
+            if (!m_totemPoles.TryGetValue(type, out TotemPole pole))
                 return false;
 
             if (pole.Enhancement >= power)
@@ -2645,15 +2686,13 @@ namespace Comet.Game.States.Syndicates
                 await pole.RemoveEnhancementAsync();
 
             if (!await pole.SetEnhancementAsync(new DbTotemAdd
-            {
-                OwnerIdentity = Identity,
-                BattleAddition = power,
-                TimeLimit = DateTime.Now.AddDays(30),
-                TotemType = (uint) type
-            }))
-            {
+                {
+                    OwnerIdentity = Identity,
+                    BattleAddition = power,
+                    TimeLimit = DateTime.Now.AddDays(30),
+                    TotemType = (uint) type
+                }))
                 return false;
-            }
 
             UpdateBattlePower();
 
@@ -2671,42 +2710,36 @@ namespace Comet.Game.States.Syndicates
 
         public Task SendTotemPolesAsync(Character user)
         {
-            MsgTotemPoleInfo msg = new MsgTotemPoleInfo
+            var msg = new MsgTotemPoleInfo
             {
                 TotemBattlePower = TotemSharedBattlePower,
                 SharedBattlePower = GetSharedBattlePower(user.SyndicateRank),
                 TotemDonation = (int) user.SyndicateMember.ArsenalDonation
             };
-            for (TotemPoleType type = TotemPoleType.Headgear; type < TotemPoleType.None; type++)
-            {
-                if (m_totemPoles.TryGetValue(type, out var pole))
-                {
-                    msg.Items.Add(new MsgTotemPoleInfo.TotemPoleStruct
+            for (var type = TotemPoleType.Headgear; type < TotemPoleType.None; type++)
+                if (m_totemPoles.TryGetValue(type, out TotemPole pole))
+                    msg.Items.Add(new MsgTotemPoleInfo<Client>.TotemPoleStruct
                     {
                         BattlePower = pole.BattlePower,
                         Enhancement = pole.Enhancement,
                         Donation = pole.Donation,
                         Open = !pole.Locked,
-                        Type = (int)type
+                        Type = (int) type
                     });
-                }
                 else
-                {
-                    msg.Items.Add(new MsgTotemPoleInfo.TotemPoleStruct
+                    msg.Items.Add(new MsgTotemPoleInfo<Client>.TotemPoleStruct
                     {
-                        Type = (int)type
+                        Type = (int) type
                     });
-                }
-            }
             return user.SendAsync(msg);
         }
 
         public Task SendTotemsAsync(Character user, TotemPoleType type, int index)
         {
-            if (!m_totemPoles.TryGetValue(type, out var pole))
+            if (!m_totemPoles.TryGetValue(type, out TotemPole pole))
                 return Task.CompletedTask;
 
-            MsgWeaponsInfo msg = new MsgWeaponsInfo
+            var msg = new MsgWeaponsInfo
             {
                 Data1 = index - 1,
                 Donation = pole.GetUserContribution(user.Identity),
@@ -2714,28 +2747,26 @@ namespace Comet.Game.States.Syndicates
                 EnhancementExpiration = uint.Parse(pole.EnhancementExpiration?.ToString("yyyyMMdd") ?? "0"),
                 SharedBattlePower = pole.BattlePower,
                 TotalInscribed = pole.Totems.Count,
-                TotemType = (int)type
+                TotemType = (int) type
             };
 
             int position = index;
-            foreach (var item in pole.Totems.Values.OrderByDescending(x => x.Points)
-                .Skip(index - 1)
-                .Take(8))
-            {
-                msg.Items.Add(new MsgWeaponsInfo.TotemPoleStruct
+            foreach (Totem item in pole.Totems.Values.OrderByDescending(x => x.Points)
+                                       .Skip(index - 1)
+                                       .Take(8))
+                msg.Items.Add(new MsgWeaponsInfo<Client>.TotemPoleStruct
                 {
-                    Donation = (int) item.Points,
+                    Donation = item.Points,
                     Type = item.ItemType,
                     BattlePower = 0,
                     Position = position++,
-                    SocketOne = (byte)item.SocketOne,
-                    SocketTwo = (byte)item.SocketTwo,
+                    SocketOne = (byte) item.SocketOne,
+                    SocketTwo = (byte) item.SocketTwo,
                     Addition = item.Addition,
                     ItemIdentity = item.ItemIdentity,
                     PlayerName = item.PlayerName,
                     Quality = item.Quality
                 });
-            }
 
             msg.Data2 += msg.Data1 - 1;
             return user.SendAsync(msg);
@@ -2744,20 +2775,18 @@ namespace Comet.Game.States.Syndicates
         private void UpdateBattlePower()
         {
             TotemSharedBattlePower = m_totemPoles.Values
-                .Where(x => !x.Locked)
-                .OrderByDescending(x => x.SharedBattlePower)
-                .Take(5)
-                .Sum(x => x.SharedBattlePower);
+                                                 .Where(x => !x.Locked)
+                                                 .OrderByDescending(x => x.SharedBattlePower)
+                                                 .Take(5)
+                                                 .Sum(x => x.SharedBattlePower);
         }
 
         private async Task SynchronizeBattlePowerAsync()
         {
-            foreach (var member in m_dicMembers.Values.Where(x => x.IsOnline))
-            {
+            foreach (SyndicateMember member in m_dicMembers.Values.Where(x => x.IsOnline))
                 await member.User.BroadcastRoomMsgAsync(
                     new MsgUserAttrib(member.UserIdentity, ClientUpdateType.TotemPoleBattlePower,
-                        (ulong) TotemSharedBattlePower), true);
-            }
+                                      (ulong) TotemSharedBattlePower), true);
         }
 
         public static int TotemLimit(int level, int metempsychosis)
@@ -2768,6 +2797,7 @@ namespace Comet.Game.States.Syndicates
                     return 7;
                 return 14;
             }
+
             if (metempsychosis == 1)
                 return 21;
             return 30;
@@ -2807,6 +2837,7 @@ namespace Comet.Game.States.Syndicates
                 case 6: return 15000000;
                 case 7: return 20000000;
             }
+
             return 0;
         }
 
@@ -2816,7 +2847,7 @@ namespace Comet.Game.States.Syndicates
 
         public SyndicateMember QueryMember(uint id)
         {
-            return m_dicMembers.TryGetValue(id, out var member) ? member : null;
+            return m_dicMembers.TryGetValue(id, out SyndicateMember member) ? member : null;
         }
 
         public SyndicateMember QueryMember(string member)
@@ -2824,32 +2855,42 @@ namespace Comet.Game.States.Syndicates
             return m_dicMembers.Values.FirstOrDefault(x => x.UserName == member);
         }
 
-        public List<SyndicateMember> QueryRank(MsgFactionRankInfo.RankRequestType type)
+        public List<SyndicateMember> QueryRank(MsgFactionRankInfo<Client>.RankRequestType type)
         {
             switch (type)
             {
-                case MsgFactionRankInfo.RankRequestType.Silvers:
+                case MsgFactionRankInfo<Client>.RankRequestType.Silvers:
                     return m_dicMembers.Values.Where(x => x.Silvers > 0).OrderByDescending(x => x.Silvers).ToList();
-                case MsgFactionRankInfo.RankRequestType.ConquerPoints:
-                    return m_dicMembers.Values.Where(x => x.ConquerPointsDonation > 0).OrderByDescending(x => x.ConquerPointsDonation).ToList();
-                case MsgFactionRankInfo.RankRequestType.Guide:
-                    return m_dicMembers.Values.Where(x => x.GuideDonation > 0).OrderByDescending(x => x.GuideDonation).ToList();
-                case MsgFactionRankInfo.RankRequestType.PK:
-                    return m_dicMembers.Values.Where(x => x.PkDonation > 0).OrderByDescending(x => x.PkDonation).ToList();
-                case MsgFactionRankInfo.RankRequestType.Arsenal:
-                    return m_dicMembers.Values.Where(x => x.ArsenalDonation > 0).OrderByDescending(x => x.ArsenalDonation).ToList();
-                case MsgFactionRankInfo.RankRequestType.RedRose:
-                    return m_dicMembers.Values.Where(x => x.RedRoseDonation > 0).OrderByDescending(x => x.RedRoseDonation).ToList();
-                case MsgFactionRankInfo.RankRequestType.WhiteRose:
-                    return m_dicMembers.Values.Where(x => x.WhiteRoseDonation > 0).OrderByDescending(x => x.WhiteRoseDonation).ToList();
-                case MsgFactionRankInfo.RankRequestType.Orchid:
-                    return m_dicMembers.Values.Where(x => x.OrchidDonation > 0).OrderByDescending(x => x.OrchidDonation).ToList();
-                case MsgFactionRankInfo.RankRequestType.Tulip:
-                    return m_dicMembers.Values.Where(x => x.TulipDonation > 0).OrderByDescending(x => x.TulipDonation).ToList();
-                case MsgFactionRankInfo.RankRequestType.Total:
-                    return m_dicMembers.Values.Where(x => x.TotalDonation > 0).OrderByDescending(x => x.TotalDonation).ToList();
-                case MsgFactionRankInfo.RankRequestType.Usable:
-                    return m_dicMembers.Values.Where(x => x.TotalDonation > 0).OrderByDescending(x => x.UsableDonation).ToList();
+                case MsgFactionRankInfo<Client>.RankRequestType.ConquerPoints:
+                    return m_dicMembers.Values.Where(x => x.ConquerPointsDonation > 0)
+                                       .OrderByDescending(x => x.ConquerPointsDonation).ToList();
+                case MsgFactionRankInfo<Client>.RankRequestType.Guide:
+                    return m_dicMembers.Values.Where(x => x.GuideDonation > 0).OrderByDescending(x => x.GuideDonation)
+                                       .ToList();
+                case MsgFactionRankInfo<Client>.RankRequestType.PK:
+                    return m_dicMembers.Values.Where(x => x.PkDonation > 0).OrderByDescending(x => x.PkDonation)
+                                       .ToList();
+                case MsgFactionRankInfo<Client>.RankRequestType.Arsenal:
+                    return m_dicMembers.Values.Where(x => x.ArsenalDonation > 0)
+                                       .OrderByDescending(x => x.ArsenalDonation).ToList();
+                case MsgFactionRankInfo<Client>.RankRequestType.RedRose:
+                    return m_dicMembers.Values.Where(x => x.RedRoseDonation > 0)
+                                       .OrderByDescending(x => x.RedRoseDonation).ToList();
+                case MsgFactionRankInfo<Client>.RankRequestType.WhiteRose:
+                    return m_dicMembers.Values.Where(x => x.WhiteRoseDonation > 0)
+                                       .OrderByDescending(x => x.WhiteRoseDonation).ToList();
+                case MsgFactionRankInfo<Client>.RankRequestType.Orchid:
+                    return m_dicMembers.Values.Where(x => x.OrchidDonation > 0).OrderByDescending(x => x.OrchidDonation)
+                                       .ToList();
+                case MsgFactionRankInfo<Client>.RankRequestType.Tulip:
+                    return m_dicMembers.Values.Where(x => x.TulipDonation > 0).OrderByDescending(x => x.TulipDonation)
+                                       .ToList();
+                case MsgFactionRankInfo<Client>.RankRequestType.Total:
+                    return m_dicMembers.Values.Where(x => x.TotalDonation > 0).OrderByDescending(x => x.TotalDonation)
+                                       .ToList();
+                case MsgFactionRankInfo<Client>.RankRequestType.Usable:
+                    return m_dicMembers.Values.Where(x => x.TotalDonation > 0).OrderByDescending(x => x.UsableDonation)
+                                       .ToList();
             }
 
             return new List<SyndicateMember>();
@@ -2863,29 +2904,29 @@ namespace Comet.Game.States.Syndicates
         {
             const int MAX_PER_PAGE_I = 12;
             int startAt = page; // just in case I need to change the value in runtime
-            int current = 0;
+            var current = 0;
 
-            MsgSynMemberList msg = new MsgSynMemberList
+            var msg = new MsgSynMemberList
             {
                 Index = page
             };
 
-            foreach (var member in m_dicMembers.Values
-                .OrderByDescending(x => x.IsOnline)
-                .ThenByDescending(x => x.Rank)
-                .ThenByDescending(x => x.Level))
+            foreach (SyndicateMember member in m_dicMembers.Values
+                                                           .OrderByDescending(x => x.IsOnline)
+                                                           .ThenByDescending(x => x.Rank)
+                                                           .ThenByDescending(x => x.Level))
             {
                 if (current - startAt >= MAX_PER_PAGE_I)
                     break;
                 if (current++ < startAt)
                     continue;
 
-                msg.Members.Add(new MsgSynMemberList.MemberStruct
+                msg.Members.Add(new MsgSynMemberList<Client>.MemberStruct
                 {
                     Identity = member.UserIdentity,
                     Name = member.UserName,
-                    Rank = (int)member.Rank,
-                    Nobility = (int)member.NobilityRank,
+                    Rank = (int) member.Rank,
+                    Nobility = (int) member.NobilityRank,
                     PositionExpire = uint.Parse(member.PositionExpiration?.ToString("yyyyMMdd") ?? "0"),
                     IsOnline = member.IsOnline,
                     LookFace = member.LookFace,
@@ -2897,7 +2938,7 @@ namespace Comet.Game.States.Syndicates
             await target.SendAsync(msg);
         }
 
-        private static SyndicateMember.SyndicateRank[] ShowMinContriRank =
+        private static readonly SyndicateMember.SyndicateRank[] ShowMinContriRank =
         {
             SyndicateMember.SyndicateRank.Manager,
             SyndicateMember.SyndicateRank.Supervisor,
@@ -2940,12 +2981,12 @@ namespace Comet.Game.States.Syndicates
             if (target.SyndicateIdentity != Identity)
                 return Task.CompletedTask;
 
-            MsgDutyMinContri msg = new MsgDutyMinContri();
-            foreach (var pos in ShowMinContriRank)
+            var msg = new MsgDutyMinContri();
+            foreach (SyndicateMember.SyndicateRank pos in ShowMinContriRank)
             {
                 uint min = 0;
                 int current = m_dicMembers.Values.Count(x => x.Rank == pos);
-                int maxPerPos = (int) MaxPositionAmount(pos);
+                var maxPerPos = (int) MaxPositionAmount(pos);
 
                 switch (pos)
                 {
@@ -2956,15 +2997,11 @@ namespace Comet.Game.States.Syndicates
                     case SyndicateMember.SyndicateRank.Follower:
                     {
                         if (current >= maxPerPos)
-                        {
                             min = (uint) m_dicMembers.Values.Where(x => x.Rank == pos).Select(x => x.UsableDonation)
-                                .DefaultIfEmpty().Min(x => x);
-                        }
+                                                     .DefaultIfEmpty().Min(x => x);
                         else
-                        {
                             min = (uint) m_dicMembers.Values.Where(x => x.Rank == SyndicateMember.SyndicateRank.Member)
-                                .Select(x => x.UsableDonation).DefaultIfEmpty().Max(x => x);
-                        }
+                                                     .Select(x => x.UsableDonation).DefaultIfEmpty().Max(x => x);
 
                         break;
                     }
@@ -2974,15 +3011,11 @@ namespace Comet.Game.States.Syndicates
                     case SyndicateMember.SyndicateRank.RoseFollower:
                     {
                         if (current >= maxPerPos)
-                        {
                             min = m_dicMembers.Values.Where(x => x.Rank == pos).Select(x => x.RedRoseDonation)
-                                .DefaultIfEmpty().Min(x => x);
-                        }
+                                              .DefaultIfEmpty().Min(x => x);
                         else
-                        {
                             min = m_dicMembers.Values.Where(x => x.Rank == SyndicateMember.SyndicateRank.Member)
-                                .Select(x => x.RedRoseDonation).DefaultIfEmpty().Max(x => x);
-                        }
+                                              .Select(x => x.RedRoseDonation).DefaultIfEmpty().Max(x => x);
 
                         break;
                     }
@@ -2992,15 +3025,11 @@ namespace Comet.Game.States.Syndicates
                     case SyndicateMember.SyndicateRank.LilyFollower:
                     {
                         if (current >= maxPerPos)
-                        {
                             min = m_dicMembers.Values.Where(x => x.Rank == pos).Select(x => x.WhiteRoseDonation)
-                                .DefaultIfEmpty().Min(x => x);
-                        }
+                                              .DefaultIfEmpty().Min(x => x);
                         else
-                        {
                             min = m_dicMembers.Values.Where(x => x.Rank == SyndicateMember.SyndicateRank.Member)
-                                .Select(x => x.WhiteRoseDonation).DefaultIfEmpty().Max(x => x);
-                        }
+                                              .Select(x => x.WhiteRoseDonation).DefaultIfEmpty().Max(x => x);
 
                         break;
                     }
@@ -3010,15 +3039,11 @@ namespace Comet.Game.States.Syndicates
                     case SyndicateMember.SyndicateRank.OrchidSupervisor:
                     {
                         if (current >= maxPerPos)
-                        {
                             min = m_dicMembers.Values.Where(x => x.Rank == pos).Select(x => x.OrchidDonation)
-                                .DefaultIfEmpty().Min(x => x);
-                        }
+                                              .DefaultIfEmpty().Min(x => x);
                         else
-                        {
                             min = m_dicMembers.Values.Where(x => x.Rank == SyndicateMember.SyndicateRank.Member)
-                                .Select(x => x.OrchidDonation).DefaultIfEmpty().Max(x => x);
-                        }
+                                              .Select(x => x.OrchidDonation).DefaultIfEmpty().Max(x => x);
 
                         break;
                     }
@@ -3028,15 +3053,11 @@ namespace Comet.Game.States.Syndicates
                     case SyndicateMember.SyndicateRank.TulipFollower:
                     {
                         if (current >= maxPerPos)
-                        {
                             min = m_dicMembers.Values.Where(x => x.Rank == pos).Select(x => x.TulipDonation)
-                                .DefaultIfEmpty().Min(x => x);
-                        }
+                                              .DefaultIfEmpty().Min(x => x);
                         else
-                        {
                             min = m_dicMembers.Values.Where(x => x.Rank == SyndicateMember.SyndicateRank.Member)
-                                .Select(x => x.TulipDonation).DefaultIfEmpty().Max(x => x);
-                        }
+                                              .Select(x => x.TulipDonation).DefaultIfEmpty().Max(x => x);
 
                         break;
                     }
@@ -3046,15 +3067,11 @@ namespace Comet.Game.States.Syndicates
                     case SyndicateMember.SyndicateRank.PkFollower:
                     {
                         if (current >= maxPerPos)
-                        {
                             min = (uint) m_dicMembers.Values.Where(x => x.Rank == pos).Select(x => x.PkDonation)
-                                .DefaultIfEmpty().Min(x => x);
-                        }
+                                                     .DefaultIfEmpty().Min(x => x);
                         else
-                        {
                             min = (uint) m_dicMembers.Values.Where(x => x.Rank == SyndicateMember.SyndicateRank.Member)
-                                .Select(x => x.PkDonation).DefaultIfEmpty().Max(x => x);
-                        }
+                                                     .Select(x => x.PkDonation).DefaultIfEmpty().Max(x => x);
 
                         break;
                     }
@@ -3064,15 +3081,11 @@ namespace Comet.Game.States.Syndicates
                     case SyndicateMember.SyndicateRank.GuideFollower:
                     {
                         if (current >= maxPerPos)
-                        {
                             min = m_dicMembers.Values.Where(x => x.Rank == pos).Select(x => x.GuideDonation)
-                                .DefaultIfEmpty().Min(x => x);
-                        }
+                                              .DefaultIfEmpty().Min(x => x);
                         else
-                        {
                             min = m_dicMembers.Values.Where(x => x.Rank == SyndicateMember.SyndicateRank.Member)
-                                .Select(x => x.GuideDonation).DefaultIfEmpty().Max(x => x);
-                        }
+                                              .Select(x => x.GuideDonation).DefaultIfEmpty().Max(x => x);
 
                         break;
                     }
@@ -3082,15 +3095,11 @@ namespace Comet.Game.States.Syndicates
                     case SyndicateMember.SyndicateRank.SilverAgent:
                     {
                         if (current >= maxPerPos)
-                        {
                             min = (uint) m_dicMembers.Values.Where(x => x.Rank == pos).Select(x => x.Silvers)
-                                .DefaultIfEmpty().Min(x => x);
-                        }
+                                                     .DefaultIfEmpty().Min(x => x);
                         else
-                        {
                             min = (uint) m_dicMembers.Values.Where(x => x.Rank == SyndicateMember.SyndicateRank.Member)
-                                .Select(x => x.Silvers).DefaultIfEmpty().Max(x => x);
-                        }
+                                                     .Select(x => x.Silvers).DefaultIfEmpty().Max(x => x);
 
                         break;
                     }
@@ -3100,15 +3109,11 @@ namespace Comet.Game.States.Syndicates
                     case SyndicateMember.SyndicateRank.CpFollower:
                     {
                         if (current >= maxPerPos)
-                        {
                             min = m_dicMembers.Values.Where(x => x.Rank == pos).Select(x => x.ConquerPointsDonation)
-                                .DefaultIfEmpty().Min(x => x);
-                        }
+                                              .DefaultIfEmpty().Min(x => x);
                         else
-                        {
                             min = m_dicMembers.Values.Where(x => x.Rank == SyndicateMember.SyndicateRank.Member)
-                                .Select(x => x.ConquerPointsDonation).DefaultIfEmpty().Max(x => x);
-                        }
+                                              .Select(x => x.ConquerPointsDonation).DefaultIfEmpty().Max(x => x);
 
                         break;
                     }
@@ -3118,15 +3123,11 @@ namespace Comet.Game.States.Syndicates
                     case SyndicateMember.SyndicateRank.ArsenalFollower:
                     {
                         if (current >= maxPerPos)
-                        {
                             min = m_dicMembers.Values.Where(x => x.Rank == pos).Select(x => x.ArsenalDonation)
-                                .DefaultIfEmpty().Min(x => x);
-                        }
+                                              .DefaultIfEmpty().Min(x => x);
                         else
-                        {
                             min = m_dicMembers.Values.Where(x => x.Rank == SyndicateMember.SyndicateRank.Member)
-                                .Select(x => x.ArsenalDonation).DefaultIfEmpty().Max(x => x);
-                        }
+                                              .Select(x => x.ArsenalDonation).DefaultIfEmpty().Max(x => x);
 
                         break;
                     }
@@ -3144,9 +3145,9 @@ namespace Comet.Game.States.Syndicates
                     }
                 }
 
-                msg.Members.Add(new MsgDutyMinContri.MinContriStruct
+                msg.Members.Add(new MsgDutyMinContri<Client>.MinContriStruct
                 {
-                    Position = (int)pos,
+                    Position = (int) pos,
                     Donation = min
                 });
             }
@@ -3156,8 +3157,7 @@ namespace Comet.Game.States.Syndicates
 
         public async Task SendRelationAsync(Character target)
         {
-            foreach (var ally in m_dicAllies.Values)
-            {
+            foreach (Syndicate ally in m_dicAllies.Values)
                 await target.SendAsync(new MsgName
                 {
                     Identity = ally.Identity,
@@ -3167,10 +3167,8 @@ namespace Comet.Game.States.Syndicates
                         $"{ally.Name} {ally.Leader.UserName} {ally.Level} {ally.MemberCount}"
                     }
                 });
-            }
 
-            foreach (var enemy in m_dicEnemies.Values)
-            {
+            foreach (Syndicate enemy in m_dicEnemies.Values)
                 await target.SendAsync(new MsgName
                 {
                     Identity = enemy.Identity,
@@ -3180,7 +3178,6 @@ namespace Comet.Game.States.Syndicates
                         $"{enemy.Name} {enemy.Leader.UserName} {enemy.Level} {enemy.MemberCount}"
                     }
                 });
-            }
         }
 
         public async Task BroadcastNameAsync()
@@ -3216,7 +3213,7 @@ namespace Comet.Game.States.Syndicates
 
         public async Task SendAsync(IPacket msg, uint exclude = 0u)
         {
-            foreach (var player in m_dicMembers.Values)
+            foreach (SyndicateMember player in m_dicMembers.Values)
             {
                 if (exclude == player.UserIdentity || !player.IsOnline)
                     continue;

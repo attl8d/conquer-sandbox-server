@@ -17,7 +17,7 @@ namespace Comet.Game.World.Maps
 
         private readonly Role mRole;
 
-        public ConcurrentDictionary<uint, Role> Roles = new ConcurrentDictionary<uint, Role>();
+        public ConcurrentDictionary<uint, Role> Roles = new();
 
         public Screen(Role role)
         {
@@ -31,14 +31,14 @@ namespace Comet.Game.World.Maps
 
         public async Task RemoveAsync(uint idRole, bool force = false)
         {
-            Roles.TryRemove(idRole, out var role);
+            Roles.TryRemove(idRole, out Role role);
 
             if (force)
             {
-                MsgAction msg = new MsgAction
+                var msg = new MsgAction
                 {
                     Identity = idRole,
-                    Action = MsgAction.ActionType.RemoveEntity
+                    Action = MsgAction<Client>.ActionType.RemoveEntity
                 };
                 await mRole.SendAsync(msg);
             }
@@ -49,8 +49,8 @@ namespace Comet.Game.World.Maps
             if (mRole is not Character player)
                 return;
 
-            foreach (var role in Roles.Values)
-            {                
+            foreach (Role role in Roles.Values)
+            {
                 await role.SendSpawnToAsync(player);
 
                 if (role is Character user)
@@ -60,10 +60,10 @@ namespace Comet.Game.World.Maps
 
         public async Task UpdateAsync(IPacket msg = null)
         {
-            bool isJmpMsg = false;
+            var isJmpMsg = false;
             ushort oldX = 0;
             ushort oldY = 0;
-            List<Point> dda = new List<Point>();
+            var dda = new List<Point>();
             if (msg is MsgAction jump && jump.Action == MsgAction<Client>.ActionType.MapJump)
             {
                 isJmpMsg = true;
@@ -73,9 +73,12 @@ namespace Comet.Game.World.Maps
 
                 Calculations.DDALine(oldX, oldY, mRole.MapX, mRole.MapY, VIEW_SIZE, ref dda);
             }
-            else jump = null;
+            else
+            {
+                jump = null;
+            }
 
-            var targets = mRole.Map.Query9BlocksByPos(mRole.MapX, mRole.MapY);
+            List<Role> targets = mRole.Map.Query9BlocksByPos(mRole.MapX, mRole.MapY);
             targets.AddRange(Roles.Values);
             foreach (Role target in targets.Select(x => x).Distinct())
             {
@@ -83,8 +86,8 @@ namespace Comet.Game.World.Maps
 
                 ushort newOldX = oldX;
                 ushort newOldY = oldY;
-                bool isExit = false;
-                Character targetUser = target as Character;
+                var isExit = false;
+                var targetUser = target as Character;
                 if (Calculations.GetDistance(mRole.MapX, mRole.MapY, target.MapX, target.MapY) <= mRole.ViewRange)
                 {
                     /*
@@ -97,18 +100,16 @@ namespace Comet.Game.World.Maps
 
                         if (mRole is Character user)
                             await target.SendSpawnToAsync(user);
-                        
+
                         if (targetUser != null && isJmpMsg)
                         {
-                            for (int i = 0; i < dda.Count; i++)
-                            {
+                            for (var i = 0; i < dda.Count; i++)
                                 if (targetUser.GetDistance(dda[i].X, dda[i].Y) < VIEW_SIZE)
                                 {
-                                    newOldX = (ushort)dda[i].X;
-                                    newOldY = (ushort)dda[i].Y;
+                                    newOldX = (ushort) dda[i].X;
+                                    newOldY = (ushort) dda[i].Y;
                                     break;
                                 }
-                            }
 
                             await mRole.SendSpawnToAsync(targetUser, newOldX, newOldY);
                         }
@@ -119,13 +120,12 @@ namespace Comet.Game.World.Maps
                     isExit = true;
                     await RemoveAsync(target.Identity);
                     if (target.Screen != null)
-                    await target.Screen.RemoveAsync(mRole.Identity);
+                        await target.Screen.RemoveAsync(mRole.Identity);
                 }
 
                 if (msg != null && targetUser != null)
                 {
                     if (isJmpMsg && !isExit)
-                    {
                         await targetUser.SendAsync(new MsgAction
                         {
                             Action = jump.Action,
@@ -140,11 +140,8 @@ namespace Comet.Game.World.Maps
                             MapColor = jump.MapColor,
                             Timestamp = jump.Timestamp
                         });
-                    }
                     else
-                    {
                         await targetUser.SendAsync(msg);
-                    }
                 }
             }
         }
@@ -154,7 +151,7 @@ namespace Comet.Game.World.Maps
             if (self && mRole != null)
                 await mRole.SendAsync(msg);
 
-            foreach (var target in Roles.Values.Where(x => x is Character).Cast<Character>())
+            foreach (Character target in Roles.Values.Where(x => x is Character).Cast<Character>())
                 await target.SendAsync(msg);
         }
 
@@ -178,17 +175,15 @@ namespace Comet.Game.World.Maps
         public async Task ClearAsync(bool sync = false)
         {
             if (sync && mRole is Character)
-            {
-                foreach (var role in Roles.Values)
+                foreach (Role role in Roles.Values)
                 {
-                    MsgAction msg = new MsgAction
+                    var msg = new MsgAction
                     {
                         Identity = role.Identity,
-                        Action = MsgAction.ActionType.RemoveEntity
+                        Action = MsgAction<Client>.ActionType.RemoveEntity
                     };
                     await mRole.SendAsync(msg);
                 }
-            }
 
             Roles.Clear();
         }

@@ -1,139 +1,145 @@
-﻿using Comet.Database.Entities;
-using Comet.Game.Database;
-using Comet.Game.Database.Repositories;
-using Comet.Game.Packets;
-using Comet.Game.States;
-using System.Collections.Concurrent;
+﻿using System.Collections.Concurrent;
 using System.Collections.Generic;
-using System.Data;
 using System.Linq;
 using System.Threading.Tasks;
+using Comet.Database.Entities;
+using Comet.Game.Database;
+using Comet.Game.Database.Repositories;
+using Comet.Game.States;
+using Comet.Network.Packets.Game;
 
 namespace Comet.Game.World.Managers
 {
     public static class FlowerManager
     {
-        private static ConcurrentDictionary<uint, FlowerRankObject> m_dicFlowers = new ConcurrentDictionary<uint, FlowerRankObject>();
+        private static readonly ConcurrentDictionary<uint, FlowerRankObject> m_dicFlowers = new();
 
         public static async Task<bool> InitializeAsync()
         {
-            foreach (var flower in await FlowerRepository.GetAsync())
+            foreach (DbFlower flower in await FlowerRepository.GetAsync())
             {
-                FlowerRankObject obj = new FlowerRankObject(flower);
+                var obj = new FlowerRankObject(flower);
                 m_dicFlowers.TryAdd(flower.UserId, obj);
             }
+
             return true;
         }
 
-        public static List<FlowerRankingStruct> GetFlowerRanking(MsgFlower.FlowerType type, int from = 0, int limit = 10)
+        public static List<FlowerRankingStruct> GetFlowerRanking(MsgFlower<Client>.FlowerType type, int from = 0,
+                                                                 int limit = 10)
         {
-            int position = 1;
+            var position = 1;
             switch (type)
             {
-                case MsgFlower.FlowerType.RedRose:
-                    return m_dicFlowers.Values.Where(x => ((x.Mesh % 10000) - (x.Mesh % 10)) / 1000 == 2 && x.RedRose > 0)
-                        .OrderByDescending(x => x.RedRose).Skip(from)
-                        .Take(limit).Select(x => new FlowerRankingStruct
-                        {
-                            Identity = x.UserIdentity,
-                            Name = x.Name,
-                            Profession = (ushort)x.Profession,
-                            Value = x.RedRose,
-                            Position = position++
-                        }).ToList();
+                case MsgFlower<Client>.FlowerType.RedRose:
+                    return m_dicFlowers.Values.Where(x => (x.Mesh % 10000 - x.Mesh % 10) / 1000 == 2 && x.RedRose > 0)
+                                       .OrderByDescending(x => x.RedRose).Skip(from)
+                                       .Take(limit).Select(x => new FlowerRankingStruct
+                                       {
+                                           Identity = x.UserIdentity,
+                                           Name = x.Name,
+                                           Profession = (ushort) x.Profession,
+                                           Value = x.RedRose,
+                                           Position = position++
+                                       }).ToList();
 
-                case MsgFlower.FlowerType.WhiteRose:
-                    return m_dicFlowers.Values.Where(x => ((x.Mesh % 10000) - (x.Mesh % 10)) / 1000 == 2 && x.WhiteRose > 0)
-                        .OrderByDescending(x => x.WhiteRose)
-                        .Skip(from).Take(limit).Select(x => new FlowerRankingStruct
-                        {
-                            Identity = x.UserIdentity,
-                            Name = x.Name,
-                            Profession = (ushort)x.Profession,
-                            Value = x.WhiteRose,
-                            Position = position++
-                        }).ToList();
+                case MsgFlower<Client>.FlowerType.WhiteRose:
+                    return m_dicFlowers.Values.Where(x => (x.Mesh % 10000 - x.Mesh % 10) / 1000 == 2 && x.WhiteRose > 0)
+                                       .OrderByDescending(x => x.WhiteRose)
+                                       .Skip(from).Take(limit).Select(x => new FlowerRankingStruct
+                                       {
+                                           Identity = x.UserIdentity,
+                                           Name = x.Name,
+                                           Profession = (ushort) x.Profession,
+                                           Value = x.WhiteRose,
+                                           Position = position++
+                                       }).ToList();
 
-                case MsgFlower.FlowerType.Orchid:
-                    return m_dicFlowers.Values.Where(x => ((x.Mesh % 10000) - (x.Mesh % 10)) / 1000 == 2 && x.Orchids > 0)
-                        .OrderByDescending(x => x.Orchids).Skip(from)
-                        .Take(limit).Select(x => new FlowerRankingStruct
-                        {
-                            Identity = x.UserIdentity,
-                            Name = x.Name,
-                            Profession = (ushort)x.Profession,
-                            Value = x.Orchids,
-                            Position = position++
-                        }).ToList();
+                case MsgFlower<Client>.FlowerType.Orchid:
+                    return m_dicFlowers.Values.Where(x => (x.Mesh % 10000 - x.Mesh % 10) / 1000 == 2 && x.Orchids > 0)
+                                       .OrderByDescending(x => x.Orchids).Skip(from)
+                                       .Take(limit).Select(x => new FlowerRankingStruct
+                                       {
+                                           Identity = x.UserIdentity,
+                                           Name = x.Name,
+                                           Profession = (ushort) x.Profession,
+                                           Value = x.Orchids,
+                                           Position = position++
+                                       }).ToList();
 
-                case MsgFlower.FlowerType.Tulip:
-                    return m_dicFlowers.Values.Where(x => ((x.Mesh % 10000) - (x.Mesh % 10)) / 1000 == 2 && x.Tulips > 0)
-                        .OrderByDescending(x => x.Tulips).Skip(from)
-                        .Take(limit).Select(x => new FlowerRankingStruct
-                        {
-                            Identity = x.UserIdentity,
-                            Name = x.Name,
-                            Profession = (ushort)x.Profession,
-                            Value = x.Tulips,
-                            Position = position++
-                        }).ToList();
+                case MsgFlower<Client>.FlowerType.Tulip:
+                    return m_dicFlowers.Values.Where(x => (x.Mesh % 10000 - x.Mesh % 10) / 1000 == 2 && x.Tulips > 0)
+                                       .OrderByDescending(x => x.Tulips).Skip(from)
+                                       .Take(limit).Select(x => new FlowerRankingStruct
+                                       {
+                                           Identity = x.UserIdentity,
+                                           Name = x.Name,
+                                           Profession = (ushort) x.Profession,
+                                           Value = x.Tulips,
+                                           Position = position++
+                                       }).ToList();
             }
 
             return new List<FlowerRankingStruct>();
         }
 
-        public static List<FlowerRankingStruct> GetFlowerRankingToday(MsgFlower.FlowerType type, int from = 0, int limit = 10)
+        public static List<FlowerRankingStruct> GetFlowerRankingToday(MsgFlower<Client>.FlowerType type, int from = 0,
+                                                                      int limit = 10)
         {
-            int position = 1;
+            var position = 1;
             switch (type)
             {
-                case MsgFlower.FlowerType.RedRose:
-                    return m_dicFlowers.Values.Where(x => ((x.Mesh % 10000) - (x.Mesh % 10)) / 1000 == 2 && x.RedRoseToday > 0)
-                        .OrderByDescending(x => x.RedRoseToday).Skip(from)
-                        .Take(limit).Select(x => new FlowerRankingStruct
-                        {
-                            Identity = x.UserIdentity,
-                            Name = x.Name,
-                            Profession = (ushort)x.Profession,
-                            Value = x.RedRoseToday,
-                            Position = position++
-                        }).ToList();
+                case MsgFlower<Client>.FlowerType.RedRose:
+                    return m_dicFlowers
+                           .Values.Where(x => (x.Mesh % 10000 - x.Mesh % 10) / 1000 == 2 && x.RedRoseToday > 0)
+                           .OrderByDescending(x => x.RedRoseToday).Skip(from)
+                           .Take(limit).Select(x => new FlowerRankingStruct
+                           {
+                               Identity = x.UserIdentity,
+                               Name = x.Name,
+                               Profession = (ushort) x.Profession,
+                               Value = x.RedRoseToday,
+                               Position = position++
+                           }).ToList();
 
-                case MsgFlower.FlowerType.WhiteRose:
-                    return m_dicFlowers.Values.Where(x => ((x.Mesh % 10000) - (x.Mesh % 10)) / 1000 == 2 && x.WhiteRoseToday > 0)
-                        .OrderByDescending(x => x.WhiteRoseToday)
-                        .Skip(from).Take(limit).Select(x => new FlowerRankingStruct
-                        {
-                            Identity = x.UserIdentity,
-                            Name = x.Name,
-                            Profession = (ushort)x.Profession,
-                            Value = x.WhiteRoseToday,
-                            Position = position++
-                        }).ToList();
+                case MsgFlower<Client>.FlowerType.WhiteRose:
+                    return m_dicFlowers
+                           .Values.Where(x => (x.Mesh % 10000 - x.Mesh % 10) / 1000 == 2 && x.WhiteRoseToday > 0)
+                           .OrderByDescending(x => x.WhiteRoseToday)
+                           .Skip(from).Take(limit).Select(x => new FlowerRankingStruct
+                           {
+                               Identity = x.UserIdentity,
+                               Name = x.Name,
+                               Profession = (ushort) x.Profession,
+                               Value = x.WhiteRoseToday,
+                               Position = position++
+                           }).ToList();
 
-                case MsgFlower.FlowerType.Orchid:
-                    return m_dicFlowers.Values.Where(x => ((x.Mesh % 10000) - (x.Mesh % 10)) / 1000 == 2 && x.OrchidsToday > 0)
-                        .OrderByDescending(x => x.OrchidsToday).Skip(from)
-                        .Take(limit).Select(x => new FlowerRankingStruct
-                        {
-                            Identity = x.UserIdentity,
-                            Name = x.Name,
-                            Profession = (ushort)x.Profession,
-                            Value = x.OrchidsToday,
-                            Position = position++
-                        }).ToList();
+                case MsgFlower<Client>.FlowerType.Orchid:
+                    return m_dicFlowers
+                           .Values.Where(x => (x.Mesh % 10000 - x.Mesh % 10) / 1000 == 2 && x.OrchidsToday > 0)
+                           .OrderByDescending(x => x.OrchidsToday).Skip(from)
+                           .Take(limit).Select(x => new FlowerRankingStruct
+                           {
+                               Identity = x.UserIdentity,
+                               Name = x.Name,
+                               Profession = (ushort) x.Profession,
+                               Value = x.OrchidsToday,
+                               Position = position++
+                           }).ToList();
 
-                case MsgFlower.FlowerType.Tulip:
-                    return m_dicFlowers.Values.Where(x => ((x.Mesh % 10000) - (x.Mesh % 10)) / 1000 == 2 && x.TulipsToday > 0)
-                        .OrderByDescending(x => x.TulipsToday).Skip(from)
-                        .Take(limit).Select(x => new FlowerRankingStruct
-                        {
-                            Identity = x.UserIdentity,
-                            Name = x.Name,
-                            Profession = (ushort)x.Profession,
-                            Value = x.TulipsToday,
-                            Position = position++
-                        }).ToList();
+                case MsgFlower<Client>.FlowerType.Tulip:
+                    return m_dicFlowers
+                           .Values.Where(x => (x.Mesh % 10000 - x.Mesh % 10) / 1000 == 2 && x.TulipsToday > 0)
+                           .OrderByDescending(x => x.TulipsToday).Skip(from)
+                           .Take(limit).Select(x => new FlowerRankingStruct
+                           {
+                               Identity = x.UserIdentity,
+                               Name = x.Name,
+                               Profession = (ushort) x.Profession,
+                               Value = x.TulipsToday,
+                               Position = position++
+                           }).ToList();
             }
 
             return new List<FlowerRankingStruct>();
@@ -141,13 +147,14 @@ namespace Comet.Game.World.Managers
 
         public static async Task<FlowerRankObject> QueryFlowersAsync(Character user)
         {
-            if (m_dicFlowers.TryGetValue(user.Identity, out var value))
+            if (m_dicFlowers.TryGetValue(user.Identity, out FlowerRankObject value))
                 return value;
             if (m_dicFlowers.TryAdd(user.Identity, value = new FlowerRankObject(user)))
             {
                 await ServerDbContext.SaveAsync(value.GetDatabaseObject());
                 return value;
             }
+
             return null;
         }
 
@@ -159,7 +166,7 @@ namespace Comet.Game.World.Managers
 
         public class FlowerRankObject
         {
-            private DbFlower m_flower;
+            private readonly DbFlower m_flower;
 
             public FlowerRankObject(DbFlower flower)
             {
@@ -211,14 +218,39 @@ namespace Comet.Game.World.Managers
             public uint Orchids { get; set; }
             public uint Tulips { get; set; }
 
-            public uint RedRoseToday { get => m_flower.RedRose; set => m_flower.RedRose = value; }
-            public uint WhiteRoseToday { get => m_flower.WhiteRose; set => m_flower.WhiteRose = value; }
-            public uint OrchidsToday { get => m_flower.Orchids; set => m_flower.Orchids = value; }
-            public uint TulipsToday { get => m_flower.Tulips; set => m_flower.Tulips = value; }
+            public uint RedRoseToday
+            {
+                get => m_flower.RedRose;
+                set => m_flower.RedRose = value;
+            }
 
-            public Task SaveAsync() => ServerDbContext.SaveAsync(m_flower);
+            public uint WhiteRoseToday
+            {
+                get => m_flower.WhiteRose;
+                set => m_flower.WhiteRose = value;
+            }
 
-            public DbFlower GetDatabaseObject() => m_flower;
+            public uint OrchidsToday
+            {
+                get => m_flower.Orchids;
+                set => m_flower.Orchids = value;
+            }
+
+            public uint TulipsToday
+            {
+                get => m_flower.Tulips;
+                set => m_flower.Tulips = value;
+            }
+
+            public Task SaveAsync()
+            {
+                return ServerDbContext.SaveAsync(m_flower);
+            }
+
+            public DbFlower GetDatabaseObject()
+            {
+                return m_flower;
+            }
         }
 
         public struct FlowerRankingStruct

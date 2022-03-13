@@ -14,17 +14,18 @@ namespace Comet.Game.States.Families
 
         private FamilyMember()
         {
-
         }
 
         #region Static Creation
 
-        public static async Task<FamilyMember> CreateAsync(Character player, Family family, Family.FamilyRank rank = Family.FamilyRank.Member, uint proffer = 0)
+        public static async Task<FamilyMember> CreateAsync(Character player, Family family,
+                                                           Family.FamilyRank rank = Family.FamilyRank.Member,
+                                                           uint proffer = 0)
         {
             if (player == null || family == null || rank == Family.FamilyRank.None)
                 return null;
 
-            DbFamilyAttr attr = new DbFamilyAttr
+            var attr = new DbFamilyAttr
             {
                 FamilyIdentity = family.Identity,
                 UserIdentity = player.Identity,
@@ -37,7 +38,7 @@ namespace Comet.Game.States.Families
             if (!await ServerDbContext.SaveAsync(attr))
                 return null;
 
-            FamilyMember member = new FamilyMember
+            var member = new FamilyMember
             {
                 m_attr = attr,
                 Name = player.Name,
@@ -52,7 +53,8 @@ namespace Comet.Game.States.Families
             if (!await member.SaveAsync())
                 return null;
 
-            await Log.GmLogAsync("family", $"[{player.Identity}],[{player.Name}],[{family.Identity}],[{family.Name}],[Join]");
+            await Log.GmLogAsync(
+                "family", $"[{player.Identity}],[{player.Name}],[{family.Identity}],[{family.Name}],[Join]");
             return member;
         }
 
@@ -62,11 +64,11 @@ namespace Comet.Game.States.Families
             if (dbUser == null)
                 return null;
 
-            FamilyMember member = new FamilyMember
+            var member = new FamilyMember
             {
-                m_attr = player, 
-                Name = dbUser.Name, 
-                MateIdentity = dbUser.Mate, 
+                m_attr = player,
+                Name = dbUser.Name,
+                MateIdentity = dbUser.Mate,
                 Level = dbUser.Level,
                 LookFace = dbUser.Mesh,
                 Profession = dbUser.Profession,

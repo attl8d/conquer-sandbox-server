@@ -1,5 +1,4 @@
 using System;
-using System.IO;
 using System.Threading.Tasks;
 using Comet.Database.Entities;
 using Comet.Game.Database;
@@ -7,7 +6,6 @@ using Comet.Game.Database.Repositories;
 using Comet.Game.States;
 using Comet.Game.States.Items;
 using Comet.Game.World.Managers;
-using Comet.Network.Packets;
 using Comet.Network.Packets.Game;
 using static Comet.Game.Packets.MsgTalk;
 
@@ -15,25 +13,26 @@ namespace Comet.Game.Packets
 {
     /// <remarks>Packet Type 1001</remarks>
     /// <summary>
-    /// Message containing character creation details, such as the new character's name,
-    /// body size, and profession. The character name should be verified, and may be
-    /// rejected by the server if a character by that name already exists.
+    ///     Message containing character creation details, such as the new character's name,
+    ///     body size, and profession. The character name should be verified, and may be
+    ///     rejected by the server if a character by that name already exists.
     /// </summary>
     public sealed class MsgRegister : MsgRegister<Client>
     {
-        private static readonly ushort[] m_startX = { 430, 423, 439, 428, 452, 464, 439 };
-        private static readonly ushort[] m_startY = { 378, 394, 384, 365, 365, 378, 396 };
+        private static readonly ushort[] m_startX = {430, 423, 439, 428, 452, 464, 439};
+        private static readonly ushort[] m_startY = {378, 394, 384, 365, 365, 378, 396};
 
         // Registration constants
-        private static readonly byte[] Hairstyles = new byte[] {
+        private static readonly byte[] Hairstyles =
+        {
             10, 11, 13, 14, 15, 24, 30, 35, 37, 38, 39, 40
         };
 
         /// <summary>
-        /// Process can be invoked by a packet after decode has been called to structure
-        /// packet fields and properties. For the server implementations, this is called
-        /// in the packet handler after the message has been dequeued from the server's
-        /// <see cref="PacketProcessor"/>.
+        ///     Process can be invoked by a packet after decode has been called to structure
+        ///     packet fields and properties. For the server implementations, this is called
+        ///     in the packet handler after the message has been dequeued from the server's
+        ///     <see cref="PacketProcessor" />.
         /// </summary>
         /// <param name="client">Client requesting packet processing</param>
         public override async Task ProcessAsync(Client client)
@@ -68,7 +67,7 @@ namespace Comet.Game.Packets
                 return;
             }
 
-            DbPointAllot allot = ExperienceManager.GetPointAllot((ushort)(Class / 10), 1) ?? new DbPointAllot
+            DbPointAllot allot = ExperienceManager.GetPointAllot((ushort) (Class / 10), 1) ?? new DbPointAllot
             {
                 Strength = 4,
                 Agility = 6,
@@ -82,7 +81,7 @@ namespace Comet.Game.Packets
                 AccountIdentity = client.Creation.AccountID,
                 Name = CharacterName,
                 Mate = 0,
-                Profession = (byte)Class,
+                Profession = (byte) Class,
                 Mesh = Mesh,
                 Silver = 1000,
                 Level = 1,
@@ -94,11 +93,11 @@ namespace Comet.Game.Packets
                 Vitality = allot.Vitality,
                 Spirit = allot.Spirit,
                 HealthPoints =
-                    (ushort)(allot.Strength * 3
+                    (ushort) (allot.Strength * 3
                               + allot.Agility * 3
                               + allot.Spirit * 3
                               + allot.Vitality * 24),
-                ManaPoints = (ushort)(allot.Spirit * 5),
+                ManaPoints = (ushort) (allot.Spirit * 5),
                 Registered = DateTime.Now,
                 ExperienceMultiplier = 5,
                 ExperienceExpires = DateTime.Now.AddHours(1),
@@ -107,7 +106,7 @@ namespace Comet.Game.Packets
             };
 
             // Generate a random look for the character
-            BodyType body = (BodyType)Mesh;
+            var body = (BodyType) Mesh;
             switch (body)
             {
                 case BodyType.AgileFemale:
@@ -119,9 +118,9 @@ namespace Comet.Game.Packets
                     break;
             }
 
-            character.Hairstyle = (ushort)(
-                await Kernel.NextAsync(3, 9) * 100 + Hairstyles[
-                    await Kernel.NextAsync(0, Hairstyles.Length)]);
+            character.Hairstyle = (ushort) (
+                                               await Kernel.NextAsync(3, 9) * 100 + Hairstyles[
+                                                   await Kernel.NextAsync(0, Hairstyles.Length)]);
 
             try
             {
@@ -161,69 +160,70 @@ namespace Comet.Game.Packets
                 await CreateItemAsync(info.Ring, user.Identity, Item.ItemPosition.Ring);
 
             if (info.Item0 != 0)
-                for (int i = 0; i < info.Number0; i++)
+                for (var i = 0; i < info.Number0; i++)
                     await CreateItemAsync(info.Item0, user.Identity, Item.ItemPosition.Inventory);
 
             if (info.Item1 != 0)
-                for (int i = 0; i < info.Number1; i++)
+                for (var i = 0; i < info.Number1; i++)
                     await CreateItemAsync(info.Item1, user.Identity, Item.ItemPosition.Inventory);
 
             if (info.Item2 != 0)
-                for (int i = 0; i < info.Number2; i++)
+                for (var i = 0; i < info.Number2; i++)
                     await CreateItemAsync(info.Item2, user.Identity, Item.ItemPosition.Inventory);
 
             if (info.Item3 != 0)
-                for (int i = 0; i < info.Number3; i++)
+                for (var i = 0; i < info.Number3; i++)
                     await CreateItemAsync(info.Item3, user.Identity, Item.ItemPosition.Inventory);
 
             if (info.Item4 != 0)
-                for (int i = 0; i < info.Number4; i++)
+                for (var i = 0; i < info.Number4; i++)
                     await CreateItemAsync(info.Item4, user.Identity, Item.ItemPosition.Inventory);
 
             if (info.Item5 != 0)
-                for (int i = 0; i < info.Number5; i++)
+                for (var i = 0; i < info.Number5; i++)
                     await CreateItemAsync(info.Item5, user.Identity, Item.ItemPosition.Inventory);
 
             if (info.Item6 != 0)
-                for (int i = 0; i < info.Number6; i++)
+                for (var i = 0; i < info.Number6; i++)
                     await CreateItemAsync(info.Item6, user.Identity, Item.ItemPosition.Inventory);
 
             if (info.Item7 != 0)
-                for (int i = 0; i < info.Number7; i++)
+                for (var i = 0; i < info.Number7; i++)
                     await CreateItemAsync(info.Item7, user.Identity, Item.ItemPosition.Inventory);
 
             if (info.Item8 != 0)
-                for (int i = 0; i < info.Number8; i++)
+                for (var i = 0; i < info.Number8; i++)
                     await CreateItemAsync(info.Item8, user.Identity, Item.ItemPosition.Inventory);
 
             if (info.Item9 != 0)
-                for (int i = 0; i < info.Number9; i++)
+                for (var i = 0; i < info.Number9; i++)
                     await CreateItemAsync(info.Item9, user.Identity, Item.ItemPosition.Inventory);
 
             if (info.Magic0 != 0)
-                await CreateMagicAsync(user.Identity, (ushort)info.Magic0);
+                await CreateMagicAsync(user.Identity, (ushort) info.Magic0);
             if (info.Magic1 != 0)
-                await CreateMagicAsync(user.Identity, (ushort)info.Magic1);
+                await CreateMagicAsync(user.Identity, (ushort) info.Magic1);
             if (info.Magic2 != 0)
-                await CreateMagicAsync(user.Identity, (ushort)info.Magic2);
+                await CreateMagicAsync(user.Identity, (ushort) info.Magic2);
             if (info.Magic3 != 0)
-                await CreateMagicAsync(user.Identity, (ushort)info.Magic3);
+                await CreateMagicAsync(user.Identity, (ushort) info.Magic3);
         }
 
         private async Task CreateItemAsync(uint type, uint idOwner, Item.ItemPosition position, byte add = 0,
-            Item.SocketGem gem1 = Item.SocketGem.NoSocket, Item.SocketGem gem2 = Item.SocketGem.NoSocket,
-            byte enchant = 0, byte reduceDmg = 0)
+                                           Item.SocketGem gem1 = Item.SocketGem.NoSocket,
+                                           Item.SocketGem gem2 = Item.SocketGem.NoSocket,
+                                           byte enchant = 0, byte reduceDmg = 0)
         {
             DbItem item = Item.CreateEntity(type);
             if (item == null)
                 return;
-            item.Position = (byte)position;
+            item.Position = (byte) position;
             item.PlayerId = idOwner;
             item.AddLife = enchant;
             item.ReduceDmg = reduceDmg;
             item.Magic3 = add;
-            item.Gem1 = (byte)gem1;
-            item.Gem2 = (byte)gem2;
+            item.Gem1 = (byte) gem1;
+            item.Gem2 = (byte) gem2;
             await ServerDbContext.SaveAsync(item);
         }
 

@@ -1,13 +1,14 @@
-﻿using Comet.Core;
-using Comet.Database.Entities;
-using Comet.Game.Database;
-using Comet.Game.Packets;
-using Comet.Game.States.Items;
-using System;
+﻿using System;
 using System.Collections.Concurrent;
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
+using Comet.Core;
+using Comet.Database.Entities;
+using Comet.Game.Database;
+using Comet.Game.Packets;
+using Comet.Game.States.Items;
+using Comet.Network.Packets.Game;
 
 namespace Comet.Game.States
 {
@@ -17,13 +18,13 @@ namespace Comet.Game.States
         private const int MAX_TRADE_MONEY = 1000000000;
         private const int MAX_TRADE_EMONEY = 1000000000;
 
-        private ConcurrentDictionary<uint, Item> m_dicItems1 = new ConcurrentDictionary<uint, Item>();
-        private ConcurrentDictionary<uint, Item> m_dicItems2 = new ConcurrentDictionary<uint, Item>();
+        private readonly ConcurrentDictionary<uint, Item> m_dicItems1 = new();
+        private readonly ConcurrentDictionary<uint, Item> m_dicItems2 = new();
 
-        private uint m_money1 = 0, m_money2 = 0;
-        private uint m_emoney1 = 0, m_emoney2 = 0;
+        private uint m_money1, m_money2;
+        private uint m_emoney1, m_emoney2;
 
-        private bool m_accept1 = false, m_accept2 = false;
+        private bool m_accept1, m_accept2;
 
         public Trade(Character p1, Character p2)
         {
@@ -113,7 +114,7 @@ namespace Comet.Game.States
             }
 
             items.TryAdd(item.Identity, item);
-            await target.SendAsync(new MsgItemInfo(item, MsgItemInfo.ItemMode.Trade));
+            await target.SendAsync(new MsgItemInfo(item, MsgItemInfo<Client>.ItemMode.Trade));
             return true;
         }
 
@@ -147,7 +148,7 @@ namespace Comet.Game.States
             await target.SendAsync(new MsgTrade
             {
                 Data = amount,
-                Action = MsgTrade.TradeAction.ShowMoney
+                Action = MsgTrade<Client>.TradeAction.ShowMoney
             });
             return true;
         }
@@ -182,7 +183,7 @@ namespace Comet.Game.States
             await target.SendAsync(new MsgTrade
             {
                 Data = amount,
-                Action = MsgTrade.TradeAction.ShowConquerPoints
+                Action = MsgTrade<Client>.TradeAction.ShowConquerPoints
             });
             return true;
         }
@@ -194,7 +195,7 @@ namespace Comet.Game.States
                 m_accept1 = true;
                 await User2.SendAsync(new MsgTrade
                 {
-                    Action = MsgTrade.TradeAction.Accept,
+                    Action = MsgTrade<Client>.TradeAction.Accept,
                     Data = acceptId
                 });
             }
@@ -203,7 +204,7 @@ namespace Comet.Game.States
                 m_accept2 = true;
                 await User1.SendAsync(new MsgTrade
                 {
-                    Action = MsgTrade.TradeAction.Accept,
+                    Action = MsgTrade<Client>.TradeAction.Accept,
                     Data = acceptId
                 });
             }
@@ -211,8 +212,10 @@ namespace Comet.Game.States
             if (!Accepted)
                 return;
 
-            bool success = m_dicItems1.Values.All(x => User1.UserPackage[x.Identity] != null && !x.IsBound && !x.IsMonopoly());
-            success = m_dicItems2.Values.All(x => User2.UserPackage[x.Identity] != null && !x.IsBound && !x.IsMonopoly());
+            bool success =
+                m_dicItems1.Values.All(x => User1.UserPackage[x.Identity] != null && !x.IsBound && !x.IsMonopoly());
+            success = m_dicItems2.Values.All(
+                x => User2.UserPackage[x.Identity] != null && !x.IsBound && !x.IsMonopoly());
 
             if (!User1.UserPackage.IsPackSpare(m_dicItems2.Count))
                 success = false;
@@ -230,7 +233,7 @@ namespace Comet.Game.States
                 return;
             }
 
-            DbTrade dbTrade = new DbTrade
+            var dbTrade = new DbTrade
             {
                 UserIpAddress = User1.Client.IPAddress,
                 UserMacAddress = User1.Client.MacAddress,
@@ -253,20 +256,20 @@ namespace Comet.Game.States
 
             await SendCloseAsync();
 
-            await User1.SpendMoneyAsync((int)m_money1);
-            await User2.AwardMoneyAsync((int)m_money1);
+            await User1.SpendMoneyAsync((int) m_money1);
+            await User2.AwardMoneyAsync((int) m_money1);
 
-            await User2.SpendMoneyAsync((int)m_money2);
-            await User1.AwardMoneyAsync((int)m_money2);
+            await User2.SpendMoneyAsync((int) m_money2);
+            await User1.AwardMoneyAsync((int) m_money2);
 
-            await User1.SpendConquerPointsAsync((int)m_emoney1);
-            await User2.AwardConquerPointsAsync((int)m_emoney1);
+            await User1.SpendConquerPointsAsync((int) m_emoney1);
+            await User2.AwardConquerPointsAsync((int) m_emoney1);
 
-            await User2.SpendConquerPointsAsync((int)m_emoney2);
-            await User1.AwardConquerPointsAsync((int)m_emoney2);
+            await User2.SpendConquerPointsAsync((int) m_emoney2);
+            await User1.AwardConquerPointsAsync((int) m_emoney2);
 
-            List<DbTradeItem> dbItemsRecordTrack = new List<DbTradeItem>(41);
-            foreach (var item in m_dicItems1.Values)
+            var dbItemsRecordTrack = new List<DbTradeItem>(41);
+            foreach (Item item in m_dicItems1.Values)
             {
                 if (item.IsMonopoly() || item.IsBound)
                     continue;
@@ -281,12 +284,12 @@ namespace Comet.Game.States
                     SenderIdentity = User1.Identity,
                     ItemIdentity = item.Identity,
                     Itemtype = item.Type,
-                    Chksum = (uint)item.ToJson().GetHashCode(),
+                    Chksum = (uint) item.ToJson().GetHashCode(),
                     JsonData = item.ToJson()
                 });
             }
 
-            foreach (var item in m_dicItems2.Values)
+            foreach (Item item in m_dicItems2.Values)
             {
                 if (item.IsMonopoly() || item.IsBound)
                     continue;
@@ -301,7 +304,7 @@ namespace Comet.Game.States
                     SenderIdentity = User2.Identity,
                     ItemIdentity = item.Identity,
                     Itemtype = item.Type,
-                    Chksum = (uint)item.ToJson().GetHashCode(),
+                    Chksum = (uint) item.ToJson().GetHashCode(),
                     JsonData = item.ToJson()
                 });
             }
@@ -318,29 +321,25 @@ namespace Comet.Game.States
             User2.Trade = null;
 
             if (User1.IsConnected)
-            {
                 await User1.SendAsync(new MsgTrade
                 {
-                    Action = MsgTrade.TradeAction.Fail,
+                    Action = MsgTrade<Client>.TradeAction.Fail,
                     Data = User2.Identity
                 });
-            }
 
             if (User2.IsConnected)
-            {
                 await User2.SendAsync(new MsgTrade
                 {
-                    Action = MsgTrade.TradeAction.Fail,
+                    Action = MsgTrade<Client>.TradeAction.Fail,
                     Data = User1.Identity
                 });
-            }
         }
 
         private MsgTrade RemoveMsg(uint id)
         {
             return new MsgTrade
             {
-                Action = MsgTrade.TradeAction.AddItemFail,
+                Action = MsgTrade<Client>.TradeAction.AddItemFail,
                 Data = id
             };
         }

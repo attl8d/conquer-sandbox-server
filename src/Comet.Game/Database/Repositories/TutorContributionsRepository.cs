@@ -1,8 +1,8 @@
-﻿using Comet.Database.Entities;
-using Microsoft.EntityFrameworkCore;
-using System.Collections.Generic;
+﻿using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
+using Comet.Database.Entities;
+using Microsoft.EntityFrameworkCore;
 
 namespace Comet.Game.Database.Repositories
 {
@@ -10,17 +10,17 @@ namespace Comet.Game.Database.Repositories
     {
         public static async Task<List<DbTutorContribution>> GetStudentsAsync(uint idGuide)
         {
-            await using ServerDbContext ctx = new ServerDbContext();
+            await using var ctx = new ServerDbContext();
             return await ctx.TutorContributions
-                .Where(x => x.TutorIdentity == idGuide)
-                .ToListAsync();
+                            .Where(x => x.TutorIdentity == idGuide)
+                            .ToListAsync();
         }
 
         public static async Task<DbTutorContribution> GetGuideAsync(uint idStudent)
         {
-            await using ServerDbContext ctx = new ServerDbContext();
+            await using var ctx = new ServerDbContext();
             return await ctx.TutorContributions
-                .FirstOrDefaultAsync(x => x.StudentIdentity == idStudent);
+                            .FirstOrDefaultAsync(x => x.StudentIdentity == idStudent);
         }
     }
 }

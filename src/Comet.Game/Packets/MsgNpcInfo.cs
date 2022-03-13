@@ -1,6 +1,6 @@
-﻿using Comet.Game.States;
+﻿using System.Threading.Tasks;
+using Comet.Game.States;
 using Comet.Network.Packets.Game;
-using System.Threading.Tasks;
 
 namespace Comet.Game.Packets
 {
@@ -9,8 +9,7 @@ namespace Comet.Game.Packets
         public override Task ProcessAsync(Client client)
         {
             return GameAction.ExecuteActionAsync(client.Character.InteractingItem, client.Character, null, null,
-                $"{PosX} {PosY} {Lookface} {Identity} {NpcType}");
+                                                 $"{PosX} {PosY} {Lookface} {Identity} {NpcType}");
         }
     }
-
 }

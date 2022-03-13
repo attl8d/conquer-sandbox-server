@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Concurrent;
+using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
 using Comet.Database.Entities;
@@ -10,7 +11,7 @@ namespace Comet.Game.States
 {
     public sealed class UserStatistic
     {
-        private readonly ConcurrentDictionary<ulong, DbStatistic> m_dicStc = new ConcurrentDictionary<ulong, DbStatistic>();
+        private readonly ConcurrentDictionary<ulong, DbStatistic> m_dicStc = new();
 
         private readonly Character m_pOwner;
 
@@ -23,14 +24,10 @@ namespace Comet.Game.States
         {
             try
             {
-                var list = await StatisticRepository.GetAsync(m_pOwner.Identity);
+                List<DbStatistic> list = await StatisticRepository.GetAsync(m_pOwner.Identity);
                 if (list != null)
-                {
-                    foreach (var st in list)
-                    {
+                    foreach (DbStatistic st in list)
                         m_dicStc.TryAdd(GetKey(st.EventType, st.DataType), st);
-                    }
-                }
 
                 return true;
             }
@@ -43,7 +40,7 @@ namespace Comet.Game.States
         public async Task<bool> AddOrUpdateAsync(uint idEvent, uint idType, uint data, bool bUpdate)
         {
             ulong key = GetKey(idEvent, idType);
-            if (m_dicStc.TryGetValue(key, out var stc))
+            if (m_dicStc.TryGetValue(key, out DbStatistic stc))
             {
                 stc.Data = data;
                 if (bUpdate)

@@ -1,5 +1,10 @@
-﻿using Comet.Database.Entities;
+﻿using System;
+using System.Drawing;
+using System.Threading.Tasks;
+using Comet.Database.Entities;
+using Comet.Game.Internal.AI;
 using Comet.Game.Packets;
+using Comet.Game.Packets.Ai;
 using Comet.Game.States.Items;
 using Comet.Game.World;
 using Comet.Game.World.Managers;
@@ -7,10 +12,9 @@ using Comet.Game.World.Maps;
 using Comet.Network.Packets.Ai;
 using Comet.Network.Packets.Game;
 using Comet.Shared;
-using System;
-using System.Drawing;
-using System.Threading.Tasks;
 using static Comet.Game.States.Items.MapItem;
+using MsgAction = Comet.Game.Packets.MsgAction;
+using MsgInteract = Comet.Game.Packets.MsgInteract;
 
 namespace Comet.Game.States
 {
@@ -18,13 +22,13 @@ namespace Comet.Game.States
     {
         private readonly DbMonstertype mDbMonster;
 
-        private TimeOutMS m_tStatusCheck = new TimeOutMS(500);
-        private TimeOut m_disappear = new TimeOut(5);
-        private TimeOut m_leaveMap = new TimeOut(10);
+        private readonly TimeOutMS m_tStatusCheck = new(500);
+        private readonly TimeOut m_disappear = new(5);
+        private readonly TimeOut m_leaveMap = new(10);
 
-        private uint mIdAction = 0;
+        private uint mIdAction;
 
-        public uint GeneratorId { get; private set; }
+        public uint GeneratorId { get; }
 
         private AiStage mStage;
 
@@ -67,18 +71,16 @@ namespace Comet.Game.States
 
             if (mDbMonster.MagicType > 0)
             {
-                Magic defaultMagic = new Magic(this);
+                var defaultMagic = new Magic(this);
                 if (await defaultMagic.CreateAsync(mDbMonster.MagicType))
                     MagicData.Magics.TryAdd(defaultMagic.Type, defaultMagic);
             }
 
-            foreach (var dbMagic in RoleManager.GetMonsterMagics(Type))
+            foreach (DbMonsterTypeMagic dbMagic in RoleManager.GetMonsterMagics(Type))
             {
-                Magic magic = new Magic(this);
-                if (await magic.CreateAsync(dbMagic.MagicType, (ushort)dbMagic.MagicLev))
-                {
+                var magic = new Magic(this);
+                if (await magic.CreateAsync(dbMagic.MagicType, (ushort) dbMagic.MagicLev))
                     MagicData.Magics.TryAdd(magic.Type, magic);
-                }
             }
 
             return true;
@@ -93,7 +95,7 @@ namespace Comet.Game.States
         public override uint Mesh
         {
             get => mDbMonster.Lookface;
-            set => mDbMonster.Lookface = (ushort)value;
+            set => mDbMonster.Lookface = (ushort) value;
         }
 
         #endregion
@@ -102,17 +104,13 @@ namespace Comet.Game.States
 
         public override byte Level
         {
-            get => (byte)(mDbMonster?.Level ?? 0);
+            get => (byte) (mDbMonster?.Level ?? 0);
             set => mDbMonster.Level = value;
         }
 
-        public override uint Life
-        {
-            get;
-            set;
-        }
+        public override uint Life { get; set; }
 
-        public override uint MaxLife => (uint)(mDbMonster?.Life ?? 1);
+        public override uint MaxLife => (uint) (mDbMonster?.Life ?? 1);
 
         public override int BattlePower => mDbMonster?.ExtraBattlelev ?? 0;
 
@@ -128,11 +126,11 @@ namespace Comet.Game.States
 
         public override int MagicDefense => mDbMonster?.MagicDef ?? 0;
 
-        public override int Dodge => (int)(mDbMonster?.Dodge ?? 0);
+        public override int Dodge => (int) (mDbMonster?.Dodge ?? 0);
 
         public override int AttackSpeed => mDbMonster?.AttackSpeed ?? 1000;
 
-        public override int Accuracy => (int)(mDbMonster?.Dexterity ?? 0);
+        public override int Accuracy => (int) (mDbMonster?.Dexterity ?? 0);
 
         public uint AttackUser => mDbMonster?.AttackUser ?? 0;
 
@@ -150,10 +148,10 @@ namespace Comet.Game.States
 
         private async Task DropItemAsync(DbItemtype itemtype, Character owner, DropMode mode)
         {
-            Point targetPos = new Point(MapX, MapY);
+            var targetPos = new Point(MapX, MapY);
             if (Map.FindDropItemCell(4, ref targetPos))
             {
-                MapItem drop = new MapItem((uint)IdentityGenerator.MapItem.GetNextIdentity);
+                var drop = new MapItem((uint) IdentityGenerator.MapItem.GetNextIdentity);
                 if (await drop.CreateAsync(Map, targetPos, itemtype, owner?.Identity ?? 0, 0, 0, 0, mode))
                 {
                     await drop.EnterMapAsync();
@@ -172,33 +170,24 @@ namespace Comet.Game.States
         {
             const int qualityPrecision = 10_000_000;
 
-            MapItem drop = new MapItem((uint)IdentityGenerator.MapItem.GetNextIdentity);
+            var drop = new MapItem((uint) IdentityGenerator.MapItem.GetNextIdentity);
             int rand = await Kernel.NextAsync(100);
 
-            Point targetPos = new Point(MapX, MapY);
+            var targetPos = new Point(MapX, MapY);
             if (Map?.FindDropItemCell(4, ref targetPos) != true)
                 return;
 
             if (rand < 60)
             {
                 rand = await Kernel.NextAsync(qualityPrecision);
-                int quality = 0;
+                var quality = 0;
                 if (rand < 250)
-                {
                     quality = 9;
-                }
                 else if (rand < 2500)
-                {
                     quality = 8;
-                }
                 else if (rand < 12500)
-                {
                     quality = 7;
-                }
-                else if (rand < 30000)
-                {
-                    quality = 6;
-                }
+                else if (rand < 30000) quality = 6;
 
                 MapItemInfo info = await Item.CreateItemInfoAsync(mDbMonster, quality);
                 if (drop.Create(Map, targetPos, info, owner, DropMode.Common))
@@ -211,13 +200,9 @@ namespace Comet.Game.States
                 {
                     rand = await Kernel.NextAsync(100);
                     if (rand < 60)
-                    {
                         dropMedicine = mDbMonster.DropHp;
-                    }
                     else
-                    {
                         dropMedicine = mDbMonster.DropMp;
-                    }
                 }
                 else if (mDbMonster.DropHp != 0)
                 {
@@ -238,16 +223,14 @@ namespace Comet.Game.States
 
         public async Task DropMoneyAsync(uint amount, uint idOwner, DropMode mode)
         {
-            Point targetPos = new Point(MapX, MapY);
+            var targetPos = new Point(MapX, MapY);
             if (Map?.FindDropItemCell(4, ref targetPos) == true)
             {
-                MapItem drop = new MapItem((uint)IdentityGenerator.MapItem.GetNextIdentity);
+                var drop = new MapItem((uint) IdentityGenerator.MapItem.GetNextIdentity);
                 if (drop.CreateMoney(Map, targetPos, amount, idOwner, mode))
                     await drop.EnterMapAsync();
                 else
-                {
                     IdentityGenerator.MapItem.ReturnIdentity(drop.Identity);
-                }
             }
         }
 
@@ -389,7 +372,7 @@ namespace Comet.Game.States
             await AttachStatusAsync(attacker, StatusSet.DEAD, 0, int.MaxValue, 0, 0);
             await AttachStatusAsync(attacker, StatusSet.GHOST, 0, int.MaxValue, 0, 0);
 
-            Character user = attacker as Character;
+            var user = attacker as Character;
             int dieType = user?.KoCount * 65541 ?? 1;
 
             await BroadcastRoomMsgAsync(new MsgInteract
@@ -405,10 +388,7 @@ namespace Comet.Game.States
             m_disappear.Startup(5);
             m_leaveMap.Startup(NPC_REST_TIME);
 
-            if (mIdAction > 0)
-            {
-                await GameAction.ExecuteActionAsync(mIdAction, user, this, null, string.Empty);
-            }
+            if (mIdAction > 0) await GameAction.ExecuteActionAsync(mIdAction, user, this, null, string.Empty);
 
             if (IsPkKiller() || IsGuard() || IsEvilKiller() || IsDynaNpc() || attacker == null)
                 return;
@@ -417,12 +397,10 @@ namespace Comet.Game.States
 
             if (user?.Team != null)
             {
-                foreach (var member in user.Team.Members)
-                {
+                foreach (Character member in user.Team.Members)
                     if (member.MapIdentity == user.MapIdentity
                         && member.GetDistance(user) <= Screen.VIEW_SIZE * 2)
                         await member.AddJarKillsAsync(mDbMonster.StcType);
-                }
             }
             else if (user != null)
             {
@@ -430,27 +408,27 @@ namespace Comet.Game.States
             }
 
             int chance = await Kernel.NextAsync(100);
-            int moneyAdj = 25;
+            var moneyAdj = 25;
             if (user != null && BattleSystem.GetNameType(user.Level, Level) == BattleSystem.NAME_GREEN)
                 moneyAdj = 8;
 
             if (chance < moneyAdj)
             {
-                int moneyMin = (int)(mDbMonster.DropMoney * 0.85f);
-                int moneyMax = (int)(mDbMonster.DropMoney * 1.15f);
-                uint money = (uint)(moneyMin + await Kernel.NextAsync(moneyMin, moneyMax) + 1);
+                var moneyMin = (int) (mDbMonster.DropMoney * 0.85f);
+                var moneyMax = (int) (mDbMonster.DropMoney * 1.15f);
+                var money = (uint) (moneyMin + await Kernel.NextAsync(moneyMin, moneyMax) + 1);
 
                 int heapNum = 1 + await Kernel.NextAsync(1, 3);
-                uint moneyAve = (uint)(money / heapNum);
+                var moneyAve = (uint) (money / heapNum);
 
-                for (int i = 0; i < heapNum; i++)
+                for (var i = 0; i < heapNum; i++)
                 {
-                    uint moneyTmp = (uint)Calculations.MulDiv((int)moneyAve, 90 + await Kernel.NextAsync(3, 21), 100);
+                    var moneyTmp = (uint) Calculations.MulDiv((int) moneyAve, 90 + await Kernel.NextAsync(3, 21), 100);
                     await DropMoneyAsync(moneyTmp, 0, DropMode.Common);
                 }
             }
 
-            int dropNum = 0;
+            var dropNum = 0;
             int rate = await Kernel.NextAsync(0, 10000);
             chance = BattleSystem.AdjustDrop(500, attacker.Level, Level);
             if (rate < Math.Min(10000, chance))
@@ -474,21 +452,16 @@ namespace Comet.Game.States
                     else
                     {
                         chance += BattleSystem.AdjustDrop(1500, attacker.Level, Level);
-                        if (rate < Math.Min(10000, chance))
-                        {
-                            dropNum = 1; // drop 1 item
-                        }
+                        if (rate < Math.Min(10000, chance)) dropNum = 1; // drop 1 item
                     }
                 }
             }
 
-            for (int i = 0; i < dropNum; i++)
-            {
-                await DropEquipmentAsync(attacker?.Identity ?? 0);
-            }
+            for (var i = 0; i < dropNum; i++) await DropEquipmentAsync(attacker?.Identity ?? 0);
         }
 
-        public override async Task<bool> BeAttackAsync(BattleSystem.MagicType magic, Role attacker, int nPower, bool bReflectEnable)
+        public override async Task<bool> BeAttackAsync(BattleSystem.MagicType magic, Role attacker, int nPower,
+                                                       bool bReflectEnable)
         {
             if (!IsAlive)
                 return false;
@@ -549,7 +522,7 @@ namespace Comet.Game.States
 
             await BroadcastRoomMsgAsync(new MsgAction
             {
-                Action = MsgAction.ActionType.MapEffect,
+                Action = MsgAction<Client>.ActionType.MapEffect,
                 Identity = Identity,
                 X = MapX,
                 Y = MapY
@@ -564,13 +537,14 @@ namespace Comet.Game.States
                 await Map.RemoveAsync(Identity);
                 RoleManager.RemoveRole(Identity);
             }
+
             Map = null;
 
-            var msg = new Packets.Ai.MsgAiSpawnNpc
+            var msg = new MsgAiSpawnNpc
             {
                 Mode = AiSpawnNpcMode.DestroyNpc
             };
-            msg.List.Add(new MsgAiSpawnNpc<Internal.AI.AiClient>.SpawnNpc
+            msg.List.Add(new MsgAiSpawnNpc<AiClient>.SpawnNpc
             {
                 Id = Identity
             });
@@ -602,9 +576,7 @@ namespace Comet.Game.States
                 if (!IsAlive
                     && m_disappear.IsActive()
                     && m_disappear.IsTimeOut())
-                {
                     QueueAction(async () => await AttachStatusAsync(this, StatusSet.INVISIBLE, 0, int.MaxValue, 0, 0));
-                }
             }
             catch (Exception ex)
             {
@@ -630,17 +602,13 @@ namespace Comet.Game.States
             try
             {
                 if (m_tStatusCheck.ToNextTime())
-                {
-                    foreach (var stts in StatusSet.Status.Values)
+                    foreach (IStatus stts in StatusSet.Status.Values)
                     {
                         QueueAction(async () => await stts.OnTimerAsync());
 
                         if (!stts.IsValid && stts.Identity != StatusSet.GHOST && stts.Identity != StatusSet.DEAD)
-                        {
                             await StatusSet.DelObjAsync(stts.Identity);
-                        }
                     }
-                }
             }
             catch (Exception ex)
             {
@@ -654,13 +622,12 @@ namespace Comet.Game.States
                 if (BattleSystem != null
                     && BattleSystem.IsActive()
                     && BattleSystem.NextAttack(AttackSpeed))
-                {
                     QueueAction(BattleSystem.ProcessAttackAsync);
-                }
             }
             catch (Exception ex)
             {
-                await Log.WriteLogAsync($"Monster::OnTimerAsync() => {Identity}:{Name} BattleSystem.ProcessAttackAsync(): {ex.Message}");
+                await Log.WriteLogAsync(
+                    $"Monster::OnTimerAsync() => {Identity}:{Name} BattleSystem.ProcessAttackAsync(): {ex.Message}");
                 await Log.WriteLogAsync(ex);
             }
 
@@ -671,7 +638,8 @@ namespace Comet.Game.States
             }
             catch (Exception ex)
             {
-                await Log.WriteLogAsync($"Monster::OnTimerAsync() => {Identity}:{Name} MagicData.OnTimerAsync(): {ex.Message}");
+                await Log.WriteLogAsync(
+                    $"Monster::OnTimerAsync() => {Identity}:{Name} MagicData.OnTimerAsync(): {ex.Message}");
                 await Log.WriteLogAsync(ex);
             }
         }
@@ -687,55 +655,59 @@ namespace Comet.Game.States
 
         public override Task SendSpawnToAsync(Character player, int x, int y)
         {
-            return player.SendAsync(new MsgPlayer(this, (ushort)x, (ushort)y));
+            return player.SendAsync(new MsgPlayer(this, (ushort) x, (ushort) y));
         }
 
         #endregion
 
         #region Constants
 
-        public const int ATKUSER_LEAVEONLY = 0, // Ö»»áÌÓÅÜ
-            ATKUSER_PASSIVE = 0x01, // ±»¶¯¹¥»÷
-            ATKUSER_ACTIVE = 0x02, // Ö÷¶¯¹¥»÷
-            ATKUSER_RIGHTEOUS = 0x04, // ÕýÒåµÄ(ÎÀ±ø»òÍæ¼ÒÕÙ»½ºÍ¿ØÖÆµÄ¹ÖÎï)
-            ATKUSER_GUARD = 0x08, // ÎÀ±ø(ÎÞÊÂ»ØÔ­Î»ÖÃ)
-            ATKUSER_PPKER = 0x10, // ×·É±ºÚÃû 
-            ATKUSER_JUMP = 0x20, // »áÌø
-            ATKUSER_FIXED = 0x40, // ²»»á¶¯µÄ
-            ATKUSER_FASTBACK = 0x0080, // ËÙ¹é
-            ATKUSER_LOCKUSER = 0x0100, // Ëø¶¨¹¥»÷Ö¸¶¨Íæ¼Ò£¬Íæ¼ÒÀë¿ª×Ô¶¯ÏûÊ§ 
-            ATKUSER_LOCKONE = 0x0200, // Ëø¶¨¹¥»÷Ê×ÏÈ¹¥»÷×Ô¼ºµÄÍæ¼Ò
-            ATKUSER_ADDLIFE = 0x0400, // ×Ô¶¯¼ÓÑª
-            ATKUSER_EVIL_KILLER = 0x0800, // °×ÃûÉ±ÊÖ
-            ATKUSER_WING = 0x1000, // ·ÉÐÐ×´Ì¬
-            ATKUSER_NEUTRAL = 0x2000, // ÖÐÁ¢
-            ATKUSER_ROAR = 0x4000, // ³öÉúÊ±È«µØÍ¼Å­ºð
-            ATKUSER_NOESCAPE = 0x8000, // ²»»áÌÓÅÜ
-            ATKUSER_EQUALITY = 0x10000; // ²»ÃêÊÓ
+        public const int ATKUSER_LEAVEONLY = 0,        // Ö»»áÌÓÅÜ
+                         ATKUSER_PASSIVE = 0x01,       // ±»¶¯¹¥»÷
+                         ATKUSER_ACTIVE = 0x02,        // Ö÷¶¯¹¥»÷
+                         ATKUSER_RIGHTEOUS = 0x04,     // ÕýÒåµÄ(ÎÀ±ø»òÍæ¼ÒÕÙ»½ºÍ¿ØÖÆµÄ¹ÖÎï)
+                         ATKUSER_GUARD = 0x08,         // ÎÀ±ø(ÎÞÊÂ»ØÔ­Î»ÖÃ)
+                         ATKUSER_PPKER = 0x10,         // ×·É±ºÚÃû 
+                         ATKUSER_JUMP = 0x20,          // »áÌø
+                         ATKUSER_FIXED = 0x40,         // ²»»á¶¯µÄ
+                         ATKUSER_FASTBACK = 0x0080,    // ËÙ¹é
+                         ATKUSER_LOCKUSER = 0x0100,    // Ëø¶¨¹¥»÷Ö¸¶¨Íæ¼Ò£¬Íæ¼ÒÀë¿ª×Ô¶¯ÏûÊ§ 
+                         ATKUSER_LOCKONE = 0x0200,     // Ëø¶¨¹¥»÷Ê×ÏÈ¹¥»÷×Ô¼ºµÄÍæ¼Ò
+                         ATKUSER_ADDLIFE = 0x0400,     // ×Ô¶¯¼ÓÑª
+                         ATKUSER_EVIL_KILLER = 0x0800, // °×ÃûÉ±ÊÖ
+                         ATKUSER_WING = 0x1000,        // ·ÉÐÐ×´Ì¬
+                         ATKUSER_NEUTRAL = 0x2000,     // ÖÐÁ¢
+                         ATKUSER_ROAR = 0x4000,        // ³öÉúÊ±È«µØÍ¼Å­ºð
+                         ATKUSER_NOESCAPE = 0x8000,    // ²»»áÌÓÅÜ
+                         ATKUSER_EQUALITY = 0x10000;   // ²»ÃêÊÓ
 
-        public const int SHORTWEAPON_RANGE_LIMIT = 2;		// ½üÉíÎäÆ÷µÄ×î´ó¹¥»÷·¶Î§(ÒÔ´Ë·¶Î§ÊÇ·ñ¹­¼ýÊÖ)
+        public const int SHORTWEAPON_RANGE_LIMIT = 2; // ½üÉíÎäÆ÷µÄ×î´ó¹¥»÷·¶Î§(ÒÔ´Ë·¶Î§ÊÇ·ñ¹­¼ýÊÖ)
         public const int NPC_REST_TIME = 7;
 
-        enum AiStage
+        private enum AiStage
         {
             /// <summary>
-            /// Monster wont do nothing, just heal. Activated if on active block but haven't triggered any other action.
+            ///     Monster wont do nothing, just heal. Activated if on active block but haven't triggered any other action.
             /// </summary>
             Dormancy,
+
             /// <summary>
-            /// Monster is doing absolutely nothing.
+            ///     Monster is doing absolutely nothing.
             /// </summary>
             Idle,
+
             /// <summary>
-            /// When monster is low life and want to run from the attacker.
+            ///     When monster is low life and want to run from the attacker.
             /// </summary>
             Escape,
+
             /// <summary>
-            /// Monster movement.
+            ///     Monster movement.
             /// </summary>
             Forward,
+
             /// <summary>
-            /// Monster is ready for attack.
+            ///     Monster is ready for attack.
             /// </summary>
             Attack,
             Last

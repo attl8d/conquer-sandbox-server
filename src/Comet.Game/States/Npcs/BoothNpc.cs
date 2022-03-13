@@ -1,12 +1,12 @@
-﻿using Comet.Game.Packets;
-using Comet.Game.States.Items;
-using Comet.Game.World.Maps;
-using Comet.Network.Packets.Game;
-using System;
+﻿using System;
 using System.Collections.Concurrent;
 using System.Drawing;
 using System.Linq;
 using System.Threading.Tasks;
+using Comet.Game.Packets;
+using Comet.Game.States.Items;
+using Comet.Game.World.Maps;
+using Comet.Network.Packets.Game;
 
 namespace Comet.Game.States.Npcs
 {
@@ -14,7 +14,7 @@ namespace Comet.Game.States.Npcs
     {
         private Npc m_ownerNpc;
         private Character mOwner;
-        private ConcurrentDictionary<uint, BoothItem> m_items = new ConcurrentDictionary<uint, BoothItem>();
+        private readonly ConcurrentDictionary<uint, BoothItem> m_items = new();
 
         public BoothNpc(Character owner)
             : base(owner.Identity % 1000000 + owner.Identity / 1000000 * 100000)
@@ -24,12 +24,14 @@ namespace Comet.Game.States.Npcs
 
         public override async Task<bool> InitializeAsync()
         {
-            m_ownerNpc = mOwner.Screen.Roles.Values.FirstOrDefault(x => x is Npc && x.MapX == mOwner.MapX - 2 && x.MapY == mOwner.MapY) as Npc;
+            m_ownerNpc =
+                mOwner.Screen.Roles.Values.FirstOrDefault(
+                    x => x is Npc && x.MapX == mOwner.MapX - 2 && x.MapY == mOwner.MapY) as Npc;
             if (m_ownerNpc == null)
                 return false;
 
             m_idMap = mOwner.MapIdentity;
-            m_posX = (ushort)(mOwner.MapX + 1);
+            m_posX = (ushort) (mOwner.MapX + 1);
             m_posY = mOwner.MapY;
 
             Mesh = 406;
@@ -52,7 +54,7 @@ namespace Comet.Game.States.Npcs
             if (GetDistance(requester) > Screen.VIEW_SIZE)
                 return;
 
-            foreach (var item in m_items.Values)
+            foreach (BoothItem item in m_items.Values)
             {
                 if (!ValidateItem(item.Identity))
                 {
@@ -60,14 +62,14 @@ namespace Comet.Game.States.Npcs
                     continue;
                 }
 
-                await requester.SendAsync(new MsgItemInfoEx(item) { TargetIdentity = Identity });
+                await requester.SendAsync(new MsgItemInfoEx(item) {TargetIdentity = Identity});
             }
         }
 
-        public bool AddItem(Item item, uint value, MsgItem.Moneytype type)
+        public bool AddItem(Item item, uint value, MsgItem<Client>.Moneytype type)
         {
-            BoothItem boothItem = new BoothItem();
-            if (!boothItem.Create(item, Math.Min(value, int.MaxValue), type == MsgItem.Moneytype.Silver))
+            var boothItem = new BoothItem();
+            if (!boothItem.Create(item, Math.Min(value, int.MaxValue), type == MsgItem<Client>.Moneytype.Silver))
                 return false;
             return m_items.TryAdd(boothItem.Identity, boothItem);
         }
@@ -113,6 +115,7 @@ namespace Comet.Game.States.Npcs
                 mOwner = null;
                 m_ownerNpc = null;
             }
+
             m_items.Clear();
             await base.LeaveMapAsync();
         }
@@ -127,7 +130,7 @@ namespace Comet.Game.States.Npcs
 
             if (!string.IsNullOrEmpty(HawkMessage))
                 await player.SendAsync(new MsgTalk(mOwner.Identity, TalkChannel.Vendor, Color.White,
-                    HawkMessage));
+                                                   HawkMessage));
         }
 
         #endregion

@@ -9,7 +9,8 @@ namespace Comet.Game.Packets
         {
         }
 
-        public MsgUserAttrib(uint idRole, ClientUpdateType type, uint value0, uint value1) : base(idRole, type, value0, value1)
+        public MsgUserAttrib(uint idRole, ClientUpdateType type, uint value0, uint value1) : base(
+            idRole, type, value0, value1)
         {
         }
     }

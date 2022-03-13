@@ -29,9 +29,9 @@ namespace Comet.Game.States.Syndicates
             Addition = item.Plus;
         }
 
-        public uint ItemIdentity { get; private set; }
-        public uint PlayerIdentity { get; private set; }
-        public string PlayerName { get; private set; }
+        public uint ItemIdentity { get; }
+        public uint PlayerIdentity { get; }
+        public string PlayerName { get; }
 
         public uint ItemType { get; private set; }
         public byte Quality => (byte) (ItemType % 10);
@@ -51,12 +51,14 @@ namespace Comet.Game.States.Syndicates
         {
             get
             {
-                int result = 0;
+                var result = 0;
                 switch (Quality)
                 {
-                    case 8: result += 1000;
+                    case 8:
+                        result += 1000;
                         break;
-                    case 9: result += 16660;
+                    case 9:
+                        result += 16660;
                         break;
                 }
 

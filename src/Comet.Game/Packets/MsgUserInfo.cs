@@ -31,8 +31,8 @@ namespace Comet.Game.Packets
             Vitality = character.Vitality;
             Spirit = character.Spirit;
             AttributePoints = character.AttributePoints;
-            HealthPoints = (ushort)character.Life;
-            ManaPoints = (ushort)character.Mana;
+            HealthPoints = (ushort) character.Life;
+            ManaPoints = (ushort) character.Mana;
             KillPoints = character.PkPoints;
             Level = character.Level;
             CurrentClass = character.Profession;
@@ -40,7 +40,7 @@ namespace Comet.Game.Packets
             FirstClass = character.PreviousProfession;
             Rebirths = character.Metempsychosis;
             QuizPoints = character.QuizPoints;
-            EnlightenPoints = (ushort)character.EnlightenPoints;
+            EnlightenPoints = (ushort) character.EnlightenPoints;
             EnlightenExp = character.EnlightenExperience / (Character.ENLIGHTENMENT_UPLEV_MAX_EXP / 2);
             VipLevel = character.BaseVipLevel;
             UserTitle = character.UserTitle;

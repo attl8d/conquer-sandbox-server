@@ -1,15 +1,15 @@
-﻿using Comet.Core;
+﻿using System;
+using System.Collections.Concurrent;
+using System.Collections.Generic;
+using System.Linq;
+using System.Threading.Tasks;
+using Comet.Core;
 using Comet.Database.Entities;
 using Comet.Game.Packets;
 using Comet.Game.World.Managers;
 using Comet.Game.World.Maps;
 using Comet.Network.Packets;
 using Comet.Network.Packets.Game;
-using System;
-using System.Collections.Concurrent;
-using System.Collections.Generic;
-using System.Linq;
-using System.Threading.Tasks;
 
 namespace Comet.Game.States
 {
@@ -17,17 +17,16 @@ namespace Comet.Game.States
     {
         public const int MAX_MEMBERS = 5;
 
-        private Character m_leader;
-        private ConcurrentDictionary<uint, Character> m_dicPlayers = new ConcurrentDictionary<uint, Character>();
+        private readonly ConcurrentDictionary<uint, Character> m_dicPlayers = new();
 
         public Team(Character leader)
         {
-            m_leader = leader;
+            Leader = leader;
             JoinEnable = true;
             MoneyEnable = true;
         }
 
-        public Character Leader => m_leader;
+        public Character Leader { get; }
 
         public bool JoinEnable { get; set; }
         public bool MoneyEnable { get; set; }
@@ -41,20 +40,20 @@ namespace Comet.Game.States
 
         public bool Create()
         {
-            if (m_leader.Team != null)
+            if (Leader.Team != null)
                 return false;
 
-            m_dicPlayers.TryAdd(m_leader.Identity, m_leader);
-            m_leader.Team = this;
+            m_dicPlayers.TryAdd(Leader.Identity, Leader);
+            Leader.Team = this;
             return true;
         }
 
         /// <summary>
-        /// Erase the team.
+        ///     Erase the team.
         /// </summary>
         public async Task<bool> DismissAsync(Character request, bool disconnect = false)
         {
-            if (request.Identity != m_leader.Identity)
+            if (request.Identity != Leader.Identity)
             {
                 await request.SendAsync(Language.StrTeamDismissNoLeader);
                 return false;
@@ -62,27 +61,24 @@ namespace Comet.Game.States
 
             await SendAsync(new MsgTeam
             {
-                Action = MsgTeam.TeamAction.Dismiss,
-                Identity = m_leader.Identity
+                Action = MsgTeam<Client>.TeamAction.Dismiss,
+                Identity = Leader.Identity
             }, disconnect ? request.Identity : 0);
 
-            foreach (var member in m_dicPlayers.Values)
-            {
-                member.Team = null;
-            }
+            foreach (Character member in m_dicPlayers.Values) member.Team = null;
 
             return true;
         }
 
         public async Task<bool> DismissMemberAsync(Character user)
         {
-            if (!m_dicPlayers.TryRemove(user.Identity, out var target))
+            if (!m_dicPlayers.TryRemove(user.Identity, out Character target))
                 return false;
 
             await SendAsync(new MsgTeam
             {
                 Identity = user.Identity,
-                Action = MsgTeam.TeamAction.LeaveTeam
+                Action = MsgTeam<Client>.TeamAction.LeaveTeam
             });
             user.Team = null;
 
@@ -92,13 +88,13 @@ namespace Comet.Game.States
 
         public async Task<bool> KickMemberAsync(Character leader, uint idTarget)
         {
-            if (!IsLeader(leader.Identity) || !m_dicPlayers.TryGetValue(idTarget, out var target))
+            if (!IsLeader(leader.Identity) || !m_dicPlayers.TryGetValue(idTarget, out Character target))
                 return false;
 
             await SendAsync(new MsgTeam
             {
                 Identity = idTarget,
-                Action = MsgTeam.TeamAction.Kick
+                Action = MsgTeam<Client>.TeamAction.Kick
             });
 
             m_dicPlayers.TryRemove(idTarget, out _);
@@ -116,9 +112,12 @@ namespace Comet.Game.States
             target.Team = this;
             await SendShowAsync(target);
 
-            await target.SendAsync(string.Format(Language.StrPickupSilvers, MoneyEnable ? Language.StrOpen : Language.StrClose));
-            await target.SendAsync(string.Format(Language.StrTeamItems, ItemEnable ? Language.StrOpen : Language.StrClose));
-            await target.SendAsync(string.Format(Language.StrTeamGems, JewelEnable ? Language.StrOpen : Language.StrClose));
+            await target.SendAsync(string.Format(Language.StrPickupSilvers,
+                                                 MoneyEnable ? Language.StrOpen : Language.StrClose));
+            await target.SendAsync(string.Format(Language.StrTeamItems,
+                                                 ItemEnable ? Language.StrOpen : Language.StrClose));
+            await target.SendAsync(string.Format(Language.StrTeamGems,
+                                                 JewelEnable ? Language.StrOpen : Language.StrClose));
 
             await SyncFamilyBattlePowerAsync();
             return true;
@@ -126,7 +125,7 @@ namespace Comet.Game.States
 
         public bool IsLeader(uint id)
         {
-            return m_leader.Identity == id;
+            return Leader.Identity == id;
         }
 
         public bool IsMember(uint id)
@@ -139,9 +138,9 @@ namespace Comet.Game.States
             await target.SendAsync(new MsgTeamMember
             {
                 Action = MsgTeamMember.ADD_MEMBER_B,
-                Members = new List<MsgTeamMember.TeamMember>
+                Members = new List<MsgTeamMember<Client>.TeamMember>
                 {
-                    new MsgTeamMember.TeamMember
+                    new()
                     {
                         Identity = Leader.Identity,
                         Name = Leader.Name,
@@ -155,9 +154,9 @@ namespace Comet.Game.States
             await target.SendAsync(new MsgTeamMember
             {
                 Action = MsgTeamMember.ADD_MEMBER_B,
-                Members = new List<MsgTeamMember.TeamMember>
+                Members = new List<MsgTeamMember<Client>.TeamMember>
                 {
-                    new MsgTeamMember.TeamMember
+                    new()
                     {
                         Identity = target.Identity,
                         Name = target.Name,
@@ -168,14 +167,14 @@ namespace Comet.Game.States
                 }
             });
 
-            foreach (var member in m_dicPlayers.Values)
+            foreach (Character member in m_dicPlayers.Values)
             {
                 await member.SendAsync(new MsgTeamMember
                 {
                     Action = MsgTeamMember.ADD_MEMBER_B,
-                    Members = new List<MsgTeamMember.TeamMember>
+                    Members = new List<MsgTeamMember<Client>.TeamMember>
                     {
-                        new MsgTeamMember.TeamMember
+                        new()
                         {
                             Identity = target.Identity,
                             Name = target.Name,
@@ -190,9 +189,9 @@ namespace Comet.Game.States
                     await target.SendAsync(new MsgTeamMember
                     {
                         Action = MsgTeamMember.ADD_MEMBER_B,
-                        Members = new List<MsgTeamMember.TeamMember>
+                        Members = new List<MsgTeamMember<Client>.TeamMember>
                         {
-                            new MsgTeamMember.TeamMember
+                            new()
                             {
                                 Identity = member.Identity,
                                 Name = member.Name,
@@ -207,7 +206,7 @@ namespace Comet.Game.States
 
         public async Task SendAsync(IPacket msg, uint exclude = 0)
         {
-            foreach (var player in m_dicPlayers.Values)
+            foreach (Character player in m_dicPlayers.Values)
             {
                 if (exclude == player.Identity)
                     continue;
@@ -220,17 +219,13 @@ namespace Comet.Game.States
             if (user == null || !IsMember(user.Identity))
                 return;
 
-            MsgUserAttrib msg = new MsgUserAttrib(user.Identity, ClientUpdateType.Hitpoints, user.Life);
+            var msg = new MsgUserAttrib(user.Identity, ClientUpdateType.Hitpoints, user.Life);
             if (maxLife)
                 msg.Append(ClientUpdateType.MaxHitpoints, user.MaxLife);
 
-            foreach (var member in m_dicPlayers.Values)
-            {
+            foreach (Character member in m_dicPlayers.Values)
                 if (member.Identity != user.Identity)
-                {
                     await member.SendAsync(msg);
-                }
-            }
         }
 
         public async Task AwardMemberExpAsync(uint idKiller, Role target, long exp)
@@ -238,10 +233,10 @@ namespace Comet.Game.States
             if (target == null || exp == 0)
                 return;
 
-            if (!m_dicPlayers.TryGetValue(idKiller, out var killer))
+            if (!m_dicPlayers.TryGetValue(idKiller, out Character killer))
                 return;
 
-            foreach (var user in m_dicPlayers.Values)
+            foreach (Character user in m_dicPlayers.Values)
             {
                 if (user.Identity == idKiller)
                     continue;
@@ -260,10 +255,10 @@ namespace Comet.Game.States
                     continue;
 
                 long addExp = user.AdjustExperience(target, exp, false);
-                addExp = (long)Math.Min(dbExp.Exp, (ulong)addExp);
+                addExp = (long) Math.Min(dbExp.Exp, (ulong) addExp);
                 addExp = Math.Max(1, Math.Min(user.Level * 360, addExp));
 
-                addExp = (int)Math.Min(addExp, user.Level * 360);
+                addExp = (int) Math.Min(addExp, user.Level * 360);
 
                 if (user.IsMate(killer) || user.IsApprentice(idKiller))
                     addExp *= 2;
@@ -283,28 +278,29 @@ namespace Comet.Game.States
                 return 0;
 
             Character clanMember = m_dicPlayers.Values
-                .OrderByDescending(x => x.PureBattlePower)
-                .FirstOrDefault(x => x.Identity != user.Identity && x.MapIdentity == user.MapIdentity && x.FamilyIdentity == user.FamilyIdentity);
+                                               .OrderByDescending(x => x.PureBattlePower)
+                                               .FirstOrDefault(
+                                                   x => x.Identity != user.Identity &&
+                                                        x.MapIdentity == user.MapIdentity &&
+                                                        x.FamilyIdentity == user.FamilyIdentity);
 
             if (clanMember == null || clanMember.PureBattlePower <= user.PureBattlePower)
                 return 0;
 
-            var limit = FamilyManager.GetSharedBattlePowerLimit(user.PureBattlePower);
+            DbFamilyBattleEffectShareLimit limit = FamilyManager.GetSharedBattlePowerLimit(user.PureBattlePower);
             if (limit == null)
                 return 0;
 
             idProvider = clanMember.Identity;
-            int value = (int)((clanMember.PureBattlePower - user.PureBattlePower) * (user.Family.SharedBattlePowerFactor / 100d));
+            var value = (int) ((clanMember.PureBattlePower - user.PureBattlePower) *
+                               (user.Family.SharedBattlePowerFactor / 100d));
             value = Math.Min(Math.Max(0, value), limit.ShareLimit);
             return value;
         }
 
         public async Task SyncFamilyBattlePowerAsync()
         {
-            foreach (var member in m_dicPlayers.Values)
-            {
-                await member.SynchroFamilyBattlePowerAsync();
-            }
+            foreach (Character member in m_dicPlayers.Values) await member.SynchroFamilyBattlePowerAsync();
         }
     }
 }

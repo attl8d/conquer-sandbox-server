@@ -5,8 +5,6 @@ namespace Comet.Core.World.Maps
 {
     public sealed class TerrainObjectPart
     {
-        private static int currentIdentity = 0;
-
         public TerrainObjectPart()
         {
             Identity = Interlocked.Increment(ref currentIdentity);
@@ -14,7 +12,7 @@ namespace Comet.Core.World.Maps
 
         public int Identity { get; }
 
-        public List<Layer> Layers { get; } = new List<Layer>();
+        public List<Layer> Layers { get; } = new();
 
         public string AniFile { get; set; }
         public string AniTitle { get; set; }
@@ -44,5 +42,7 @@ namespace Comet.Core.World.Maps
                 return default;
             return Layers[index];
         }
+
+        private static int currentIdentity;
     }
 }

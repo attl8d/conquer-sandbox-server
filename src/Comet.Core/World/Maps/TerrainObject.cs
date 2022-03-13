@@ -8,7 +8,7 @@ namespace Comet.Core.World.Maps
 {
     public sealed class TerrainObject : MapObject
     {
-        public List<TerrainObjectPart> Parts = new List<TerrainObjectPart>();
+        public List<TerrainObjectPart> Parts = new();
 
         private TerrainObject()
         {
@@ -20,13 +20,13 @@ namespace Comet.Core.World.Maps
         {
             try
             {
-                var objTerrain = new TerrainObject()
+                var objTerrain = new TerrainObject
                 {
                     OwnerIdentity = idOwner
                 };
 
                 int amount = scenery.ReadInt32();
-                for (int parts = 0; parts < amount; parts++)
+                for (var parts = 0; parts < amount; parts++)
                 {
                     TerrainObjectPart terrainPart = new();
                     terrainPart.AniFile = Encoding.ASCII.GetString(scenery.ReadBytes(256)).Replace('\0', ' ').TrimEnd();
@@ -48,22 +48,20 @@ namespace Comet.Core.World.Maps
                     terrainPart.Height = scenery.ReadInt32();
                     //scenery.BaseStream.Seek(4, SeekOrigin.Current);
 
-                    for (int y = 0; y < terrainPart.SizeBaseCY; y++)
+                    for (var y = 0; y < terrainPart.SizeBaseCY; y++)
+                    for (var x = 0; x < terrainPart.SizeBaseCX; x++)
                     {
-                        for (int x = 0; x < terrainPart.SizeBaseCX; x++)
-                        {
-                            int mask = (ushort)scenery.ReadInt32();
-                            int terrain = (ushort)scenery.ReadInt32();
-                            int altitude = (ushort)scenery.ReadInt32();
+                        int mask = (ushort) scenery.ReadInt32();
+                        int terrain = (ushort) scenery.ReadInt32();
+                        int altitude = (ushort) scenery.ReadInt32();
 
-                            var layer = new Layer
-                            {
-                                Altitude = (ushort)altitude,
-                                Mask = (ushort)mask,
-                                Terrain = (ushort)terrain
-                            };
-                            terrainPart.Layers.Add(layer);
-                        }
+                        var layer = new Layer
+                        {
+                            Altitude = (ushort) altitude,
+                            Mask = (ushort) mask,
+                            Terrain = (ushort) terrain
+                        };
+                        terrainPart.Layers.Add(layer);
                     }
 
                     objTerrain.AddPart(terrainPart);
@@ -93,7 +91,7 @@ namespace Comet.Core.World.Maps
             X = pos.X;
             Y = pos.Y;
 
-            foreach (var part in Parts)
+            foreach (TerrainObjectPart part in Parts)
             {
                 int x = pos.X;
                 int y = pos.Y;

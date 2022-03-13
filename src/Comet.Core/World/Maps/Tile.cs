@@ -9,9 +9,9 @@ namespace Comet.Core.World.Maps
     [StructLayout(LayoutKind.Sequential, Pack = 2)]
     public struct Tile
     {
-        const int MaskRoleCount = 127;
+        private const int MaskRoleCount = 127;
 
-        public short Mask { get; set; } // The access type for processing the tile.
+        public short Mask { get; set; }      // The access type for processing the tile.
         public short Elevation { get; set; } // The elevation of the tile on the map.
         public short Surface { get; set; }
 
@@ -23,7 +23,7 @@ namespace Comet.Core.World.Maps
         ///     and the elevation of the tile. The map's coordinate grid is composed of these tiles. The tile structure
         ///     is not optimized by C#, and thus takes up 24 bits of memory (or 3 bytes).
         /// </summary>
-        /// <param name="type">The access type for processing the tile.</param>
+        /// <param name="access">The access type for processing the tile.</param>
         /// <param name="elevation">The elevation of the tile on the map.</param>
         /// <param name="surface"></param>
         public Tile(short elevation, short access, short surface)
@@ -40,7 +40,7 @@ namespace Comet.Core.World.Maps
 
         public bool IsBoothEnable()
         {
-            return (Surface&0x10) != 0;
+            return (Surface & 0x10) != 0;
         }
 
         public short GetAltitude()
@@ -60,7 +60,7 @@ namespace Comet.Core.World.Maps
             if (index <= 0) return default;
             if (LayerIndex == Layer.IDX_LAYER_NONE) return default;
             if (LayerIndex >= setLayer.Count) return default;
-            if (index < 0 || index >= setLayer[LayerIndex].Count) return default;
+            if (index >= setLayer[LayerIndex].Count) return default;
             return setLayer[LayerIndex][index];
         }
 
@@ -72,17 +72,15 @@ namespace Comet.Core.World.Maps
             if (LayerIndex == Layer.IDX_LAYER_NONE)
             {
                 for (ushort i = 0; i < setLayer.Count; i++)
-                {
                     if (setLayer[i].Count == 0)
                     {
                         LayerIndex = i;
                         setLayer[i].Add(layer);
                         return;
                     }
-                }
 
-                LayerIndex = (ushort)setLayer.Count;
-                setLayer.Add(new List<Layer> { layer });
+                LayerIndex = (ushort) setLayer.Count;
+                setLayer.Add(new List<Layer> {layer});
             }
             else
             {
@@ -92,17 +90,17 @@ namespace Comet.Core.World.Maps
 
         public bool DelLayer(List<List<Layer>> setLayer, int index = Layer.LAYER_TOP)
         {
-            if (!(index == Layer.LAYER_TOP || index > 0))
+            if (index is not (Layer.LAYER_TOP or > 0))
                 return false;
             if (LayerIndex == Layer.IDX_LAYER_NONE)
                 return false;
             if (LayerIndex >= setLayer.Count)
                 return false;
 
-            if (!(index == Layer.LAYER_TOP || index >= 0 && index < setLayer[LayerIndex].Count))
+            if (!(index == Layer.LAYER_TOP || index < setLayer[LayerIndex].Count))
                 return false;
 
-            int idx;            
+            int idx;
             if (index == Layer.LAYER_TOP)
                 idx = setLayer[LayerIndex].Count - 1;
             else idx = index - 1;

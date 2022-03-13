@@ -1,54 +1,29 @@
 ﻿// #define NEW_DMAP
-using Comet.Shared;
-using Microsoft.Extensions.Configuration.Ini;
+
 using System;
 using System.Collections.Generic;
 using System.Drawing;
 using System.IO;
 using System.Linq;
 using System.Text;
+using Comet.Shared;
+using Microsoft.Extensions.Configuration.Ini;
 
 namespace Comet.Core.World.Maps
 {
     public class GameMapData
     {
-        public static readonly sbyte[] WalkXCoords = { 0, -1, -1, -1, 0, 1, 1, 1, 0 };
-        public static readonly sbyte[] WalkYCoords = { 1, 1, 0, -1, -1, -1, 0, 1, 0 };
-        public static readonly sbyte[] RideXCoords = { 0, -2, -2, -2, 0, 2, 2, 2, 1, 0, -2, 0, 1, 0, 2, 0, 0, -2, 0, -1, 0, 2, 0, 1, 0 };
-        public static readonly sbyte[] RideYCoords = { 2, 2, 0, -2, -2, -2, 0, 2, 2, 0, -1, 0, -2, 0, 1, 0, 0, 1, 0, -2, 0, -1, 0, 2, 0 };
+        private readonly uint mIdDoc;
+        private readonly List<MapObject> mMapObjects = new();
+        private readonly List<PassageData> mPassageData = new();
 
-        public const int MAP_NONE = 0;
-        public const int MAP_TERRAIN = 1;
-        public const int MAP_TERRAIN_PART = 2;
-        public const int MAP_SCENE = 3;
-        public const int MAP_COVER = 4;
-        public const int MAP_ROLE = 5;
-        public const int MAP_HERO = 6;
-        public const int MAP_PLAYER = 7;
-        public const int MAP_PUZZLE = 8;
-        public const int MAP_3DSIMPLE = 9;
-        public const int MAP_3DEFFECT = 10;
-        public const int MAP_2DITEM = 11;
-        public const int MAP_3DNPC = 12;
-        public const int MAP_3DOBJ = 13;
-        public const int MAP_3DTRACE = 14;
-        public const int MAP_SOUND = 15;
-        public const int MAP_2DREGION = 16;
-        public const int MAP_3DMAGICMAPITEM = 17;
-        public const int MAP_3DITEM = 18;
-        public const int MAP_3DEFFECTNEW = 19;
-
-        private readonly uint m_idDoc;
-
-        private readonly List<List<Layer>> mSetLayer = new List<List<Layer>>();
-        private readonly List<PassageData> m_passageData = new List<PassageData>();
-        private Tile[,] m_cell;
-        private Tile mDefault = default;
-        private readonly List<MapObject> m_mapObjects = new List<MapObject>();
+        private readonly List<List<Layer>> mSetLayer = new();
+        private Tile[,] mCell;
+        private Tile mDefault;
 
         public GameMapData(uint idMapDoc)
         {
-            m_idDoc = idMapDoc;
+            mIdDoc = idMapDoc;
         }
 
         public int Width { get; private set; }
@@ -58,29 +33,24 @@ namespace Comet.Core.World.Maps
         {
             get
             {
-                if (x < 0 || x >= Width || y < 0 || y >= Height)
-                {
-                    return ref mDefault;
-                }
+                if (x < 0 || x >= Width || y < 0 || y >= Height) return ref mDefault;
 
-                return ref m_cell[x, y];
+                return ref mCell[x, y];
             }
         }
 
         public int GetPassage(int x, int y)
         {
-            for (int cx = 0; cx < 9; cx++)
+            for (var cx = 0; cx < 9; cx++)
+            for (var cy = 0; cy < 9; cy++)
             {
-                for (int cy = 0; cy < 9; cy++)
-                {
-                    int testX = x + WalkXCoords[cx];
-                    int testY = y + WalkYCoords[cy];
+                int testX = x + WalkXCoords[cx];
+                int testY = y + WalkYCoords[cy];
 
-                    for (int i = 0; i < m_passageData.Count; i++)
-                        if (m_passageData[i].X == testX
-                            && m_passageData[i].Y == testY)
-                            return m_passageData[i].Index;
-                }
+                for (var i = 0; i < mPassageData.Count; i++)
+                    if (mPassageData[i].X == testX
+                        && mPassageData[i].Y == testY)
+                        return mPassageData[i].Index;
             }
 
             return -1;
@@ -94,7 +64,8 @@ namespace Comet.Core.World.Maps
 
                 if (string.IsNullOrEmpty(realPath))
                 {
-                    _ = Log.WriteLogAsync(LogLevel.Warning, $"Map data for file {m_idDoc} '{path}' (realPath:{realPath}) has not been found.");
+                    _ = Log.WriteLogAsync(LogLevel.Warning,
+                                          $"Map data for file {mIdDoc} '{path}' (realPath:{realPath}) has not been found.");
                     return false;
                 }
 
@@ -110,11 +81,9 @@ namespace Comet.Core.World.Maps
                 reader.Dispose();
                 return true;
             }
-            else
-            {
-                _ = Log.WriteLogAsync(LogLevel.Warning, $"Map data for file {m_idDoc} '{path}' has not been found.");
-                return false;
-            }
+
+            _ = Log.WriteLogAsync(LogLevel.Warning, $"Map data for file {mIdDoc} '{path}' has not been found.");
+            return false;
         }
 
         private void LoadData(BinaryReader reader)
@@ -125,27 +94,26 @@ namespace Comet.Core.World.Maps
             Width = reader.ReadInt32();
             Height = reader.ReadInt32();
 
-            m_cell = new Tile[Width, Height];
-            for (int y = 0; y < Height; y++)
+            mCell = new Tile[Width, Height];
+            for (var y = 0; y < Height; y++)
             {
                 uint checkSum = 0, tmp = 0;
-                for (int x = 0; x < Width; x++)
+                for (var x = 0; x < Width; x++)
                 {
                     short access = reader.ReadInt16();
                     short surface = reader.ReadInt16();
                     short elevation = reader.ReadInt16();
 
-                    checkSum += (uint)((uint)access * (surface + y + 1) +
+                    checkSum += (uint) ((uint) access * (surface + y + 1) +
                                         (elevation + 2) * (x + 1 + surface));
 
-                    m_cell[x, y] = new Tile(elevation, access, surface);
+                    mCell[x, y] = new Tile(elevation, access, surface);
                 }
 
                 tmp = reader.ReadUInt32();
                 if (checkSum != tmp)
-                {
-                    _ = Log.WriteLogAsync(LogLevel.Error, $"Invalid checksum for block of cells (mapdata: {m_idDoc}), y: {y}");
-                }
+                    _ = Log.WriteLogAsync(LogLevel.Error,
+                                          $"Invalid checksum for block of cells (mapdata: {mIdDoc}), y: {y}");
             }
         }
 
@@ -153,13 +121,13 @@ namespace Comet.Core.World.Maps
         {
             int count = reader.ReadInt32();
 
-            for (int i = 0; i < count; i++)
+            for (var i = 0; i < count; i++)
             {
                 int x = reader.ReadInt32();
                 int y = reader.ReadInt32();
                 int index = reader.ReadInt32();
 
-                m_passageData.Add(new PassageData(x, y, index));
+                mPassageData.Add(new PassageData(x, y, index));
             }
         }
 
@@ -167,7 +135,7 @@ namespace Comet.Core.World.Maps
         {
             int count = reader.ReadInt32();
 
-            for (int i = 0; i < count; i++)
+            for (var i = 0; i < count; i++)
             {
                 int type = reader.ReadInt32();
 
@@ -178,17 +146,18 @@ namespace Comet.Core.World.Maps
                         break;
 
                     case MAP_TERRAIN:
-                        string file = new string(reader.ReadChars(260));
+                        var file = new string(reader.ReadChars(260));
                         int startX = reader.ReadInt32();
                         int startY = reader.ReadInt32();
 
-                        file = file.Substring(0, file.IndexOf('\0')).Replace("\\", Path.DirectorySeparatorChar.ToString());
+                        file = file.Substring(0, file.IndexOf('\0'))
+                                   .Replace("\\", Path.DirectorySeparatorChar.ToString());
                         if (File.Exists(file))
                         {
                             //var memory = new MemoryStream(File.ReadAllBytes(file));
                             var scenery = new BinaryReader(File.OpenRead(file));
 
-                            TerrainObject objTerrain = TerrainObject.CreateNew(scenery);
+                            var objTerrain = TerrainObject.CreateNew(scenery);
                             objTerrain.SetPos(new Point(startX, startY));
                             AddMapObject(objTerrain);
 
@@ -214,6 +183,87 @@ namespace Comet.Core.World.Maps
                 }
             }
         }
+
+        public int GetFloorAttr(int x, int y)
+        {
+            Tile cell = this[x, y];
+            if (cell.Equals(mDefault))
+                return 0;
+            return cell.GetFloorAttr(mSetLayer);
+        }
+
+        public int GetFloorAlt(int x, int y)
+        {
+            Tile cell = this[x, y];
+            if (cell.Equals(mDefault))
+                return 0;
+            return cell.GetFloorAlt(mSetLayer);
+        }
+
+        public int GetFloorMask(int x, int y)
+        {
+            Tile cell = this[x, y];
+            if (cell.Equals(mDefault))
+                return 0;
+            return cell.GetFloorMask(mSetLayer);
+        }
+
+        /// <summary>
+        ///     This method has been created to avoid the case sensitive Linux path system, which would case us some trouble.
+        /// </summary>
+        private static bool FileExists(string path)
+        {
+            string name = Path.GetDirectoryName(path);
+            if (string.IsNullOrEmpty(path))
+                return false;
+            foreach (string file in Directory.GetFiles(name))
+                if (file.Equals(
+                        path.Replace("\\", Path.DirectorySeparatorChar.ToString())
+                            .Replace("/", Path.DirectorySeparatorChar.ToString()),
+                        StringComparison.InvariantCultureIgnoreCase))
+                    return true;
+            return false;
+        }
+
+        private static string GetRealPath(string path)
+        {
+            foreach (string file in Directory.GetFiles(Path.GetDirectoryName(path)))
+                if (file.Equals(
+                        path.Replace("\\", Path.DirectorySeparatorChar.ToString())
+                            .Replace("/", Path.DirectorySeparatorChar.ToString()),
+                        StringComparison.InvariantCultureIgnoreCase))
+                    return file;
+            return path;
+        }
+
+        public const int MAP_NONE = 0;
+        public const int MAP_TERRAIN = 1;
+        public const int MAP_TERRAIN_PART = 2;
+        public const int MAP_SCENE = 3;
+        public const int MAP_COVER = 4;
+        public const int MAP_ROLE = 5;
+        public const int MAP_HERO = 6;
+        public const int MAP_PLAYER = 7;
+        public const int MAP_PUZZLE = 8;
+        public const int MAP_3DSIMPLE = 9;
+        public const int MAP_3DEFFECT = 10;
+        public const int MAP_2DITEM = 11;
+        public const int MAP_3DNPC = 12;
+        public const int MAP_3DOBJ = 13;
+        public const int MAP_3DTRACE = 14;
+        public const int MAP_SOUND = 15;
+        public const int MAP_2DREGION = 16;
+        public const int MAP_3DMAGICMAPITEM = 17;
+        public const int MAP_3DITEM = 18;
+        public const int MAP_3DEFFECTNEW = 19;
+        public static readonly sbyte[] WalkXCoords = {0, -1, -1, -1, 0, 1, 1, 1, 0};
+        public static readonly sbyte[] WalkYCoords = {1, 1, 0, -1, -1, -1, 0, 1, 0};
+
+        public static readonly sbyte[] RideXCoords =
+            {0, -2, -2, -2, 0, 2, 2, 2, 1, 0, -2, 0, 1, 0, 2, 0, 0, -2, 0, -1, 0, 2, 0, 1, 0};
+
+        public static readonly sbyte[] RideYCoords =
+            {2, 2, 0, -2, -2, -2, 0, 2, 2, 0, -1, 0, -2, 0, 1, 0, 0, 1, 0, -2, 0, -1, 0, 2, 0};
 
         #region Indexes
 
@@ -241,20 +291,20 @@ namespace Comet.Core.World.Maps
             if (terrain == null)
                 return false;
 
-            m_mapObjects.Add(terrain);
+            mMapObjects.Add(terrain);
 
             return PlaceTerrainObject(terrain);
         }
 
         public bool DelMapObject(int idx)
         {
-            if (idx < 0 || idx >= m_mapObjects.Count)
+            if (idx < 0 || idx >= mMapObjects.Count)
                 return false;
 
-            TerrainObject terrain = m_mapObjects[idx] as TerrainObject;
+            var terrain = mMapObjects[idx] as TerrainObject;
             if (terrain != null && DisplaceTerrainObject(terrain))
             {
-                m_mapObjects.RemoveAt(idx);
+                mMapObjects.RemoveAt(idx);
                 return true;
             }
 
@@ -266,29 +316,26 @@ namespace Comet.Core.World.Maps
             if (terrain == null)
                 return false;
 
-            foreach (var part in terrain.Parts)
-            {
-                for (int j = 0; j < part.SizeBaseCY; j++)
+            foreach (TerrainObjectPart part in terrain.Parts)
+                for (var j = 0; j < part.SizeBaseCY; j++)
+                for (var k = 0; k < part.SizeBaseCX; k++)
                 {
-                    for (int k = 0; k < part.SizeBaseCX; k++)
+                    Layer layer = part.GetLayer(j, k);
+                    if (layer.Equals(default))
+                        return false;
+
+                    ref Tile tile = ref mCell[part.X - k, part.Y - j];
+                    if (tile.Equals(default))
+                        return false;
+
+                    tile.AddLayer(mSetLayer, new Layer
                     {
-                        Layer layer = part.GetLayer(j, k);
-                        if (layer.Equals(default))
-                            return false;
-
-                        ref Tile tile = ref m_cell[part.X - k, part.Y - j];
-                        if (tile.Equals(default))
-                            return false;
-
-                        tile.AddLayer(mSetLayer, new Layer
-                        {
-                            Altitude = layer.Altitude,
-                            Mask = layer.Mask,
-                            Terrain = layer.Terrain
-                        });
-                    }
+                        Altitude = layer.Altitude,
+                        Mask = layer.Mask,
+                        Terrain = layer.Terrain
+                    });
                 }
-            }
+
             return true;
         }
 
@@ -297,20 +344,16 @@ namespace Comet.Core.World.Maps
             if (terrain == null)
                 return false;
 
-            foreach (var part in terrain.Parts)
-            {
-                for (int j = 0; j < part.SizeBaseCY; j++)
+            foreach (TerrainObjectPart part in terrain.Parts)
+                for (var j = 0; j < part.SizeBaseCY; j++)
+                for (var k = 0; k < part.SizeBaseCX; k++)
                 {
-                    for (int k = 0; k < part.SizeBaseCX; k++)
-                    {
-                        ref Tile tile = ref m_cell[part.X - k, part.Y - j];
-                        if (tile.Equals(default))
-                            return false;
+                    ref Tile tile = ref mCell[part.X - k, part.Y - j];
+                    if (tile.Equals(default))
+                        return false;
 
-                        tile.DelLayer(mSetLayer);
-                    }
+                    tile.DelLayer(mSetLayer);
                 }
-            }
 
             return true;
         }
@@ -323,8 +366,10 @@ namespace Comet.Core.World.Maps
         {
             string path = Path.Combine(Environment.CurrentDirectory, "ini");
             IniConfigurationSource source = new();
-            var content = Directory.GetFiles(path);
-            var fileName = content.FirstOrDefault(x => x.ToLower().EndsWith("terrainnpc.ini", StringComparison.CurrentCultureIgnoreCase));
+            string[] content = Directory.GetFiles(path);
+            string fileName =
+                content.FirstOrDefault(x => x.ToLower()
+                                             .EndsWith("terrainnpc.ini", StringComparison.CurrentCultureIgnoreCase));
             path = Path.Combine(path, fileName);
             source.ReloadOnChange = false;
             IniConfigurationProvider reader = new(source);
@@ -341,7 +386,7 @@ namespace Comet.Core.World.Maps
             if (!reader.TryGet(entry, out path))
                 return false;
 
-            TerrainObject terrain = TerrainObject.CreateNew(new BinaryReader(File.OpenRead(path)), idOwner);
+            var terrain = TerrainObject.CreateNew(new BinaryReader(File.OpenRead(path)), idOwner);
             if (terrain == null)
                 return false;
 
@@ -353,62 +398,15 @@ namespace Comet.Core.World.Maps
 
         public bool DelTerrainItem(uint idOwner)
         {
-            for (int i = 0; i < m_mapObjects.Count; i++)
-            {
-                if (m_mapObjects[i] is TerrainObject terrain)
-                {
+            for (var i = 0; i < mMapObjects.Count; i++)
+                if (mMapObjects[i] is TerrainObject terrain)
                     if (terrain.OwnerIdentity == idOwner)
                         return DelMapObject(i);
-                }
-            }
 
             return true;
         }
 
         #endregion
-
-        public int GetFloorAttr(int x, int y)
-        {
-            Tile cell = this[x, y];
-            if (cell.Equals(mDefault))
-                return 0;
-            return cell.GetFloorAttr(mSetLayer);
-        }
-
-        public int GetFloorAlt(int x, int y)
-        {
-            Tile cell = this[x, y];
-            if (cell.Equals(mDefault))
-                return 0;
-            return cell.GetFloorAlt(mSetLayer);
-        }
-
-        public int GetFloorMask(int x, int y)
-        {
-            Tile cell = this[x, y];
-            if (cell.Equals(mDefault))
-                return 0;
-            return cell.GetFloorMask(mSetLayer);
-        }
-
-        /// <summary>
-        /// This method has been created to avoid the case sensitive Linux path system, which would case us some trouble.
-        /// </summary>
-        private static bool FileExists(string path)
-        {
-            foreach (var file in Directory.GetFiles(Path.GetDirectoryName(path)))
-                if (file.Equals(path.Replace("\\", Path.DirectorySeparatorChar.ToString()).Replace("/", Path.DirectorySeparatorChar.ToString()), StringComparison.InvariantCultureIgnoreCase))
-                    return true;
-            return false;
-        }
-
-        private static string GetRealPath(string path)
-        {
-            foreach (var file in Directory.GetFiles(Path.GetDirectoryName(path)))
-                if (file.Equals(path.Replace("\\", Path.DirectorySeparatorChar.ToString()).Replace("/", Path.DirectorySeparatorChar.ToString()), StringComparison.InvariantCultureIgnoreCase))
-                    return file;
-            return path;
-        }
     }
 
     public struct PassageData

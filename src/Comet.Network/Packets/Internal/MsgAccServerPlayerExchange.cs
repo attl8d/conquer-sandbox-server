@@ -1,5 +1,4 @@
-﻿using System;
-using System.Collections.Generic;
+﻿using System.Collections.Generic;
 
 namespace Comet.Network.Packets.Internal
 {
@@ -7,17 +6,17 @@ namespace Comet.Network.Packets.Internal
     {
         public string ServerName { get; set; }
         public int Count => Data.Count;
-        public List<PlayerData> Data { get; } = new List<PlayerData>();
+        public List<PlayerData> Data { get; } = new();
 
         public override void Decode(byte[] bytes)
         {
-            PacketReader reader = new (bytes);
+            PacketReader reader = new(bytes);
             Length = reader.ReadUInt16();
-            Type = (PacketType)reader.ReadUInt16();
+            Type = (PacketType) reader.ReadUInt16();
             ServerName = reader.ReadString(16);
             int count = reader.ReadInt32();
-           
-            for (int i = 0; i < count; i++)
+
+            for (var i = 0; i < count; i++)
             {
                 PlayerData data = new();
                 data.Identity = reader.ReadUInt32();
@@ -64,10 +63,10 @@ namespace Comet.Network.Packets.Internal
         public override byte[] Encode()
         {
             PacketWriter writer = new();
-            writer.Write((ushort)PacketType.MsgAccServerPlayerExchange);
+            writer.Write((ushort) PacketType.MsgAccServerPlayerExchange);
             writer.Write(ServerName, 16);
             writer.Write(Count);
-            foreach (var data in Data)
+            foreach (PlayerData data in Data)
             {
                 writer.Write(data.Identity);
                 writer.Write(data.AccountIdentity);
@@ -106,47 +105,48 @@ namespace Comet.Network.Packets.Internal
                 writer.Write(data.Orchids);
                 writer.Write(data.Tulips);
             }
+
             return writer.ToArray();
         }
 
         public struct PlayerData
         {
-            public uint Identity; // 0
-            public uint AccountIdentity; // 4
-            public string Name; // 8
-            public byte Level; // 24
-            public byte Metempsychosis; // 25
-            public ushort Profession; // 26
+            public uint Identity;             // 0
+            public uint AccountIdentity;      // 4
+            public string Name;               // 8
+            public byte Level;                // 24
+            public byte Metempsychosis;       // 25
+            public ushort Profession;         // 26
             public ushort PreviousProfession; // 28
-            public ushort FirstProfession; // 30
-            public uint Money; // 32
-            public uint ConquerPoints; // 36
-            public uint ConquerPointsMono; // 40
-            public ulong Donation; // 44
-            public uint SyndicateIdentity; // 52
-            public ushort SyndicatePosition; // 56
-            public uint FamilyIdentity; // 58
-            public ushort FamilyPosition; // 62
+            public ushort FirstProfession;    // 30
+            public uint Money;                // 32
+            public uint ConquerPoints;        // 36
+            public uint ConquerPointsMono;    // 40
+            public ulong Donation;            // 44
+            public uint SyndicateIdentity;    // 52
+            public ushort SyndicatePosition;  // 56
+            public uint FamilyIdentity;       // 58
+            public ushort FamilyPosition;     // 62
 
-            public ushort Force; // 64
-            public ushort Speed; // 66
-            public ushort Health; // 68
-            public ushort Soul; // 70
+            public ushort Force;          // 64
+            public ushort Speed;          // 66
+            public ushort Health;         // 68
+            public ushort Soul;           // 70
             public ushort AdditionPoints; // 72
 
-            public int LastLogin; // 74
-            public int LastLogout; // 78
+            public int LastLogin;       // 74
+            public int LastLogout;      // 78
             public int TotalOnlineTime; //82
 
-            public int AthletePoints; // 86
-            public int AthleteHistoryWins; // 90
+            public int AthletePoints;       // 86
+            public int AthleteHistoryWins;  // 90
             public int AthleteHistoryLoses; // 94
-            public int HonorPoints; // 98
+            public int HonorPoints;         // 98
 
-            public uint RedRoses; // 102
+            public uint RedRoses;   // 102
             public uint WhiteRoses; // 106
-            public uint Orchids; // 110
-            public uint Tulips; // 114
+            public uint Orchids;    // 110
+            public uint Tulips;     // 114
         }
     }
 }

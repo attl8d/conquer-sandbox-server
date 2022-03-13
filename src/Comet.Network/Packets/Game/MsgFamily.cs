@@ -6,16 +6,16 @@ namespace Comet.Network.Packets.Game
     {
         public FamilyAction Action;
         public uint Identity;
+        public List<object> Objects = new();
+        public List<string> Strings = new();
         public uint Unknown;
-        public List<string> Strings = new List<string>();
-        public List<object> Objects = new List<object>();
 
         public override void Decode(byte[] bytes)
         {
-            PacketReader reader = new PacketReader(bytes);
+            var reader = new PacketReader(bytes);
             Length = reader.ReadUInt16();
-            Type = (PacketType)reader.ReadUInt16();
-            Action = (FamilyAction)reader.ReadUInt32();
+            Type = (PacketType) reader.ReadUInt16();
+            Action = (FamilyAction) reader.ReadUInt32();
             Identity = reader.ReadUInt32();
             Unknown = reader.ReadUInt32();
             Strings = reader.ReadStrings();
@@ -23,9 +23,9 @@ namespace Comet.Network.Packets.Game
 
         public override byte[] Encode()
         {
-            PacketWriter writer = new PacketWriter();
-            writer.Write((ushort)PacketType.MsgFamily);
-            writer.Write((int)Action);
+            var writer = new PacketWriter();
+            writer.Write((ushort) PacketType.MsgFamily);
+            writer.Write((int) Action);
             writer.Write(Identity);
             writer.Write(Unknown);
             if (Objects.Count == 0)
@@ -34,17 +34,17 @@ namespace Comet.Network.Packets.Game
             }
             else
             {
-                int idx = 0;
+                var idx = 0;
                 writer.Write(Objects.Count);
-                foreach (var obj in Objects)
+                foreach (object obj in Objects)
                 {
                     if (obj is MemberListStruct member)
                     {
                         writer.Write(member.Name, 16);
-                        writer.Write((int)member.Level);
+                        writer.Write((int) member.Level);
                         writer.Write(member.Rank);
-                        writer.Write((ushort)(member.Online ? 1 : 0));
-                        writer.Write((int)member.Profession);
+                        writer.Write((ushort) (member.Online ? 1 : 0));
+                        writer.Write((int) member.Profession);
                         writer.Write(member.Donation);
                     }
                     else if (obj is RelationListStruct relation)
@@ -58,9 +58,11 @@ namespace Comet.Network.Packets.Game
                         writer.Write(0);
                         writer.Write(relation.LeaderName, 16);
                     }
+
                     idx++;
                 }
             }
+
             return writer.ToArray();
         }
 

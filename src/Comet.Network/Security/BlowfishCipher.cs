@@ -1,31 +1,262 @@
+using System;
+using System.Runtime.CompilerServices;
+using System.Text;
+using Comet.Shared.Mathematics;
+
 namespace Comet.Network.Security
 {
-    using System;
-    using System.Text;
-    using System.Runtime.CompilerServices;
-    using Comet.Shared.Mathematics;
-
     /// <summary>
-    /// This Blowfish cipher is implemented in CFB64 mode for client interoperability on 
-    /// the game server, and replaces the legacy <see cref="TQCipher"/> previously used
-    /// by patches 5017 and below. This class uses the reference implementation of 
-    /// Blowfish, which uses a key size of 576 bits rather than the standard 448 bits.
+    ///     This Blowfish cipher is implemented in CFB64 mode for client interoperability on
+    ///     the game server, and replaces the legacy <see cref="TQCipher" /> previously used
+    ///     by patches 5017 and below. This class uses the reference implementation of
+    ///     Blowfish, which uses a key size of 576 bits rather than the standard 448 bits.
     /// </summary>
     public sealed class BlowfishCipher : ICipher
     {
-        // Constants and static properties
-        public static readonly BlowfishCipher Default;
+        private int DecryptCount, EncryptCount;
+
+        /// <summary>Create a default instance of Blowfish to copy from.</summary>
+        static BlowfishCipher()
+        {
+            Default = new BlowfishCipher();
+        }
+
+        /// <summary>
+        ///     Instantiates a new instance of <see cref="BlowfishCipher" /> and generates
+        ///     keys using the client's shared secret seed. Keys should be regenerated after
+        ///     the DH Key Exchange has established a new shared secret.
+        /// </summary>
+        /// <param name="seed">Shared secret seed for generating keys</param>
+        public BlowfishCipher(string seed = DefaultSeed)
+        {
+            DecryptionIV = new byte[BlockSize];
+            EncryptionIV = new byte[BlockSize];
+            DecryptCount = 0;
+            EncryptCount = 0;
+
+            GenerateKeys(new object[] {Encoding.ASCII.GetBytes(seed)});
+        }
+
+        /// <summary>
+        ///     Instantiates a new instance of <see cref="BlowfishCipher" /> without
+        ///     generating new keys. Instead, keys will be copied from the specified cipher
+        ///     instance which has already generated keys based on a shared secret.
+        /// </summary>
+        /// <param name="copy">The cipher to copy keys from</param>
+        public BlowfishCipher(BlowfishCipher copy)
+        {
+            DecryptionIV = (byte[]) copy.DecryptionIV.Clone();
+            EncryptionIV = (byte[]) copy.EncryptionIV.Clone();
+            DecryptCount = copy.DecryptCount;
+            EncryptCount = copy.EncryptCount;
+
+            P = copy.P.Clone() as uint[];
+            S = copy.S.Clone() as uint[];
+        }
+
+        // Local fields and properties
+        public byte[] DecryptionIV { get; private set; }
+        public byte[] EncryptionIV { get; private set; }
+        public uint[] P { get; private set; }
+        public uint[] S { get; private set; }
+
+        /// <summary>
+        ///     The key schedule for Blowfish can be time consuming to generate. The server
+        ///     should optimize around calls to generate keys. When providing an array of
+        ///     seeds, only the first seed will be used to generate keys.
+        /// </summary>
+        /// <param name="seeds">An array of seeds used to generate keys</param>
+        public void GenerateKeys(object[] seeds)
+        {
+            // Initialize key buffers
+            var seedBuffer = seeds[0] as byte[];
+            if (seedBuffer.Length > KeySize)
+                Array.Resize(ref seedBuffer, KeySize);
+
+            P = PInit.Clone() as uint[];
+            S = SInit.Clone() as uint[];
+
+            // Generate keys
+            for (uint i = 0, x = 0; i < P.Length; i++)
+            {
+                uint rv = seedBuffer[x];
+                x = (uint) ((x + 1) % seedBuffer.Length);
+                rv = (rv << 8) | seedBuffer[x];
+                x = (uint) ((x + 1) % seedBuffer.Length);
+                rv = (rv << 8) | seedBuffer[x];
+                x = (uint) ((x + 1) % seedBuffer.Length);
+                rv = (rv << 8) | seedBuffer[x];
+                x = (uint) ((x + 1) % seedBuffer.Length);
+                P[i] ^= rv;
+            }
+
+            var block = new uint[BlockSize / sizeof(uint)];
+            for (var i = 0; i < P.Length;)
+            {
+                EncipherBlock(block);
+                P[i++] = block[0];
+                P[i++] = block[1];
+            }
+
+            for (var i = 0; i < S.Length;)
+            {
+                EncipherBlock(block);
+                S[i++] = block[0];
+                S[i++] = block[1];
+            }
+        }
+
+        /// <summary>
+        ///     Decrypts bytes using cipher feedback mode. The source and destination may be
+        ///     the same slice, but otherwise should not overlap.
+        /// </summary>
+        /// <param name="src">Source span that requires decrypting</param>
+        /// <param name="dst">Destination span to contain the decrypted result</param>
+        public void Decrypt(Span<byte> src, Span<byte> dst)
+        {
+            var block = new uint[2];
+            for (var i = 0; i < src.Length; i++)
+            {
+                if (DecryptCount == 0)
+                {
+                    block[0] = n21(DecryptionIV, 0);
+                    block[1] = n21(DecryptionIV, 4);
+                    EncipherBlock(block);
+                    n12(DecryptionIV, 0, block[0]);
+                    n12(DecryptionIV, 4, block[1]);
+                }
+
+                byte tmp = DecryptionIV[DecryptCount];
+                DecryptionIV[DecryptCount] = src[i];
+                dst[i] = (byte) (src[i] ^ tmp);
+                DecryptCount = (DecryptCount + 1) & (BlockSize - 1);
+            }
+        }
+
+        /// <summary>
+        ///     Encrypts bytes using cipher feedback mode. The source and destination may be
+        ///     the same slice, but otherwise should not overlap.
+        /// </summary>
+        /// <param name="src">Source span that requires encrypting</param>
+        /// <param name="dst">Destination span to contain the encrypted result</param>
+        public void Encrypt(Span<byte> src, Span<byte> dst)
+        {
+            var block = new uint[2];
+            for (var i = 0; i < src.Length; i++)
+            {
+                if (EncryptCount == 0)
+                {
+                    block[0] = n21(EncryptionIV, 0);
+                    block[1] = n21(EncryptionIV, 4);
+                    EncipherBlock(block);
+                    n12(EncryptionIV, 0, block[0]);
+                    n12(EncryptionIV, 4, block[1]);
+                }
+
+                dst[i] = (byte) (src[i] ^ EncryptionIV[EncryptCount]);
+                EncryptionIV[EncryptCount] = dst[i];
+                EncryptCount = (EncryptCount + 1) & (BlockSize - 1);
+            }
+        }
+
+        /// <summary>Sets the IVs of the cipher.</summary>
+        /// <param name="decryptionIV">Decryption IV from client key exchange</param>
+        /// <param name="encryptionIV">Encryption IV from client key exchange</param>
+        public void SetIVs(byte[] decryptionIV, byte[] encryptionIV)
+        {
+            DecryptionIV = (byte[]) decryptionIV.Clone();
+            EncryptionIV = (byte[]) encryptionIV.Clone();
+            DecryptCount = 0;
+            EncryptCount = 0;
+        }
+
+        /// <summary>
+        ///     Function F is Blowfish's one-way function for achieving non-linearity with
+        ///     its substitution boxes without requiring a massive lookup array. Each input
+        ///     is broken up into 4 bytes which is used as indexes to fetch 32-bit numbers
+        ///     from the different S boxes.
+        /// </summary>
+        /// <param name="x">Input from the encipher round</param>
+        /// <returns>((Sa + Sb) ^ Sc) + Sd, S being the substitution per byte.</returns>
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        private uint F(uint x)
+        {
+            return (((S[(x >> 24) & 0xFF] + S[0x100 + ((x >> 16) & 0xFF)])
+                     ^ S[0x200 + ((x >> 8) & 0xFF)]) + S[0x300 + (x & 0xFF)])
+                   & 0xFFFFFFFF;
+        }
+
+        /// <summary>
+        ///     Swaps the endianness and converts data types for block operations.
+        /// </summary>
+        /// <param name="iv">IV depending on the direction of the cipher</param>
+        /// <param name="x">Index used to read from the IV buffer</param>
+        /// <returns>An unsigned integer representing a side of the block.</returns>
+        private uint n21(byte[] iv, int x)
+        {
+            var l = (uint) (iv[x] << 24);
+            l |= (uint) (iv[x + 1] << 16);
+            l |= (uint) (iv[x + 2] << 8);
+            l |= iv[x + 3];
+            return l;
+        }
+
+        /// <summary>
+        ///     Converts on half of the results of a block operation back to bytes.
+        /// </summary>
+        /// <param name="iv">IV depending on the direction of the cipher</param>
+        /// <param name="x">Index used to write to the IV buffer</param>
+        /// <param name="v">Value from the block operation results.</param>
+        private void n12(byte[] iv, int x, uint v)
+        {
+            iv[x] = (byte) ((v >> 24) & 0xFF);
+            iv[x + 1] = (byte) ((v >> 16) & 0xFF);
+            iv[x + 2] = (byte) ((v >> 8) & 0xFF);
+            iv[x + 3] = (byte) (v & 0xFF);
+        }
+
+        /// <summary>
+        ///     Enciphers a block of plaintext into ciphertext. If the cipher is used in
+        ///     cipher feedback mode, then this method is also utilized for decrypting
+        ///     ciphertext into plaintext.
+        /// </summary>
+        /// <param name="block">A block of two 32-bit unsigned integers</param>
+        private void EncipherBlock(uint[] block)
+        {
+            uint lv = block[0];
+            uint rv = block[1];
+
+            lv ^= P[0];
+            for (uint i = 1; i <= Rounds; i++)
+            {
+                rv ^= P[i];
+                rv ^= F(lv);
+                lv.Swap(ref rv);
+            }
+
+            rv ^= P[Rounds + 1];
+            block[0] = rv & 0xFFFFFFFF;
+            block[1] = lv & 0xFFFFFFFF;
+        }
+
         public const int BlockSize = 8;
         private const int KeySize = 72;
         private const int Rounds = 16;
+
         private const string DefaultSeed = "DR654dt34trg4UI6";
 
-        private static readonly uint[] PInit = new uint[18] {
+        // Constants and static properties
+        public static readonly BlowfishCipher Default;
+
+        private static readonly uint[] PInit = new uint[18]
+        {
             0x243f6a88, 0x85a308d3, 0x13198a2e, 0x03707344, 0xa4093822, 0x299f31d0,
             0x082efa98, 0xec4e6c89, 0x452821e6, 0x38d01377, 0xbe5466cf, 0x34e90c6c,
             0xc0ac29b7, 0xc97c50dd, 0x3f84d5b5, 0xb5470917, 0x9216d5d9, 0x8979fb1b
         };
-        private static readonly uint[] SInit = new uint[4 * 256] {
+
+        private static readonly uint[] SInit = new uint[4 * 256]
+        {
             0xd1310ba6, 0x98dfb5ac, 0x2ffd72db, 0xd01adfb7, 0xb8e1afed, 0x6a267e96,
             0xba7c9045, 0xf12c7f99, 0x24a19947, 0xb3916cf7, 0x0801f2e2, 0x858efc16,
             0x636920d8, 0x71574e69, 0xa458fea3, 0xf4933d7e, 0x0d95748f, 0x728eb658,
@@ -198,224 +429,5 @@ namespace Comet.Network.Security
             0x01c36ae4, 0xd6ebe1f9, 0x90d4f869, 0xa65cdea0, 0x3f09252d, 0xc208e69f,
             0xb74e6132, 0xce77e25b, 0x578fdfe3, 0x3ac372e6
         };
-
-        // Local fields and properties
-        public byte[] DecryptionIV { get; private set; }
-        public byte[] EncryptionIV { get; private set; }
-        public uint[] P { get; private set; }
-        public uint[] S { get; private set; }
-        private int DecryptCount, EncryptCount;
-
-        /// <summary>Create a default instance of Blowfish to copy from.</summary>
-        static BlowfishCipher()
-        {
-            BlowfishCipher.Default = new BlowfishCipher();
-        }
-
-        /// <summary>
-        /// Instantiates a new instance of <see cref="BlowfishCipher"/> and generates 
-        /// keys using the client's shared secret seed. Keys should be regenerated after
-        /// the DH Key Exchange has established a new shared secret.
-        /// </summary>
-        /// <param name="seed">Shared secret seed for generating keys</param>
-        public BlowfishCipher(string seed = BlowfishCipher.DefaultSeed)
-        {
-            DecryptionIV = new byte[BlowfishCipher.BlockSize];
-            EncryptionIV = new byte[BlowfishCipher.BlockSize];
-            DecryptCount = 0;
-            EncryptCount = 0;
-
-            GenerateKeys(new object[] { Encoding.ASCII.GetBytes(seed) });
-        }
-
-        /// <summary>
-        /// Instantiates a new instance of <see cref="BlowfishCipher"/> without 
-        /// generating new keys. Instead, keys will be copied from the specified cipher
-        /// instance which has already generated keys based on a shared secret.
-        /// </summary>
-        /// <param name="copy">The cipher to copy keys from</param>
-        public BlowfishCipher(BlowfishCipher copy)
-        {
-            DecryptionIV = (byte[])copy.DecryptionIV.Clone();
-            EncryptionIV = (byte[])copy.EncryptionIV.Clone();
-            DecryptCount = copy.DecryptCount;
-            EncryptCount = copy.EncryptCount;
-
-            P = copy.P.Clone() as uint[];
-            S = copy.S.Clone() as uint[];
-        }
-
-        /// <summary>
-        /// The key schedule for Blowfish can be time consuming to generate. The server
-        /// should optimize around calls to generate keys. When providing an array of
-        /// seeds, only the first seed will be used to generate keys.
-        /// </summary>
-        /// <param name="seeds">An array of seeds used to generate keys</param>
-        public void GenerateKeys(object[] seeds)
-        {
-            // Initialize key buffers
-            var seedBuffer = seeds[0] as byte[];
-            if (seedBuffer.Length > KeySize)
-                Array.Resize(ref seedBuffer, KeySize);
-
-            P = PInit.Clone() as uint[];
-            S = SInit.Clone() as uint[];
-
-            // Generate keys
-            for (uint i = 0, x = 0; i < P.Length; i++)
-            {
-                uint rv = seedBuffer[x]; x = (uint)((x + 1) % seedBuffer.Length);
-                rv = (rv << 8) | seedBuffer[x]; x = (uint)((x + 1) % seedBuffer.Length);
-                rv = (rv << 8) | seedBuffer[x]; x = (uint)((x + 1) % seedBuffer.Length);
-                rv = (rv << 8) | seedBuffer[x]; x = (uint)((x + 1) % seedBuffer.Length);
-                P[i] ^= rv;
-            }
-
-            uint[] block = new uint[BlockSize / sizeof(uint)];
-            for (int i = 0; i < P.Length; )
-            {
-                EncipherBlock(block);
-                P[i++] = block[0];
-                P[i++] = block[1];
-            }
-
-            for (int i = 0; i < S.Length; )
-            {
-                EncipherBlock(block);
-                S[i++] = block[0];
-                S[i++] = block[1];
-            }
-        }
-
-        /// <summary>Sets the IVs of the cipher.</summary>
-        /// <param name="decryptionIV">Decryption IV from client key exchange</param>
-        /// <param name="encryptionIV">Encryption IV from client key exchange</param>
-        public void SetIVs(byte[] decryptionIV, byte[] encryptionIV)
-        {
-            DecryptionIV = (byte[])decryptionIV.Clone();
-            EncryptionIV = (byte[])encryptionIV.Clone();
-            DecryptCount = 0;
-            EncryptCount = 0;
-        }
-
-        /// <summary>
-        /// Decrypts bytes using cipher feedback mode. The source and destination may be
-        /// the same slice, but otherwise should not overlap.
-        /// </summary>
-        /// <param name="src">Source span that requires decrypting</param>
-        /// <param name="dst">Destination span to contain the decrypted result</param>
-        public void Decrypt(Span<byte> src, Span<byte> dst)
-        {
-            uint[] block = new uint[2];
-            for (int i = 0; i < src.Length; i++)
-            {
-                if (DecryptCount == 0)
-                {
-                    block[0] = n21(DecryptionIV, 0);
-                    block[1] = n21(DecryptionIV, 4);
-                    EncipherBlock(block);
-                    n12(DecryptionIV, 0, block[0]);
-                    n12(DecryptionIV, 4, block[1]);
-                }
-
-                byte tmp = DecryptionIV[DecryptCount];
-                DecryptionIV[DecryptCount] = src[i];
-                dst[i] = (byte)(src[i] ^ tmp);
-                DecryptCount = (DecryptCount + 1) & (BlowfishCipher.BlockSize - 1);
-            }
-        }
-
-        /// <summary>
-        /// Encrypts bytes using cipher feedback mode. The source and destination may be
-        /// the same slice, but otherwise should not overlap.
-        /// </summary>
-        /// <param name="src">Source span that requires encrypting</param>
-        /// <param name="dst">Destination span to contain the encrypted result</param>
-        public void Encrypt(Span<byte> src, Span<byte> dst)
-        {
-            uint[] block = new uint[2];
-            for (int i = 0; i < src.Length; i++)
-            {
-                if (EncryptCount == 0)
-                {
-                    block[0] = n21(EncryptionIV, 0);
-                    block[1] = n21(EncryptionIV, 4);
-                    EncipherBlock(block);
-                    n12(EncryptionIV, 0, block[0]);
-                    n12(EncryptionIV, 4, block[1]);
-                }
-
-                dst[i] = (byte)(src[i] ^ EncryptionIV[EncryptCount]);
-                EncryptionIV[EncryptCount] = dst[i];
-                EncryptCount = (EncryptCount + 1) & (BlowfishCipher.BlockSize - 1);
-            }
-        }
-
-        /// <summary>
-        /// Function F is Blowfish's one-way function for achieving non-linearity with 
-        /// its substitution boxes without requiring a massive lookup array. Each input
-        /// is broken up into 4 bytes which is used as indexes to fetch 32-bit numbers
-        /// from the different S boxes.
-        /// </summary>
-        /// <param name="x">Input from the encipher round</param>
-        /// <returns>((Sa + Sb) ^ Sc) + Sd, S being the substitution per byte.</returns>
-        [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        private uint F(uint x) =>
-            (((S[((x >> 24) & 0xFF)] + S[0x100 + ((x >> 16) & 0xFF)])
-             ^ S[0x200 + ((x >> 8) & 0xFF)]) + S[0x300 + ((x) & 0xFF)]) 
-             & 0xFFFFFFFF;
-
-        /// <summary>
-        /// Swaps the endianness and converts data types for block operations.
-        /// </summary>
-        /// <param name="iv">IV depending on the direction of the cipher</param>
-        /// <param name="x">Index used to read from the IV buffer</param>
-        /// <returns>An unsigned integer representing a side of the block.</returns>
-        private uint n21(byte[] iv, int x)
-        {
-            uint l = (uint)(iv[x] << 24);
-            l |= (uint)(iv[x + 1] << 16);
-            l |= (uint)(iv[x + 2] << 8);
-            l |= (uint)(iv[x + 3]);
-            return l;
-        }
-
-        /// <summary>
-        /// Converts on half of the results of a block operation back to bytes. 
-        /// </summary>
-        /// <param name="iv">IV depending on the direction of the cipher</param>
-        /// <param name="x">Index used to write to the IV buffer</param>
-        /// <param name="v">Value from the block operation results.</param>
-        private void n12(byte[] iv, int x, uint v)
-        {
-            iv[x] = (byte)((v >> 24) & 0xFF);
-            iv[x + 1] = (byte)((v >> 16) & 0xFF);
-            iv[x + 2] = (byte)((v >> 8) & 0xFF);
-            iv[x + 3] = (byte)((v) & 0xFF);
-        }
-
-        /// <summary>
-        /// Enciphers a block of plaintext into ciphertext. If the cipher is used in 
-        /// cipher feedback mode, then this method is also utilized for decrypting
-        /// ciphertext into plaintext.
-        /// </summary>
-        /// <param name="block">A block of two 32-bit unsigned integers</param>
-        private void EncipherBlock(uint[] block)
-        {
-            uint lv = block[0];
-            uint rv = block[1];
-
-            lv ^= P[0];
-            for (uint i = 1; i <= BlowfishCipher.Rounds; i++)
-            {
-                rv ^= P[i];
-                rv ^= F(lv);
-                lv.Swap(ref rv);
-            }
-
-            rv ^= P[BlowfishCipher.Rounds + 1];            
-            block[0] = rv & 0xFFFFFFFF;
-            block[1] = lv & 0xFFFFFFFF;
-        }
     }
 }

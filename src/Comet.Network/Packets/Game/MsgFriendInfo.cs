@@ -21,7 +21,7 @@
         public override byte[] Encode()
         {
             var writer = new PacketWriter();
-            writer.Write((ushort)PacketType.MsgFriendInfo);
+            writer.Write((ushort) PacketType.MsgFriendInfo);
             writer.Write(Identity);
             writer.Write(Lookface);
             writer.Write(Level);

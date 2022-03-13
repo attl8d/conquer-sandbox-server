@@ -13,7 +13,7 @@ namespace Comet.Network.Packets.Internal
 
         public override void Decode(byte[] bytes)
         {
-            PacketReader reader = new (bytes);
+            PacketReader reader = new(bytes);
             Length = reader.ReadUInt16();
             Type = (PacketType) reader.ReadUInt16();
             Timestamp = reader.ReadInt64();
@@ -22,7 +22,7 @@ namespace Comet.Network.Packets.Internal
         public override byte[] Encode()
         {
             PacketWriter writer = new();
-            writer.Write((ushort)PacketType.MsgAccServerPing);
+            writer.Write((ushort) PacketType.MsgAccServerPing);
             writer.Write(Timestamp);
             return writer.ToArray();
         }

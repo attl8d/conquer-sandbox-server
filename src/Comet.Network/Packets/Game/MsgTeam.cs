@@ -15,8 +15,8 @@
         {
             var reader = new PacketReader(bytes);
             Length = reader.ReadUInt16();
-            Type = (PacketType)reader.ReadUInt16();
-            Action = (TeamAction)reader.ReadUInt32();
+            Type = (PacketType) reader.ReadUInt16();
+            Action = (TeamAction) reader.ReadUInt32();
             Identity = reader.ReadUInt32();
         }
 
@@ -29,8 +29,8 @@
         public override byte[] Encode()
         {
             var writer = new PacketWriter();
-            writer.Write((ushort)PacketType.MsgTeam);
-            writer.Write((uint)Action);
+            writer.Write((ushort) PacketType.MsgTeam);
+            writer.Write((uint) Action);
             writer.Write(Identity);
             return writer.ToArray();
         }

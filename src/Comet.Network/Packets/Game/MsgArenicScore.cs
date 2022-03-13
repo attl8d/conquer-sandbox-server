@@ -12,8 +12,8 @@
 
         public override byte[] Encode()
         {
-            PacketWriter writer = new PacketWriter();
-            writer.Write((ushort)PacketType.MsgArenicScore);
+            var writer = new PacketWriter();
+            writer.Write((ushort) PacketType.MsgArenicScore);
             writer.Write(Identity1);
             writer.Write(Name1, 16);
             writer.Write(Damage1);

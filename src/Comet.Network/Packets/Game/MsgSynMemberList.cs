@@ -7,13 +7,13 @@ namespace Comet.Network.Packets.Game
         public uint SubType { get; set; }
         public int Index { get; set; }
         public int Amount { get; set; }
-        public List<MemberStruct> Members { get; set; } = new List<MemberStruct>();
+        public List<MemberStruct> Members { get; set; } = new();
 
         public override void Decode(byte[] bytes)
         {
-            PacketReader reader = new PacketReader(bytes);
+            var reader = new PacketReader(bytes);
             Length = reader.ReadUInt16();
-            Type = (PacketType)reader.ReadUInt16();
+            Type = (PacketType) reader.ReadUInt16();
             SubType = reader.ReadUInt32();
             Index = reader.ReadInt32();
             Amount = reader.ReadInt32();
@@ -21,16 +21,16 @@ namespace Comet.Network.Packets.Game
 
         public override byte[] Encode()
         {
-            PacketWriter writer = new PacketWriter();
-            writer.Write((ushort)PacketType.MsgSynMemberList);
+            var writer = new PacketWriter();
+            writer.Write((ushort) PacketType.MsgSynMemberList);
             writer.Write(SubType);
             writer.Write(Index);
             writer.Write(Amount = Members.Count);
-            foreach (var member in Members)
+            foreach (MemberStruct member in Members)
             {
                 writer.Write(member.Name, 16);
                 writer.Write(0);
-                writer.Write((int)(member.Nobility * 10 + member.LookFace % 10000 / 1000));
+                writer.Write((int) (member.Nobility * 10 + member.LookFace % 10000 / 1000));
                 writer.Write(member.Level);
                 writer.Write(member.Rank);
                 writer.Write(member.PositionExpire);
@@ -38,6 +38,7 @@ namespace Comet.Network.Packets.Game
                 writer.Write(member.IsOnline ? 1 : 0);
                 writer.Write(0); // test
             }
+
             return writer.ToArray();
         }
 

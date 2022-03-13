@@ -6,17 +6,16 @@ namespace Comet.Network.Packets.Ai
     {
         public AiSpawnNpcMode Mode { get; set; }
         public int Count { get; set; }
-        public List<SpawnNpc> List { get; set; } = new List<SpawnNpc>();
+        public List<SpawnNpc> List { get; set; } = new();
 
         public override void Decode(byte[] bytes)
         {
-            PacketReader reader = new PacketReader(bytes);
+            var reader = new PacketReader(bytes);
             Length = reader.ReadUInt16();
-            Type = (PacketType)reader.ReadUInt16();
-            Mode = (AiSpawnNpcMode)reader.ReadInt32();
+            Type = (PacketType) reader.ReadUInt16();
+            Mode = (AiSpawnNpcMode) reader.ReadInt32();
             Count = reader.ReadInt32();
-            for (int i = 0; i < Count; i++)
-            {
+            for (var i = 0; i < Count; i++)
                 if (Mode == AiSpawnNpcMode.Spawn)
                 {
                     uint id = reader.ReadUInt32();
@@ -56,17 +55,15 @@ namespace Comet.Network.Packets.Ai
                         GeneratorId = reader.ReadUInt32()
                     });
                 }
-            }
         }
 
         public override byte[] Encode()
         {
-            PacketWriter writer = new PacketWriter();
-            writer.Write((ushort)PacketType.MsgAiSpawnNpc);
-            writer.Write((int)Mode);
+            var writer = new PacketWriter();
+            writer.Write((ushort) PacketType.MsgAiSpawnNpc);
+            writer.Write((int) Mode);
             writer.Write(Count = List.Count);
-            foreach (var item in List)
-            {
+            foreach (SpawnNpc item in List)
                 if (Mode == AiSpawnNpcMode.Spawn)
                 {
                     writer.Write(item.Id);
@@ -87,7 +84,7 @@ namespace Comet.Network.Packets.Ai
                 {
                     writer.Write(item.GeneratorId);
                 }
-            }
+
             return writer.ToArray();
         }
 
@@ -108,16 +105,18 @@ namespace Comet.Network.Packets.Ai
     public enum AiSpawnNpcMode
     {
         /// <summary>
-        /// Request to spawn the specified NPCs.
+        ///     Request to spawn the specified NPCs.
         /// </summary>
         Spawn,
+
         /// <summary>
-        /// Request to remove the specified NPCs.
+        ///     Request to remove the specified NPCs.
         /// </summary>
         DestroyNpc,
+
         /// <summary>
-        /// Request to remove the NPCs from the specified generator.
+        ///     Request to remove the NPCs from the specified generator.
         /// </summary>
-        DestroyGenerator,
+        DestroyGenerator
     }
 }

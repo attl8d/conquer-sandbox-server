@@ -51,12 +51,12 @@ namespace Comet.Game.Packets
         public override byte[] Encode()
         {
             var writer = new PacketWriter();
-            writer.Write((ushort)PacketType.MsgConnectEx);
+            writer.Write((ushort) PacketType.MsgConnectEx);
             if (Code != RejectionCode.Clear)
             {
                 // Failed login
-                writer.Write((uint)0);
-                writer.Write((uint)Code);
+                writer.Write((uint) 0);
+                writer.Write((uint) Code);
             }
             else
             {
@@ -64,7 +64,7 @@ namespace Comet.Game.Packets
                 writer.Write(Token);
                 writer.Write(IPAddress, 16);
                 writer.Write(Port);
-                writer.Write((ushort)0);
+                writer.Write((ushort) 0);
             }
 
             return writer.ToArray();

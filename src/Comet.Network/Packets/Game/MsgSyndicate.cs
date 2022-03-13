@@ -9,7 +9,7 @@ namespace Comet.Network.Packets.Game
         public int ConditionLevel { get; set; }
         public int ConditionMetempsychosis { get; set; }
         public int ConditionProfession { get; set; }
-        public List<string> Strings { get; set; } = new List<string>();
+        public List<string> Strings { get; set; } = new();
 
         /// <summary>
         ///     Decodes a byte packet into the packet structure defined by this message class.
@@ -21,8 +21,8 @@ namespace Comet.Network.Packets.Game
         {
             var reader = new PacketReader(bytes);
             Length = reader.ReadUInt16();
-            Type = (PacketType)reader.ReadUInt16();
-            Mode = (SyndicateRequest)reader.ReadUInt32();
+            Type = (PacketType) reader.ReadUInt16();
+            Mode = (SyndicateRequest) reader.ReadUInt32();
             Identity = reader.ReadUInt32();
             ConditionLevel = reader.ReadInt32();
             ConditionMetempsychosis = reader.ReadInt32();
@@ -39,8 +39,8 @@ namespace Comet.Network.Packets.Game
         public override byte[] Encode()
         {
             var writer = new PacketWriter();
-            writer.Write((ushort)PacketType.MsgSyndicate);
-            writer.Write((uint)Mode);
+            writer.Write((ushort) PacketType.MsgSyndicate);
+            writer.Write((uint) Mode);
             writer.Write(Identity);
             writer.Write(ConditionLevel);
             writer.Write(ConditionMetempsychosis);

@@ -2,13 +2,13 @@
 {
     public abstract class MsgMapItem<T> : MsgBase<T>
     {
-        public int Timestamp;
+        public ushort Color;
         public uint Identity;
         public uint Itemtype;
         public ushort MapX;
         public ushort MapY;
-        public ushort Color;
         public DropType Mode;
+        public int Timestamp;
 
         /// <summary>
         ///     Decodes a byte packet into the packet structure defined by this message class.
@@ -20,14 +20,14 @@
         {
             var reader = new PacketReader(bytes);
             Length = reader.ReadUInt16();
-            Type = (PacketType)reader.ReadUInt16();
+            Type = (PacketType) reader.ReadUInt16();
             //Timestamp = reader.ReadInt32();
             Identity = reader.ReadUInt32();
             Itemtype = reader.ReadUInt32();
             MapX = reader.ReadUInt16();
             MapY = reader.ReadUInt16();
             Color = reader.ReadUInt16();
-            Mode = (DropType)reader.ReadUInt16();
+            Mode = (DropType) reader.ReadUInt16();
         }
 
         /// <summary>
@@ -39,18 +39,18 @@
         public override byte[] Encode()
         {
             var writer = new PacketWriter();
-            writer.Write((ushort)PacketType.MsgMapItem);
+            writer.Write((ushort) PacketType.MsgMapItem);
             //writer.Write(Timestamp); // 4
-            writer.Write(Identity); // 8
-            writer.Write(Itemtype); // 12
-            writer.Write(MapX); // 16
-            writer.Write(MapY); // 18
-            writer.Write(Color); // 20
-            writer.Write((ushort)Mode); // 22
-            writer.Write((byte)0); // 24
-            writer.Write((byte)0); // 25
-            writer.Write((byte)0); // 26
-            writer.Write((byte)0); // 27
+            writer.Write(Identity);      // 8
+            writer.Write(Itemtype);      // 12
+            writer.Write(MapX);          // 16
+            writer.Write(MapY);          // 18
+            writer.Write(Color);         // 20
+            writer.Write((ushort) Mode); // 22
+            writer.Write((byte) 0);      // 24
+            writer.Write((byte) 0);      // 25
+            writer.Write((byte) 0);      // 26
+            writer.Write((byte) 0);      // 27
             return writer.ToArray();
         }
 

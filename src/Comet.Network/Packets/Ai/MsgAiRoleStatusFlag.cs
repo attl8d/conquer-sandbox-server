@@ -11,9 +11,9 @@
 
         public override void Decode(byte[] bytes)
         {
-            PacketReader reader = new PacketReader(bytes);
+            var reader = new PacketReader(bytes);
             Length = reader.ReadUInt16();
-            Type = (PacketType)reader.ReadUInt16();
+            Type = (PacketType) reader.ReadUInt16();
             Mode = reader.ReadInt32();
             Identity = reader.ReadUInt32();
             Flag = reader.ReadInt32();
@@ -24,7 +24,7 @@
 
         public override byte[] Encode()
         {
-            PacketWriter writer = new PacketWriter();
+            var writer = new PacketWriter();
             writer.Write((ushort) PacketType.MsgAiRoleStatusFlag);
             writer.Write(Mode);
             writer.Write(Identity);

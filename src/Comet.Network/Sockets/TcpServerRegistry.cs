@@ -25,7 +25,7 @@ namespace Comet.Network.Sockets
         private object ActiveMutex;
         private Dictionary<string, int> Attempts;
         private object AttemptsMutex;
-        private ConcurrentDictionary<string, DateTime> Blocks;
+        private readonly ConcurrentDictionary<string, DateTime> Blocks;
         private Timer PurgeTimer;
 
         /// <summary>
@@ -66,7 +66,7 @@ namespace Comet.Network.Sockets
         public Task StartAsync(CancellationToken cancellationToken)
         {
             PurgeTimer = new Timer(
-                this.TimedPurgeJob,
+                TimedPurgeJob,
                 null,
                 TimeSpan.Zero,
                 TimeSpan.FromSeconds(60));
@@ -169,7 +169,7 @@ namespace Comet.Network.Sockets
             }
 
             DateTime now = DateTime.Now;
-            foreach (var blockedConnection in Blocks)
+            foreach (KeyValuePair<string, DateTime> blockedConnection in Blocks)
                 if (blockedConnection.Value < now)
                     Blocks.TryRemove(blockedConnection.Key, out DateTime _);
         }

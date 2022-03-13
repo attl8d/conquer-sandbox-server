@@ -1,27 +1,26 @@
-﻿using Comet.Network.Packets;
-using System.Collections.Generic;
+﻿using System.Collections.Generic;
 
 namespace Comet.Network.Packets.Game
 {
     public abstract class MsgPigeonQuery<T> : MsgBase<T>
     {
+        public List<PigeonMessage> Messages = new();
         public uint Mode { get; set; }
         public ushort Total { get; set; }
         public ushort Count { get; set; }
-        public List<PigeonMessage> Messages = new List<PigeonMessage>();
 
         public override void Decode(byte[] bytes)
         {
-            PacketReader reader = new PacketReader(bytes);
+            var reader = new PacketReader(bytes);
             Length = reader.ReadUInt16();
-            Type = (PacketType)reader.ReadUInt16();
+            Type = (PacketType) reader.ReadUInt16();
             Mode = reader.ReadUInt32();
             Total = reader.ReadUInt16();
             Count = reader.ReadUInt16();
 
-            for (int i = 0; i < Count; i++)
+            for (var i = 0; i < Count; i++)
             {
-                PigeonMessage message = new PigeonMessage();
+                var message = new PigeonMessage();
                 message.Identity = reader.ReadUInt32();
                 message.Position = reader.ReadUInt32();
                 message.UserIdentity = reader.ReadUInt32();
@@ -34,13 +33,13 @@ namespace Comet.Network.Packets.Game
 
         public override byte[] Encode()
         {
-            PacketWriter writer = new PacketWriter();
-            writer.Write((ushort)PacketType.MsgPigeonQuery);
+            var writer = new PacketWriter();
+            writer.Write((ushort) PacketType.MsgPigeonQuery);
             writer.Write(Mode);
             writer.Write(Total);
-            writer.Write(Count = (ushort)Messages.Count);
+            writer.Write(Count = (ushort) Messages.Count);
 
-            foreach (var message in Messages)
+            foreach (PigeonMessage message in Messages)
             {
                 writer.Write(message.Identity);
                 writer.Write(message.Position);

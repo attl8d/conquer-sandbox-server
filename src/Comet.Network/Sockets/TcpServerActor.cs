@@ -10,25 +10,25 @@ using Comet.Shared;
 namespace Comet.Network.Sockets
 {
     /// <summary>
-    /// Actors are assigned to accepted client sockets to give connected clients a state
-    /// across socket operations. This allows the server to handle multiple receive writes
-    /// across single processing reads, and keep a buffer alive for faster operations.
+    ///     Actors are assigned to accepted client sockets to give connected clients a state
+    ///     across socket operations. This allows the server to handle multiple receive writes
+    ///     across single processing reads, and keep a buffer alive for faster operations.
     /// </summary>
     public abstract class TcpServerActor
     {
         // Fields and Properties
         public readonly Memory<byte> Buffer;
         public readonly ICipher Cipher;
-        public readonly Socket Socket;
         public readonly byte[] PacketFooter;
         public readonly uint Partition;
         private readonly object SendLock;
+        public readonly Socket Socket;
 
         public int ReceiveTimeOutSeconds = 30;
 
         /// <summary>
-        /// Instantiates a new instance of <see cref="TcpServerActor"/> using an accepted
-        /// client socket and preallocated buffer from the server listener.
+        ///     Instantiates a new instance of <see cref="TcpServerActor" /> using an accepted
+        ///     client socket and preallocated buffer from the server listener.
         /// </summary>
         /// <param name="socket">Accepted client socket</param>
         /// <param name="buffer">Preallocated buffer for socket receive operations</param>
@@ -36,9 +36,9 @@ namespace Comet.Network.Sockets
         /// <param name="partition">Packet processing partition, default is disabled</param>
         /// <param name="packetFooter">Length of the packet footer</param>
         public TcpServerActor(
-            Socket socket, 
-            Memory<byte> buffer, 
-            ICipher cipher, 
+            Socket socket,
+            Memory<byte> buffer,
+            ICipher cipher,
             uint partition = 0,
             string packetFooter = "")
         {
@@ -53,10 +53,15 @@ namespace Comet.Network.Sockets
         }
 
         /// <summary>
-        /// Sends a packet to the game client after encrypting bytes. This may be called
-        /// as-is, or overridden to provide channel functionality and thread-safety around
-        /// the accepted client socket. By default, this method locks around encryption
-        /// and sending data. 
+        ///     Returns the remote IP address of the connected client.
+        /// </summary>
+        public string IPAddress { get; }
+
+        /// <summary>
+        ///     Sends a packet to the game client after encrypting bytes. This may be called
+        ///     as-is, or overridden to provide channel functionality and thread-safety around
+        ///     the accepted client socket. By default, this method locks around encryption
+        ///     and sending data.
         /// </summary>
         /// <param name="packet">Bytes to be encrypted and sent to the client</param>
         public virtual async Task<int> SendAsync(byte[] packet)
@@ -64,7 +69,7 @@ namespace Comet.Network.Sockets
             var encrypted = new byte[packet.Length + PacketFooter.Length];
             packet.CopyTo(encrypted, 0);
 
-            BitConverter.TryWriteBytes(encrypted, (ushort)packet.Length);
+            BitConverter.TryWriteBytes(encrypted, (ushort) packet.Length);
             Array.Copy(PacketFooter, 0, encrypted, packet.Length, PacketFooter.Length);
 
             lock (SendLock)
@@ -87,17 +92,18 @@ namespace Comet.Network.Sockets
                 }
                 catch (Exception ex)
                 {
-                    _ = Log.WriteLogAsync("TcpServerActor-SendAsync", LogLevel.Exception, ex.ToString()).ConfigureAwait(false);
+                    _ = Log.WriteLogAsync("TcpServerActor-SendAsync", LogLevel.Exception, ex.ToString())
+                           .ConfigureAwait(false);
                     return -1;
                 }
             }
         }
 
         /// <summary>
-        /// Sends a packet to the game client after encrypting bytes. This may be called
-        /// as-is, or overridden to provide channel functionality and thread-safety around
-        /// the accepted client socket. By default, this method locks around encryption
-        /// and sending data. 
+        ///     Sends a packet to the game client after encrypting bytes. This may be called
+        ///     as-is, or overridden to provide channel functionality and thread-safety around
+        ///     the accepted client socket. By default, this method locks around encryption
+        ///     and sending data.
         /// </summary>
         /// <param name="packet">Packet to be encrypted and sent to the client</param>
         public virtual Task<int> SendAsync(IPacket packet)
@@ -106,16 +112,11 @@ namespace Comet.Network.Sockets
         }
 
         /// <summary>
-        /// Force closes the client connection.
+        ///     Force closes the client connection.
         /// </summary>
         public virtual void Disconnect()
         {
             Socket?.Disconnect(false);
         }
-
-        /// <summary>
-        /// Returns the remote IP address of the connected client.
-        /// </summary>
-        public string IPAddress { get; }
-    }    
+    }
 }

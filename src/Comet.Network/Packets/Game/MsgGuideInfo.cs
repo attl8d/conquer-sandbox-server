@@ -4,41 +4,35 @@ namespace Comet.Network.Packets.Game
 {
     public abstract class MsgGuideInfo<T> : MsgBase<T>
     {
-        public enum RequestMode
-        {
-            None,
-            Mentor,
-            Apprentice
-        }
-
-        public RequestMode Mode;
-        public uint SenderIdentity;
-        public uint Identity;
-        public uint Mesh;
-        public uint SharedBattlePower;
-        public uint Unknown24;
-        public uint EnroleDate;
-        public byte Level;
-        public byte Profession;
-        public ushort PkPoints;
-        public ushort Syndicate;
-        public byte Unknown38;
-        public ushort SyndicatePosition;
-        public ulong Unknown40;
-        public bool IsOnline;
-        public byte[] Fill41 = new byte[3];
-        public uint Unknown52;
-        public ulong Experience;
         public ushort Blessing;
         public ushort Composition;
-        public List<string> Names = new List<string>();
+        public uint EnroleDate;
+        public ulong Experience;
+        public byte[] Fill41 = new byte[3];
+        public uint Identity;
+        public bool IsOnline;
+        public byte Level;
+        public uint Mesh;
+
+        public RequestMode Mode;
+        public List<string> Names = new();
+        public ushort PkPoints;
+        public byte Profession;
+        public uint SenderIdentity;
+        public uint SharedBattlePower;
+        public ushort Syndicate;
+        public ushort SyndicatePosition;
+        public uint Unknown24;
+        public byte Unknown38;
+        public ulong Unknown40;
+        public uint Unknown52;
 
         public override void Decode(byte[] bytes)
         {
-            PacketReader reader = new PacketReader(bytes);
+            var reader = new PacketReader(bytes);
             Length = reader.ReadUInt16();
-            Type = (PacketType)reader.ReadUInt16();
-            Mode = (RequestMode)reader.ReadUInt32();
+            Type = (PacketType) reader.ReadUInt16();
+            Mode = (RequestMode) reader.ReadUInt32();
             SenderIdentity = reader.ReadUInt32();
             Identity = reader.ReadUInt32();
             Mesh = reader.ReadUInt32();
@@ -63,9 +57,9 @@ namespace Comet.Network.Packets.Game
 
         public override byte[] Encode()
         {
-            PacketWriter writer = new PacketWriter();
-            writer.Write((ushort)PacketType.MsgGuideInfo);
-            writer.Write((int)Mode);
+            var writer = new PacketWriter();
+            writer.Write((ushort) PacketType.MsgGuideInfo);
+            writer.Write((int) Mode);
             writer.Write(SenderIdentity);
             writer.Write(Identity);
             writer.Write(Mesh);
@@ -89,6 +83,13 @@ namespace Comet.Network.Packets.Game
             writer.Write(Composition);
             writer.Write(Names);
             return writer.ToArray();
+        }
+
+        public enum RequestMode
+        {
+            None,
+            Mentor,
+            Apprentice
         }
     }
 }

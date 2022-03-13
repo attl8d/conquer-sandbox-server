@@ -4,14 +4,6 @@ namespace Comet.Network.Packets.Game
 {
     public abstract class MsgData<T> : MsgBase<T>
     {
-        public enum DataAction
-        {
-            SetServerTime = 0,
-            SetMountMovePoint = 2,
-            AntiCheatAnswerMsgTypeCount = 3,
-            AntiCheatAskMsgTypeCount = 4
-        }
-
         public MsgData()
         {
         }
@@ -41,9 +33,9 @@ namespace Comet.Network.Packets.Game
         public override byte[] Encode()
         {
             PacketWriter writer = new();
-            writer.Write((ushort)PacketType.MsgData);
+            writer.Write((ushort) PacketType.MsgData);
             //writer.Write(Environment.TickCount);
-            writer.Write((uint)Action);
+            writer.Write((uint) Action);
             writer.Write(Year);
             writer.Write(Month);
             writer.Write(DayOfYear);
@@ -52,6 +44,14 @@ namespace Comet.Network.Packets.Game
             writer.Write(Minutes);
             writer.Write(Seconds);
             return writer.ToArray();
+        }
+
+        public enum DataAction
+        {
+            SetServerTime = 0,
+            SetMountMovePoint = 2,
+            AntiCheatAnswerMsgTypeCount = 3,
+            AntiCheatAskMsgTypeCount = 4
         }
     }
 }

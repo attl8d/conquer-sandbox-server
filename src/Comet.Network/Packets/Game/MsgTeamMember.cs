@@ -4,22 +4,12 @@ namespace Comet.Network.Packets.Game
 {
     public abstract class MsgTeamMember<T> : MsgBase<T>
     {
-        public const byte ADD_MEMBER_B = 0, DEL_MEMBER_B = 1;
-
-        public struct TeamMember
-        {
-            public string Name { get; set; }
-            public uint Identity { get; set; }
-            public uint Lookface { get; set; }
-            public ushort MaxLife { get; set; }
-            public ushort Life { get; set; }
-        }
+        public List<TeamMember> Members = new();
 
         public byte Action { get; set; }
         public byte Count { get; set; }
         public byte Unknown0 { get; set; }
         public byte Unknown1 { get; set; }
-        public List<TeamMember> Members = new List<TeamMember>();
 
         /// <summary>
         ///     Encodes the packet structure defined by this message class into a byte packet
@@ -30,12 +20,12 @@ namespace Comet.Network.Packets.Game
         public override byte[] Encode()
         {
             var writer = new PacketWriter();
-            writer.Write((ushort)PacketType.MsgTeamMember);
+            writer.Write((ushort) PacketType.MsgTeamMember);
             writer.Write(Action);
-            writer.Write((byte)Members.Count);
+            writer.Write((byte) Members.Count);
             writer.Write(Unknown0);
             writer.Write(Unknown1);
-            foreach (var member in Members)
+            foreach (TeamMember member in Members)
             {
                 writer.Write(member.Name, 16);
                 writer.Write(member.Identity);
@@ -43,7 +33,19 @@ namespace Comet.Network.Packets.Game
                 writer.Write(member.MaxLife);
                 writer.Write(member.Life);
             }
+
             return writer.ToArray();
         }
+
+        public struct TeamMember
+        {
+            public string Name { get; set; }
+            public uint Identity { get; set; }
+            public uint Lookface { get; set; }
+            public ushort MaxLife { get; set; }
+            public ushort Life { get; set; }
+        }
+
+        public const byte ADD_MEMBER_B = 0, DEL_MEMBER_B = 1;
     }
 }

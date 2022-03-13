@@ -1,20 +1,20 @@
-using Comet.Network.Packets;
 using System;
 using System.Collections.Generic;
+using Comet.Network.Packets;
 
 namespace Comet.Game.Packets
 {
     /// <remarks>Packet Type 1010</remarks>
     /// <summary>
-    /// Message containing a general action being performed by the client. Commonly used
-    /// as a request-response protocol for question and answer like exchanges. For example,
-    /// walk requests are responded to with an answer as to if the step is legal or not.
+    ///     Message containing a general action being performed by the client. Commonly used
+    ///     as a request-response protocol for question and answer like exchanges. For example,
+    ///     walk requests are responded to with an answer as to if the step is legal or not.
     /// </summary>
     public abstract class MsgAction<T> : MsgBase<T>
     {
         public MsgAction()
         {
-            Timestamp = (uint)Environment.TickCount;
+            Timestamp = (uint) Environment.TickCount;
         }
 
         // Packet Properties
@@ -25,36 +25,37 @@ namespace Comet.Game.Packets
 
         public ushort CommandX
         {
-            get => (ushort)(Command - (CommandY << 16));
-            set => Command = (uint)(CommandY << 16 | value);
+            get => (ushort) (Command - (CommandY << 16));
+            set => Command = (uint) ((CommandY << 16) | value);
         }
 
         public ushort CommandY
         {
-            get => (ushort)(Command >> 16);
-            set => Command = (uint)(value << 16) | Command;
+            get => (ushort) (Command >> 16);
+            set => Command = (uint) (value << 16) | Command;
         }
 
         public uint Argument { get; set; }
 
         public ushort ArgumentX
         {
-            get => (ushort)(Argument - (ArgumentY << 16));
-            set => Argument = (uint)(ArgumentY << 16 | value);
+            get => (ushort) (Argument - (ArgumentY << 16));
+            set => Argument = (uint) ((ArgumentY << 16) | value);
         }
 
         public ushort ArgumentY
         {
-            get => (ushort)(Argument >> 16);
-            set => Argument = (uint)(value << 16) | Argument;
+            get => (ushort) (Argument >> 16);
+            set => Argument = (uint) (value << 16) | Argument;
         }
+
         public ushort Direction { get; set; }
         public ActionType Action { get; set; }
         public ushort X { get; set; }
         public ushort Y { get; set; }
         public uint Map { get; set; }
         public uint MapColor { get; set; }
-        public List<string> Strings { get; } = new List<string>();
+        public List<string> Strings { get; } = new();
 
         /// <summary>
         ///     Decodes a byte packet into the packet structure defined by this message class.
@@ -66,18 +67,17 @@ namespace Comet.Game.Packets
         {
             var reader = new PacketReader(bytes);
             Length = reader.ReadUInt16();
-            Type = (PacketType)reader.ReadUInt16();
-            Identity = reader.ReadUInt32(); // 4
-            Command = reader.ReadUInt32(); // 8
-            Argument = reader.ReadUInt32(); // 12
-            Timestamp = reader.ReadUInt32(); // 16
-            Action = (ActionType)reader.ReadUInt16(); // 20
-            Direction = reader.ReadUInt16(); // 22 
-            X = reader.ReadUInt16(); // 24 
-            Y = reader.ReadUInt16(); // 26
-            Map = reader.ReadUInt32(); // 28
-            MapColor = reader.ReadUInt32(); // 32
-
+            Type = (PacketType) reader.ReadUInt16();
+            Identity = reader.ReadUInt32();            // 4
+            Command = reader.ReadUInt32();             // 8
+            Argument = reader.ReadUInt32();            // 12
+            Timestamp = reader.ReadUInt32();           // 16
+            Action = (ActionType) reader.ReadUInt16(); // 20
+            Direction = reader.ReadUInt16();           // 22 
+            X = reader.ReadUInt16();                   // 24 
+            Y = reader.ReadUInt16();                   // 26
+            Map = reader.ReadUInt32();                 // 28
+            MapColor = reader.ReadUInt32();            // 32
         }
 
         /// <summary>
@@ -89,12 +89,12 @@ namespace Comet.Game.Packets
         public override byte[] Encode()
         {
             var writer = new PacketWriter();
-            writer.Write((ushort)PacketType.MsgAction);
+            writer.Write((ushort) PacketType.MsgAction);
             writer.Write(Identity);
             writer.Write(Command);
             writer.Write(Argument);
             writer.Write(Timestamp);
-            writer.Write((ushort)Action);
+            writer.Write((ushort) Action);
             writer.Write(Direction);
             writer.Write(X);
             writer.Write(Y);
@@ -161,11 +161,12 @@ namespace Comet.Game.Packets
             Away = 161,
             PathFinding = 162,
             ProgressBar = 164,
+
             //SetGhost = 145,
             FriendObservation = 310,
 
             MapFarJump = 10000, // monster only
-            MapJumpBlock, // monster only
+            MapJumpBlock        // monster only
         }
     }
 }

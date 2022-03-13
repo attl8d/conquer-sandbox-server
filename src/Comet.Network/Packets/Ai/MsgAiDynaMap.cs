@@ -2,15 +2,12 @@
 {
     public abstract class MsgAiDynaMap<T> : MsgBase<T>
     {
-        private const int NAME_LENGTH = 105;
-        private const int DESCRIBE_LENGTH = 381;
-
         public int Mode { get; set; }
         public uint Identity { get; set; }
         public string Name { get; set; }
         public string Description { get; set; }
         public uint MapDoc { get; set; }
-        public uint MapType { get; set; } 
+        public uint MapType { get; set; }
         public uint OwnerIdentity { get; set; }
         public uint MapGroup { get; set; }
         public int ServerIndex { get; set; }
@@ -30,9 +27,9 @@
 
         public override void Decode(byte[] bytes)
         {
-            PacketReader reader = new PacketReader(bytes);
+            var reader = new PacketReader(bytes);
             Length = reader.ReadUInt16();
-            Type = (PacketType)reader.ReadUInt16();
+            Type = (PacketType) reader.ReadUInt16();
             Mode = reader.ReadInt32();
             Identity = reader.ReadUInt32();
             Name = reader.ReadString(NAME_LENGTH);
@@ -59,8 +56,8 @@
 
         public override byte[] Encode()
         {
-            PacketWriter writer = new PacketWriter();
-            writer.Write((ushort)PacketType.MsgAiDynaMap);
+            var writer = new PacketWriter();
+            writer.Write((ushort) PacketType.MsgAiDynaMap);
             writer.Write(Mode);
             writer.Write(Identity);
             writer.Write(Name, NAME_LENGTH);
@@ -85,5 +82,8 @@
             writer.Write(Color);
             return writer.ToArray();
         }
+
+        private const int NAME_LENGTH = 105;
+        private const int DESCRIBE_LENGTH = 381;
     }
 }

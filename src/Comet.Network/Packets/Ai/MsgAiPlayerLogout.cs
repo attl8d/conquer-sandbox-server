@@ -7,16 +7,16 @@
 
         public override void Decode(byte[] bytes)
         {
-            PacketReader reader = new PacketReader(bytes);
+            var reader = new PacketReader(bytes);
             Length = reader.ReadUInt16();
-            Type = (PacketType)reader.ReadUInt16();
+            Type = (PacketType) reader.ReadUInt16();
             Timestamp = reader.ReadInt32();
             Id = reader.ReadUInt32();
         }
 
         public override byte[] Encode()
         {
-            PacketWriter writer = new PacketWriter();
+            var writer = new PacketWriter();
             writer.Write((ushort) PacketType.MsgAiPlayerLogout);
             writer.Write(Timestamp);
             writer.Write(Id);

@@ -16,7 +16,7 @@
         {
             var reader = new PacketReader(bytes);
             Length = reader.ReadUInt16();
-            Type = (PacketType)reader.ReadUInt16();
+            Type = (PacketType) reader.ReadUInt16();
             Experience = reader.ReadUInt32();
             Magictype = reader.ReadUInt16();
             Level = reader.ReadUInt16();
@@ -31,7 +31,7 @@
         public override byte[] Encode()
         {
             var writer = new PacketWriter();
-            writer.Write((ushort)PacketType.MsgMagicInfo);
+            writer.Write((ushort) PacketType.MsgMagicInfo);
             writer.Write(Experience);
             writer.Write(Magictype);
             writer.Write(Level);

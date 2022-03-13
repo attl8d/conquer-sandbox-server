@@ -1,23 +1,21 @@
-﻿using Comet.Shared;
-using System;
+﻿using System;
 using System.Net.Sockets;
 using System.Runtime.CompilerServices;
 using System.Threading;
 using System.Threading.Tasks;
+using Comet.Shared;
 
 namespace Comet.Network.Sockets
 {
     public abstract class TcpClientWrapper<TActor> : TcpClientEvents<TActor>
         where TActor : TcpServerActor
     {
-        public const int MaxBufferSize = 4096;
-        public const int ReceiveTimeoutSeconds = 600;
         private readonly Memory<byte> Buffer;
         private readonly int FooterLength;
         private readonly CancellationTokenSource ShutdownToken;
-        private readonly bool TimeOut;
 
         private readonly Socket Socket;
+        private readonly bool TimeOut;
 
         protected TcpClientWrapper(int expectedFooterLength = 0, bool timeout = false)
         {
@@ -42,18 +40,17 @@ namespace Comet.Network.Sockets
             try
             {
                 await Socket.ConnectAsync(address, port, ShutdownToken.Token);
-                var actor = await ConnectedAsync(Socket, Buffer);
+                TActor actor = await ConnectedAsync(Socket, Buffer);
 
                 if (actor == null)
                 {
-                    if (Socket.Connected)
-                    {
-                        Socket.Disconnect(false);
-                    }
+                    if (Socket.Connected) Socket.Disconnect(false);
                     await Log.WriteLogAsync(LogLevel.Error, "Could not complete connection with Server!");
                     return false;
                 }
-                ReceiveTask = (new TaskFactory().StartNew(ReceivingAsync, actor, ShutdownToken.Token)).ConfigureAwait(false);
+
+                ReceiveTask = new TaskFactory().StartNew(ReceivingAsync, actor, ShutdownToken.Token)
+                                               .ConfigureAwait(false);
                 return Socket.Connected;
             }
             catch (SocketException ex)
@@ -110,7 +107,7 @@ namespace Comet.Network.Sockets
 
                     timeout.CancelAfter(TimeSpan.FromSeconds(ReceiveTimeoutSeconds));
 #else
-                    var receiveOperation = actor.Socket.ReceiveAsync(
+                    ValueTask<int> receiveOperation = actor.Socket.ReceiveAsync(
                         actor.Buffer[remaining..],
                         SocketFlags.None);
 #endif
@@ -167,11 +164,11 @@ namespace Comet.Network.Sockets
         protected virtual bool Splitting(TActor actor, int examined, ref int consumed)
         {
             // Consume packets from the socket buffer
-            var buffer = actor.Buffer.Span;
+            Span<byte> buffer = actor.Buffer.Span;
             while (consumed + 2 < examined)
             {
                 var length = BitConverter.ToUInt16(buffer.Slice(consumed, 2));
-                var expected = consumed + length + FooterLength;
+                int expected = consumed + length + FooterLength;
                 if (expected > buffer.Length) return false;
                 if (expected > examined) break;
 
@@ -195,5 +192,8 @@ namespace Comet.Network.Sockets
             // Complete processing for disconnect
             Disconnected(actor);
         }
+
+        public const int MaxBufferSize = 4096;
+        public const int ReceiveTimeoutSeconds = 600;
     }
 }

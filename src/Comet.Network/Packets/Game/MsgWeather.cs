@@ -9,8 +9,8 @@
 
         public override byte[] Encode()
         {
-            PacketWriter writer = new PacketWriter();
-            writer.Write((ushort)PacketType.MsgWeather);
+            var writer = new PacketWriter();
+            writer.Write((ushort) PacketType.MsgWeather);
             writer.Write(WeatherType);
             writer.Write(Intensity);
             writer.Write(Direction);

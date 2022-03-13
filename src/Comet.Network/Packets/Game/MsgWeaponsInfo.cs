@@ -4,6 +4,7 @@ namespace Comet.Network.Packets.Game
 {
     public abstract class MsgWeaponsInfo<T> : MsgBase<T>
     {
+        public List<TotemPoleStruct> Items = new();
         public uint Action { get; set; }
         public int Data1 { get; set; }
         public int Data2 { get; set; }
@@ -15,13 +16,11 @@ namespace Comet.Network.Packets.Game
         public int Donation { get; set; }
         public int Count { get; set; }
 
-        public List<TotemPoleStruct> Items = new List<TotemPoleStruct>();
-
         public override void Decode(byte[] bytes)
         {
-            PacketReader reader = new PacketReader(bytes);
+            var reader = new PacketReader(bytes);
             Length = reader.ReadUInt16();
-            Type = (PacketType)reader.ReadUInt16();
+            Type = (PacketType) reader.ReadUInt16();
             Action = reader.ReadUInt32();
             Data1 = reader.ReadInt32();
             Data2 = reader.ReadInt32();
@@ -36,31 +35,32 @@ namespace Comet.Network.Packets.Game
 
         public override byte[] Encode()
         {
-            PacketWriter writer = new PacketWriter();
-            writer.Write((ushort)PacketType.MsgWeaponsInfo);
-            writer.Write(Action); // 4
-            writer.Write(Data1); // 8
-            writer.Write(Data2); // 12
-            writer.Write(TotemType); // 16
-            writer.Write(TotalInscribed); // 20 
-            writer.Write(SharedBattlePower); // 24
-            writer.Write(Enhancement); // 28
+            var writer = new PacketWriter();
+            writer.Write((ushort) PacketType.MsgWeaponsInfo);
+            writer.Write(Action);                // 4
+            writer.Write(Data1);                 // 8
+            writer.Write(Data2);                 // 12
+            writer.Write(TotemType);             // 16
+            writer.Write(TotalInscribed);        // 20 
+            writer.Write(SharedBattlePower);     // 24
+            writer.Write(Enhancement);           // 28
             writer.Write(EnhancementExpiration); // 32
-            writer.Write(Donation); // 36
-            writer.Write(Count = Items.Count); // 40
-            foreach (var item in Items)
+            writer.Write(Donation);              // 36
+            writer.Write(Count = Items.Count);   // 40
+            foreach (TotemPoleStruct item in Items)
             {
-                writer.Write(item.ItemIdentity); // 0
-                writer.Write(item.Position); // 4
+                writer.Write(item.ItemIdentity);   // 0
+                writer.Write(item.Position);       // 4
                 writer.Write(item.PlayerName, 16); // 8
-                writer.Write(item.Type); // 24
-                writer.Write(item.Quality); // 28
-                writer.Write(item.Addition); // 29
-                writer.Write(item.SocketOne); // 30
-                writer.Write(item.SocketTwo); // 31
-                writer.Write(item.BattlePower); // 32
-                writer.Write(item.Donation); // 36
+                writer.Write(item.Type);           // 24
+                writer.Write(item.Quality);        // 28
+                writer.Write(item.Addition);       // 29
+                writer.Write(item.SocketOne);      // 30
+                writer.Write(item.SocketTwo);      // 31
+                writer.Write(item.BattlePower);    // 32
+                writer.Write(item.Donation);       // 36
             }
+
             return writer.ToArray();
         }
 

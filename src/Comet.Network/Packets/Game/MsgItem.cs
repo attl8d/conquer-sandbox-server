@@ -4,22 +4,12 @@ namespace Comet.Network.Packets.Game
 {
     /// <remarks>Packet Type 1009</remarks>
     /// <summary>
-    /// Message containing an item action command. Item actions are usually performed to 
-    /// manage player equipment, inventory, money, or item shop purchases and sales. It
-    /// is serves a second purpose for measuring client ping.
+    ///     Message containing an item action command. Item actions are usually performed to
+    ///     manage player equipment, inventory, money, or item shop purchases and sales. It
+    ///     is serves a second purpose for measuring client ping.
     /// </summary>
     public abstract class MsgItem<T> : MsgBase<T>
     {
-        public enum Moneytype
-        {
-            Silver,
-            ConquerPoints,
-            /// <summary>
-            /// CPs(B)
-            /// </summary>
-            ConquerPointsMono
-        }
-
         public MsgItem()
         {
         }
@@ -29,7 +19,7 @@ namespace Comet.Network.Packets.Game
             Identity = identity;
             Command = cmd;
             Action = action;
-            Timestamp = (uint)Environment.TickCount;
+            Timestamp = (uint) Environment.TickCount;
             Argument = param;
         }
 
@@ -51,10 +41,10 @@ namespace Comet.Network.Packets.Game
         {
             var reader = new PacketReader(bytes);
             Length = reader.ReadUInt16();
-            Type = (PacketType)reader.ReadUInt16();
+            Type = (PacketType) reader.ReadUInt16();
             Identity = reader.ReadUInt32();
             Command = reader.ReadUInt32();
-            Action = (ItemActionType)reader.ReadUInt32();
+            Action = (ItemActionType) reader.ReadUInt32();
             Timestamp = reader.ReadUInt32();
             Argument = reader.ReadUInt32();
             Argument2 = reader.ReadUInt32();
@@ -69,10 +59,10 @@ namespace Comet.Network.Packets.Game
         public override byte[] Encode()
         {
             var writer = new PacketWriter();
-            writer.Write((ushort)PacketType.MsgItem);
+            writer.Write((ushort) PacketType.MsgItem);
             writer.Write(Identity);
             writer.Write(Command);
-            writer.Write((uint)Action);
+            writer.Write((uint) Action);
             writer.Write(Timestamp);
             writer.Write(Argument);
             writer.Write(Argument2);
@@ -80,10 +70,10 @@ namespace Comet.Network.Packets.Game
         }
 
         /// <summary>
-        /// Enumeration type for defining item actions that may be requested by the user, 
-        /// or given to by the server. Allows for action handling as a packet subtype. 
-        /// Enums should be named by the action they provide to a system in the context
-        /// of the player item.
+        ///     Enumeration type for defining item actions that may be requested by the user,
+        ///     or given to by the server. Allows for action handling as a packet subtype.
+        ///     Enums should be named by the action they provide to a system in the context
+        ///     of the player item.
         /// </summary>
         public enum ItemActionType
         {
@@ -98,6 +88,7 @@ namespace Comet.Network.Packets.Game
             BankQuery,
             BankDeposit,
             BankWithdraw,
+
             //InventoryDropSilver,
             EquipmentRepair = 14,
             EquipmentRepairAll,
@@ -119,6 +110,17 @@ namespace Comet.Network.Packets.Game
             TalismanProgressEmoney = 36,
             InventoryDropItem = 37,
             InventoryDropSilver = 38
+        }
+
+        public enum Moneytype
+        {
+            Silver,
+            ConquerPoints,
+
+            /// <summary>
+            ///     CPs(B)
+            /// </summary>
+            ConquerPointsMono
         }
     }
 }

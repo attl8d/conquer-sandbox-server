@@ -14,10 +14,10 @@
 
         public override void Decode(byte[] bytes)
         {
-            PacketReader reader = new PacketReader(bytes);
+            var reader = new PacketReader(bytes);
             Length = reader.ReadUInt16();
-            Type = (PacketType)reader.ReadUInt16();
-            Interaction = (InteractionType)reader.ReadInt32();
+            Type = (PacketType) reader.ReadUInt16();
+            Interaction = (InteractionType) reader.ReadInt32();
             Option = reader.ReadInt32();
             Identity = reader.ReadUInt32();
             Name = reader.ReadString(16);
@@ -30,9 +30,9 @@
 
         public override byte[] Encode()
         {
-            PacketWriter writer = new PacketWriter();
-            writer.Write((ushort)PacketType.MsgQualifyingInteractive);
-            writer.Write((int)Interaction);
+            var writer = new PacketWriter();
+            writer.Write((ushort) PacketType.MsgQualifyingInteractive);
+            writer.Write((int) Interaction);
             writer.Write(Option);
             writer.Write(Identity);
             writer.Write(Name, 16);
@@ -56,6 +56,7 @@
             YouAreKicked,
             StartTheFight,
             Dialog,
+
             //EndDialog,
             ReJoin
         }

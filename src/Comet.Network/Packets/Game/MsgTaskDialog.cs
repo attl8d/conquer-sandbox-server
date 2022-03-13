@@ -25,11 +25,11 @@ namespace Comet.Network.Packets.Game
         {
             var reader = new PacketReader(bytes);
             Length = reader.ReadUInt16();
-            Type = (PacketType)reader.ReadUInt16();
+            Type = (PacketType) reader.ReadUInt16();
             TaskIdentity = reader.ReadUInt32();
             Data = reader.ReadUInt16();
             OptionIndex = reader.ReadByte();
-            InteractionType = (TaskInteraction)reader.ReadByte();
+            InteractionType = (TaskInteraction) reader.ReadByte();
             List<string> strings = reader.ReadStrings();
             Text = strings.Count > 0 ? strings[0] : "";
         }
@@ -43,12 +43,12 @@ namespace Comet.Network.Packets.Game
         public override byte[] Encode()
         {
             var writer = new PacketWriter();
-            writer.Write((ushort)PacketType.MsgTaskDialog);
+            writer.Write((ushort) PacketType.MsgTaskDialog);
             writer.Write(TaskIdentity);
             writer.Write(Data);
             writer.Write(OptionIndex);
-            writer.Write((byte)InteractionType);
-            writer.Write(new List<string> { Text });
+            writer.Write((byte) InteractionType);
+            writer.Write(new List<string> {Text});
             return writer.ToArray();
         }
 

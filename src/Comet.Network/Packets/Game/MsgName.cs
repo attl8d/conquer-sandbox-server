@@ -4,23 +4,23 @@ namespace Comet.Network.Packets.Game
 {
     public abstract class MsgName<T> : MsgBase<T>
     {
+        public List<string> Strings = new();
         public int Timestamp { get; set; }
         public uint Identity { get; set; }
 
         public ushort X
         {
-            get => (ushort)(Identity - (Y << 16));
-            set => Identity = (uint)(Y << 16 | value);
+            get => (ushort) (Identity - (Y << 16));
+            set => Identity = (uint) ((Y << 16) | value);
         }
 
         public ushort Y
         {
-            get => (ushort)(Identity >> 16);
-            set => Identity = (uint)(value << 16) | Identity;
+            get => (ushort) (Identity >> 16);
+            set => Identity = (uint) (value << 16) | Identity;
         }
 
         public StringAction Action { get; set; }
-        public List<string> Strings = new List<string>();
 
         /// <summary>
         ///     Decodes a byte packet into the packet structure defined by this message class.
@@ -32,10 +32,10 @@ namespace Comet.Network.Packets.Game
         {
             var reader = new PacketReader(bytes);
             Length = reader.ReadUInt16();
-            Type = (PacketType)reader.ReadUInt16();
+            Type = (PacketType) reader.ReadUInt16();
             //Timestamp = reader.ReadInt32();
             Identity = reader.ReadUInt32();
-            Action = (StringAction)reader.ReadByte();
+            Action = (StringAction) reader.ReadByte();
             Strings = reader.ReadStrings();
         }
 
@@ -48,13 +48,14 @@ namespace Comet.Network.Packets.Game
         public override byte[] Encode()
         {
             var writer = new PacketWriter();
-            writer.Write((ushort)PacketType.MsgName);
+            writer.Write((ushort) PacketType.MsgName);
             //writer.Write(Timestamp); // 4
-            writer.Write(Identity); // 8
-            writer.Write((byte)Action); // 12
-            writer.Write(Strings); // 13
+            writer.Write(Identity);      // 8
+            writer.Write((byte) Action); // 12
+            writer.Write(Strings);       // 13
             return writer.ToArray();
         }
+
         public enum StringAction : byte
         {
             None = 0,

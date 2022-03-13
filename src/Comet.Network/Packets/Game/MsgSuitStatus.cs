@@ -9,9 +9,9 @@
 
         public override void Decode(byte[] bytes)
         {
-            PacketReader reader = new PacketReader(bytes);
+            var reader = new PacketReader(bytes);
             Length = reader.ReadUInt16();
-            Type = (PacketType)reader.ReadUInt16();
+            Type = (PacketType) reader.ReadUInt16();
             Action = reader.ReadInt32();
             Unknown = reader.ReadInt32();
             Data = reader.ReadInt32();
@@ -20,8 +20,8 @@
 
         public override byte[] Encode()
         {
-            PacketWriter writer = new PacketWriter();
-            writer.Write((ushort)PacketType.MsgSuitStatus);
+            var writer = new PacketWriter();
+            writer.Write((ushort) PacketType.MsgSuitStatus);
             writer.Write(Action);
             writer.Write(Unknown);
             writer.Write(Data);

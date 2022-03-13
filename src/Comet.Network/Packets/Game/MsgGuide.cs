@@ -2,6 +2,39 @@
 {
     public abstract class MsgGuide<T> : MsgBase<T>
     {
+        public Request Action;
+        public uint Identity;
+        public string Name;
+        public bool Online;
+        public uint Param;
+        public uint Param2;
+
+        public override void Decode(byte[] bytes)
+        {
+            var reader = new PacketReader(bytes);
+            Length = reader.ReadUInt16();
+            Type = (PacketType) reader.ReadUInt16();
+            Action = (Request) reader.ReadUInt32();
+            Identity = reader.ReadUInt32();
+            Param = reader.ReadUInt32();
+            Param2 = reader.ReadUInt32();
+            Online = reader.ReadBoolean();
+            Name = reader.ReadString(reader.ReadByte());
+        }
+
+        public override byte[] Encode()
+        {
+            var writer = new PacketWriter();
+            writer.Write((ushort) PacketType.MsgGuide);
+            writer.Write((uint) Action);
+            writer.Write(Identity);
+            writer.Write(Param);
+            writer.Write(Param2);
+            writer.Write(Online);
+            writer.Write(Name);
+            return writer.ToArray();
+        }
+
         public enum Request
         {
             InviteApprentice = 1,
@@ -12,39 +45,6 @@
             AcceptRequestMentor = 9,
             DumpApprentice = 18,
             DumpMentor = 19
-        }
-
-        public Request Action;
-        public uint Identity;
-        public uint Param;
-        public uint Param2;
-        public bool Online;
-        public string Name;
-
-        public override void Decode(byte[] bytes)
-        {
-            PacketReader reader = new PacketReader(bytes);
-            Length = reader.ReadUInt16();
-            Type = (PacketType)reader.ReadUInt16();
-            Action = (Request)reader.ReadUInt32();
-            Identity = reader.ReadUInt32();
-            Param = reader.ReadUInt32();
-            Param2 = reader.ReadUInt32();
-            Online = reader.ReadBoolean();
-            Name = reader.ReadString(reader.ReadByte());
-        }
-
-        public override byte[] Encode()
-        {
-            PacketWriter writer = new PacketWriter();
-            writer.Write((ushort)PacketType.MsgGuide);
-            writer.Write((uint)Action);
-            writer.Write(Identity);
-            writer.Write(Param);
-            writer.Write(Param2);
-            writer.Write(Online);
-            writer.Write(Name);
-            return writer.ToArray();
         }
     }
 }

@@ -23,20 +23,19 @@ namespace Comet.Network.Packets.Game
         public override byte[] Encode()
         {
             var writer = new PacketWriter();
-            writer.Write((ushort)PacketType.MsgNpcInfoEx); // 2
-            writer.Write(Identity); // 4
-            writer.Write(MaxLife); // 8
-            writer.Write(Life); // 12
-            writer.Write(PosX); // 16
-            writer.Write(PosY); // 18
-            writer.Write(Lookface); // 20
-            writer.Write(NpcType); // 22
-            writer.Write(Sort); // 24
+            writer.Write((ushort) PacketType.MsgNpcInfoEx); // 2
+            writer.Write(Identity);                         // 4
+            writer.Write(MaxLife);                          // 8
+            writer.Write(Life);                             // 12
+            writer.Write(PosX);                             // 16
+            writer.Write(PosY);                             // 18
+            writer.Write(Lookface);                         // 20
+            writer.Write(NpcType);                          // 22
+            writer.Write(Sort);                             // 24
             if (!string.IsNullOrEmpty(Name))
-                writer.Write(new List<string> { Name });
+                writer.Write(new List<string> {Name});
             else writer.Write(0);
             return writer.ToArray();
         }
     }
-
 }

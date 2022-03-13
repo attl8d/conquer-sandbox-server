@@ -1,8 +1,8 @@
-﻿using Comet.Network.Packets;
-using Comet.Shared;
-using System;
+﻿using System;
 using System.Net.Sockets;
 using System.Threading.Tasks;
+using Comet.Network.Packets;
+using Comet.Shared;
 
 namespace Comet.Network.Sockets
 {

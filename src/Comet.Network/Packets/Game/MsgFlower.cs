@@ -4,36 +4,6 @@ namespace Comet.Network.Packets.Game
 {
     public abstract class MsgFlower<T> : MsgBase<T>
     {
-        public enum RequestMode
-        {
-            SendFlower,
-            QueryIcon,
-            QueryData
-        }
-
-        public enum FlowerType
-        {
-            RedRose,
-            WhiteRose,
-            Orchid,
-            Tulip
-        }
-
-        public enum FlowerEffect : uint
-        {
-            None = 0,
-
-            RedRose,
-            WhiteRose,
-            Orchid,
-            Tulip,
-
-            Kiss = 1,
-            Love = 2,
-            Tins = 3,
-            Jade = 4,
-        }
-
         public RequestMode Mode { get; set; }
         public uint Identity { get; set; }
         public uint ItemIdentity { get; set; }
@@ -55,27 +25,27 @@ namespace Comet.Network.Packets.Game
         public uint Tulips { get; set; }
         public uint TulipsToday { get; set; }
 
-        public List<string> Strings { get; set; } = new List<string>();
+        public List<string> Strings { get; set; } = new();
 
         public override void Decode(byte[] bytes)
         {
-            PacketReader reader = new PacketReader(bytes);
-            Length = reader.ReadUInt16(); // 0
-            Type = (PacketType)reader.ReadUInt16(); // 2
-            Mode = (RequestMode)reader.ReadUInt32(); // 4
-            Identity = reader.ReadUInt32(); // 8
-            ItemIdentity = reader.ReadUInt32(); // 12
-            FlowerIdentity = reader.ReadUInt32(); // 16
-            Amount = reader.ReadUInt32(); // 20
-            Flower = (FlowerType)reader.ReadUInt32(); // 24
+            var reader = new PacketReader(bytes);
+            Length = reader.ReadUInt16();              // 0
+            Type = (PacketType) reader.ReadUInt16();   // 2
+            Mode = (RequestMode) reader.ReadUInt32();  // 4
+            Identity = reader.ReadUInt32();            // 8
+            ItemIdentity = reader.ReadUInt32();        // 12
+            FlowerIdentity = reader.ReadUInt32();      // 16
+            Amount = reader.ReadUInt32();              // 20
+            Flower = (FlowerType) reader.ReadUInt32(); // 24
             Strings = reader.ReadStrings();
         }
 
         public override byte[] Encode()
         {
-            PacketWriter writer = new PacketWriter();
-            writer.Write((ushort)PacketType.MsgFlower);
-            writer.Write((uint)Mode);
+            var writer = new PacketWriter();
+            writer.Write((ushort) PacketType.MsgFlower);
+            writer.Write((uint) Mode);
             writer.Write(Identity);
             writer.Write(ItemIdentity);
             if (Mode == RequestMode.QueryIcon)
@@ -94,10 +64,41 @@ namespace Comet.Network.Packets.Game
                 writer.Write(SenderName, 16);
                 writer.Write(ReceiverName, 16);
             }
+
             writer.Write(SendAmount);
-            writer.Write((uint)SendFlowerType);
-            writer.Write((uint)SendFlowerEffect);
+            writer.Write((uint) SendFlowerType);
+            writer.Write((uint) SendFlowerEffect);
             return writer.ToArray();
+        }
+
+        public enum FlowerEffect : uint
+        {
+            None = 0,
+
+            RedRose,
+            WhiteRose,
+            Orchid,
+            Tulip,
+
+            Kiss = 1,
+            Love = 2,
+            Tins = 3,
+            Jade = 4
+        }
+
+        public enum FlowerType
+        {
+            RedRose,
+            WhiteRose,
+            Orchid,
+            Tulip
+        }
+
+        public enum RequestMode
+        {
+            SendFlower,
+            QueryIcon,
+            QueryData
         }
     }
 }

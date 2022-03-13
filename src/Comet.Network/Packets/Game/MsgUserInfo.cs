@@ -47,35 +47,35 @@ namespace Comet.Network.Packets.Game
         public override byte[] Encode()
         {
             var writer = new PacketWriter();
-            writer.Write((ushort)Type); // 2
-            writer.Write(Identity); // 4
-            writer.Write(Mesh); // 8
-            writer.Write(Hairstyle); // 12
-            writer.Write(Silver); // 14
-            writer.Write(Jewels); // 18
-            writer.Write(Experience); // 22
-            writer.Write((ulong)0); // 30
-            writer.Write((ulong)0); // 38
-            writer.Write((uint)0); // 46
-            writer.Write(Strength); // 50
-            writer.Write(Agility); // 52
-            writer.Write(Vitality); // 54
-            writer.Write(Spirit); // 56
+            writer.Write((ushort) Type);   // 2
+            writer.Write(Identity);        // 4
+            writer.Write(Mesh);            // 8
+            writer.Write(Hairstyle);       // 12
+            writer.Write(Silver);          // 14
+            writer.Write(Jewels);          // 18
+            writer.Write(Experience);      // 22
+            writer.Write((ulong) 0);       // 30
+            writer.Write((ulong) 0);       // 38
+            writer.Write((uint) 0);        // 46
+            writer.Write(Strength);        // 50
+            writer.Write(Agility);         // 52
+            writer.Write(Vitality);        // 54
+            writer.Write(Spirit);          // 56
             writer.Write(AttributePoints); // 58
-            writer.Write(HealthPoints); // 60 
-            writer.Write(ManaPoints); // 62
-            writer.Write(KillPoints); // 64 
-            writer.Write(Level); // 66
-            writer.Write(CurrentClass); // 67
-            writer.Write(PreviousClass); // 68
-            writer.Write(Rebirths); // 69 
-            writer.Write(FirstClass); // 70
-            writer.Write(QuizPoints); // 71
+            writer.Write(HealthPoints);    // 60 
+            writer.Write(ManaPoints);      // 62
+            writer.Write(KillPoints);      // 64 
+            writer.Write(Level);           // 66
+            writer.Write(CurrentClass);    // 67
+            writer.Write(PreviousClass);   // 68
+            writer.Write(Rebirths);        // 69 
+            writer.Write(FirstClass);      // 70
+            writer.Write(QuizPoints);      // 71
             writer.Write(EnlightenPoints); // 75
-            writer.Write(EnlightenExp); // 77
-            writer.Write((ushort)0); // 81
-            writer.Write(VipLevel); // 83
-            writer.Write(UserTitle); // 87
+            writer.Write(EnlightenExp);    // 77
+            writer.Write((ushort) 0);      // 81
+            writer.Write(VipLevel);        // 83
+            writer.Write(UserTitle);       // 87
             writer.Write(new List<string>
             {
                 CharacterName,

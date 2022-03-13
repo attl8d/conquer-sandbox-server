@@ -1,26 +1,24 @@
+using System;
+using System.Collections.Concurrent;
+using System.Net;
+using System.Net.Sockets;
+using System.Runtime.CompilerServices;
+using System.Threading;
+using System.Threading.Tasks;
+using Comet.Shared;
+
 namespace Comet.Network.Sockets
 {
-    using Comet.Shared;
-    using System;
-    using System.Collections.Concurrent;
-    using System.Net;
-    using System.Net.Sockets;
-    using System.Threading;
-    using System.Threading.Tasks;
-
     /// <summary>
-    /// TcpServerListener implements an asynchronous TCP streaming socket server for high
-    /// performance server logic. Socket operations are processed in value tasks using
-    /// Socket Task Extensions. Inherits from a base class for providing socket operation
-    /// event handling to the non-abstract derived class of TcpServerListener.
+    ///     TcpServerListener implements an asynchronous TCP streaming socket server for high
+    ///     performance server logic. Socket operations are processed in value tasks using
+    ///     Socket Task Extensions. Inherits from a base class for providing socket operation
+    ///     event handling to the non-abstract derived class of TcpServerListener.
     /// </summary>
     /// <typeparam name="TActor">Type of actor passed by the parent project</typeparam>
     public abstract class TcpServerListener<TActor> : TcpServerEvents<TActor>
         where TActor : TcpServerActor
     {
-        // Constants
-        private const int ReceiveTimeoutSeconds = 30;
-
         // Fields and properties
         private readonly Semaphore AcceptanceSemaphore;
         private readonly ConcurrentStack<Memory<byte>> BufferPool;
@@ -29,13 +27,13 @@ namespace Comet.Network.Sockets
         private readonly TaskFactory ReceiveTasks;
         private readonly CancellationTokenSource ShutdownToken;
         private readonly Socket Socket;
-        private TcpServerRegistry Registry;
+        private readonly TcpServerRegistry Registry;
 
         /// <summary>
-        /// Instantiates a new instance of <see cref="TcpServerListener"/> with a new server
-        /// socket for accepting remote or local client connections. Creates preallocated
-        /// buffers for receiving data from clients without expensive allocations per receive
-        /// operation.
+        ///     Instantiates a new instance of <see cref="TcpServerListener" /> with a new server
+        ///     socket for accepting remote or local client connections. Creates preallocated
+        ///     buffers for receiving data from clients without expensive allocations per receive
+        ///     operation.
         /// </summary>
         /// <param name="maxConn">Maximum number of clients connected</param>
         /// <param name="bufferSize">Preallocated buffer size in bytes</param>
@@ -44,8 +42,8 @@ namespace Comet.Network.Sockets
         /// <param name="footerLength">Length of the packet footer</param>
         /// <param name="timeOut">Receive timeout seconds.</param>
         public TcpServerListener(
-            int maxConn = 1000, 
-            int bufferSize = 4096, 
+            int maxConn = 1000,
+            int bufferSize = 4096,
             bool delay = false,
             bool exchange = false,
             int footerLength = 0)
@@ -65,14 +63,14 @@ namespace Comet.Network.Sockets
             Registry = new TcpServerRegistry();
 
             // Initialize preallocated buffer pool
-            for (int i = 0; i < maxConn; i++)
+            for (var i = 0; i < maxConn; i++)
                 BufferPool.Push(new Memory<byte>(new byte[bufferSize]));
         }
 
         /// <summary>
-        /// Binds the server listener to a port and network interface. Specify "0.0.0.0" 
-        /// as the endpoint address to bind to all interfaces on the host machine. Starts
-        /// the server listener and accepts new connections in a new task.
+        ///     Binds the server listener to a port and network interface. Specify "0.0.0.0"
+        ///     as the endpoint address to bind to all interfaces on the host machine. Starts
+        ///     the server listener and accepts new connections in a new task.
         /// </summary>
         /// <param name="port">Port number the server will bind to</param>
         /// <param name="address">Interface IPv4 address the server will bind to</param>
@@ -82,29 +80,28 @@ namespace Comet.Network.Sockets
         {
             Socket.Bind(new IPEndPoint(IPAddress.Parse(address), port));
             Socket.Listen(backlog);
-            
+
             // Start the background registry cleaner and accepting clients
             await Registry.StartAsync(ShutdownToken.Token);
             await AcceptingAsync();
         }
 
         /// <summary>
-        /// Accepting accepts client connections asynchronously as a new task. As a client
-        /// connection is accepted, it will be associated with a preallocated buffer and
-        /// a receive task. The accepted socket event will be called after accept.
+        ///     Accepting accepts client connections asynchronously as a new task. As a client
+        ///     connection is accepted, it will be associated with a preallocated buffer and
+        ///     a receive task. The accepted socket event will be called after accept.
         /// </summary>
         /// <returns>Returns task details for fault tolerance processing.</returns>
         private async Task AcceptingAsync()
         {
             while (Socket.IsBound && !ShutdownToken.IsCancellationRequested)
-            {
                 // Block if the maximum connections has been reached. Holds all connection
                 // attempts in the backlog of the server socket until a client disconnects
                 // and a new client can be accepted. Check shutdown every 5 seconds.
                 if (AcceptanceSemaphore.WaitOne(TimeSpan.FromSeconds(5)))
                 {
                     // Pop a preallocated buffer and check the connection
-                    var socket = await Socket.AcceptAsync();
+                    Socket socket = await Socket.AcceptAsync();
                     var ip = (socket.RemoteEndPoint as IPEndPoint).Address.MapToIPv4().ToString();
                     if (!Registry.AddActiveClient(ip))
                     {
@@ -113,34 +110,33 @@ namespace Comet.Network.Sockets
                         AcceptanceSemaphore.Release();
                         continue;
                     }
-                    
+
                     // Construct the client before receiving data
-                    BufferPool.TryPop(out var buffer);
-                    var actor = await AcceptedAsync(socket, buffer);
+                    BufferPool.TryPop(out Memory<byte> buffer);
+                    TActor actor = await AcceptedAsync(socket, buffer);
 
                     // Start receiving data from the client connection
                     if (EnableKeyExchange)
                     {
-                        var task = ReceiveTasks
-                            .StartNew(ExchangingAsync, actor, ShutdownToken.Token)
-                            .ConfigureAwait(false);
+                        ConfiguredTaskAwaitable<Task> task = ReceiveTasks
+                                                             .StartNew(ExchangingAsync, actor, ShutdownToken.Token)
+                                                             .ConfigureAwait(false);
                     }
-                    else 
+                    else
                     {
-                        var task = ReceiveTasks
-                            .StartNew(ReceivingAsync, actor, ShutdownToken.Token)
-                            .ConfigureAwait(false);
+                        ConfiguredTaskAwaitable<Task> task = ReceiveTasks
+                                                             .StartNew(ReceivingAsync, actor, ShutdownToken.Token)
+                                                             .ConfigureAwait(false);
                     }
                 }
-            }
 
             await Log.WriteLogAsync("Server has stopped listening!");
         }
 
         /// <summary>
-        /// Exchanging receives bytes from the accepted client socket when bytes become
-        /// available as a raw buffer of bytes. This method is called once and then invokes
-        /// <see cref="ReceivingAsync"/>.
+        ///     Exchanging receives bytes from the accepted client socket when bytes become
+        ///     available as a raw buffer of bytes. This method is called once and then invokes
+        ///     <see cref="ReceivingAsync" />.
         /// </summary>
         /// <param name="state">Created actor around the accepted client socket</param>
         /// <returns>Returns task details for fault tolerance processing.</returns>
@@ -158,7 +154,7 @@ namespace Comet.Network.Sockets
                     using var cancellation = CancellationTokenSource.CreateLinkedTokenSource(
                         timeout.Token, ShutdownToken.Token);
                     // Receive data from the client socket
-                    var receiveOperation = actor.Socket.ReceiveAsync(
+                    ValueTask<int> receiveOperation = actor.Socket.ReceiveAsync(
                         actor.Buffer[..],
                         SocketFlags.None,
                         cancellation.Token);
@@ -172,7 +168,7 @@ namespace Comet.Network.Sockets
                     await Log.WriteLogAsync(e);
                     if (e is SocketException)
                     {
-                        SocketException socketEx = e as SocketException;
+                        var socketEx = e as SocketException;
                         if (socketEx.SocketErrorCode < SocketError.ConnectionAborted ||
                             socketEx.SocketErrorCode > SocketError.Shutdown)
                             await Log.WriteLogAsync(e);
@@ -229,7 +225,7 @@ namespace Comet.Network.Sockets
                         Disconnecting(actor);
                         return;
                     }
-                    
+
                     remaining = examined - consumed;
                     actor.Buffer[consumed..examined].CopyTo(actor.Buffer);
                 }
@@ -240,9 +236,9 @@ namespace Comet.Network.Sockets
         }
 
         /// <summary>
-        /// Receiving receives bytes from the accepted client socket when bytes become
-        /// available. While the client is connected and the server hasn't issued the 
-        /// shutdown signal, bytes will be received in a loop.
+        ///     Receiving receives bytes from the accepted client socket when bytes become
+        ///     available. While the client is connected and the server hasn't issued the
+        ///     shutdown signal, bytes will be received in a loop.
         /// </summary>
         /// <param name="state">Created actor around the accepted client socket</param>
         /// <returns>Returns task details for fault tolerance processing.</returns>
@@ -252,9 +248,9 @@ namespace Comet.Network.Sockets
         }
 
         /// <summary>
-        /// Receiving receives bytes from the accepted client socket when bytes become
-        /// available. While the client is connected and the server hasn't issued the 
-        /// shutdown signal, bytes will be received in a loop.
+        ///     Receiving receives bytes from the accepted client socket when bytes become
+        ///     available. While the client is connected and the server hasn't issued the
+        ///     shutdown signal, bytes will be received in a loop.
         /// </summary>
         /// <param name="state">Created actor around the accepted client socket</param>
         /// <param name="remaining">Starting offset to receive bytes to</param>
@@ -273,12 +269,14 @@ namespace Comet.Network.Sockets
                     using var cancellation = CancellationTokenSource.CreateLinkedTokenSource(
                         timeout.Token, ShutdownToken.Token);
                     // Receive data from the client socket
-                    var receiveOperation = actor.Socket.ReceiveAsync(
+                    ValueTask<int> receiveOperation = actor.Socket.ReceiveAsync(
                         actor.Buffer[remaining..],
                         SocketFlags.None,
                         cancellation.Token);
 
-                    int receiveTimeOut = actor.ReceiveTimeOutSeconds > 0 ? actor.ReceiveTimeOutSeconds : ReceiveTimeoutSeconds;
+                    int receiveTimeOut = actor.ReceiveTimeOutSeconds > 0
+                                             ? actor.ReceiveTimeOutSeconds
+                                             : ReceiveTimeoutSeconds;
                     timeout.CancelAfter(TimeSpan.FromSeconds(receiveTimeOut));
                     examined = await receiveOperation;
                     if (examined == 0) break;
@@ -309,7 +307,7 @@ namespace Comet.Network.Sockets
                     actor.Disconnect();
                     break;
                 }
-                
+
                 remaining = examined + remaining - consumed;
                 actor.Buffer.Slice(consumed, remaining).CopyTo(actor.Buffer);
             }
@@ -322,10 +320,10 @@ namespace Comet.Network.Sockets
         }
 
         /// <summary>
-        /// Splitting splits the actor's receive buffer into multiple packets that can
-        /// then be processed by Received individually. The default behavior of this method
-        /// unless otherwise overridden is to split packets from the buffer using an unsigned
-        /// short packet header for the length of each packet.
+        ///     Splitting splits the actor's receive buffer into multiple packets that can
+        ///     then be processed by Received individually. The default behavior of this method
+        ///     unless otherwise overridden is to split packets from the buffer using an unsigned
+        ///     short packet header for the length of each packet.
         /// </summary>
         /// <param name="buffer">Actor for consuming bytes from the buffer</param>
         /// <param name="examined">Number of examined bytes from the receive</param>
@@ -334,12 +332,12 @@ namespace Comet.Network.Sockets
         protected virtual bool Splitting(TActor actor, int examined, ref int consumed)
         {
             // Consume packets from the socket buffer
-            var buffer = actor.Buffer.Span;
+            Span<byte> buffer = actor.Buffer.Span;
             while (consumed + 2 < examined)
             {
                 var length = BitConverter.ToUInt16(buffer.Slice(consumed, 2));
                 if (length == 0) return false;
-                var expected = consumed + length + FooterLength;
+                int expected = consumed + length + FooterLength;
                 if (length > buffer.Length) return false;
                 if (expected > examined) break;
 
@@ -351,9 +349,9 @@ namespace Comet.Network.Sockets
         }
 
         /// <summary>
-        /// Disconnecting is called when the client is disconnecting from the server. Allows
-        /// the server to handle client events post-disconnect, and reclaim resources first
-        /// leased to the client on accept.
+        ///     Disconnecting is called when the client is disconnecting from the server. Allows
+        ///     the server to handle client events post-disconnect, and reclaim resources first
+        ///     leased to the client on accept.
         /// </summary>
         /// <param name="actor">Actor being disconnected</param>
         private void Disconnecting(TActor actor)
@@ -367,5 +365,8 @@ namespace Comet.Network.Sockets
             // Complete processing for disconnect
             Disconnected(actor);
         }
+
+        // Constants
+        private const int ReceiveTimeoutSeconds = 30;
     }
 }

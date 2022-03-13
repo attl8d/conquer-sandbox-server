@@ -8,7 +8,7 @@
 
         public override void Decode(byte[] bytes)
         {
-            PacketReader reader = new PacketReader(bytes);
+            var reader = new PacketReader(bytes);
             Length = reader.ReadUInt16();
             Type = (PacketType) reader.ReadUInt16();
             ServerName = reader.ReadString(16);
@@ -18,7 +18,7 @@
 
         public override byte[] Encode()
         {
-            PacketWriter writer = new PacketWriter();
+            var writer = new PacketWriter();
             writer.Write((ushort) PacketType.MsgAccServerExchange);
             writer.Write(ServerName, 16);
             writer.Write(Username, 16);

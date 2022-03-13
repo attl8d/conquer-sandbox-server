@@ -19,12 +19,12 @@
 
         public override void Decode(byte[] bytes)
         {
-            PacketReader reader = new PacketReader(bytes);
+            var reader = new PacketReader(bytes);
             Length = reader.ReadUInt16();
-            Type = (PacketType)reader.ReadUInt16();
+            Type = (PacketType) reader.ReadUInt16();
             Ranking = reader.ReadInt32();
             Unknown = reader.ReadInt32();
-            Status = (ArenaStatus)reader.ReadInt32();
+            Status = (ArenaStatus) reader.ReadInt32();
             Activity = reader.ReadUInt32();
             TriumphToday20 = reader.ReadByte();
             TriumphToday9 = reader.ReadByte();
@@ -40,24 +40,23 @@
 
         public override byte[] Encode()
         {
-            PacketWriter writer = new PacketWriter();
-            writer.Write((ushort)PacketType.MsgQualifyingDetailInfo);
-            writer.Write(Ranking); // 4
-            writer.Write(0); // 8
-            writer.Write((int)Status); // 12
-            writer.Write(Activity); // Activity
+            var writer = new PacketWriter();
+            writer.Write((ushort) PacketType.MsgQualifyingDetailInfo);
+            writer.Write(Ranking);        // 4
+            writer.Write(0);              // 8
+            writer.Write((int) Status);   // 12
+            writer.Write(Activity);       // Activity
             writer.Write(TriumphToday20); // 20 Triumph Today 20
-            writer.Write(TriumphToday9); // 21 Triumph Today 9
-            writer.Write(Fill); // 22
-            writer.Write(TotalWins); // 24
-            writer.Write(TotalLoses); // 28
-            writer.Write(TodayWins); // Season Wins
-            writer.Write(TodayLoses); // Season Loss
-            writer.Write(HistoryHonor); // History Honor
-            writer.Write(CurrentHonor); // 44
-            writer.Write(Points); // 48
+            writer.Write(TriumphToday9);  // 21 Triumph Today 9
+            writer.Write(Fill);           // 22
+            writer.Write(TotalWins);      // 24
+            writer.Write(TotalLoses);     // 28
+            writer.Write(TodayWins);      // Season Wins
+            writer.Write(TodayLoses);     // Season Loss
+            writer.Write(HistoryHonor);   // History Honor
+            writer.Write(CurrentHonor);   // 44
+            writer.Write(Points);         // 48
             return writer.ToArray();
-
         }
     }
 

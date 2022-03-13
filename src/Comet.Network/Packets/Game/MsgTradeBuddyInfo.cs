@@ -3,19 +3,19 @@
     public abstract class MsgTradeBuddyInfo<T> : MsgBase<T>
     {
         public uint Identity;
-        public uint Lookface;
         public byte Level;
-        public byte Profession;
+        public uint Lookface;
+        public string Name;
         public ushort PkPoints;
+        public byte Profession;
         public uint Syndicate;
         public int SyndicatePosition;
         public ushort Unknown;
-        public string Name;
 
         public override byte[] Encode()
         {
-            PacketWriter writer = new PacketWriter();
-            writer.Write((ushort)PacketType.MsgTradeBuffyInfo);
+            var writer = new PacketWriter();
+            writer.Write((ushort) PacketType.MsgTradeBuffyInfo);
             writer.Write(Identity);
             writer.Write(Lookface);
             writer.Write(Level);

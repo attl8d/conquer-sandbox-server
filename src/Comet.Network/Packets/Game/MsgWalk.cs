@@ -2,7 +2,6 @@
 {
     public abstract class MsgWalk<T> : MsgBase<T>
     {
-
         public uint Identity { get; set; }
         public byte Direction { get; set; }
         public byte Mode { get; set; }
@@ -18,8 +17,8 @@
         {
             var reader = new PacketReader(bytes);
             Length = reader.ReadUInt16();
-            Type = (PacketType)reader.ReadUInt16();
-            Direction = (byte)reader.ReadUInt32();
+            Type = (PacketType) reader.ReadUInt16();
+            Direction = (byte) reader.ReadUInt32();
             Identity = reader.ReadUInt32();
             Mode = reader.ReadByte();
             Padding = reader.ReadUInt16();
@@ -34,8 +33,8 @@
         public override byte[] Encode()
         {
             var writer = new PacketWriter();
-            writer.Write((ushort)PacketType.MsgWalk);
-            writer.Write((int)Direction);
+            writer.Write((ushort) PacketType.MsgWalk);
+            writer.Write((int) Direction);
             writer.Write(Identity);
             writer.Write(Mode);
             writer.Write(Padding);

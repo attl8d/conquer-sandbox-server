@@ -8,10 +8,10 @@ namespace Comet.Network.Security
     {
         public static string Encrypt(byte[] key, string message)
         {
-            byte[] iv = new byte[16];
+            var iv = new byte[16];
             byte[] array;
 
-            using Aes aes = Aes.Create();
+            using var aes = Aes.Create();
             aes.Key = key;
             aes.IV = iv;
 
@@ -29,10 +29,10 @@ namespace Comet.Network.Security
 
         public static string Decrypt(byte[] key, string message)
         {
-            byte[] iv = new byte[16];
+            var iv = new byte[16];
             byte[] buffer = Convert.FromBase64String(message);
 
-            using (Aes aes = Aes.Create())
+            using (var aes = Aes.Create())
             {
                 aes.Key = key;
                 aes.IV = iv;

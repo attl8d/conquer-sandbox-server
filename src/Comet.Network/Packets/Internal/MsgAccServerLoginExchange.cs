@@ -11,9 +11,9 @@
 
         public override void Decode(byte[] bytes)
         {
-            PacketReader reader = new (bytes);
+            PacketReader reader = new(bytes);
             Length = reader.ReadUInt16();
-            Type = (PacketType)reader.ReadUInt16();
+            Type = (PacketType) reader.ReadUInt16();
             IPAddress = reader.ReadString(15);
             AccountID = reader.ReadUInt32();
             AuthorityID = reader.ReadUInt16();
@@ -25,7 +25,7 @@
         public override byte[] Encode()
         {
             PacketWriter writer = new();
-            writer.Write((ushort)PacketType.MsgAccServerLoginExchange);
+            writer.Write((ushort) PacketType.MsgAccServerLoginExchange);
 
             writer.Write(IPAddress, 15);
             writer.Write(AccountID);

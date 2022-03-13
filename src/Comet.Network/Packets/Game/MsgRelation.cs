@@ -2,18 +2,18 @@
 {
     public abstract class MsgRelation<T> : MsgBase<T>
     {
-        public uint SenderIdentity;
-        public uint TargetIdentity;
-        public int Level;
         public int BattlePower;
         public bool IsSpouse;
-        public bool IsTutor;
         public bool IsTradePartner;
+        public bool IsTutor;
+        public int Level;
+        public uint SenderIdentity;
+        public uint TargetIdentity;
 
         public override byte[] Encode()
         {
-            PacketWriter writer = new PacketWriter();
-            writer.Write((ushort)PacketType.MsgRelation);
+            var writer = new PacketWriter();
+            writer.Write((ushort) PacketType.MsgRelation);
             writer.Write(SenderIdentity);
             writer.Write(TargetIdentity);
             writer.Write(Level);

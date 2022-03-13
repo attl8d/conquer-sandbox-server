@@ -24,7 +24,7 @@ namespace Comet.Network.Packets.Game
         {
             var reader = new PacketReader(bytes);
             Length = reader.ReadUInt16();
-            Type = (PacketType)reader.ReadUInt16();
+            Type = (PacketType) reader.ReadUInt16();
             Identity = reader.ReadUInt32();
             PosX = reader.ReadUInt16();
             PosY = reader.ReadUInt16();
@@ -46,7 +46,7 @@ namespace Comet.Network.Packets.Game
         public override byte[] Encode()
         {
             var writer = new PacketWriter();
-            writer.Write((ushort)PacketType.MsgNpcInfo);
+            writer.Write((ushort) PacketType.MsgNpcInfo);
             writer.Write(Identity);
             writer.Write(PosX);
             writer.Write(PosY);
@@ -55,7 +55,7 @@ namespace Comet.Network.Packets.Game
             writer.Write(Sort);
             writer.Write(Unknown0);
             writer.Write(Unknown1);
-            writer.Write(new List<string> { Name });
+            writer.Write(new List<string> {Name});
             return writer.ToArray();
         }
     }

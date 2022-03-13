@@ -1,9 +1,9 @@
 namespace Comet.Network.Packets
 {
     /// <summary>
-    /// Packet types for the Conquer Online game client across all server projects. 
-    /// Identifies packets by an unsigned short from offset 2 of every packet sent to
-    /// the server.
+    ///     Packet types for the Conquer Online game client across all server projects.
+    ///     Identifies packets by an unsigned short from offset 2 of every packet sent to
+    ///     the server.
     /// </summary>
     public enum PacketType : ushort
     {
@@ -33,6 +33,7 @@ namespace Comet.Network.Packets
         MsgTeamRoll = 1043,
         MsgLoadMap = 1044,
         MsgTrade = 1056,
+
         // MsgAccount = 1051,
         MsgConnect = 1052,
         MsgConnectEx = 1055,

@@ -22,12 +22,11 @@
         public override byte[] Encode()
         {
             var writer = new PacketWriter();
-            writer.Write((ushort)PacketType.MsgMapInfo);
+            writer.Write((ushort) PacketType.MsgMapInfo);
             writer.Write(MapIdentity);
             writer.Write(MapDoc);
             writer.Write(Flags);
             return writer.ToArray();
         }
     }
-
 }

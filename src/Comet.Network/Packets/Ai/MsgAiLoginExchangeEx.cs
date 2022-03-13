@@ -7,18 +7,18 @@
 
         public override void Decode(byte[] bytes)
         {
-            PacketReader reader = new (bytes);
+            PacketReader reader = new(bytes);
             Length = reader.ReadUInt16();
-            Type = (PacketType)reader.ReadUInt16();
-            Result = (AiLoginResult)reader.ReadInt32();
+            Type = (PacketType) reader.ReadUInt16();
+            Result = (AiLoginResult) reader.ReadInt32();
             Message = reader.ReadString(128);
         }
 
         public override byte[] Encode()
         {
-            PacketWriter writer = new ();
-            writer.Write((ushort)PacketType.MsgAiLoginExchangeEx);
-            writer.Write((int)Result);
+            PacketWriter writer = new();
+            writer.Write((ushort) PacketType.MsgAiLoginExchangeEx);
+            writer.Write((int) Result);
             writer.Write(Message, 128);
             return writer.ToArray();
         }

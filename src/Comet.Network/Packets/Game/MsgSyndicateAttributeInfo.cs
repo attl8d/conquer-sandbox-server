@@ -32,21 +32,21 @@ namespace Comet.Network.Packets.Game
         public override byte[] Encode()
         {
             var writer = new PacketWriter();
-            writer.Write((ushort)PacketType.MsgSyndicateAttributeInfo);
-            writer.Write(Identity); // 4
-            writer.Write(PlayerDonation); // 8
-            writer.Write(Funds); // 12
-            writer.Write(ConquerPointsFunds); // 20
-            writer.Write(MemberAmount); // 24
-            writer.Write(Rank); // 28
-            writer.Write(LeaderName, 16); // 32
-            writer.Write(ConditionLevel); // 48
-            writer.Write(ConditionMetempsychosis); // 52
-            writer.Write(ConditionProfession); // 56
-            writer.Write(Level); // 60
+            writer.Write((ushort) PacketType.MsgSyndicateAttributeInfo);
+            writer.Write(Identity);                        // 4
+            writer.Write(PlayerDonation);                  // 8
+            writer.Write(Funds);                           // 12
+            writer.Write(ConquerPointsFunds);              // 20
+            writer.Write(MemberAmount);                    // 24
+            writer.Write(Rank);                            // 28
+            writer.Write(LeaderName, 16);                  // 32
+            writer.Write(ConditionLevel);                  // 48
+            writer.Write(ConditionMetempsychosis);         // 52
+            writer.Write(ConditionProfession);             // 56
+            writer.Write(Level);                           // 60
             writer.BaseStream.Seek(2, SeekOrigin.Current); // 61
-            writer.Write(PositionExpiration); // 63
-            writer.Write(0); // 67
+            writer.Write(PositionExpiration);              // 63
+            writer.Write(0);                               // 67
             writer.Write(EnrollmentDate);
             return writer.ToArray();
         }

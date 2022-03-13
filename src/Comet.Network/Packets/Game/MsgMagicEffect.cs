@@ -4,13 +4,13 @@ namespace Comet.Network.Packets.Game
 {
     public abstract class MsgMagicEffect<T> : MsgBase<T>
     {
+        private readonly List<MagicTarget> Targets = new();
         public uint AttackerIdentity { get; set; }
         public ushort MapX { get; set; }
         public ushort MapY { get; set; }
         public ushort MagicIdentity { get; set; }
         public ushort MagicLevel { get; set; }
         public ushort Count { get; set; }
-        private List<MagicTarget> Targets = new List<MagicTarget>();
 
         public void Append(uint idTarget, int damage, bool showValue)
         {
@@ -38,19 +38,20 @@ namespace Comet.Network.Packets.Game
         public override byte[] Encode()
         {
             var writer = new PacketWriter();
-            writer.Write((ushort)PacketType.MsgMagicEffect);
+            writer.Write((ushort) PacketType.MsgMagicEffect);
             writer.Write(AttackerIdentity);
             writer.Write(MapX);
             writer.Write(MapY);
             writer.Write(MagicIdentity);
             writer.Write(MagicLevel);
-            writer.Write((uint)Count);
-            foreach (var target in Targets)
+            writer.Write((uint) Count);
+            foreach (MagicTarget target in Targets)
             {
                 writer.Write(target.Identity);
                 writer.Write(target.Damage);
                 writer.Write(target.Show);
             }
+
             return writer.ToArray();
         }
 
@@ -60,6 +61,5 @@ namespace Comet.Network.Packets.Game
             public int Damage;
             public int Show;
         }
-
     }
 }

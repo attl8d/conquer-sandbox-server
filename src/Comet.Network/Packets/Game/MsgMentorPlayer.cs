@@ -12,21 +12,21 @@
 
         public override void Decode(byte[] bytes)
         {
-            PacketReader reader = new PacketReader(bytes);
+            var reader = new PacketReader(bytes);
             Length = reader.ReadUInt16();
-            Type = (PacketType)reader.ReadUInt16();
-            Action = reader.ReadInt32(); // 4
+            Type = (PacketType) reader.ReadUInt16();
+            Action = reader.ReadInt32();    // 4
             SenderId = reader.ReadUInt32(); // 8 
             TargetId = reader.ReadUInt32(); // 12
-            Unknown2 = reader.ReadInt32(); // 16
-            Unknown3 = reader.ReadInt32(); // 20
-            Unknown4 = reader.ReadInt32(); // 24
+            Unknown2 = reader.ReadInt32();  // 16
+            Unknown3 = reader.ReadInt32();  // 20
+            Unknown4 = reader.ReadInt32();  // 24
         }
 
         public override byte[] Encode()
         {
-            PacketWriter writer = new PacketWriter();
-            writer.Write((ushort)PacketType.MsgMentorPlayer);
+            var writer = new PacketWriter();
+            writer.Write((ushort) PacketType.MsgMentorPlayer);
             writer.Write(Action);
             writer.Write(SenderId);
             writer.Write(TargetId);

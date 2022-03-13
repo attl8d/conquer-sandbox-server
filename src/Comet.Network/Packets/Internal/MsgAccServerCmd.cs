@@ -7,14 +7,14 @@ namespace Comet.Network.Packets.Internal
         public ServerAction Action { get; set; }
         public uint AccountIdentity { get; set; }
         public uint Param { get; set; }
-        public List<string> Strings { get; set; } = new List<string>();
+        public List<string> Strings { get; set; } = new();
 
         public override void Decode(byte[] bytes)
         {
-            PacketReader reader = new (bytes);
+            PacketReader reader = new(bytes);
             Length = reader.ReadUInt16();
-            Type = (PacketType)reader.ReadUInt16();
-            Action = (ServerAction)reader.ReadInt32();
+            Type = (PacketType) reader.ReadUInt16();
+            Action = (ServerAction) reader.ReadInt32();
             AccountIdentity = reader.ReadUInt32();
             Param = reader.ReadUInt32();
             Strings = reader.ReadStrings();
@@ -24,7 +24,7 @@ namespace Comet.Network.Packets.Internal
         {
             PacketWriter writer = new();
             writer.Write((ushort) PacketType.MsgAccServerCmd);
-            writer.Write((int)Action);
+            writer.Write((int) Action);
             writer.Write(AccountIdentity);
             writer.Write(Param);
             writer.Write(Strings);

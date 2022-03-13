@@ -9,8 +9,8 @@
 
         public override byte[] Encode()
         {
-            PacketWriter writer = new PacketWriter();
-            writer.Write((ushort)PacketType.MsgTrainingInfo);
+            var writer = new PacketWriter();
+            writer.Write((ushort) PacketType.MsgTrainingInfo);
             writer.Write(TimeUsed);
             writer.Write(TimeRemaining);
             writer.Write(Level);

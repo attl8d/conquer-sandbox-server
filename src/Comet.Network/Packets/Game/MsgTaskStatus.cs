@@ -4,23 +4,23 @@ namespace Comet.Network.Packets.Game
 {
     public abstract class MsgTaskStatus<T> : MsgBase<T>
     {
+        public List<TaskItemStruct> Tasks = new();
         public TaskStatusMode Mode { get; set; }
         public ushort Amount { get; set; }
-        public List<TaskItemStruct> Tasks = new List<TaskItemStruct>();
 
         public override void Decode(byte[] bytes)
         {
-            PacketReader reader = new PacketReader(bytes);
+            var reader = new PacketReader(bytes);
             Length = reader.ReadUInt16();
-            Type = (PacketType)reader.ReadUInt16();
-            Mode = (TaskStatusMode)reader.ReadUInt16();
+            Type = (PacketType) reader.ReadUInt16();
+            Mode = (TaskStatusMode) reader.ReadUInt16();
             Amount = reader.ReadUInt16();
-            for (int i = 0; i < Amount; i++)
+            for (var i = 0; i < Amount; i++)
             {
-                TaskItemStruct item = new TaskItemStruct
+                var item = new TaskItemStruct
                 {
                     Identity = reader.ReadInt32(),
-                    Status = (TaskItemStatus)reader.ReadInt32()
+                    Status = (TaskItemStatus) reader.ReadInt32()
                 };
                 Tasks.Add(item);
             }
@@ -28,16 +28,17 @@ namespace Comet.Network.Packets.Game
 
         public override byte[] Encode()
         {
-            PacketWriter writer = new PacketWriter();
-            writer.Write((ushort)PacketType.MsgTaskStatus);
-            writer.Write((ushort)Mode);
-            writer.Write(Amount = (ushort)Tasks.Count);
-            foreach (var task in Tasks)
+            var writer = new PacketWriter();
+            writer.Write((ushort) PacketType.MsgTaskStatus);
+            writer.Write((ushort) Mode);
+            writer.Write(Amount = (ushort) Tasks.Count);
+            foreach (TaskItemStruct task in Tasks)
             {
                 writer.Write(task.Identity);
-                writer.Write((int)task.Status);
+                writer.Write((int) task.Status);
                 // writer.Write(task.Unknown);
             }
+
             return writer.ToArray();
         }
 
@@ -57,7 +58,7 @@ namespace Comet.Network.Packets.Game
             Daily = 4,
             AcceptedWithoutTrace = 5,
             Quitted = 6,
-            None = 255,
+            None = 255
         }
 
         public enum TaskStatusMode : byte
@@ -67,7 +68,7 @@ namespace Comet.Network.Packets.Game
             Remove = 2,
             Update = 3,
             Finish = 4,
-            Quit = 8,
+            Quit = 8
         }
     }
 }

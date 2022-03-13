@@ -17,10 +17,10 @@
         {
             var reader = new PacketReader(bytes);
             Length = reader.ReadUInt16();
-            Type = (PacketType)reader.ReadUInt16();
+            Type = (PacketType) reader.ReadUInt16();
             Identity = reader.ReadUInt32();
             Data = reader.ReadUInt32();
-            RequestType = (NpcActionType)reader.ReadUInt16();
+            RequestType = (NpcActionType) reader.ReadUInt16();
             Event = reader.ReadUInt16();
         }
 
@@ -33,10 +33,10 @@
         public override byte[] Encode()
         {
             var writer = new PacketWriter();
-            writer.Write((ushort)PacketType.MsgNpc);
+            writer.Write((ushort) PacketType.MsgNpc);
             writer.Write(Identity);
             writer.Write(Data);
-            writer.Write((ushort)RequestType);
+            writer.Write((ushort) RequestType);
             writer.Write(Event);
             return writer.ToArray();
         }
@@ -53,5 +53,4 @@
             CancelInteraction = 255
         }
     }
-
 }

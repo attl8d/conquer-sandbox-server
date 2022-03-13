@@ -17,7 +17,7 @@
         {
             var reader = new PacketReader(bytes);
             Length = reader.ReadUInt16();
-            Type = (PacketType)reader.ReadUInt16();
+            Type = (PacketType) reader.ReadUInt16();
             Force = reader.ReadByte();
             Speed = reader.ReadByte();
             Health = reader.ReadByte();
@@ -33,11 +33,11 @@
         public override byte[] Encode()
         {
             var writer = new PacketWriter();
-            writer.Write((ushort)PacketType.MsgAllot);
-            writer.Write((byte)Force);
-            writer.Write((byte)Speed);
-            writer.Write((byte)Health);
-            writer.Write((byte)Soul);
+            writer.Write((ushort) PacketType.MsgAllot);
+            writer.Write((byte) Force);
+            writer.Write((byte) Speed);
+            writer.Write((byte) Health);
+            writer.Write((byte) Soul);
             return writer.ToArray();
         }
     }

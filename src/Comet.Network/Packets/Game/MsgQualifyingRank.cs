@@ -4,18 +4,18 @@ namespace Comet.Network.Packets.Game
 {
     public abstract class MsgQualifyingRank<T> : MsgBase<T>
     {
+        public List<PlayerDataStruct> Players = new();
         public QueryRankType RankType { get; set; }
         public ushort PageNumber { get; set; }
         public int RankingNum { get; set; }
         public int Count { get; set; }
-        public List<PlayerDataStruct> Players = new List<PlayerDataStruct>();
 
         public override void Decode(byte[] bytes)
         {
-            PacketReader reader = new PacketReader(bytes);
+            var reader = new PacketReader(bytes);
             Length = reader.ReadUInt16();
-            Type = (PacketType)reader.ReadUInt16();
-            RankType = (QueryRankType)reader.ReadUInt16();
+            Type = (PacketType) reader.ReadUInt16();
+            RankType = (QueryRankType) reader.ReadUInt16();
             PageNumber = reader.ReadUInt16();
             RankingNum = reader.ReadInt32();
             Count = reader.ReadInt32();
@@ -23,13 +23,13 @@ namespace Comet.Network.Packets.Game
 
         public override byte[] Encode()
         {
-            PacketWriter writer = new PacketWriter();
-            writer.Write((ushort)PacketType.MsgQualifyingRank);
-            writer.Write((ushort)RankType);
+            var writer = new PacketWriter();
+            writer.Write((ushort) PacketType.MsgQualifyingRank);
+            writer.Write((ushort) RankType);
             writer.Write(PageNumber);
             writer.Write(RankingNum);
             writer.Write(Count = Players.Count);
-            foreach (var player in Players)
+            foreach (PlayerDataStruct player in Players)
             {
                 writer.Write(player.Rank);
                 writer.Write(player.Name, 16);
@@ -39,6 +39,7 @@ namespace Comet.Network.Packets.Game
                 writer.Write(player.Level);
                 // writer.Write(player.Unknown);
             }
+
             return writer.ToArray();
         }
 

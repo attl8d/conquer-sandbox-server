@@ -4,33 +4,39 @@ namespace Comet.Network.Packets.Game
 {
     public abstract class MsgQuiz<T> : MsgBase<T>
     {
+        public List<QuizRank> Scores = new();
+
+        public List<string> Strings = new();
         public QuizAction Action { get; set; }
 
         /// <remarks>Countdown | Score | Question Number</remarks>
         public ushort Param1 { get; set; }
+
         /// <remarks>Last Correct Answer | Time Taken | Reward</remarks>
         public ushort Param2 { get; set; }
+
         /// <remarks>Time Per Question | Exp. Awarded |  Rank</remarks>
         public ushort Param3 { get; set; }
+
         /// <remarks>First Prize | Time Taken</remarks>
         public ushort Param4 { get; set; }
+
         /// <remarks>Second Prize | Current Score</remarks>
         public ushort Param5 { get; set; }
+
         /// <remarks>Third Prize</remarks>
         public ushort Param6 { get; set; }
+
         public ushort Param7 { get; set; }
         public ushort Param8 { get; set; }
         public ushort Param9 { get; set; }
 
-        public List<string> Strings = new List<string>();
-        public List<QuizRank> Scores = new List<QuizRank>();
-
         public override void Decode(byte[] bytes)
         {
-            PacketReader reader = new PacketReader(bytes);
-            Length = reader.ReadUInt16(); // 0
-            Type = (PacketType)reader.ReadUInt16(); // 2
-            Action = (QuizAction)reader.ReadUInt16();
+            var reader = new PacketReader(bytes);
+            Length = reader.ReadUInt16();            // 0
+            Type = (PacketType) reader.ReadUInt16(); // 2
+            Action = (QuizAction) reader.ReadUInt16();
             Param1 = reader.ReadUInt16();
             Param2 = reader.ReadUInt16();
             Param3 = reader.ReadUInt16();
@@ -45,9 +51,9 @@ namespace Comet.Network.Packets.Game
 
         public override byte[] Encode()
         {
-            PacketWriter writer = new PacketWriter();
-            writer.Write((ushort)PacketType.MsgQuiz);
-            writer.Write((ushort)Action);
+            var writer = new PacketWriter();
+            writer.Write((ushort) PacketType.MsgQuiz);
+            writer.Write((ushort) Action);
             writer.Write(Param1);
             writer.Write(Param2);
             writer.Write(Param3);
@@ -58,7 +64,7 @@ namespace Comet.Network.Packets.Game
             if (Scores.Count > 0)
             {
                 writer.Write(Scores.Count);
-                foreach (var score in Scores)
+                foreach (QuizRank score in Scores)
                 {
                     writer.Write(score.Name, 16);
                     writer.Write(score.Score);

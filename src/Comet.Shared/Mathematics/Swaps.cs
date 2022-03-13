@@ -1,8 +1,8 @@
 namespace Comet.Shared.Mathematics
 {
     /// <summary>
-    /// This class contains extension methods for providing unsigned integers with swap
-    /// functions for swapping values between integers.
+    ///     This class contains extension methods for providing unsigned integers with swap
+    ///     functions for swapping values between integers.
     /// </summary>
     public static class Swaps
     {
@@ -11,9 +11,7 @@ namespace Comet.Shared.Mathematics
         /// <param name="n2">The first number</param>
         public static void Swap(this ref uint n1, ref uint n2)
         {
-            uint tmp = n1;
-            n1 = n2;
-            n2 = tmp;
+            (n1, n2) = (n2, n1);
         }
     }
 }

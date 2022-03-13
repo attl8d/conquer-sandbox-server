@@ -9,14 +9,14 @@ namespace Comet.Shared
 {
     public abstract class TimerBase
     {
+        public bool CloseRequest = false;
         private CancellationToken mCancellationToken = CancellationToken.None;
-        private Timer mTimer;
-        private string mName;
-        protected int mInterval = 1000;
+        protected int mInterval;
+        private readonly Timer mTimer;
 
         protected TimerBase(int intervalMs, string name)
         {
-            mName = name;
+            Name = name;
             mInterval = intervalMs;
 
             mTimer = new Timer
@@ -28,13 +28,11 @@ namespace Comet.Shared
             mTimer.Disposed += TimerOnDisposed;
         }
 
-        public string Name => mName;
+        public string Name { get; }
 
         public long ElapsedMilliseconds { get; private set; }
 
         public bool StopOnException { get; set; }
-
-        public bool CloseRequest = false;
 
         public async Task StartAsync()
         {
@@ -57,7 +55,7 @@ namespace Comet.Shared
 
         private async void TimerOnElapse(object sender, ElapsedEventArgs e)
         {
-            Stopwatch sw = new Stopwatch();
+            var sw = new Stopwatch();
             sw.Start();
             try
             {
@@ -78,18 +76,18 @@ namespace Comet.Shared
 
         protected virtual async Task OnStartAsync()
         {
-            await Log.WriteLogAsync(LogLevel.Info, $"Timer [{mName}] has started");
+            await Log.WriteLogAsync(LogLevel.Info, $"Timer [{Name}] has started");
         }
 
         protected virtual async Task<bool> OnElapseAsync()
         {
-            await Log.WriteLogAsync(LogLevel.Info, $"Timer [{mName}] has elapsed at {DateTime.Now}");
+            await Log.WriteLogAsync(LogLevel.Info, $"Timer [{Name}] has elapsed at {DateTime.Now}");
             return true;
         }
 
         protected virtual async Task OnCloseAsync()
         {
-            await Log.WriteLogAsync(LogLevel.Info, $"Timer [{mName}] has finished");
+            await Log.WriteLogAsync(LogLevel.Info, $"Timer [{Name}] has finished");
         }
     }
 }

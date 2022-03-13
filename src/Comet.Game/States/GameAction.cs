@@ -46,7 +46,7 @@ namespace Comet.Game.States
 
                 if (idAction == idOld && deadLoopCount++ >= _DEADLOCK_CHECK_I)
                 {
-                    await Log.WriteLogAsync(LogLevel.Deadloop,
+                    await Log.WriteLogAsync(LogLevel.DeadLoop,
                         $"Error: dead loop detected, from: {idAction}, last action: {idNext}");
                     return false;
                 }

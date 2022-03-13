@@ -7,35 +7,42 @@ namespace Comet.Shared
     /// </summary>
     public sealed class NetworkMonitor
     {
-        /// <summary>
-        ///     The title of the console.
-        /// </summary>
-        private const string FORMAT_S = "(↑{0:F2} kbps [{2:0000}], ↓{1:F2} kbps [{3:0000}])";
+        private long mTotalRecvBytes;
+        private int mTotalRecvPackets;
 
-        private long m_TotalRecvBytes = 0;
+        private long mTotalSentBytes;
+        private int mTotalSentPackets;
+
         /// <summary>
         ///     The number of bytes received by the server.
         /// </summary>
-        private int mRecvBytes = 0;
+        private int mRecvBytes;
 
-        private long m_TotalSentBytes = 0;
+        private int mRecvPackets;
+
         /// <summary>
         ///     The number of bytes sent by the server.
         /// </summary>
-        private int mSentBytes = 0;
+        private int mSentBytes;
 
-        private int mSentPackets = 0;
-        private int m_TotalSentPackets = 0;
-        private int mRecvPackets = 0;
-        private int m_TotalRecvPackets = 0;
+        private int mSentPackets;
+
+        public int PacketsSent => mSentPackets;
+        public int PacketsRecv => mRecvPackets;
+        public int BytesSent => mSentBytes;
+        public int BytesRecv => mRecvBytes;
+        public long TotalPacketsSent => mTotalSentPackets;
+        public long TotalPacketsRecv => mTotalRecvPackets;
+        public long TotalBytesSent => mTotalSentBytes;
+        public long TotalBytesRecv => mTotalRecvBytes;
 
         /// <summary>
         ///     Called by the timer.
         /// </summary>
         public string UpdateStatsAsync(int interval)
         {
-            double download = mRecvBytes / (double)interval * 8.0 / 1024.0;
-            double upload = mSentBytes / (double)interval * 8.0 / 1024.0;
+            double download = mRecvBytes / (double) interval * 8.0 / 1024.0;
+            double upload = mSentBytes / (double) interval * 8.0 / 1024.0;
             int sent = mSentPackets;
             int recv = mRecvPackets;
 
@@ -44,17 +51,8 @@ namespace Comet.Shared
             mRecvPackets = 0;
             mSentPackets = 0;
 
-            return string.Format(FORMAT_S, upload, download, sent, recv);
+            return $"(↑{upload:F2} kbps [{download:0000}], ↓{sent:F2} kbps [{recv:0000}])";
         }
-
-        public int PacketsSent => mSentPackets;
-        public int PacketsRecv => mRecvPackets;
-        public int BytesSent => mSentBytes;
-        public int BytesRecv => mRecvBytes;
-        public long TotalPacketsSent => m_TotalSentPackets;
-        public long TotalPacketsRecv => m_TotalRecvPackets;
-        public long TotalBytesSent => m_TotalSentBytes;
-        public long TotalBytesRecv => m_TotalRecvBytes;
 
         /// <summary>
         ///     Signal to the monitor that aLength bytes were sent.
@@ -63,9 +61,9 @@ namespace Comet.Shared
         public void Send(int aLength)
         {
             Interlocked.Increment(ref mSentPackets);
-            Interlocked.Increment(ref m_TotalSentPackets);
+            Interlocked.Increment(ref mTotalSentPackets);
             Interlocked.Add(ref mSentBytes, aLength);
-            Interlocked.Add(ref m_TotalSentBytes, aLength);
+            Interlocked.Add(ref mTotalSentBytes, aLength);
         }
 
         /// <summary>
@@ -75,9 +73,9 @@ namespace Comet.Shared
         public void Receive(int aLength)
         {
             Interlocked.Increment(ref mRecvPackets);
-            Interlocked.Increment(ref m_TotalRecvPackets);
+            Interlocked.Increment(ref mTotalRecvPackets);
             Interlocked.Add(ref mRecvBytes, aLength);
-            Interlocked.Add(ref m_TotalRecvBytes, aLength);
+            Interlocked.Add(ref mTotalRecvBytes, aLength);
         }
     }
 }

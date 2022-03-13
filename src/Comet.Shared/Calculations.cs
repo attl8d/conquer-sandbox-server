@@ -6,18 +6,13 @@ namespace Comet.Shared
 {
     public static class Calculations
     {
-        public const int ADJUST_PERCENT = 30000; // ADJUSTÊ±£¬>=30000 ±íÊ¾°Ù·ÖÊý
-        public const int ADJUST_SET = -30000; // ADJUSTÊ±£¬<=-30000 ±íÊ¾µÈÓÚ(-1*num - 30000)
-        public const int ADJUST_FULL = short.MinValue; // ADJUSTÊ±£¬== -32768 ±íÊ¾ÌîÂú
-        public const int DEFAULT_DEFENCE2 = 10000; // Êý¾Ý¿âÈ±Ê¡Öµ
-
         public static int ChangeAdjustRate(int nData, int divideBy)
         {
             if (divideBy == 0)
                 return nData;
 
             if (nData >= ADJUST_PERCENT)
-                return ADJUST_PERCENT + ((nData % ADJUST_PERCENT) / divideBy);
+                return ADJUST_PERCENT + nData % ADJUST_PERCENT / divideBy;
 
             return nData / divideBy;
         }
@@ -29,14 +24,14 @@ namespace Comet.Shared
 
         public static int AdjustDataEx(int nData, int nAdjust, int nMaxData = 0)
         {
+            if (nAdjust == ADJUST_FULL)
+                return nMaxData;
+
             if (nAdjust >= ADJUST_PERCENT)
                 return MulDiv(nData, nAdjust - ADJUST_PERCENT, 100);
 
             if (nAdjust <= ADJUST_SET)
                 return -1 * nAdjust + ADJUST_SET;
-
-            if (nAdjust == ADJUST_FULL)
-                return nMaxData;
 
             return nData + nAdjust;
         }
@@ -48,14 +43,14 @@ namespace Comet.Shared
 
         public static long AdjustDataEx(long nData, long nAdjust, long nMaxData)
         {
+            if (nAdjust == ADJUST_FULL)
+                return nMaxData;
+
             if (nAdjust >= ADJUST_PERCENT)
                 return MulDiv(nData, nAdjust - ADJUST_PERCENT, 100);
 
             if (nAdjust <= ADJUST_SET)
                 return -1 * nAdjust + ADJUST_SET;
-
-            if (nAdjust == ADJUST_FULL)
-                return nMaxData;
 
             return nData + nAdjust;
         }
@@ -77,7 +72,7 @@ namespace Comet.Shared
 
         public static int MulDiv(int number, int numerator, int denominator)
         {
-            return (int)((long)number * numerator / denominator);
+            return (int) ((long) number * numerator / denominator);
         }
 
         public static uint MulDiv(uint number, uint numerator, uint denominator)
@@ -200,8 +195,6 @@ namespace Comet.Shared
             return n < min ? min : n > max ? max : n;
         }
 
-        public const double RADIAN_TO_DEGREE = 57.29;
-
         public static byte GetDirection(int sourceX, int sourceY, int destX, int destY)
         {
             return GetDirection(new Point(sourceX, sourceY), new Point(destX, destY));
@@ -209,21 +202,25 @@ namespace Comet.Shared
 
         public static byte GetDirection(Point from, Point to)
         {
-            int dir = 0;
-            int[] tan = { -241, -41, 41, 241 };
+            var dir = 0;
+            int[] tan = {-241, -41, 41, 241};
             int deltaX = to.X - from.X;
             int deltaY = to.Y - from.Y;
 
             if (deltaX == 0)
+            {
                 if (deltaY > 0)
                     dir = 0;
                 else
                     dir = 4;
+            }
             else if (deltaY == 0)
+            {
                 if (deltaX > 0)
                     dir = 6;
                 else
                     dir = 2;
+            }
             else
             {
                 int flag = Math.Abs(deltaX) / deltaX;
@@ -259,7 +256,7 @@ namespace Comet.Shared
             }
 
             dir = (dir + 8) % 8;
-            return (byte)dir;
+            return (byte) dir;
         }
 
         /// <summary> This function returns the direction for a jump or attack. </summary>
@@ -270,8 +267,8 @@ namespace Comet.Shared
         public static byte GetDirectionSector(int x1, int y1, int x2, int y2)
         {
             double angle = GetAngle(x1, y1, x2, y2);
-            byte direction = (byte)(Math.Round(angle / 45.0) % 8);
-            return (byte)(direction == 8 ? 0 : direction);
+            var direction = (byte) (Math.Round(angle / 45.0) % 8);
+            return (byte) (direction == 8 ? 0 : direction);
         }
 
         /// <summary> This function returns the angle for a jump or attack. </summary>
@@ -293,17 +290,17 @@ namespace Comet.Shared
         /// <param name="y2">The y coordinate of the second object.</param>
         public static int GetDistance(int x1, int y1, int x2, int y2)
         {
-            return (int)Math.Sqrt((x1 - x2) * (x1 - x2) + (y1 - y2) * (y1 - y2));
+            return (int) Math.Sqrt((x1 - x2) * (x1 - x2) + (y1 - y2) * (y1 - y2));
         }
 
         private static unsafe double SquareRootFloat(double number)
         {
             const double f = 1.5d;
-            var x = number * 0.5d;
-            var y = number;
-            var i = *(long*)&y;
+            double x = number * 0.5d;
+            double y = number;
+            long i = *(long*) &y;
             i = 0x5f3759df - (i >> 1);
-            y = *(double*)&i;
+            y = *(double*) &i;
             y *= f - x * y * y;
             y *= f - x * y * y;
             return number * y;
@@ -313,14 +310,14 @@ namespace Comet.Shared
         {
             if (!(sourceX != targetX || sourceY != targetY)) return 0f;
 
-            var deltaX = targetX - sourceX;
-            var deltaY = targetY - sourceY;
-            var distance = Math.Sqrt(deltaX * deltaX + deltaY * deltaY);
+            int deltaX = targetX - sourceX;
+            int deltaY = targetY - sourceY;
+            double distance = Math.Sqrt(deltaX * deltaX + deltaY * deltaY);
 
             if (!(deltaX <= distance && distance > 0)) return 0f;
-            var radian = Math.Asin(deltaX / distance);
+            double radian = Math.Asin(deltaX / distance);
 
-            return deltaY > 0 ? (Math.PI / 2 - radian) : (Math.PI + radian + Math.PI / 2);
+            return deltaY > 0 ? Math.PI / 2 - radian : Math.PI + radian + Math.PI / 2;
         }
 
         public static bool IsInFan(Point center, Point source, Point target, int width, int range)
@@ -333,7 +330,7 @@ namespace Comet.Shared
             if (target.X == source.X && target.Y == source.Y)
                 return false;
 
-            if (GetDistance((ushort)center.X, (ushort)center.Y, (ushort)target.X, (ushort)target.Y) > range)
+            if (GetDistance((ushort) center.X, (ushort) center.Y, (ushort) target.X, (ushort) target.Y) > range)
                 return false;
 
             const double pi = 3.1415926535d;
@@ -348,21 +345,21 @@ namespace Comet.Shared
         }
 
         /// <summary>
-        /// Return all points on that line. (From TQ)
+        ///     Return all points on that line. (From TQ)
         /// </summary>
         public static void DDALine(int x0, int y0, int x1, int y1, int nRange, ref List<Point> vctPoint)
         {
             if (x0 == x1 && y0 == y1)
                 return;
 
-            float scale = (float)(1.0f * nRange / Math.Sqrt((x1 - x0) * (x1 - x0) + (y1 - y0) * (y1 - y0)));
-            x1 = (int)(0.5f + scale * (x1 - x0) + x0);
-            y1 = (int)(0.5f + scale * (y1 - y0) + y0);
+            var scale = (float) (1.0f * nRange / Math.Sqrt((x1 - x0) * (x1 - x0) + (y1 - y0) * (y1 - y0)));
+            x1 = (int) (0.5f + scale * (x1 - x0) + x0);
+            y1 = (int) (0.5f + scale * (y1 - y0) + y0);
             DDALineEx(x0, y0, x1, y1, ref vctPoint);
         }
 
         /// <summary>
-        /// Return all points on that line. (From TQ)
+        ///     Return all points on that line. (From TQ)
         /// </summary>
         public static void DDALineEx(int x0, int y0, int x1, int y1, ref List<Point> vctPoint)
         {
@@ -382,23 +379,19 @@ namespace Comet.Shared
                 int numerator = dy * 2;
                 int denominator = absDx * 2;
                 if (dx > 0)
-                {
                     // x0 ++
-                    for (int i = 1; i <= absDx; i++)
+                    for (var i = 1; i <= absDx; i++)
                     {
-                        point = new Point { X = x0 + i, Y = y0 + (numerator * i + _0_5) / denominator };
+                        point = new Point {X = x0 + i, Y = y0 + (numerator * i + _0_5) / denominator};
                         vctPoint.Add(point);
                     }
-                }
                 else if (dx < 0)
-                {
                     // x0 --
-                    for (int i = 1; i <= absDx; i++)
+                    for (var i = 1; i <= absDx; i++)
                     {
-                        point = new Point { X = x0 - i, Y = y0 + (numerator * i + _0_5) / denominator };
+                        point = new Point {X = x0 - i, Y = y0 + (numerator * i + _0_5) / denominator};
                         vctPoint.Add(point);
                     }
-                }
             }
             else
             {
@@ -406,24 +399,27 @@ namespace Comet.Shared
                 int numerator = dx * 2;
                 int denominator = absDy * 2;
                 if (dy > 0)
-                {
                     // y0 ++
-                    for (int i = 1; i <= absDy; i++)
+                    for (var i = 1; i <= absDy; i++)
                     {
-                        point = new Point { Y = y0 + i, X = x0 + (numerator * i + _0_5) / denominator };
+                        point = new Point {Y = y0 + i, X = x0 + (numerator * i + _0_5) / denominator};
                         vctPoint.Add(point);
                     }
-                }
                 else if (dy < 0)
-                {
                     // y0 -- 
-                    for (int i = 1; i <= absDy; i++)
+                    for (var i = 1; i <= absDy; i++)
                     {
-                        point = new Point { Y = y0 - i, X = x0 + (numerator * i + _0_5) / denominator };
+                        point = new Point {Y = y0 - i, X = x0 + (numerator * i + _0_5) / denominator};
                         vctPoint.Add(point);
                     }
-                }
             }
         }
+
+        public const int ADJUST_PERCENT = 30000;       // ADJUSTÊ±£¬>=30000 ±íÊ¾°Ù·ÖÊý
+        public const int ADJUST_SET = -30000;          // ADJUSTÊ±£¬<=-30000 ±íÊ¾µÈÓÚ(-1*num - 30000)
+        public const int ADJUST_FULL = short.MinValue; // ADJUSTÊ±£¬== -32768 ±íÊ¾ÌîÂú
+        public const int DEFAULT_DEFENCE2 = 10000;     // Êý¾Ý¿âÈ±Ê¡Öµ
+
+        public const double RADIAN_TO_DEGREE = 57.29;
     }
 }

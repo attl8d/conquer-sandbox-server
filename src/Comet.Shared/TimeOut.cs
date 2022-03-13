@@ -4,13 +4,13 @@ namespace Comet.Shared
 {
     public sealed class TimeOut
     {
-        private int m_interval;
-        private long m_updateTime;
+        private int mInterval;
+        private long mUpdateTime;
 
         public TimeOut(int nInterval = 0)
         {
-            m_interval = nInterval;
-            m_updateTime = 0;
+            mInterval = nInterval;
+            mUpdateTime = 0;
         }
 
         public long Clock()
@@ -20,13 +20,13 @@ namespace Comet.Shared
 
         public bool Update()
         {
-            m_updateTime = Clock();
+            mUpdateTime = Clock();
             return true;
         }
 
         public bool IsTimeOut()
         {
-            return Clock() >= m_updateTime + m_interval;
+            return Clock() >= mUpdateTime + mInterval;
         }
 
         public bool ToNextTime()
@@ -37,12 +37,12 @@ namespace Comet.Shared
 
         public void SetInterval(int nSecs)
         {
-            m_interval = nSecs;
+            mInterval = nSecs;
         }
 
         public void Startup(int nSecs)
         {
-            m_interval = nSecs;
+            mInterval = nSecs;
             Update();
         }
 
@@ -54,28 +54,28 @@ namespace Comet.Shared
 
         public bool IsActive()
         {
-            return m_updateTime != 0;
+            return mUpdateTime != 0;
         }
 
         public bool Clear()
         {
-            m_updateTime = m_interval = 0;
+            mUpdateTime = mInterval = 0;
             return true;
         }
 
         public void IncInterval(int nSecs, int nLimit)
         {
-            m_interval = Calculations.CutOverflow(m_interval + nSecs, nLimit);
+            mInterval = Calculations.CutOverflow(mInterval + nSecs, nLimit);
         }
 
         public void DecInterval(int nSecs)
         {
-            m_interval = Calculations.CutTrail(m_interval - nSecs, 0);
+            mInterval = Calculations.CutTrail(mInterval - nSecs, 0);
         }
 
         public bool IsTimeOut(int nSecs)
         {
-            return Clock() >= m_updateTime + nSecs;
+            return Clock() >= mUpdateTime + nSecs;
         }
 
         public bool ToNextTime(int nSecs)
@@ -94,9 +94,9 @@ namespace Comet.Shared
         {
             if (IsTimeOut(nSecs))
             {
-                if (Clock() >= m_updateTime + nSecs * 2)
+                if (Clock() >= mUpdateTime + nSecs * 2)
                     return Update();
-                m_updateTime += nSecs;
+                mUpdateTime += nSecs;
                 return true;
             }
 
@@ -105,14 +105,14 @@ namespace Comet.Shared
 
         public int GetRemain()
         {
-            return m_updateTime != 0
-                ? Calculations.CutRange(m_interval - ((int)Clock() - (int)m_updateTime), 0, m_interval)
-                : 0;
+            return mUpdateTime != 0
+                       ? Calculations.CutRange(mInterval - ((int) Clock() - (int) mUpdateTime), 0, mInterval)
+                       : 0;
         }
 
         public int GetInterval()
         {
-            return m_interval;
+            return mInterval;
         }
 
         public static implicit operator bool(TimeOut ms)
@@ -123,15 +123,15 @@ namespace Comet.Shared
 
     public sealed class TimeOutMS
     {
-        private int m_interval;
-        private long m_updateTime;
+        private int mInterval;
+        private long mUpdateTime;
 
         public TimeOutMS(int nInterval = 0)
         {
             if (nInterval < 0)
                 nInterval = int.MaxValue;
-            m_interval = nInterval;
-            m_updateTime = 0;
+            mInterval = nInterval;
+            mUpdateTime = 0;
         }
 
         public long Clock()
@@ -141,13 +141,13 @@ namespace Comet.Shared
 
         public bool Update()
         {
-            m_updateTime = Clock();
+            mUpdateTime = Clock();
             return true;
         }
 
         public bool IsTimeOut()
         {
-            return Clock() >= m_updateTime + m_interval;
+            return Clock() >= mUpdateTime + mInterval;
         }
 
         public bool ToNextTime()
@@ -159,12 +159,12 @@ namespace Comet.Shared
 
         public void SetInterval(int nMilliSecs)
         {
-            m_interval = nMilliSecs;
+            mInterval = nMilliSecs;
         }
 
         public void Startup(int nMilliSecs)
         {
-            m_interval = Math.Min(nMilliSecs, int.MaxValue);
+            mInterval = Math.Min(nMilliSecs, int.MaxValue);
             Update();
         }
 
@@ -176,28 +176,28 @@ namespace Comet.Shared
 
         public bool IsActive()
         {
-            return m_updateTime != 0;
+            return mUpdateTime != 0;
         }
 
         public bool Clear()
         {
-            m_updateTime = m_interval = 0;
+            mUpdateTime = mInterval = 0;
             return true;
         }
 
         public void IncInterval(int nMilliSecs, int nLimit)
         {
-            m_interval = Calculations.CutOverflow(m_interval + nMilliSecs, nLimit);
+            mInterval = Calculations.CutOverflow(mInterval + nMilliSecs, nLimit);
         }
 
         public void DecInterval(int nMilliSecs)
         {
-            m_interval = Calculations.CutTrail(m_interval - nMilliSecs, 0);
+            mInterval = Calculations.CutTrail(mInterval - nMilliSecs, 0);
         }
 
         public bool IsTimeOut(int nMilliSecs)
         {
-            return Clock() >= m_updateTime + nMilliSecs;
+            return Clock() >= mUpdateTime + nMilliSecs;
         }
 
         public bool ToNextTime(int nMilliSecs)
@@ -216,9 +216,9 @@ namespace Comet.Shared
         {
             if (IsTimeOut(nMilliSecs))
             {
-                if (Clock() >= m_updateTime + nMilliSecs * 2)
+                if (Clock() >= mUpdateTime + nMilliSecs * 2)
                     return Update();
-                m_updateTime += nMilliSecs;
+                mUpdateTime += nMilliSecs;
                 return true;
             }
 
@@ -227,14 +227,14 @@ namespace Comet.Shared
 
         public int GetRemain()
         {
-            return m_updateTime != 0
-                ? Calculations.CutRange(m_interval - ((int)Clock() - (int)m_updateTime), 0, m_interval)
-                : 0;
+            return mUpdateTime != 0
+                       ? Calculations.CutRange(mInterval - ((int) Clock() - (int) mUpdateTime), 0, mInterval)
+                       : 0;
         }
 
         public int GetInterval()
         {
-            return m_interval;
+            return mInterval;
         }
 
         public static implicit operator bool(TimeOutMS ms)

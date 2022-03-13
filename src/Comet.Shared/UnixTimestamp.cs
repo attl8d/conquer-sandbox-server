@@ -24,13 +24,13 @@ namespace Comet.Shared
         public static int Now()
         {
             return Convert.ToInt32((DateTime.Now - UnixEpoch)
-                .TotalSeconds);
+                                   .TotalSeconds);
         }
 
         public static long NowMs()
         {
             return Convert.ToInt64((DateTime.Now - UnixEpoch)
-                .TotalMilliseconds);
+                                   .TotalMilliseconds);
         }
 
         public static int Timestamp(DateTime time)
@@ -46,20 +46,20 @@ namespace Comet.Shared
         public static int MonthDayStamp()
         {
             return Convert.ToInt32((DateTime.Now - new DateTime(DateTime.Now.Year, 1, 1, 0, 0, 0, 0).ToLocalTime())
-                .TotalSeconds);
+                                   .TotalSeconds);
         }
 
         public static int MonthDayStamp(DateTime time)
         {
             return Convert.ToInt32((time - new DateTime(DateTime.Now.Year, 1, 1, 0, 0, 0, 0).ToLocalTime())
-                .TotalSeconds);
+                                   .TotalSeconds);
         }
 
         public static int DayOfTheMonthStamp()
         {
             return Convert.ToInt32((DateTime.Now -
                                     new DateTime(DateTime.Now.Year, DateTime.Now.Month, 1, 0, 0, 0, 0).ToLocalTime()
-                ).TotalSeconds);
+                                   ).TotalSeconds);
         }
 
         public static int DayOfTheMonthStamp(DateTime time)

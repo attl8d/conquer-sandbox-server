@@ -13,7 +13,7 @@ namespace Comet.Shared
         Warning,
         Error,
         Exception,
-        Deadloop,
+        DeadLoop,
         Cheat,
         Action,
         Socket
@@ -35,10 +35,6 @@ namespace Comet.Shared
 
     public static class Log
     {
-        private static readonly Dictionary<string, LogFile> Files = new Dictionary<string, LogFile>();
-
-        public static string DefaultFileName = "Server";
-
         static Log()
         {
             RefreshFolders();
@@ -111,8 +107,8 @@ namespace Comet.Shared
 
         private static async Task WriteToFile(string file, LogFolder folder, string value)
         {
-            var now = DateTime.Now;
-            if (!Files.TryGetValue(file, out var fileHandle))
+            DateTime now = DateTime.Now;
+            if (!Files.TryGetValue(file, out LogFile fileHandle))
                 Files.Add(file, fileHandle = CreateHandle(file, folder));
 
             if (fileHandle.Date.Year != now.Year
@@ -125,7 +121,7 @@ namespace Comet.Shared
             try
             {
                 await using var fWriter = new FileStream(fileHandle.Path, FileMode.Append, FileAccess.Write,
-                    FileShare.Write, 4096);
+                                                         FileShare.Write, 4096);
                 await using var writer = new StreamWriter(fWriter);
                 await writer.WriteLineAsync(value);
             }
@@ -140,7 +136,7 @@ namespace Comet.Shared
             if (Files.ContainsKey(file))
                 return Files[file];
 
-            var now = DateTime.Now;
+            DateTime now = DateTime.Now;
             var logFile = new LogFile
             {
                 Date = now,
@@ -153,16 +149,20 @@ namespace Comet.Shared
 
         private static string GetDirectory(LogFolder folder)
         {
-            var now = DateTime.Now;
+            DateTime now = DateTime.Now;
             return string.Join(Path.DirectorySeparatorChar.ToString(), ".", $"{folder}", $"{now.Year:0000}",
-                $"{now.Month:00}", $"{now.Day:00}");
+                               $"{now.Month:00}", $"{now.Day:00}");
         }
 
         private static void RefreshFolders()
         {
-            foreach (var eVal in Enum.GetValues(typeof(LogFolder)).Cast<LogFolder>())
+            foreach (LogFolder eVal in Enum.GetValues(typeof(LogFolder)).Cast<LogFolder>())
                 if (!Directory.Exists(GetDirectory(eVal)))
                     Directory.CreateDirectory(GetDirectory(eVal));
         }
+
+        private static readonly Dictionary<string, LogFile> Files = new();
+
+        public static string DefaultFileName = "Server";
     }
 }

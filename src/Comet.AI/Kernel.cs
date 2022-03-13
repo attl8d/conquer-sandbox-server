@@ -28,11 +28,10 @@ namespace Comet.AI
         {
             try
             {
-                await MapManager.LoadDataAsync();
-                await MapManager.LoadMapsAsync();
+                await MapManager.LoadMapsAsync().ConfigureAwait(true);
 
-                await RoleManager.InitializeAsync();
-                await GeneratorManager.InitializeAsync();
+                await RoleManager.InitializeAsync().ConfigureAwait(true);
+                await GeneratorManager.InitializeAsync().ConfigureAwait(true);
 
                 await CommonThread.StartAsync();
                 await AiThread.StartAsync();

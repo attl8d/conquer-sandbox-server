@@ -1,4 +1,5 @@
 ﻿using Comet.Core;
+using Comet.Core.World.Maps.Enums;
 using Comet.Game.Packets;
 using Comet.Game.States.Events;
 using Comet.Game.States.Items;

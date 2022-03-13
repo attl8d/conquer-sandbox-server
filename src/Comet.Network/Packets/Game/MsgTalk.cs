@@ -156,61 +156,63 @@ namespace Comet.Network.Packets.Game
         public const string SYSTEM = "SYSTEM";
         public const string ALLUSERS = "ALLUSERS";
 
-        /// <summary>
-        ///     Enumeration for defining the channel text is printed to. Can also print to
-        ///     separate states of the client such as character registration, and can be
-        ///     used to change the state of the client or deny a login.
-        /// </summary>
-        public enum TalkChannel : ushort
-        {
-            Talk = 2000,
-            Whisper,
-            Action,
-            Team,
-            Guild,
-            Family = 2006,
-            System,
-            Yell,
-            Friend,
-            Center = 2011,
-            TopLeft,
-            Ghost,
-            Service,
-            Tip,
-            World = 2021,
-            Qualifier = 2022,
-            Register = 2100,
-            Login,
-            Shop,
-            Vendor = 2104,
-            Website,
-            GuildWarRight1 = 2108,
-            GuildWarRight2,
-            Offline,
-            Announce,
-            MessageBox,
-            TradeBoard = 2201,
-            FriendBoard,
-            TeamBoard,
-            GuildBoard,
-            OthersBoard,
-            Bbs,
-            Broadcast = 2500,
-            Monster = 2600
-        }
 
-        /// <summary>
-        /// Enumeration type for controlling how text is stylized in the client's chat
-        /// area. By default, text appears and fades overtime. This can be overridden
-        /// with multiple styles, hard-coded into the client.
-        /// </summary>
-        [Flags]
-        public enum TalkStyle : ushort
-        {
-            Normal = 0,
-            Scroll = 1 << 0,
-            Flash = 1 << 1,
-            Blast = 1 << 2
-        }
+    }
+
+    /// <summary>
+    ///     Enumeration for defining the channel text is printed to. Can also print to
+    ///     separate states of the client such as character registration, and can be
+    ///     used to change the state of the client or deny a login.
+    /// </summary>
+    public enum TalkChannel : ushort
+    {
+        Talk = 2000,
+        Whisper,
+        Action,
+        Team,
+        Guild,
+        Family = 2006,
+        System,
+        Yell,
+        Friend,
+        Center = 2011,
+        TopLeft,
+        Ghost,
+        Service,
+        Tip,
+        World = 2021,
+        Qualifier = 2022,
+        Register = 2100,
+        Login,
+        Shop,
+        Vendor = 2104,
+        Website,
+        GuildWarRight1 = 2108,
+        GuildWarRight2,
+        Offline,
+        Announce,
+        MessageBox,
+        TradeBoard = 2201,
+        FriendBoard,
+        TeamBoard,
+        GuildBoard,
+        OthersBoard,
+        Bbs,
+        Broadcast = 2500,
+        Monster = 2600
+    }
+
+    /// <summary>
+    /// Enumeration type for controlling how text is stylized in the client's chat
+    /// area. By default, text appears and fades overtime. This can be overridden
+    /// with multiple styles, hard-coded into the client.
+    /// </summary>
+    [Flags]
+    public enum TalkStyle : ushort
+    {
+        Normal = 0,
+        Scroll = 1 << 0,
+        Flash = 1 << 1,
+        Blast = 1 << 2
     }
 }

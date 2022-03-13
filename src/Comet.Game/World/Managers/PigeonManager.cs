@@ -4,6 +4,7 @@ using Comet.Game.Database;
 using Comet.Game.Database.Repositories;
 using Comet.Game.Packets;
 using Comet.Game.States;
+using Comet.Network.Packets.Game;
 using Comet.Shared;
 using System;
 using System.Collections.Generic;
@@ -166,7 +167,7 @@ namespace Comet.Game.World.Managers
             m_past.Add(m_current);
 
             await RebuildQueueAsync();
-            await RoleManager.BroadcastMsgAsync(new MsgTalk(m_current.UserIdentity, MsgTalk.TalkChannel.Broadcast, Color.White, MsgTalk.ALLUSERS, m_current.UserName, m_current.Message));
+            await RoleManager.BroadcastMsgAsync(new MsgTalk(m_current.UserIdentity, TalkChannel.Broadcast, Color.White, MsgTalk.ALLUSERS, m_current.UserName, m_current.Message));
         }
 
         public static async Task OnTimerAsync()
@@ -228,7 +229,7 @@ namespace Comet.Game.World.Managers
         public static async Task SendToUserAsync(Character user)
         {
             if (m_current != null)
-                await user.SendAsync(new MsgTalk(m_current.UserIdentity, MsgTalk.TalkChannel.Broadcast, Color.White, MsgTalk.ALLUSERS, m_current.UserName, m_current.Message));
+                await user.SendAsync(new MsgTalk(m_current.UserIdentity, TalkChannel.Broadcast, Color.White, MsgTalk.ALLUSERS, m_current.UserName, m_current.Message));
         }
 
         public static int OnQueueByUser(uint idUser) => m_queue.Count(x => x.UserIdentity == idUser);

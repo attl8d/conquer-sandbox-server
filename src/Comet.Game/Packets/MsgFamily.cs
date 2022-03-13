@@ -387,7 +387,7 @@ namespace Comet.Game.Packets
                     {
                         if (user.IsPm())
                         {
-                            await client.SendAsync(new MsgTalk(client.Identity, MsgTalk.TalkChannel.Service,
+                            await client.SendAsync(new MsgTalk(client.Identity, TalkChannel.Service,
                                 $"Missing packet {Type}, Action {Action}, Length {Length}"));
                         }
 

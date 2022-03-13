@@ -30,22 +30,7 @@ namespace Comet.Game.States
             StatusSet = new StatusSet(this);
             BattleSystem = new BattleSystem(this);
             MagicData = new MagicData(this);
-
-            mCancellationTokenSource = new CancellationTokenSource();
-            mCancellationToken = mCancellationTokenSource.Token;
         }
-
-        #region Cancellation Token
-
-        protected CancellationTokenSource mCancellationTokenSource;
-        protected CancellationToken mCancellationToken;
-        
-        public void Cancel()
-        {
-            mCancellationTokenSource.Cancel();
-        }
-
-        #endregion
 
         #region Identity
 
@@ -158,9 +143,9 @@ namespace Comet.Game.States
             {
                 user = (Character)this;
                 // we're trusting this
-                if (/*GetDistance(x, y) > Screen.VIEW_SIZE || */!Map.IsStandEnable(x, y))
+                if (!Map.IsStandEnable(x, y) || !user.IsJumpPass(x, y, 26))
                 {
-                    await user.SendAsync(Language.StrInvalidCoordinate, MsgTalk.TalkChannel.System, Color.Red);
+                    await user.SendAsync(Language.StrInvalidCoordinate, TalkChannel.TopLeft, Color.Red);
                     await user.KickbackAsync();
                     return false;
                 }
@@ -230,13 +215,6 @@ namespace Comet.Game.States
                 }
             }
 
-            //#if DEBUG
-            //            if (user != null)
-            //            {
-            //                await user.SendAsync($"Walk:From[{MapX:000},{MapY:000}],To[{newX:000},{newY:000}]", MsgTalk.TalkChannel.Talk);
-            //            }
-            //#endif
-
             int vigor = 0;
             if (user != null && QueryStatus(StatusSet.RIDING) != null)
             {
@@ -250,14 +228,15 @@ namespace Comet.Game.States
 
             if (!IsAlive && user != null && !user.IsGhost())
             {
-                await user.SendAsync(Language.StrDead, MsgTalk.TalkChannel.System, Color.Red);
+                await user.KickbackAsync();
+                await user.SendAsync(Language.StrDead, TalkChannel.TopLeft, Color.Red);
                 return false;
             }
 
             if (!Map.IsMoveEnable(newX, newY) && user != null)
             {
                 await user.KickbackAsync();
-                await user.SendAsync(Language.StrInvalidCoordinate, MsgTalk.TalkChannel.System, Color.Red);
+                await user.SendAsync(Language.StrInvalidCoordinate, TalkChannel.TopLeft, Color.Red);
                 return false;
             }
 
@@ -961,7 +940,7 @@ namespace Comet.Game.States
             await Map.BroadcastRoomMsgAsync(MapX, MapY, msg, self ? 0 : Identity);
         }
 
-        public async Task SendAsync(string message, MsgTalk.TalkChannel channel = MsgTalk.TalkChannel.TopLeft, Color? color = null)
+        public async Task SendAsync(string message, TalkChannel channel = TalkChannel.TopLeft, Color? color = null)
         {
             await SendAsync(new MsgTalk(Identity, channel, color ?? Color.White, message));
         }

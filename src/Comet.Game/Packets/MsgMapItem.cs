@@ -36,7 +36,7 @@ namespace Comet.Game.Packets
                     }
                     break;
                 default:
-                    await client.SendAsync(new MsgTalk(client.Identity, MsgTalk.TalkChannel.Service,
+                    await client.SendAsync(new MsgTalk(client.Identity, TalkChannel.Service,
                         $"Missing packet {Type}, Action {Mode}, Length {Length}"));
                     await Log.WriteLogAsync(LogLevel.Warning,
                         "Missing packet {0}, Action {1}, Length {2}\n{3}",

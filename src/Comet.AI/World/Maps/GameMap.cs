@@ -8,6 +8,7 @@ using Comet.AI.Database;
 using Comet.AI.Database.Repositories;
 using Comet.AI.States;
 using Comet.AI.World.Managers;
+using Comet.Core.World;
 using Comet.Core.World.Maps;
 using Comet.Database.Entities;
 using Comet.Shared;
@@ -130,7 +131,7 @@ namespace Comet.AI.World.Maps
         {
             if (m_dbMap == null && m_dbDynamap == null) return false;
 
-            m_mapData = MapManager.GetMapData(MapDoc);
+            m_mapData = MapDataManager.GetMapData(MapDoc);
             if (m_mapData == null)
             {
                 await Log.WriteLogAsync(LogLevel.Warning, $"Could not load map {Identity}({MapDoc}): map data not found");
@@ -475,7 +476,7 @@ namespace Comet.AI.World.Maps
 
         public bool IsStandEnable(int x, int y)
         {
-            return m_mapData[x, y].IsAccessible();
+            return m_mapData.GetFloorMask(x, y) == 0;
         }
 
         public bool IsMoveEnable(int x, int y, FacingDirection dir, int sizeAdd, int climbCap = 0)

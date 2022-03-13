@@ -1,4 +1,5 @@
 using Comet.Core;
+using Comet.Core.World.Maps.Enums;
 using Comet.Database.Entities;
 using Comet.Game.Database;
 using Comet.Game.Database.Repositories;
@@ -963,7 +964,7 @@ namespace Comet.Game.States
             if (Team != null && !Team.IsLeader(Identity) && virtue > 0)
             {
                 Team.Leader.VirtuePoints += virtue;
-                await Team.SendAsync(new MsgTalk(Identity, MsgTalk.TalkChannel.Team, Color.White,
+                await Team.SendAsync(new MsgTalk(Identity, TalkChannel.Team, Color.White,
                     string.Format(Language.StrAwardVirtue, Team.Leader.Name, virtue)));
 
                 if (Team.Leader.SyndicateIdentity != 0)
@@ -1160,7 +1161,7 @@ namespace Comet.Game.States
 
         #region Screen
 
-        public async Task BroadcastRoomMsgAsync(string message, MsgTalk.TalkChannel channel = MsgTalk.TalkChannel.TopLeft, Color? color = null, bool self = true)
+        public async Task BroadcastRoomMsgAsync(string message, TalkChannel channel = TalkChannel.TopLeft, Color? color = null, bool self = true)
         {
             await BroadcastRoomMsgAsync(new MsgTalk(Identity, channel, color ?? Color.Red, message), self);
         }
@@ -1412,6 +1413,52 @@ namespace Comet.Game.States
             return Map.QueryAroundRole(this, idRole);
         }
 
+        public bool IsJumpPass(int x, int y, int alt)
+        {
+            List<Point> setLine = new List<Point>();
+            Calculations.DDALineEx(MapX, MapY, x, y, ref setLine);
+
+            if (x != setLine[setLine.Count - 1].X)
+                return false;
+            if (y != setLine[setLine.Count - 1].Y)
+                return false;
+
+            float fAlt = (float)(Map.GetFloorAlt(MapX, MapY) + alt + 0.5);
+
+            foreach (var point in setLine)
+            {
+                if (Map.IsAltOver(point.X, point.Y, (int)fAlt))
+                    return false;
+            }
+
+            return true;
+        }
+
+        public bool IsArrowPass(int x, int y, int alt)
+        {
+            {
+                List<Point> setLine = new List<Point>();
+                Calculations.DDALineEx(MapX, MapY, x, y, ref setLine);
+
+                if (x != setLine[setLine.Count - 1].X)
+                    return false;
+                if (y != setLine[setLine.Count - 1].Y)
+                    return false;
+
+                float fAlt = (float)(Map.GetFloorAlt(MapX, MapY) + alt + 0.5);
+                float fDelta = (float)(Map.GetFloorAlt(x, y) - fAlt) / setLine.Count;
+
+                foreach (var point in setLine)
+                {
+                    if (Map.IsAltOver(point.X, point.Y, (int)fAlt))
+                        return false;
+                    fAlt += fDelta;
+                }
+
+                return true;
+            }
+        }
+
         #endregion
 
         #region Movement
@@ -1429,7 +1476,7 @@ namespace Comet.Game.States
                 return true;
 
             if (IsGm())
-                await SendAsync($"syn move: ({MapX},{MapY})->({x},{y})", MsgTalk.TalkChannel.Talk, Color.Red);
+                await SendAsync($"syn move: ({MapX},{MapY})->({x},{y})", TalkChannel.Talk, Color.Red);
 
             if (!Map.IsValidPoint(x, y))
                 return false;
@@ -1454,11 +1501,12 @@ namespace Comet.Game.States
             return SendAsync(new MsgAction
             {
                 Identity = Identity,
-                ArgumentX = MapX,
-                ArgumentY = MapY,
-                Command = (uint)((MapY << 16) | MapX),
                 Direction = (ushort)Direction,
-                Action = MsgAction.ActionType.Kickback
+                Map = MapIdentity,
+                X = MapX,
+                Y = MapY,
+                Action = MsgAction.ActionType.Kickback,
+                Timestamp = (uint)Environment.TickCount
             });
 
         }
@@ -1529,7 +1577,7 @@ namespace Comet.Game.States
             if (amount > Silvers)
             {
                 if (notify)
-                    await SendAsync(Language.StrNotEnoughMoney, MsgTalk.TalkChannel.TopLeft, Color.Red);
+                    await SendAsync(Language.StrNotEnoughMoney, TalkChannel.TopLeft, Color.Red);
                 return false;
             }
 
@@ -1565,7 +1613,7 @@ namespace Comet.Game.States
             if (amount > ConquerPoints)
             {
                 if (notify)
-                    await SendAsync(Language.StrNotEnoughEmoney, MsgTalk.TalkChannel.TopLeft, Color.Red);
+                    await SendAsync(Language.StrNotEnoughEmoney, TalkChannel.TopLeft, Color.Red);
                 return false;
             }
 
@@ -1583,7 +1631,7 @@ namespace Comet.Game.States
             if (amount > ConquerPoints + ConquerPointsBound)
             {
                 if (notify)
-                    await SendAsync(Language.StrNotEnoughEmoney, MsgTalk.TalkChannel.TopLeft, Color.Red);
+                    await SendAsync(Language.StrNotEnoughEmoney, TalkChannel.TopLeft, Color.Red);
                 return false;
             }
 
@@ -1622,7 +1670,7 @@ namespace Comet.Game.States
             if (amount > ConquerPoints)
             {
                 if (notify)
-                    await SendAsync(Language.StrNotEnoughEmoney, MsgTalk.TalkChannel.TopLeft, Color.Red);
+                    await SendAsync(Language.StrNotEnoughEmoney, TalkChannel.TopLeft, Color.Red);
                 return false;
             }
 
@@ -2277,7 +2325,7 @@ namespace Comet.Game.States
             //    await RoleManager.AddOrUpdateSupermanAsync(Identity, KoCount);
             //    int rank = RoleManager.GetSupermanRank(Identity);
             //    if (rank < 100)
-            //        await RoleManager.BroadcastMsgAsync(string.Format(Language.StrSupermanBroadcast, Name, KoCount, rank), MsgTalk.TalkChannel.Talk);
+            //        await RoleManager.BroadcastMsgAsync(string.Format(Language.StrSupermanBroadcast, Name, KoCount, rank), TalkChannel.Talk);
             //}
             KoCount = 0;
         }
@@ -3128,8 +3176,8 @@ namespace Comet.Game.States
             await item.Item.ChangeOwnerAsync(target.Identity, Item.ChangeOwnerType.BoothSale);
             await target.UserPackage.AddItemAsync(item.Item);
 
-            await SendAsync(string.Format(Language.StrBoothSold, target.Name, item.Item.Name, value, moneyType), MsgTalk.TalkChannel.Talk, Color.White);
-            await target.SendAsync(string.Format(Language.StrBoothBought, item.Item.Name, value, moneyType), MsgTalk.TalkChannel.Talk, Color.White);
+            await SendAsync(string.Format(Language.StrBoothSold, target.Name, item.Item.Name, value, moneyType), TalkChannel.Talk, Color.White);
+            await target.SendAsync(string.Format(Language.StrBoothBought, item.Item.Name, value, moneyType), TalkChannel.Talk, Color.White);
 
             await Log.GmLogAsync("booth_sale", $"{item.Identity},{item.Item.PlayerIdentity},{Identity},{item.Item.Type},{item.IsSilver},{item.Value},{item.Item.ToJson()}");
             return true;
@@ -3475,7 +3523,7 @@ namespace Comet.Game.States
                 return false;
             }
 
-            await RoleManager.BroadcastMsgAsync(string.Format(Language.StrSynCreate, Name, name), MsgTalk.TalkChannel.Talk, Color.White);
+            await RoleManager.BroadcastMsgAsync(string.Format(Language.StrSynCreate, Name, name), TalkChannel.Talk, Color.White);
             await SendSyndicateAsync();
             await Screen.SynchroScreenAsync();
             await Syndicate.BroadcastNameAsync();
@@ -3586,7 +3634,7 @@ namespace Comet.Game.States
             if (map == null)
                 return;
 
-            await SendAsync(string.Format(Language.StrPrepareToChallengeFamilyLogin, map.Name), MsgTalk.TalkChannel.Talk, Color.White);
+            await SendAsync(string.Format(Language.StrPrepareToChallengeFamilyLogin, map.Name), TalkChannel.Talk, Color.White);
 
             map = MapManager.GetMap(Family.FamilyMap);
             if (map == null)
@@ -3595,7 +3643,7 @@ namespace Comet.Game.States
             if (war.GetChallengers(map.Identity).Count == 0)
                 return;
 
-            await SendAsync(string.Format(Language.StrPrepareToDefendFamilyLogin, map.Name), MsgTalk.TalkChannel.Talk, Color.White);
+            await SendAsync(string.Format(Language.StrPrepareToDefendFamilyLogin, map.Name), TalkChannel.Talk, Color.White);
         }
 
         private string FamilyOccupyString
@@ -4261,7 +4309,7 @@ namespace Comet.Game.States
             }
 
             if (items.Count > 0)
-                await SendAsync(Language.StrHasDetainEquip, MsgTalk.TalkChannel.Talk);
+                await SendAsync(Language.StrHasDetainEquip, TalkChannel.Talk);
         }
 
         public async Task SendDetainRewardAsync()
@@ -4299,14 +4347,14 @@ namespace Comet.Game.States
                     // ? send message, item ready to be claimed
                     if (ItemManager.Confiscator != null)
                     {
-                        await SendAsync(string.Format(Language.StrHasEquipBonus, dbDetained.TargetName, ItemManager.Confiscator.Name, ItemManager.Confiscator.MapX, ItemManager.Confiscator.MapY), MsgTalk.TalkChannel.Talk);
+                        await SendAsync(string.Format(Language.StrHasEquipBonus, dbDetained.TargetName, ItemManager.Confiscator.Name, ItemManager.Confiscator.MapX, ItemManager.Confiscator.MapY), TalkChannel.Talk);
                     }
                 }
                 else if (!notClaimed)
                 {
                     if (ItemManager.Confiscator != null)
                     {
-                        await SendAsync(string.Format(Language.StrHasEmoneyBonus, dbDetained.TargetName, ItemManager.Confiscator.Name, ItemManager.Confiscator.MapX, ItemManager.Confiscator.MapY), MsgTalk.TalkChannel.Talk);
+                        await SendAsync(string.Format(Language.StrHasEmoneyBonus, dbDetained.TargetName, ItemManager.Confiscator.Name, ItemManager.Confiscator.MapX, ItemManager.Confiscator.MapY), TalkChannel.Talk);
                     }
 
                     // claimed, show CPs reward
@@ -4322,7 +4370,7 @@ namespace Comet.Game.States
 
             if (items.Count > 0 && ItemManager.Confiscator != null)
             {
-                await SendAsync(string.Format(Language.StrPkBonus, ItemManager.Confiscator.Name, ItemManager.Confiscator.MapX, ItemManager.Confiscator.MapY), MsgTalk.TalkChannel.Talk);
+                await SendAsync(string.Format(Language.StrPkBonus, ItemManager.Confiscator.Name, ItemManager.Confiscator.MapX, ItemManager.Confiscator.MapY), TalkChannel.Talk);
             }
         }
 
@@ -4675,6 +4723,9 @@ namespace Comet.Game.States
                 BattleSystem.ResetBattle();
                 return false;
             }
+
+            if (IsBowman && !IsArrowPass(target.MapX, target.MapY, 60))
+                return false;
 
             if (QueryStatus(StatusSet.FATAL_STRIKE) != null)
             {
@@ -5665,6 +5716,17 @@ namespace Comet.Game.States
 
                 await UserPackage.RandDropItemAsync(nDropItem);
 
+                uint moneyDropped;
+                if (QueryStatus(StatusSet.RED_NAME) != null) // Red name drop
+                    moneyDropped = (uint)(Silvers * (await Kernel.NextAsync(35) + 25) / 100); // 25-60%
+                else if (QueryStatus(StatusSet.BLACK_NAME) != null) // Black name drop
+                    moneyDropped = (uint)(Silvers * (await Kernel.NextAsync(40) + 40) / 100); // 40-80%
+                else // normal drop
+                    moneyDropped = (uint)(Silvers * (await Kernel.NextAsync(30) + 10) / 100); // 10-40%
+
+                if (moneyDropped > 0)
+                    await DropSilverAsync(moneyDropped);
+
                 if (attacker.Identity != Identity && attacker is Character atkrUser)
                 {
                     await CreateEnemyAsync(atkrUser);
@@ -5693,17 +5755,6 @@ namespace Comet.Game.States
                         }
                     }
 
-                    uint moneyDropped;
-                    if (QueryStatus(StatusSet.RED_NAME) != null) // Red name drop
-                        moneyDropped = (uint)(Silvers * (await Kernel.NextAsync(35) + 25) / 100); // 25-60%
-                    else if (QueryStatus(StatusSet.BLACK_NAME) != null) // Black name drop
-                        moneyDropped = (uint)(Silvers * (await Kernel.NextAsync(40) + 40) / 100); // 40-80%
-                    else // normal drop
-                        moneyDropped = (uint)(Silvers * (await Kernel.NextAsync(30) + 10) / 100); // 10-40%
-
-                    if (moneyDropped > 0)
-                        await DropSilverAsync(moneyDropped);
-
                     if (PkPoints >= 300)
                     {
                         await ItemManager.DetainItemAsync(this, atkrUser);
@@ -5723,7 +5774,7 @@ namespace Comet.Game.States
                         await SavePositionAsync(6000, 31, 72);
                         await FlyMapAsync(6000, 31, 72);
                         await RoleManager.BroadcastMsgAsync(
-                            string.Format(Language.StrGoToJail, attacker.Name, Name), MsgTalk.TalkChannel.Talk,
+                            string.Format(Language.StrGoToJail, attacker.Name, Name), TalkChannel.Talk,
                             Color.White);
                     }
                 }
@@ -5748,7 +5799,7 @@ namespace Comet.Game.States
                     await SavePositionAsync(6000, 31, 72);
                     await FlyMapAsync(6000, 31, 72);
                     await RoleManager.BroadcastMsgAsync(
-                        string.Format(Language.StrGoToJail, attacker.Name, Name), MsgTalk.TalkChannel.Talk,
+                        string.Format(Language.StrGoToJail, attacker.Name, Name), TalkChannel.Talk,
                         Color.White);
                 }
             }
@@ -6552,7 +6603,7 @@ namespace Comet.Game.States
 
         public override async Task SendSpawnToAsync(Character player)
         {
-            await player.SendAsync(new MsgPlayer(this));
+            await player.SendAsync(new MsgPlayer(this, MapX, MapY));
 
             if (Syndicate != null)
                 await Syndicate.SendAsync(player);

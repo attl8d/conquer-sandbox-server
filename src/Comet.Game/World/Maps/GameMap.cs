@@ -4,7 +4,9 @@ using System.Collections.Generic;
 using System.Drawing;
 using System.Linq;
 using System.Threading.Tasks;
+using Comet.Core.World;
 using Comet.Core.World.Maps;
+using Comet.Core.World.Maps.Enums;
 using Comet.Database.Entities;
 using Comet.Game.Database;
 using Comet.Game.Database.Repositories;
@@ -14,6 +16,7 @@ using Comet.Game.States.Items;
 using Comet.Game.States.Npcs;
 using Comet.Game.World.Managers;
 using Comet.Network.Packets;
+using Comet.Network.Packets.Game;
 using Comet.Shared;
 
 namespace Comet.Game.World.Maps
@@ -24,7 +27,7 @@ namespace Comet.Game.World.Maps
 
         private readonly DbMap m_dbMap;
         private readonly DbDynamap m_dbDynamap;
-        private GameMapData m_mapData;
+        private GameMapData mMapData;
 
         private GameBlock[,] m_blocks;
 
@@ -47,7 +50,6 @@ namespace Comet.Game.World.Maps
         }
 
         public int Partition { get; private set; }
-
         public uint Identity => m_dbMap?.Identity ?? m_dbDynamap?.Identity ?? 0;
         public string Name => m_dbMap?.Name ?? m_dbDynamap?.Name ?? "Invalid";
         public uint OwnerIdentity
@@ -111,8 +113,8 @@ namespace Comet.Game.World.Maps
             }
         }
 
-        public int Width => m_mapData?.Width ?? 0;
-        public int Height => m_mapData?.Height ?? 0;
+        public int Width => mMapData?.Width ?? 0;
+        public int Height => mMapData?.Height ?? 0;
 
         public uint Light
         {
@@ -136,8 +138,8 @@ namespace Comet.Game.World.Maps
         {
             if (m_dbMap == null && m_dbDynamap == null) return false;
 
-            m_mapData = MapManager.GetMapData(MapDoc);
-            if (m_mapData == null)
+            mMapData = MapDataManager.GetMapData(MapDoc);
+            if (mMapData == null)
             {
                 await Log.WriteLogAsync(LogLevel.Warning, $"Could not load map {Identity}({MapDoc}): map data not found");
                 return false;
@@ -333,7 +335,7 @@ namespace Comet.Game.World.Maps
             }
         }
 
-        public async Task BroadcastMsgAsync(string message, MsgTalk.TalkChannel channel = MsgTalk.TalkChannel.TopLeft, Color? color = null)
+        public async Task BroadcastMsgAsync(string message, TalkChannel channel = TalkChannel.TopLeft, Color? color = null)
         {
             foreach (var user in m_users.Values)
             {
@@ -577,24 +579,53 @@ namespace Comet.Game.World.Maps
 
         public bool IsStandEnable(int x, int y)
         {
-            return m_mapData[x, y].IsAccessible();
-        }
-
-        public bool IsMoveEnable(int x, int y, FacingDirection dir)
-        {
-            int newX = x + GameMapData.WalkXCoords[(int) dir];
-            int newY = y + GameMapData.WalkYCoords[(int) dir];
-            return IsMoveEnable(newX, newY);
+            return mMapData.GetFloorMask(x, y) == 0;
         }
 
         public bool IsMoveEnable(int x, int y)
         {
-            return IsValidPoint(x, y) && IsStandEnable(x, y);
+            if (!IsValidPoint(x, y))
+                return false;
+            if (mMapData.GetFloorMask(x, y) != 0)
+                return false;
+            return true;
+        }
+
+        public bool IsMoveEnable(int sourceX, int sourceY, int x, int y, int climbCap)
+        {
+            //return IsValidPoint(x, y) && IsStandEnable(x, y);
+            if (!IsValidPoint(x, y))
+                return false;
+            if (mMapData.GetFloorMask(x, y) != 0)
+                return false;
+            if (mMapData.GetFloorAlt(x, y) - mMapData.GetFloorAlt(sourceX, sourceY) > climbCap)
+                return false;
+            return true;
+        }
+
+        public bool IsAltEnable(int sX, int sY, int x, int y, int altDiff = 26)
+        {
+            if (!IsValidPoint(x, y))
+                return false;
+
+            if (Math.Abs(mMapData.GetFloorAlt(x, y) - mMapData.GetFloorAlt(sX, sY)) >= altDiff)
+                return false;
+
+            return true;
+        }
+
+        public bool IsAltOver(int x, int y, int alt)
+        {
+            if (!IsValidPoint(x, y))
+                return false;
+            if (mMapData.GetFloorAlt(x, y) > alt)
+                return true;
+            return false;
         }
 
         public bool IsLayItemEnable(int x, int y)
         {
-            return this[x,y].IsAccessible() && m_roles.All(role => role.Value != null && !(role.Value is MapItem) && !(role.Value is BaseNpc) || role.Value.MapX != x || role.Value.MapY != y);
+            return IsStandEnable(x, y) && IsMoveEnable(x, y) && m_roles.All(role => role.Value != null && !(role.Value is MapItem) && !(role.Value is BaseNpc) || role.Value.MapX != x || role.Value.MapY != y);
         }
 
         public bool FindDropItemCell(int range, ref Point sender)
@@ -626,11 +657,10 @@ namespace Comet.Game.World.Maps
             {
                 for (int j = Math.Max(sender.Y - range, 0); j <= sender.Y + range && j < Height; j++)
                 {
-                    int idx = Pos2Index(i - (sender.X - range), j - (sender.Y - range), size, size);
+                    int idx = GameMapData.Pos2Index(i - (sender.X - range), j - (sender.Y - range), size, size);
 
                     if (idx >= 0 && idx < bufSize)
-                        if (setItem.FirstOrDefault(x =>
-                                Pos2Index(x.MapX - i + range, x.MapY - j + range, range, range) == idx) != null)
+                        if (setItem.FirstOrDefault(x => GameMapData.Pos2Index(x.MapX - i + range, x.MapY - j + range, range, range) == idx) != null)
                             continue;
 
                     if (IsLayItemEnable(sender.X, sender.Y))
@@ -653,25 +683,6 @@ namespace Comet.Game.World.Maps
                 return true;
             }
             return false;
-        }
-
-        #endregion
-
-        #region Indexes
-
-        public int Pos2Index(int x, int y, int cx, int cy)
-        {
-            return x + y * cx;
-        }
-
-        public int Index2X(int idx, int cx, int cy)
-        {
-            return idx % cy;
-        }
-
-        public int Index2Y(int idx, int cx, int cy)
-        {
-            return idx / cy;
         }
 
         #endregion
@@ -705,7 +716,7 @@ namespace Comet.Game.World.Maps
             if (!IsValidPoint(source.X, source.Y))
                 return false;
 
-            int idxPassage = m_mapData.GetPassage(source.X, source.Y);
+            int idxPassage = mMapData.GetPassage(source.X, source.Y);
             if (idxPassage < 0)
                 return false;
 
@@ -730,6 +741,48 @@ namespace Comet.Game.World.Maps
         public bool QueryRegion(RegionTypes regionType, ushort x, ushort y)
         {
             return m_regions.Where(re => (x > re.BoundX && x < re.BoundX + re.BoundCX) && (y > re.BoundY && y < re.BoundY + re.BoundCY)).Any(region => region.Type == (int)regionType);
+        }
+
+        #endregion
+
+        #region Terrain
+
+        public int GetFloorAlt(int x, int y)
+        {
+            return mMapData.GetFloorAlt(x, y);
+        }
+
+        public async Task<bool> AddTerrainObjectAsync(uint owner, int x, int y, uint idTerrainType)
+        {
+            if (mMapData.AddTerrainItem(owner, x, y, idTerrainType))
+            {
+                await Kernel.BroadcastWorldMsgAsync(new Packets.Ai.MsgAiAction
+                {
+                    Action = Network.Packets.Ai.MsgAiAction<Internal.AI.AiClient>.AiAction.AddTerrainObj,
+                    Data = (int)Identity,
+                    Command = (int)idTerrainType,
+                    Param = (int)owner,
+                    X = (ushort)x,
+                    Y = (ushort)y
+                });
+                return true;
+            }
+            return false;
+        }
+
+        public async Task<bool> DelTerrainObjAsync(uint idOwner)
+        {
+            if (mMapData.DelTerrainItem(idOwner))
+            {
+                await Kernel.BroadcastWorldMsgAsync(new Packets.Ai.MsgAiAction
+                {
+                    Action = Network.Packets.Ai.MsgAiAction<Internal.AI.AiClient>.AiAction.DelTerrainObj,
+                    Data = (int)Identity,
+                    Param = (int)idOwner,
+                });
+                return true;
+            }
+            return false;
         }
 
         #endregion
@@ -760,7 +813,7 @@ namespace Comet.Game.World.Maps
 
         #region Tiles
 
-        public Tile this[int x, int y] => m_mapData[x, y];
+        public Tile this[int x, int y] => mMapData[x, y];
 
         #endregion
 
@@ -827,43 +880,5 @@ namespace Comet.Game.World.Maps
         public uint TargetMap;
         public ushort TargetX;
         public ushort TargetY;
-    }
-
-    [Flags]
-    public enum MapTypeFlags : ulong
-    {
-        Normal = 0,
-        PkField = 0x1, //0x1 1
-        ChangeMapDisable = 0x2, //0x2 2
-        RecordDisable = 0x4, //0x4 4 
-        PkDisable = 0x8, //0x8 8
-        BoothEnable = 0x10, //0x10 16
-        TeamDisable = 0x20, //0x20 32
-        TeleportDisable = 0x40, // 0x40 64
-        GuildMap = 0x80, // 0x80 128
-        PrisonMap = 0x100, // 0x100 256
-        WingDisable = 0x200, // 0x200 512
-        Family = 0x400, // 0x400 1024
-        MineField = 0x800, // 0x800 2048
-        PkGame = 0x1000, // 0x1000 4098
-        NeverWound = 0x2000, // 0x2000 8196
-        DeadIsland = 0x4000, // 0x4000 16392
-        SkillMap = 1UL << 62,
-        LineSkillOnly = 1UL << 63
-    }
-
-    public enum RegionTypes
-    {
-        None = 0,
-        City = 1,
-        Weather = 2,
-        Statuary = 3,
-        Desc = 4,
-        Gobaldesc = 5,
-        Dance = 6, // data0: idLeaderRegion, data1: idMusic, 
-        PkProtected = 7,
-        FlagProtection = 24,
-        FlagBase = 25,
-        JiangHuBonusArea = 30,
     }
 }

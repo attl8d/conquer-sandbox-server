@@ -1,7 +1,7 @@
 namespace Comet.Network.Security
 {
+    using Comet.Shared.Mathematics;
     using System;
-    using Comet.Core.Mathematics;
 
     /// <summary>
     /// Rivest Cipher 5 is implemented for interoperability with the Conquer Online game 

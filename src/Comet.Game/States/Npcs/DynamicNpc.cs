@@ -62,6 +62,8 @@ namespace Comet.Game.States.Npcs
 
         public override NpcSort Sort => (NpcSort)m_dbNpc.Sort;
 
+        public override int Base => (int)m_dbNpc.Base;
+
         public void SetSort(ushort sort) => m_dbNpc.Sort = sort;
 
         public override uint OwnerType
@@ -302,14 +304,14 @@ namespace Comet.Game.States.Npcs
             if (!Map.IsWarTime())
             {
                 await Map.SetStatusAsync(1, true);
-                await Map.BroadcastMsgAsync(Language.StrWarStart, MsgTalk.TalkChannel.System);
+                await Map.BroadcastMsgAsync(Language.StrWarStart, TalkChannel.System);
             }
         }
 
         public async Task OnFightEndAsync()
         {
             await Map.SetStatusAsync(1, false);
-            await Map.BroadcastMsgAsync(Language.StrWarEnd, MsgTalk.TalkChannel.System);
+            await Map.BroadcastMsgAsync(Language.StrWarEnd, TalkChannel.System);
             Map.ResetBattle();
         }
 
@@ -318,7 +320,7 @@ namespace Comet.Game.States.Npcs
             if (!IsSynFlag() || !IsAttackable(null) || m_dicScores.Count == 0)
                 return;
 
-            await Map.BroadcastMsgAsync(Language.StrWarRankingStart, MsgTalk.TalkChannel.GuildWarRight1);
+            await Map.BroadcastMsgAsync(Language.StrWarRankingStart, TalkChannel.GuildWarRight1);
             int i = 0;
             foreach (var score in m_dicScores.Values.OrderByDescending(x => x.Points))
             {
@@ -326,7 +328,7 @@ namespace Comet.Game.States.Npcs
                     break;
 
                 await Map.BroadcastMsgAsync(string.Format(Language.StrWarRankingNo, i, score.Name, score.Points),
-                    MsgTalk.TalkChannel.GuildWarRight2);
+                    TalkChannel.GuildWarRight2);
             }
         }
 

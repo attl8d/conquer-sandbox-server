@@ -8,6 +8,7 @@ using Comet.Game.States;
 using Comet.Game.States.Events;
 using Comet.Game.States.Items;
 using Comet.Network.Packets;
+using Comet.Network.Packets.Game;
 using Comet.Network.Packets.Internal;
 using Comet.Shared;
 using System;
@@ -75,11 +76,11 @@ namespace Comet.Game.World.Managers
 
                 if (user.IPAddress != concurrent.Client.IPAddress)
                 {
-                    await concurrent.SendAsync(Language.StrAnotherLoginSameIp, MsgTalk.TalkChannel.Talk);
+                    await concurrent.SendAsync(Language.StrAnotherLoginSameIp, TalkChannel.Talk);
                 }
                 else
                 {
-                    await concurrent.SendAsync(Language.StrAnotherLoginOtherIp, MsgTalk.TalkChannel.Talk);
+                    await concurrent.SendAsync(Language.StrAnotherLoginOtherIp, TalkChannel.Talk);
                 }
 
                 concurrent.Client.Disconnect();
@@ -137,7 +138,7 @@ namespace Comet.Game.World.Managers
         {
             if (m_userSet.TryGetValue(idUser, out var user))
             {
-                await user.SendAsync(string.Format(Language.StrKickout, reason), MsgTalk.TalkChannel.Talk, Color.White);
+                await user.SendAsync(string.Format(Language.StrKickout, reason), TalkChannel.Talk, Color.White);
                 user.Client.Disconnect();
                 await Log.WriteLogAsync(LogLevel.Info, $"User {user.Name} has been kicked: {reason}");
             }
@@ -150,7 +151,7 @@ namespace Comet.Game.World.Managers
 
             foreach (var user in m_userSet.Values)
             {
-                await user.SendAsync(string.Format(Language.StrKickout, reason), MsgTalk.TalkChannel.Talk, Color.White);
+                await user.SendAsync(string.Format(Language.StrKickout, reason), TalkChannel.Talk, Color.White);
                 user.Client.Disconnect();
 
                 await Log.WriteLogAsync(LogLevel.Info, $"User {user.Name} has been kicked (kickoutall): {reason}");
@@ -256,7 +257,7 @@ namespace Comet.Game.World.Managers
             return m_roleSet.TryRemove(idRole, out _);
         }
 
-        public static Task BroadcastMsgAsync(string message, MsgTalk.TalkChannel channel = MsgTalk.TalkChannel.System,
+        public static Task BroadcastMsgAsync(string message, TalkChannel channel = TalkChannel.System,
             Color? color = null)
         {
             foreach (var user in m_userSet.Values)

@@ -2,6 +2,7 @@ using System.Threading.Tasks;
 using Comet.Game.Database.Repositories;
 using Comet.Game.States;
 using Comet.Game.World.Managers;
+using Comet.Network.Packets.Game;
 using Comet.Shared;
 using Comet.Shared.Models;
 using static Comet.Game.Packets.MsgTalk;

@@ -685,6 +685,11 @@ namespace Comet.Game.States
             return player.SendAsync(new MsgPlayer(this));
         }
 
+        public override Task SendSpawnToAsync(Character player, int x, int y)
+        {
+            return player.SendAsync(new MsgPlayer(this, (ushort)x, (ushort)y));
+        }
+
         #endregion
 
         #region Constants

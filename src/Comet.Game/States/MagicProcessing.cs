@@ -1,5 +1,6 @@
 ﻿using Comet.Core;
 using Comet.Core.World.Maps;
+using Comet.Core.World.Maps.Enums;
 using Comet.Game.Packets;
 using Comet.Game.States.Items;
 using Comet.Game.States.Npcs;
@@ -977,11 +978,14 @@ namespace Comet.Game.States
                 if (target == null || target.Identity == mOwner.Identity)
                     continue;
 
-                if (mOwner.IsImmunity(target)
-                    || !target.IsAttackable(mOwner))
+                if (magic.Ground != 0 && target.IsWing)
                     continue;
 
-                if (magic.Ground != 0 && target.IsWing)
+                if (!mOwner.Map.IsAltEnable(mOwner.MapX, mOwner.MapY, target.MapX, target.MapY))
+                    continue;
+
+                if (mOwner.IsImmunity(target)
+                    || !target.IsAttackable(mOwner))
                     continue;
 
                 var result = await mOwner.BattleSystem.CalcPowerAsync(HitByMagic(magic), mOwner, target, magic.Power);

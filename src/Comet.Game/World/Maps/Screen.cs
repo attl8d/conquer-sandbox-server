@@ -97,7 +97,8 @@ namespace Comet.Game.World.Maps
 
                         if (mRole is Character user)
                             await target.SendSpawnToAsync(user);
-                        if (targetUser != null)
+                        
+                        if (targetUser != null && isJmpMsg)
                         {
                             for (int i = 0; i < dda.Count; i++)
                             {

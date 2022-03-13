@@ -161,7 +161,7 @@ namespace Comet.Game.Packets
                         {
                             await RoleManager.BroadcastMsgAsync(
                                 string.Format(Language.StrFlowerGmPromptAll, user.Name, amount, flowerName, target.Name),
-                                MsgTalk.TalkChannel.Center);
+                                TalkChannel.Center);
                         }
 
                         await target.SendAsync(string.Format(Language.StrFlowerReceiverPrompt, user.Name));

@@ -510,12 +510,12 @@ namespace Comet.AI.States
                 {
                     if (IsGuard() && targetUser.IsCrime())
                     {
-                        await Kernel.SendAsync(new MsgTalk(Identity, MsgTalk.TalkChannel.Talk, Color.White, targetUser.Name, Name,
+                        await Kernel.SendAsync(new MsgTalk(Identity, TalkChannel.Talk, Color.White, targetUser.Name, Name,
                                 Language.StrGuardYouPay));
                     }
                     else if (IsPkKiller() && targetUser.IsPker() && mStage == AiStage.Idle)
                     {
-                        await Kernel.SendAsync(new MsgTalk(Identity, MsgTalk.TalkChannel.Talk, Color.White, targetUser.Name, Name,
+                        await Kernel.SendAsync(new MsgTalk(Identity, TalkChannel.Talk, Color.White, targetUser.Name, Name,
                                 Language.StrGuardYouPay));
                     }
                 }

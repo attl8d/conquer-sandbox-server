@@ -15,7 +15,7 @@ namespace Comet.Game.Packets
             switch (Action)
             {
                 case BoardAction.GetList:
-                    var list = MessageBoard.GetMessages((MsgTalk.TalkChannel)Channel, Index);
+                    var list = MessageBoard.GetMessages((TalkChannel)Channel, Index);
                     if (list.Count == 0)
                         return;
 
@@ -34,15 +34,15 @@ namespace Comet.Game.Packets
                     break;
 
                 case BoardAction.GetWords:
-                    string message = MessageBoard.GetMessage(Messages[0], (MsgTalk.TalkChannel)Channel);
+                    string message = MessageBoard.GetMessage(Messages[0], (TalkChannel)Channel);
                     await user.SendAsync(new MsgTalk
                     {
-                        Channel = (MsgTalk.TalkChannel)Channel,
+                        Channel = (TalkChannel)Channel,
                         Color = Color.White,
                         Message = message,
                         SenderName = Messages[0],
                         RecipientName = user.Name,
-                        Style = MsgTalk.TalkStyle.Normal,
+                        Style = TalkStyle.Normal,
                         Suffix = ""
                     });
                     break;

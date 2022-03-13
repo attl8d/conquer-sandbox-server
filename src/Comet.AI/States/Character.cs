@@ -45,6 +45,7 @@ namespace Comet.AI.States
         public int Metempsychosis { get; set; }
         public override int BattlePower => mBattlePower;
         public override uint MaxLife => mMaxLife;
+        public override bool IsAlive => QueryStatus(StatusSet.GHOST) == null;
         public int Silvers { get; set; }
         public int ConquerPoints { get; set; }
         public int Nobility { get; set; }

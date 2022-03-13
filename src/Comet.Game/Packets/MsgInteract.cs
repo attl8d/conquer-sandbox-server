@@ -258,7 +258,7 @@ namespace Comet.Game.Packets
                             Action = MsgItem<Client>.ItemActionType.Fireworks,
                             Identity = targetUser.Identity
                         }, false);
-                        await RoleManager.BroadcastMsgAsync(string.Format(Language.StrMarry, targetUser.Name, user.Name), MsgTalk.TalkChannel.Center, Color.Red);
+                        await RoleManager.BroadcastMsgAsync(string.Format(Language.StrMarry, targetUser.Name, user.Name), TalkChannel.Center, Color.Red);
                         break;
                     }
 
@@ -291,7 +291,7 @@ namespace Comet.Game.Packets
                     {
                         if (client != null)
                         {
-                            await client.SendAsync(new MsgTalk(client.Identity, MsgTalk.TalkChannel.Service,
+                            await client.SendAsync(new MsgTalk(client.Identity, TalkChannel.Service,
                                 $"Missing packet {Type}, Action {Action}, Length {Length}"));
                         }
                         await Log.WriteLogAsync(LogLevel.Warning,

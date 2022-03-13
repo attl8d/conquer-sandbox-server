@@ -10,6 +10,7 @@ using Comet.Game.Database.Repositories;
 using Comet.Game.Packets;
 using Comet.Game.World.Managers;
 using Comet.Network.Packets;
+using Comet.Network.Packets.Game;
 
 namespace Comet.Game.States.Families
 {
@@ -362,7 +363,7 @@ namespace Comet.Game.States.Families
             await target.User.Screen.SynchroScreenAsync();
             await caller.Screen.SynchroScreenAsync();
 
-            await RoleManager.BroadcastMsgAsync(string.Format(Language.StrFamilyAbdicate, caller.Name, target.Name), MsgTalk.TalkChannel.Family);
+            await RoleManager.BroadcastMsgAsync(string.Format(Language.StrFamilyAbdicate, caller.Name, target.Name), TalkChannel.Family);
             return true;
         }
 
@@ -589,7 +590,7 @@ namespace Comet.Game.States.Families
 
         public async Task SendAsync(string message, uint idIgnore = 0u, Color? color = null)
         {
-            await SendAsync(new MsgTalk(0, MsgTalk.TalkChannel.Family, color ?? Color.White, message), idIgnore);
+            await SendAsync(new MsgTalk(0, TalkChannel.Family, color ?? Color.White, message), idIgnore);
         }
 
         public async Task SendAsync(IPacket msg, uint exclude = 0u)

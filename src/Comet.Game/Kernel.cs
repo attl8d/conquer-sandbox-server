@@ -124,22 +124,21 @@ namespace Comet.Game
         {
             try
             {
-                await MapManager.LoadDataAsync().ConfigureAwait(true);
                 await MapManager.LoadMapsAsync().ConfigureAwait(true);
 
-                await MagicManager.InitializeAsync();
-                await PeerageManager.InitializeAsync();
-                await EventManager.InitializeAsync();
-                await RoleManager.InitializeAsync();
-                await ItemManager.InitializeAsync();
-                await PigeonManager.InitializeAsync();
-                await PeerageManager.InitializeAsync();
-                await TutorManager.InitializeAsync();
-                await SyndicateManager.InitializeAsync();
-                await FamilyManager.InitializeAsync();
-                await FlowerManager.InitializeAsync();
-                await MineManager.InitializeAsync();
-                await ExperienceManager.InitializeAsync();
+                await MagicManager.InitializeAsync().ConfigureAwait(true);
+                await PeerageManager.InitializeAsync().ConfigureAwait(true);
+                await EventManager.InitializeAsync().ConfigureAwait(true);
+                await RoleManager.InitializeAsync().ConfigureAwait(true);
+                await ItemManager.InitializeAsync().ConfigureAwait(true);
+                await PigeonManager.InitializeAsync().ConfigureAwait(true);
+                await PeerageManager.InitializeAsync().ConfigureAwait(true);
+                await TutorManager.InitializeAsync().ConfigureAwait(true);
+                await SyndicateManager.InitializeAsync().ConfigureAwait(true);
+                await FamilyManager.InitializeAsync().ConfigureAwait(true);
+                await FlowerManager.InitializeAsync().ConfigureAwait(true);
+                await MineManager.InitializeAsync().ConfigureAwait(true);
+                await ExperienceManager.InitializeAsync().ConfigureAwait(true);
 
                 await SystemThread.StartAsync();
                 await UserThread.StartAsync();

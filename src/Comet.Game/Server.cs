@@ -9,6 +9,7 @@ namespace Comet.Game
     using Comet.Game.States;
     using Comet.Game.World.Managers;
     using Comet.Network.Packets;
+    using Comet.Network.Packets.Game;
     using Comet.Network.Security;
     using Comet.Network.Sockets;
     using Comet.Shared;
@@ -352,7 +353,7 @@ namespace Comet.Game
                         Console.WriteLine(
                             "Missing packet {0}, Length {1}\n{2}", 
                             type, length, PacketDump.Hex(packet));
-                        await actor.SendAsync(new MsgTalk(actor.Identity, MsgTalk.TalkChannel.Service,
+                        await actor.SendAsync(new MsgTalk(actor.Identity, TalkChannel.Service,
                             String.Format("Missing packet {0}, Length {1}",
                             type, length)));
                         return;

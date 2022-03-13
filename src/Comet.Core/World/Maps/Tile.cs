@@ -1,39 +1,22 @@
-﻿// //////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
-// Copyright (C) FTW! Masters
-// Keep the headers and the patterns adopted by the project. If you changed anything in the file just insert
-// your name below, but don't remove the names of who worked here before.
-// 
-// This project is a fork from Comet, a Conquer Online Server Emulator created by Spirited, which can be
-// found here: https://gitlab.com/spirited/comet
-// 
-// Comet - Comet.Game - Tile.cs
-// Description:
-// 
-// Creator: FELIPEVIEIRAVENDRAMI [FELIPE VIEIRA VENDRAMINI]
-// 
-// Developed by:
-// Felipe Vieira Vendramini <felipevendramini@live.com>
-// 
-// Programming today is a race between software engineers striving to build bigger and better
-// idiot-proof programs, and the Universe trying to produce bigger and better idiots.
-// So far, the Universe is winning.
-// //////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
-
+﻿using System.Collections.Generic;
 using System.Runtime.InteropServices;
 
 namespace Comet.Core.World.Maps
 {
     /// <summary>
-    ///     This structure encapsulates a tile from the floor's coordinate grid. It contains the tile access information
-    ///     and the elevation of the tile. The map's coordinate grid is composed of these tiles. The tile structure
-    ///     is not optimized by C#, and thus takes up 48 bits of memory (or 6 bytes).
+    ///     Switching to classes increased memory usage by 3x. But it's needed since we need to change the Tile information.
     /// </summary>
     [StructLayout(LayoutKind.Sequential, Pack = 2)]
     public struct Tile
     {
-        public short Access; // The access type for processing the tile.
-        public short Elevation; // The elevation of the tile on the map.
-        public short Surface;
+        const int MaskRoleCount = 127;
+
+        public short Mask { get; set; } // The access type for processing the tile.
+        public short Elevation { get; set; } // The elevation of the tile on the map.
+        public short Surface { get; set; }
+
+        public ushort LayerIndex = Layer.IDX_LAYER_NONE;
+        public ushort RoleCount { get; set; } = 0;
 
         /// <summary>
         ///     This structure encapsulates a tile from the floor's coordinate grid. It contains the tile access information
@@ -45,24 +28,122 @@ namespace Comet.Core.World.Maps
         /// <param name="surface"></param>
         public Tile(short elevation, short access, short surface)
         {
-            Access = access;
+            Mask = access;
             Elevation = elevation;
             Surface = surface;
         }
 
         public bool IsAccessible()
         {
-            return Access != 1;
+            return Mask != 1;
         }
 
         public bool IsBoothEnable()
         {
-            return Surface == 16;
+            return (Surface&0x10) != 0;
         }
 
         public short GetAltitude()
         {
             return Elevation;
+        }
+
+        public int GetLayerAmount(List<List<Layer>> setLayer)
+        {
+            if (LayerIndex == Layer.IDX_LAYER_NONE)
+                return 1;
+            return 1 + setLayer[LayerIndex].Count;
+        }
+
+        public Layer GetLayer(List<List<Layer>> setLayer, int index)
+        {
+            if (index <= 0) return default;
+            if (LayerIndex == Layer.IDX_LAYER_NONE) return default;
+            if (LayerIndex >= setLayer.Count) return default;
+            if (index < 0 || index >= setLayer[LayerIndex].Count) return default;
+            return setLayer[LayerIndex][index];
+        }
+
+        public void AddLayer(List<List<Layer>> setLayer, Layer layer)
+        {
+            if (layer.Equals(default))
+                return;
+
+            if (LayerIndex == Layer.IDX_LAYER_NONE)
+            {
+                for (ushort i = 0; i < setLayer.Count; i++)
+                {
+                    if (setLayer[i].Count == 0)
+                    {
+                        LayerIndex = i;
+                        setLayer[i].Add(layer);
+                        return;
+                    }
+                }
+
+                LayerIndex = (ushort)setLayer.Count;
+                setLayer.Add(new List<Layer> { layer });
+            }
+            else
+            {
+                setLayer[LayerIndex].Add(layer);
+            }
+        }
+
+        public bool DelLayer(List<List<Layer>> setLayer, int index = Layer.LAYER_TOP)
+        {
+            if (!(index == Layer.LAYER_TOP || index > 0))
+                return false;
+            if (LayerIndex == Layer.IDX_LAYER_NONE)
+                return false;
+            if (LayerIndex >= setLayer.Count)
+                return false;
+
+            if (!(index == Layer.LAYER_TOP || index >= 0 && index < setLayer[LayerIndex].Count))
+                return false;
+
+            int idx;            
+            if (index == Layer.LAYER_TOP)
+                idx = setLayer[LayerIndex].Count - 1;
+            else idx = index - 1;
+
+            Layer layer = setLayer[LayerIndex][idx];
+            if (!layer.Equals(default))
+                setLayer[LayerIndex].RemoveAt(idx);
+
+            if (setLayer[LayerIndex].Count == 0)
+                LayerIndex = Layer.IDX_LAYER_NONE;
+            return true;
+        }
+
+        public int GetFloorMask(List<List<Layer>> setLayer)
+        {
+            if (LayerIndex == Layer.IDX_LAYER_NONE)
+                return Mask;
+            int amount = setLayer[LayerIndex].Count;
+            if (amount > 0)
+                return setLayer[LayerIndex][amount - 1].Mask;
+            return 1;
+        }
+
+        public int GetFloorAttr(List<List<Layer>> setLayer)
+        {
+            if (LayerIndex == Layer.IDX_LAYER_NONE)
+                return 0;
+            int amount = setLayer[LayerIndex].Count;
+            if (amount > 0)
+                return setLayer[LayerIndex][amount - 1].Terrain;
+            return 0;
+        }
+
+        public int GetFloorAlt(List<List<Layer>> setLayer)
+        {
+            if (LayerIndex == Layer.IDX_LAYER_NONE)
+                return Elevation / 2;
+            int amount = setLayer[LayerIndex].Count;
+            if (amount > 0)
+                return setLayer[LayerIndex][amount - 1].Altitude;
+            return short.MaxValue;
         }
     }
 

@@ -233,7 +233,7 @@ namespace Comet.Game.Packets
 
                 default:
                     if (user.IsPm())
-                        await user.SendAsync($"Unhandled MsgGuide:{Action}", MsgTalk.TalkChannel.Talk);
+                        await user.SendAsync($"Unhandled MsgGuide:{Action}", TalkChannel.Talk);
                     break;
             }
         }

@@ -1,6 +1,7 @@
 ﻿using Comet.Game.Packets;
 using Comet.Game.States.Items;
 using Comet.Game.World.Maps;
+using Comet.Network.Packets.Game;
 using System;
 using System.Collections.Concurrent;
 using System.Drawing;
@@ -125,7 +126,7 @@ namespace Comet.Game.States.Npcs
             await player.SendAsync(new MsgNpcInfoEx(this));
 
             if (!string.IsNullOrEmpty(HawkMessage))
-                await player.SendAsync(new MsgTalk(mOwner.Identity, MsgTalk.TalkChannel.Vendor, Color.White,
+                await player.SendAsync(new MsgTalk(mOwner.Identity, TalkChannel.Vendor, Color.White,
                     HawkMessage));
         }
 

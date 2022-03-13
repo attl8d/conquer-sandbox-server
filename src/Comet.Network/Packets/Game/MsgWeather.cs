@@ -1,6 +1,4 @@
-﻿using Comet.Core.World.Maps;
-
-namespace Comet.Network.Packets.Game
+﻿namespace Comet.Network.Packets.Game
 {
     public abstract class MsgWeather<T> : MsgBase<T>
     {
@@ -13,7 +11,7 @@ namespace Comet.Network.Packets.Game
         {
             PacketWriter writer = new PacketWriter();
             writer.Write((ushort)PacketType.MsgWeather);
-            writer.Write((uint)WeatherType);
+            writer.Write(WeatherType);
             writer.Write(Intensity);
             writer.Write(Direction);
             writer.Write(ColorArgb);

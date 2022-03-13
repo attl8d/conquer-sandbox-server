@@ -1,4 +1,5 @@
 ﻿using Comet.Game.Packets;
+using Comet.Network.Packets.Game;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -14,27 +15,27 @@ namespace Comet.Game.States
         private static Dictionary<uint, MessageInfo> m_dicOther = new Dictionary<uint, MessageInfo>();
         private static Dictionary<uint, MessageInfo> m_dicSystem = new Dictionary<uint, MessageInfo>();
 
-        public static bool AddMessage(Character user, string message, MsgTalk.TalkChannel channel)
+        public static bool AddMessage(Character user, string message, TalkChannel channel)
         {
             Dictionary<uint, MessageInfo> board;
             switch (channel)
             {
-                case MsgTalk.TalkChannel.TradeBoard:
+                case TalkChannel.TradeBoard:
                     board = m_dicTrade;
                     break;
-                case MsgTalk.TalkChannel.TeamBoard:
+                case TalkChannel.TeamBoard:
                     board = m_dicTTeam;
                     break;
-                case MsgTalk.TalkChannel.FriendBoard:
+                case TalkChannel.FriendBoard:
                     board = m_dicFriend;
                     break;
-                case MsgTalk.TalkChannel.GuildBoard:
+                case TalkChannel.GuildBoard:
                     board = m_dicSyndicate;
                     break;
-                case MsgTalk.TalkChannel.OthersBoard:
+                case TalkChannel.OthersBoard:
                     board = m_dicOther;
                     break;
-                case MsgTalk.TalkChannel.Bbs:
+                case TalkChannel.Bbs:
                     board = m_dicSystem;
                     break;
                 default:
@@ -58,27 +59,27 @@ namespace Comet.Game.States
             return true;
         }
 
-        public static List<MessageInfo> GetMessages(MsgTalk.TalkChannel channel, int page)
+        public static List<MessageInfo> GetMessages(TalkChannel channel, int page)
         {
             List<MessageInfo> msgs;
             switch (channel)
             {
-                case MsgTalk.TalkChannel.TradeBoard:
+                case TalkChannel.TradeBoard:
                     msgs = m_dicTrade.Values.OrderByDescending(x => x.Time).ToList();
                     break;
-                case MsgTalk.TalkChannel.TeamBoard:
+                case TalkChannel.TeamBoard:
                     msgs = m_dicTTeam.Values.OrderByDescending(x => x.Time).ToList();
                     break;
-                case MsgTalk.TalkChannel.FriendBoard:
+                case TalkChannel.FriendBoard:
                     msgs = m_dicFriend.Values.OrderByDescending(x => x.Time).ToList();
                     break;
-                case MsgTalk.TalkChannel.GuildBoard:
+                case TalkChannel.GuildBoard:
                     msgs = m_dicSyndicate.Values.OrderByDescending(x => x.Time).ToList();
                     break;
-                case MsgTalk.TalkChannel.OthersBoard:
+                case TalkChannel.OthersBoard:
                     msgs = m_dicOther.Values.OrderByDescending(x => x.Time).ToList();
                     break;
-                case MsgTalk.TalkChannel.Bbs:
+                case TalkChannel.Bbs:
                     msgs = m_dicSystem.Values.OrderByDescending(x => x.Time).ToList();
                     break;
                 default:
@@ -91,27 +92,27 @@ namespace Comet.Game.States
             return msgs.Skip(page * 8).Take(8).ToList();
         }
 
-        public static string GetMessage(string name, MsgTalk.TalkChannel channel)
+        public static string GetMessage(string name, TalkChannel channel)
         {
             List<MessageInfo> msgs;
             switch (channel)
             {
-                case MsgTalk.TalkChannel.TradeBoard:
+                case TalkChannel.TradeBoard:
                     msgs = m_dicTrade.Values.OrderByDescending(x => x.Time).ToList();
                     break;
-                case MsgTalk.TalkChannel.TeamBoard:
+                case TalkChannel.TeamBoard:
                     msgs = m_dicTTeam.Values.OrderByDescending(x => x.Time).ToList();
                     break;
-                case MsgTalk.TalkChannel.FriendBoard:
+                case TalkChannel.FriendBoard:
                     msgs = m_dicFriend.Values.OrderByDescending(x => x.Time).ToList();
                     break;
-                case MsgTalk.TalkChannel.GuildBoard:
+                case TalkChannel.GuildBoard:
                     msgs = m_dicSyndicate.Values.OrderByDescending(x => x.Time).ToList();
                     break;
-                case MsgTalk.TalkChannel.OthersBoard:
+                case TalkChannel.OthersBoard:
                     msgs = m_dicOther.Values.OrderByDescending(x => x.Time).ToList();
                     break;
-                case MsgTalk.TalkChannel.Bbs:
+                case TalkChannel.Bbs:
                     msgs = m_dicSystem.Values.OrderByDescending(x => x.Time).ToList();
                     break;
                 default:

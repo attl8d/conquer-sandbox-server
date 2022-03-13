@@ -140,12 +140,12 @@ namespace Comet.Game.Packets
                 if (user.Gender == 1)
                 {
                     await RoleManager.BroadcastMsgAsync(string.Format(Language.StrComposeOverpowerMale, user.Name,
-                        target.Itemtype.Name, target.Plus), MsgTalk.TalkChannel.TopLeft);
+                        target.Itemtype.Name, target.Plus), TalkChannel.TopLeft);
                 }
                 else
                 {
                     await RoleManager.BroadcastMsgAsync(string.Format(Language.StrComposeOverpowerFemale, user.Name,
-                        target.Itemtype.Name, target.Plus), MsgTalk.TalkChannel.TopLeft);
+                        target.Itemtype.Name, target.Plus), TalkChannel.TopLeft);
                 }
             }
 

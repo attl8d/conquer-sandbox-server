@@ -170,14 +170,14 @@ namespace Comet.Game.Packets
                 case ItemActionType.EquipmentWear:
                     {
                         if (!await user.UserPackage.UseItemAsync(Identity, (Item.ItemPosition)Command))
-                            await user.SendAsync(Language.StrUnableToUseItem, MsgTalk.TalkChannel.TopLeft, Color.Red);
+                            await user.SendAsync(Language.StrUnableToUseItem, TalkChannel.TopLeft, Color.Red);
                         break;
                     }
 
                 case ItemActionType.EquipmentRemove:
                     {
                         if (!await user.UserPackage.UnEquipAsync((Item.ItemPosition)Command))
-                            await user.SendAsync(Language.StrYourBagIsFull, MsgTalk.TalkChannel.TopLeft, Color.Red);
+                            await user.SendAsync(Language.StrYourBagIsFull, TalkChannel.TopLeft, Color.Red);
                         break;
                     }
 
@@ -673,7 +673,7 @@ namespace Comet.Game.Packets
 
                 default:
                     await client.SendAsync(this);
-                    await client.SendAsync(new MsgTalk(client.Identity, MsgTalk.TalkChannel.Service,
+                    await client.SendAsync(new MsgTalk(client.Identity, TalkChannel.Service,
                         String.Format("Missing packet {0}, Action {1}, Length {2}",
                         this.Type, this.Action, this.Length)));
                     Console.WriteLine(

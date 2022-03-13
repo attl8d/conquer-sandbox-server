@@ -1,7 +1,5 @@
-namespace Comet.Core.Mathematics
+namespace Comet.Shared.Mathematics
 {
-    using System;
-
     /// <summary>
     /// This class contains extension methods for providing unsigned integers with swap
     /// functions for swapping values between integers.

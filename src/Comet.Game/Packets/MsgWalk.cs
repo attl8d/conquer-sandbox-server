@@ -19,10 +19,13 @@ namespace Comet.Game.Packets
             if (client != null)
             {
                 await client.Character.ProcessOnMoveAsync();
-                await client.Character.MoveTowardAsync(Direction, Mode);
-                await client.SendAsync(this);
-                await client.Character.Screen.UpdateAsync(this);
-                await Kernel.BroadcastWorldMsgAsync(this);
+
+                if (await client.Character.MoveTowardAsync(Direction, Mode))
+                {
+                    await client.SendAsync(this);
+                    await client.Character.Screen.UpdateAsync(this);
+                    await Kernel.BroadcastWorldMsgAsync(this);
+                }
                 return;
             }
 

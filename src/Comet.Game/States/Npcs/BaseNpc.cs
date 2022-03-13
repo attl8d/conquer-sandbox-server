@@ -4,6 +4,8 @@ using Comet.Game.Packets;
 using Comet.Game.States.Syndicates;
 using Comet.Game.World.Managers;
 using Comet.Game.World.Maps;
+using Comet.Network.Packets.Game;
+using Comet.Shared;
 using System;
 using System.Collections.Generic;
 using System.Drawing;
@@ -84,6 +86,20 @@ namespace Comet.Game.States.Npcs
                 ShopGoods = await GoodsRepository.GetAsync(Identity);
             }
 
+            if (IsSceneNpc())
+            {
+                GameMap map = MapManager.GetMap(MapIdentity);
+
+                if (map == null || !map.IsValidPoint(MapX, MapY))
+                {
+                    await Log.WriteLogAsync(LogLevel.Error, $"Scene Npc[{Identity}] position is invalid!");
+                    return false;
+                }
+
+                if (!await map.AddTerrainObjectAsync(0, MapX, MapY, (uint)(Base * 10 + (int) Direction)))
+                    return false;
+            }
+
             await EnterMapAsync();
             return true;
         }
@@ -95,6 +111,8 @@ namespace Comet.Game.States.Npcs
         public virtual uint OwnerType { get; set; }
 
         public virtual NpcSort Sort { get; }
+
+        public virtual int Base { get; }
 
         #endregion
 
@@ -236,7 +254,7 @@ namespace Comet.Game.States.Npcs
                 result = await GameAction.ExecuteActionAsync(task, user, this, null, "");
             else if (user.IsPm())
             {
-                await user.SendAsync($"Unhandled NPC[{Identity}:{Name}]->{Task0},{Task1},{Task2},{Task3},{Task4},{Task5},{Task6},{Task6},{Task7}", MsgTalk.TalkChannel.Talk, Color.Red);
+                await user.SendAsync($"Unhandled NPC[{Identity}:{Name}]->{Task0},{Task1},{Task2},{Task3},{Task4},{Task5},{Task6},{Task6},{Task7}", TalkChannel.Talk, Color.Red);
             }
 
             return result;
@@ -272,6 +290,11 @@ namespace Comet.Game.States.Npcs
         public bool IsTaskNpc()
         {
             return Type == TASK_NPC;
+        }
+
+        public bool IsSceneNpc()
+        {
+            return Sort.HasFlag(NpcSort.Scene);
         }
 
         public bool IsStorageNpc()

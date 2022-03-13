@@ -421,7 +421,7 @@ namespace Comet.Game.Packets
 
                         int bonusCount = await user.BonusCountAsync();
                         if (bonusCount > 0)
-                            await user.SendAsync(string.Format(Language.StrBonus, bonusCount), MsgTalk.TalkChannel.Center, Color.Red);
+                            await user.SendAsync(string.Format(Language.StrBonus, bonusCount), TalkChannel.Center, Color.Red);
 
                         if (await user.CardsCountAsync() > 0)
                             await user.SendAsync(new MsgAction { Action = ActionType.ClientCommand, Command = 1197u, Identity = user.Identity });
@@ -466,13 +466,13 @@ namespace Comet.Game.Packets
                         {
                             if (!user.IsAlive)
                             {
-                                await user.SendAsync(Language.StrDead, MsgTalk.TalkChannel.System, Color.Red);
+                                await user.SendAsync(Language.StrDead, TalkChannel.System, Color.Red);
                                 return;
                             }
 
                             if (user.GetDistance(newX, newY) >= 2 * Screen.VIEW_SIZE)
                             {
-                                await user.SendAsync(Language.StrInvalidMsg, MsgTalk.TalkChannel.System, Color.Red);
+                                await user.SendAsync(Language.StrInvalidMsg, TalkChannel.System, Color.Red);
                                 await RoleManager.KickOutAsync(user.Identity, $"big jump [{user.MapX},{user.MapY}] -> [{newX},{newY}] = {user.GetDistance(newX, newY)}");
                                 return;
                             }
@@ -598,7 +598,7 @@ namespace Comet.Game.Packets
                             await client.SendAsync(this);
                             if (client.Character.IsPm())
                             {
-                                await client.SendAsync(new MsgTalk(client.Identity, MsgTalk.TalkChannel.Service,
+                                await client.SendAsync(new MsgTalk(client.Identity, TalkChannel.Service,
                                     $"Missing packet {Type}, Action {Action}, Length {Length}"));
                             }
                         }

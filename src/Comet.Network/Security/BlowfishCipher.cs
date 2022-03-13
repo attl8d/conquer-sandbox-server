@@ -2,8 +2,8 @@ namespace Comet.Network.Security
 {
     using System;
     using System.Text;
-    using System.Runtime.CompilerServices; 
-    using Comet.Core.Mathematics;
+    using System.Runtime.CompilerServices;
+    using Comet.Shared.Mathematics;
 
     /// <summary>
     /// This Blowfish cipher is implemented in CFB64 mode for client interoperability on 
@@ -220,12 +220,12 @@ namespace Comet.Network.Security
         /// <param name="seed">Shared secret seed for generating keys</param>
         public BlowfishCipher(string seed = BlowfishCipher.DefaultSeed)
         {
-            this.DecryptionIV = new byte[BlowfishCipher.BlockSize];
-            this.EncryptionIV = new byte[BlowfishCipher.BlockSize];
-            this.DecryptCount = 0;
-            this.EncryptCount = 0;
+            DecryptionIV = new byte[BlowfishCipher.BlockSize];
+            EncryptionIV = new byte[BlowfishCipher.BlockSize];
+            DecryptCount = 0;
+            EncryptCount = 0;
 
-            this.GenerateKeys(new object[] { Encoding.ASCII.GetBytes(seed) });
+            GenerateKeys(new object[] { Encoding.ASCII.GetBytes(seed) });
         }
 
         /// <summary>
@@ -236,13 +236,13 @@ namespace Comet.Network.Security
         /// <param name="copy">The cipher to copy keys from</param>
         public BlowfishCipher(BlowfishCipher copy)
         {
-            this.DecryptionIV = (byte[])copy.DecryptionIV.Clone();
-            this.EncryptionIV = (byte[])copy.EncryptionIV.Clone();
-            this.DecryptCount = copy.DecryptCount;
-            this.EncryptCount = copy.EncryptCount;
+            DecryptionIV = (byte[])copy.DecryptionIV.Clone();
+            EncryptionIV = (byte[])copy.EncryptionIV.Clone();
+            DecryptCount = copy.DecryptCount;
+            EncryptCount = copy.EncryptCount;
 
-            this.P = copy.P.Clone() as uint[];
-            this.S = copy.S.Clone() as uint[];
+            P = copy.P.Clone() as uint[];
+            S = copy.S.Clone() as uint[];
         }
 
         /// <summary>
@@ -255,35 +255,35 @@ namespace Comet.Network.Security
         {
             // Initialize key buffers
             var seedBuffer = seeds[0] as byte[];
-            if (seedBuffer.Length > BlowfishCipher.KeySize)
-                Array.Resize(ref seedBuffer, BlowfishCipher.KeySize);
+            if (seedBuffer.Length > KeySize)
+                Array.Resize(ref seedBuffer, KeySize);
 
-            this.P = BlowfishCipher.PInit.Clone() as uint[];
-            this.S = BlowfishCipher.SInit.Clone() as uint[];
+            P = PInit.Clone() as uint[];
+            S = SInit.Clone() as uint[];
 
             // Generate keys
-            for (uint i = 0, x = 0; i < this.P.Length; i++)
+            for (uint i = 0, x = 0; i < P.Length; i++)
             {
                 uint rv = seedBuffer[x]; x = (uint)((x + 1) % seedBuffer.Length);
                 rv = (rv << 8) | seedBuffer[x]; x = (uint)((x + 1) % seedBuffer.Length);
                 rv = (rv << 8) | seedBuffer[x]; x = (uint)((x + 1) % seedBuffer.Length);
                 rv = (rv << 8) | seedBuffer[x]; x = (uint)((x + 1) % seedBuffer.Length);
-                this.P[i] ^= rv;
+                P[i] ^= rv;
             }
 
-            uint[] block = new uint[BlowfishCipher.BlockSize / sizeof(uint)];
-            for (int i = 0; i < this.P.Length; )
+            uint[] block = new uint[BlockSize / sizeof(uint)];
+            for (int i = 0; i < P.Length; )
             {
-                this.EncipherBlock(block);
-                this.P[i++] = block[0];
-                this.P[i++] = block[1];
+                EncipherBlock(block);
+                P[i++] = block[0];
+                P[i++] = block[1];
             }
 
-            for (int i = 0; i < this.S.Length; )
+            for (int i = 0; i < S.Length; )
             {
-                this.EncipherBlock(block);
-                this.S[i++] = block[0];
-                this.S[i++] = block[1];
+                EncipherBlock(block);
+                S[i++] = block[0];
+                S[i++] = block[1];
             }
         }
 
@@ -292,10 +292,10 @@ namespace Comet.Network.Security
         /// <param name="encryptionIV">Encryption IV from client key exchange</param>
         public void SetIVs(byte[] decryptionIV, byte[] encryptionIV)
         {
-            this.DecryptionIV = (byte[])decryptionIV.Clone();
-            this.EncryptionIV = (byte[])encryptionIV.Clone();
-            this.DecryptCount = 0;
-            this.EncryptCount = 0;
+            DecryptionIV = (byte[])decryptionIV.Clone();
+            EncryptionIV = (byte[])encryptionIV.Clone();
+            DecryptCount = 0;
+            EncryptCount = 0;
         }
 
         /// <summary>
@@ -309,19 +309,19 @@ namespace Comet.Network.Security
             uint[] block = new uint[2];
             for (int i = 0; i < src.Length; i++)
             {
-                if (this.DecryptCount == 0)
+                if (DecryptCount == 0)
                 {
-                    block[0] = this.n21(this.DecryptionIV, 0);
-                    block[1] = this.n21(this.DecryptionIV, 4);
-                    this.EncipherBlock(block);
-                    this.n12(this.DecryptionIV, 0, block[0]);
-                    this.n12(this.DecryptionIV, 4, block[1]);
+                    block[0] = n21(DecryptionIV, 0);
+                    block[1] = n21(DecryptionIV, 4);
+                    EncipherBlock(block);
+                    n12(DecryptionIV, 0, block[0]);
+                    n12(DecryptionIV, 4, block[1]);
                 }
 
-                byte tmp = this.DecryptionIV[this.DecryptCount];
-                this.DecryptionIV[this.DecryptCount] = src[i];
+                byte tmp = DecryptionIV[DecryptCount];
+                DecryptionIV[DecryptCount] = src[i];
                 dst[i] = (byte)(src[i] ^ tmp);
-                this.DecryptCount = (this.DecryptCount + 1) & (BlowfishCipher.BlockSize - 1);
+                DecryptCount = (DecryptCount + 1) & (BlowfishCipher.BlockSize - 1);
             }
         }
 
@@ -336,18 +336,18 @@ namespace Comet.Network.Security
             uint[] block = new uint[2];
             for (int i = 0; i < src.Length; i++)
             {
-                if (this.EncryptCount == 0)
+                if (EncryptCount == 0)
                 {
-                    block[0] = this.n21(this.EncryptionIV, 0);
-                    block[1] = this.n21(this.EncryptionIV, 4);
-                    this.EncipherBlock(block);
-                    this.n12(this.EncryptionIV, 0, block[0]);
-                    this.n12(this.EncryptionIV, 4, block[1]);
+                    block[0] = n21(EncryptionIV, 0);
+                    block[1] = n21(EncryptionIV, 4);
+                    EncipherBlock(block);
+                    n12(EncryptionIV, 0, block[0]);
+                    n12(EncryptionIV, 4, block[1]);
                 }
 
-                dst[i] = (byte)(src[i] ^ this.EncryptionIV[this.EncryptCount]);
-                this.EncryptionIV[this.EncryptCount] = dst[i];
-                this.EncryptCount = (this.EncryptCount + 1) & (BlowfishCipher.BlockSize - 1);
+                dst[i] = (byte)(src[i] ^ EncryptionIV[EncryptCount]);
+                EncryptionIV[EncryptCount] = dst[i];
+                EncryptCount = (EncryptCount + 1) & (BlowfishCipher.BlockSize - 1);
             }
         }
 
@@ -361,8 +361,8 @@ namespace Comet.Network.Security
         /// <returns>((Sa + Sb) ^ Sc) + Sd, S being the substitution per byte.</returns>
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         private uint F(uint x) =>
-            (((this.S[((x >> 24) & 0xFF)] + this.S[0x100 + ((x >> 16) & 0xFF)])
-             ^ this.S[0x200 + ((x >> 8) & 0xFF)]) + this.S[0x300 + ((x) & 0xFF)]) 
+            (((S[((x >> 24) & 0xFF)] + S[0x100 + ((x >> 16) & 0xFF)])
+             ^ S[0x200 + ((x >> 8) & 0xFF)]) + S[0x300 + ((x) & 0xFF)]) 
              & 0xFFFFFFFF;
 
         /// <summary>
@@ -405,15 +405,15 @@ namespace Comet.Network.Security
             uint lv = block[0];
             uint rv = block[1];
 
-            lv ^= this.P[0];
+            lv ^= P[0];
             for (uint i = 1; i <= BlowfishCipher.Rounds; i++)
             {
-                rv ^= this.P[i];
-                rv ^= this.F(lv);
+                rv ^= P[i];
+                rv ^= F(lv);
                 lv.Swap(ref rv);
             }
 
-            rv ^= this.P[BlowfishCipher.Rounds + 1];            
+            rv ^= P[BlowfishCipher.Rounds + 1];            
             block[0] = rv & 0xFFFFFFFF;
             block[1] = lv & 0xFFFFFFFF;
         }

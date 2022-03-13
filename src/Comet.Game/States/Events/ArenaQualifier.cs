@@ -776,7 +776,7 @@ namespace Comet.Game.States.Events
                     strLose += $"({loser.SyndicateName}) ";
                 strLose += loser.Name;
 
-                await RoleManager.BroadcastMsgAsync(string.Format(Language.StrArenicMatchEnd, strWin, strLose, winner.QualifierRank), MsgTalk.TalkChannel.Qualifier);
+                await RoleManager.BroadcastMsgAsync(string.Format(Language.StrArenicMatchEnd, strWin, strLose, winner.QualifierRank), TalkChannel.Qualifier);
 
                 if (force)
                     QueueAction(() => DestroyAsync(disconnect, true));
@@ -838,7 +838,7 @@ namespace Comet.Game.States.Events
                     strLose2 += $"({Player2.SyndicateName}) ";
                 strLose2 += Player2.Name;
 
-                await RoleManager.BroadcastMsgAsync(string.Format(Language.StrArenicMatchDraw, strLose1, strLose2), MsgTalk.TalkChannel.Qualifier);
+                await RoleManager.BroadcastMsgAsync(string.Format(Language.StrArenicMatchDraw, strLose1, strLose2), TalkChannel.Qualifier);
 
                 if (force)
                     QueueAction(() => DestroyAsync(0, true));

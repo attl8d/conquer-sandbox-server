@@ -6,6 +6,7 @@ using Comet.Game.Packets;
 using Comet.Game.States;
 using Comet.Game.States.Items;
 using Comet.Game.States.Npcs;
+using Comet.Network.Packets.Game;
 using Comet.Shared;
 using System.Collections.Generic;
 using System.Linq;
@@ -163,7 +164,7 @@ namespace Comet.Game.World.Managers
 
             if (Confiscator != null)
             {
-                await discharger.SendAsync(string.Format(Language.StrDropEquip, item.Name, detainer.Name, Confiscator.Name, Confiscator.MapX, Confiscator.MapY), MsgTalk.TalkChannel.Talk);
+                await discharger.SendAsync(string.Format(Language.StrDropEquip, item.Name, detainer.Name, Confiscator.Name, Confiscator.MapX, Confiscator.MapY), TalkChannel.Talk);
                 await detainer.SendAsync(string.Format(Language.StrKillerEquip, discharger.Name));
             }
             return true;
@@ -196,7 +197,7 @@ namespace Comet.Game.World.Managers
                 await user.AwardConquerPointsAsync(dbDetain.RedeemPrice);
 
                 await RoleManager.BroadcastMsgAsync(string.Format(Language.StrGetEmoneyBonus, dbDetain.HunterName, dbDetain.TargetName, dbDetain.RedeemPrice),
-                    MsgTalk.TalkChannel.Talk);
+                    TalkChannel.Talk);
             }
             else
             {
@@ -214,7 +215,7 @@ namespace Comet.Game.World.Managers
                 await user.UserPackage.AddItemAsync(item);
 
                 await RoleManager.BroadcastMsgAsync(string.Format(Language.StrGetEquipBonus, dbDetain.HunterName, dbDetain.TargetName, item.FullName),
-                    MsgTalk.TalkChannel.Talk);
+                    TalkChannel.Talk);
             }
 
             await ServerDbContext.DeleteAsync(dbDetain);
@@ -264,7 +265,7 @@ namespace Comet.Game.World.Managers
             await user.UserPackage.AddItemAsync(item);
 
             await RoleManager.BroadcastMsgAsync(string.Format(Language.StrRedeemEquip, user.Name, dbDetain.RedeemPrice, dbDetain.HunterName),
-                MsgTalk.TalkChannel.Talk);
+                TalkChannel.Talk);
 
             dbDetain.ItemIdentity = 0;
             await ServerDbContext.SaveAsync(dbDetain);
@@ -282,7 +283,7 @@ namespace Comet.Game.World.Managers
 
                 if (Confiscator != null)
                 {
-                    await hunter.SendAsync(string.Format(Language.StrHasEmoneyBonus, dbDetain.TargetName, Confiscator.Name, Confiscator.MapX, Confiscator.MapY), MsgTalk.TalkChannel.Talk);
+                    await hunter.SendAsync(string.Format(Language.StrHasEmoneyBonus, dbDetain.TargetName, Confiscator.Name, Confiscator.MapX, Confiscator.MapY), TalkChannel.Talk);
                 }
             }
 

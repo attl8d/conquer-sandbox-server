@@ -20,6 +20,7 @@ using Comet.Game.States.Events;
 using static Comet.Network.Packets.Game.MsgName<Comet.Game.States.Client>;
 using Comet.Network.Packets.Game;
 using Comet.Core;
+using Comet.Core.World.Maps.Enums;
 
 namespace Comet.Game.States
 {
@@ -73,7 +74,7 @@ namespace Comet.Game.States
 #endif
                     await user.SendAsync(
                         $"{action.Identity}: [{action.IdNext},{action.IdNextfail}]. type[{action.Type}], data[{action.Data}], param:[{param}].",
-                        MsgTalk.TalkChannel.System,
+                        TalkChannel.System,
                         Color.White);
 #if !DEBUG_FELIPE
                 }
@@ -895,7 +896,7 @@ namespace Comet.Game.States
         private static async Task<bool> ExecuteActionBrocastmsgAsync(DbAction action, string param, Character user,
             Role role, Item item, string input)
         {
-            await RoleManager.BroadcastMsgAsync(param, (MsgTalk.TalkChannel)action.Data, Color.White);
+            await RoleManager.BroadcastMsgAsync(param, (TalkChannel)action.Data, Color.White);
             return true;
         }
 
@@ -904,9 +905,9 @@ namespace Comet.Game.States
         {
             if (user != null)
             {
-                MsgTalk.TalkChannel channel = MsgTalk.TalkChannel.MessageBox;
-                if (action.Data != 0 && Enum.IsDefined(typeof(MsgTalk.TalkChannel), (ushort)action.Data))
-                    channel = (MsgTalk.TalkChannel)action.Data;
+                TalkChannel channel = TalkChannel.MessageBox;
+                if (action.Data != 0 && Enum.IsDefined(typeof(TalkChannel), (ushort)action.Data))
+                    channel = (TalkChannel)action.Data;
 
                 await user.SendAsync(new MsgTalk(0, channel, param));
             }
@@ -1189,7 +1190,7 @@ namespace Comet.Game.States
                 if (npc.IsSynFlag() && syn != null)
                 {
                     await RoleManager.BroadcastMsgAsync(string.Format(Language.StrWarWon, syn.Name),
-                        MsgTalk.TalkChannel.Center);
+                        TalkChannel.Center);
                     npc.Map.OwnerIdentity = syn.Identity;
                 }
                 else if (npc.IsCtfFlag())
@@ -4434,7 +4435,7 @@ namespace Comet.Game.States
                 return false;
             }
 
-            await user.SendAsync(param, (MsgTalk.TalkChannel)action.Data, Color.White);
+            await user.SendAsync(param, (TalkChannel)action.Data, Color.White);
             return true;
         }
 
@@ -4895,7 +4896,7 @@ namespace Comet.Game.States
             if (user == null)
                 return false;
 
-            await user.SendAsync(param, MsgTalk.TalkChannel.Website);
+            await user.SendAsync(param, TalkChannel.Website);
             return true;
         }
 
@@ -4905,7 +4906,7 @@ namespace Comet.Game.States
             if (user == null)
                 return false;
 
-            await user.SendAsync(param, MsgTalk.TalkChannel.Bbs);
+            await user.SendAsync(param, TalkChannel.Bbs);
             return true;
         }
 
@@ -5825,7 +5826,7 @@ namespace Comet.Game.States
             if (!user.Team.IsLeader(user.Identity))
                 return false;
 
-            await user.Team.SendAsync(new MsgTalk(user.Identity, MsgTalk.TalkChannel.Team, Color.White, param));
+            await user.Team.SendAsync(new MsgTalk(user.Identity, TalkChannel.Team, Color.White, param));
             return true;
         }
 
@@ -6127,7 +6128,7 @@ namespace Comet.Game.States
             if (lottery.Rank <= 5)
             {
                 await RoleManager.BroadcastMsgAsync(
-                    string.Format(Language.StrLotteryHigh, user.Name, lottery.Itemname), MsgTalk.TalkChannel.Talk);
+                    string.Format(Language.StrLotteryHigh, user.Name, lottery.Itemname), TalkChannel.Talk);
             }
             else
             {
@@ -6529,7 +6530,7 @@ namespace Comet.Game.States
         private static async Task<bool> ExecuteActionEventBbsAsync(DbAction action, string param, Character user, Role role,
             Item item, string input)
         {
-            await RoleManager.BroadcastMsgAsync(param, MsgTalk.TalkChannel.System);
+            await RoleManager.BroadcastMsgAsync(param, TalkChannel.System);
             return true;
         }
 
@@ -6571,7 +6572,7 @@ namespace Comet.Game.States
             if (sourceMap.IsTeleportDisable())
                 return false;
 
-            if (!sourceMap[usMapX, usMapY].IsAccessible())
+            if (!sourceMap.IsStandEnable(usMapX, usMapY))
                 return false;
 
             foreach (var player in RoleManager.QueryRoleByType<Character>()

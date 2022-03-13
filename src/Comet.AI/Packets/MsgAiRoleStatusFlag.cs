@@ -14,7 +14,6 @@ namespace Comet.AI.Packets
                 return;
 
             Role sender = RoleManager.GetRole(Caster);
-
             if (Mode == 0)
             {
                 await target.AttachStatusAsync(sender, Flag, 0, Duration, Steps, 0);

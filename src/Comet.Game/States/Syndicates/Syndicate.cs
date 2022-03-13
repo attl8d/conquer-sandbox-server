@@ -3211,7 +3211,7 @@ namespace Comet.Game.States.Syndicates
 
         public async Task SendAsync(string message, uint idIgnore = 0u, Color? color = null)
         {
-            await SendAsync(new MsgTalk(0, MsgTalk.TalkChannel.Guild, color ?? Color.White, message), idIgnore);
+            await SendAsync(new MsgTalk(0, TalkChannel.Guild, color ?? Color.White, message), idIgnore);
         }
 
         public async Task SendAsync(IPacket msg, uint exclude = 0u)

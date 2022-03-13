@@ -8,13 +8,13 @@ namespace Comet.Game.Packets
 {
     public sealed class MsgPlayer : MsgPlayer<Client>
     {
-        public MsgPlayer(Character user)
+        public MsgPlayer(Character user, ushort x = 0, ushort y = 0)
         {
             Identity = user.Identity;
             Mesh = user.Mesh;
 
-            MapX = user.MapX;
-            MapY = user.MapY;
+            MapX = x == 0 ? user.MapX : x;
+            MapY = y == 0 ? user.MapY : y;
 
             Status = (uint)user.StatusFlag;
 
@@ -58,57 +58,7 @@ namespace Comet.Game.Packets
             FamilyName = user.FamilyName;
         }
 
-        public MsgPlayer(Character user, ushort x, ushort y)
-        {
-            Identity = user.Identity;
-            Mesh = user.Mesh;
-
-            MapX = x;
-            MapY = y;
-
-            Status = (uint)user.StatusFlag;
-
-            Hairstyle = user.Hairstyle;
-            Direction = (byte)user.Direction;
-            Pose = (byte)user.Action;
-            Metempsychosis = user.Metempsychosis;
-            Level = user.Level;
-
-            SyndicateIdentity = user.SyndicateIdentity;
-            SyndicatePosition = (ushort)user.SyndicateRank;
-
-            NobilityRank = (uint)user.NobilityRank;
-
-            Helmet = user.Headgear?.Type ?? 0;
-            HelmetColor = (ushort)(user.Headgear?.Color ?? Item.ItemColor.None);
-            RightHand = user.RightHand?.Type ?? 0;
-            LeftHand = user.LeftHand?.Type ?? 0;
-            LeftHandColor = (ushort)(user.LeftHand?.Color ?? Item.ItemColor.None);
-            Armor = user.Armor?.Type ?? 0;
-            ArmorColor = (ushort)(user.Armor?.Color ?? Item.ItemColor.None);
-            Garment = user.Garment?.Type ?? 0;
-
-            FlowerRanking = user.FlowerCharm;
-            QuizPoints = user.QuizPoints;
-            UserTitle = user.UserTitle;
-
-            EnlightenPoints = (ushort)user.EnlightenPoints;
-            CanBeEnlightened = (ushort)(user.CanBeEnlightened ? 1 : 0);
-
-            Away = user.IsAway;
-
-            if (user.Syndicate != null)
-                SharedBattlePower = (uint)user.Syndicate.GetSharedBattlePower(user.SyndicateRank);
-
-            FamilyIdentity = user.FamilyIdentity;
-            FamilyRank = (uint)user.FamilyPosition;
-            FamilyBattlePower = user.FamilyBattlePower;
-
-            Name = user.Name;
-            FamilyName = user.FamilyName;
-        }
-
-        public MsgPlayer(Monster monster)
+        public MsgPlayer(Monster monster, ushort x = 0, ushort y = 0)
         {
             Type = PacketType.MsgPlayer;
 
@@ -116,8 +66,8 @@ namespace Comet.Game.Packets
 
             Mesh = monster.Mesh;
 
-            MapX = monster.MapX;
-            MapY = monster.MapY;
+            MapX = x == 0 ? monster.MapX : x;
+            MapY = y == 0 ? monster.MapY : y;
 
             Status = (uint)monster.StatusFlag;
 

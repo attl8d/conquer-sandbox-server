@@ -107,7 +107,7 @@ namespace Comet.Game.World.Managers
                 if (user.ApprenticeCount > 0)
                     await user.SynchroApprenticesSharedBattlePowerAsync();
 
-                await RoleManager.BroadcastMsgAsync(message, MsgTalk.TalkChannel.Center, Color.Red);
+                await RoleManager.BroadcastMsgAsync(message, TalkChannel.Center, Color.Red);
             }
         }
 

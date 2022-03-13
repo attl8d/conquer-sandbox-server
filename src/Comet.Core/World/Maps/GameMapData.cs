@@ -1,8 +1,11 @@
 ﻿// #define NEW_DMAP
 using Comet.Shared;
+using Microsoft.Extensions.Configuration.Ini;
 using System;
 using System.Collections.Generic;
+using System.Drawing;
 using System.IO;
+using System.Linq;
 using System.Text;
 
 namespace Comet.Core.World.Maps
@@ -37,8 +40,12 @@ namespace Comet.Core.World.Maps
 
         private readonly uint m_idDoc;
 
+        private readonly List<List<Layer>> mSetLayer = new List<List<Layer>>();
         private readonly List<PassageData> m_passageData = new List<PassageData>();
         private Tile[,] m_cell;
+        private Tile mDefault = default;
+        private readonly List<MapObject> m_mapObjects = new List<MapObject>();
+
         public GameMapData(uint idMapDoc)
         {
             m_idDoc = idMapDoc;
@@ -47,14 +54,16 @@ namespace Comet.Core.World.Maps
         public int Width { get; private set; }
         public int Height { get; private set; }
 
-        public Tile this[int x, int y]
+        public ref Tile this[int x, int y]
         {
             get
             {
                 if (x < 0 || x >= Width || y < 0 || y >= Height)
-                    return default;
+                {
+                    return ref mDefault;
+                }
 
-                return m_cell[x, y];
+                return ref m_cell[x, y];
             }
         }
 
@@ -176,75 +185,16 @@ namespace Comet.Core.World.Maps
                         file = file.Substring(0, file.IndexOf('\0')).Replace("\\", Path.DirectorySeparatorChar.ToString());
                         if (File.Exists(file))
                         {
-                            var memory = new MemoryStream(File.ReadAllBytes(file));
-                            var scenery = new BinaryReader(memory);
+                            //var memory = new MemoryStream(File.ReadAllBytes(file));
+                            var scenery = new BinaryReader(File.OpenRead(file));
 
-#if NEW_DMAP
-                            memory.Seek(332, SeekOrigin.Current);
-                            int width = scenery.ReadInt32();
-                            int height = scenery.ReadInt32();
-                            memory.Seek(4, SeekOrigin.Current);
-                            int sceneOffsetX = scenery.ReadInt32();
-                            int sceneOffsetY = scenery.ReadInt32();
-                            memory.Seek(4, SeekOrigin.Current);
+                            TerrainObject objTerrain = TerrainObject.CreateNew(scenery);
+                            objTerrain.SetPos(new Point(startX, startY));
+                            AddMapObject(objTerrain);
 
-                            for (int y = 0; y < height; y++)
-                            {
-                                for (int x = 0; x < width; x++)
-                                {
-                                    short mask = (short) scenery.ReadInt32();
-                                    short terrain = (short) scenery.ReadInt32();
-                                    short altitude = (short) scenery.ReadInt32();
-
-                                    int posX = startX + sceneOffsetX + x - width;
-                                    int posY = startY + sceneOffsetY + y - height;
-
-                                    if (posX < 0 || posX >= ushort.MaxValue
-                                                 || posY < 0 || posY >= ushort.MaxValue)
-                                        continue;
-
-                                    m_cell[posX, posY] = new Tile(altitude, mask, terrain);
-                                }
-                            }
-#else
-                            int amount = scenery.ReadInt32();
-                            //memory.Seek(332, SeekOrigin.Current);
-                            for (int parts = 0; parts < amount; parts++)
-                            {
-                                string temp0 = Encoding.ASCII.GetString(scenery.ReadBytes(256)).Replace('\0', ' ').TrimEnd();
-                                string temp1 = Encoding.ASCII.GetString(scenery.ReadBytes(64)).Replace('\0', ' ').TrimEnd();
-                                memory.Seek(12, SeekOrigin.Current);
-                                int width = scenery.ReadInt32();
-                                int height = scenery.ReadInt32();
-                                memory.Seek(4, SeekOrigin.Current);
-                                int sceneOffsetX = scenery.ReadInt32();
-                                int sceneOffsetY = scenery.ReadInt32();
-                                memory.Seek(4, SeekOrigin.Current);
-
-                                for (int y = 0; y < height; y++)
-                                {
-                                    for (int x = 0; x < width; x++)
-                                    {
-                                        short mask = (short)scenery.ReadInt32();
-                                        short terrain = (short)scenery.ReadInt32();
-                                        short altitude = (short)scenery.ReadInt32();
-
-                                        int posX = startX + sceneOffsetX + x - width;
-                                        int posY = startY + sceneOffsetY + y - height;
-
-                                        if (posX < 0 || posX >= ushort.MaxValue
-                                                     || posY < 0 || posY >= ushort.MaxValue)
-                                            continue;
-
-                                        m_cell[posX, posY] = new Tile(altitude, mask, terrain);
-                                    }
-                                }
-                            }
-#endif
-
-                            memory.Close();
+                            //memory.Close();
                             scenery.Close();
-                            memory.Dispose();
+                            //memory.Dispose();
                             scenery.Dispose();
                         }
 
@@ -265,35 +215,181 @@ namespace Comet.Core.World.Maps
             }
         }
 
-        //private MemoryStream ReadFrom7Zip(string fileName)
-        //{
-        //    var file = new FileStream(fileName, FileMode.Open, FileAccess.Read);
-        //    var mdReader = new ManagedLzma.SevenZip.FileModel.ArchiveFileModelMetadataReader();
-        //    mdReader.EnablePosixFileAttributeExtension = true; // enables an unofficial extension; should be safe to always set to true if you need to deal with those kind of files
-        //    var mdModel = mdReader.ReadMetadata(file);
+        #region Indexes
 
-        //    MemoryStream output = new MemoryStream();
-        //    for (int sectionIndex = 0; sectionIndex < mdModel.Metadata.DecoderSections.Length; sectionIndex++)
-        //    {
-        //        var dsReader = new DecodedSectionReader(file, mdModel.Metadata, sectionIndex, PasswordStorage.Create(""));
-        //        var mdFiles = mdModel.GetFilesInSection(sectionIndex);
-        //        while (dsReader.CurrentStreamIndex < dsReader.StreamCount)
-        //        {
-        //            var mdFile = mdFiles[dsReader.CurrentStreamIndex];
-        //            if (mdFile != null)
-        //            {
-        //                var substream = dsReader.OpenStream();
-        //                if (mdFile.Offset != 0)
-        //                    return new MemoryStream();
-        //                substream.CopyTo(output);
-        //            }
-        //            dsReader.NextStream();
-        //        }
-        //    }
+        public static int Pos2Index(int x, int y, int cx, int cy)
+        {
+            return x + y * cx;
+        }
 
-        //    output.Position = 0;
-        //    return output;
-        //}
+        public static int Index2X(int idx, int cx, int cy)
+        {
+            return idx % cy;
+        }
+
+        public static int Index2Y(int idx, int cx, int cy)
+        {
+            return idx / cy;
+        }
+
+        #endregion
+
+        #region Map Object
+
+        public bool AddMapObject(TerrainObject terrain)
+        {
+            if (terrain == null)
+                return false;
+
+            m_mapObjects.Add(terrain);
+
+            return PlaceTerrainObject(terrain);
+        }
+
+        public bool DelMapObject(int idx)
+        {
+            if (idx < 0 || idx >= m_mapObjects.Count)
+                return false;
+
+            TerrainObject terrain = m_mapObjects[idx] as TerrainObject;
+            if (terrain != null && DisplaceTerrainObject(terrain))
+            {
+                m_mapObjects.RemoveAt(idx);
+                return true;
+            }
+
+            return false;
+        }
+
+        public bool PlaceTerrainObject(TerrainObject terrain)
+        {
+            if (terrain == null)
+                return false;
+
+            foreach (var part in terrain.Parts)
+            {
+                for (int j = 0; j < part.SizeBaseCY; j++)
+                {
+                    for (int k = 0; k < part.SizeBaseCX; k++)
+                    {
+                        Layer layer = part.GetLayer(j, k);
+                        if (layer.Equals(default))
+                            return false;
+
+                        ref Tile tile = ref m_cell[part.X - k, part.Y - j];
+                        if (tile.Equals(default))
+                            return false;
+
+                        tile.AddLayer(mSetLayer, new Layer
+                        {
+                            Altitude = layer.Altitude,
+                            Mask = layer.Mask,
+                            Terrain = layer.Terrain
+                        });
+                    }
+                }
+            }
+            return true;
+        }
+
+        public bool DisplaceTerrainObject(TerrainObject terrain)
+        {
+            if (terrain == null)
+                return false;
+
+            foreach (var part in terrain.Parts)
+            {
+                for (int j = 0; j < part.SizeBaseCY; j++)
+                {
+                    for (int k = 0; k < part.SizeBaseCX; k++)
+                    {
+                        ref Tile tile = ref m_cell[part.X - k, part.Y - j];
+                        if (tile.Equals(default))
+                            return false;
+
+                        tile.DelLayer(mSetLayer);
+                    }
+                }
+            }
+
+            return true;
+        }
+
+        #endregion
+
+        #region Terrain Object
+
+        public bool AddTerrainItem(uint idOwner, int x, int y, uint idTerrainType)
+        {
+            string path = Path.Combine(Environment.CurrentDirectory, "ini");
+            IniConfigurationSource source = new();
+            var content = Directory.GetFiles(path);
+            var fileName = content.FirstOrDefault(x => x.ToLower().EndsWith("terrainnpc.ini", StringComparison.CurrentCultureIgnoreCase));
+            path = Path.Combine(path, fileName);
+            source.ReloadOnChange = false;
+            IniConfigurationProvider reader = new(source);
+            try
+            {
+                reader.Load(File.OpenRead(path));
+            }
+            catch
+            {
+                return false;
+            }
+
+            string entry = $"NpcType{idTerrainType / 10}:Dir{idTerrainType % 10}";
+            if (!reader.TryGet(entry, out path))
+                return false;
+
+            TerrainObject terrain = TerrainObject.CreateNew(new BinaryReader(File.OpenRead(path)), idOwner);
+            if (terrain == null)
+                return false;
+
+            terrain.SetPos(new Point(x, y));
+            if (!AddMapObject(terrain))
+                return false;
+            return true;
+        }
+
+        public bool DelTerrainItem(uint idOwner)
+        {
+            for (int i = 0; i < m_mapObjects.Count; i++)
+            {
+                if (m_mapObjects[i] is TerrainObject terrain)
+                {
+                    if (terrain.OwnerIdentity == idOwner)
+                        return DelMapObject(i);
+                }
+            }
+
+            return true;
+        }
+
+        #endregion
+
+        public int GetFloorAttr(int x, int y)
+        {
+            Tile cell = this[x, y];
+            if (cell.Equals(mDefault))
+                return 0;
+            return cell.GetFloorAttr(mSetLayer);
+        }
+
+        public int GetFloorAlt(int x, int y)
+        {
+            Tile cell = this[x, y];
+            if (cell.Equals(mDefault))
+                return 0;
+            return cell.GetFloorAlt(mSetLayer);
+        }
+
+        public int GetFloorMask(int x, int y)
+        {
+            Tile cell = this[x, y];
+            if (cell.Equals(mDefault))
+                return 0;
+            return cell.GetFloorMask(mSetLayer);
+        }
 
         /// <summary>
         /// This method has been created to avoid the case sensitive Linux path system, which would case us some trouble.

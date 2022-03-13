@@ -204,7 +204,7 @@ namespace Comet.Game.Packets
                         if (currLevExp == null)
                             return;
 
-                        await RoleManager.BroadcastMsgAsync(string.Format(Language.StrFetchFamilyNpcExpSuccess, user.Name, map.Name, user.Level, exp * 100), MsgTalk.TalkChannel.Center);
+                        await RoleManager.BroadcastMsgAsync(string.Format(Language.StrFetchFamilyNpcExpSuccess, user.Name, map.Name, user.Level, exp * 100), TalkChannel.Center);
 
                         long awardExp = (long)(currLevExp.Exp * exp);
                         await user.AwardExperienceAsync(awardExp);
@@ -239,7 +239,7 @@ namespace Comet.Game.Packets
 
                         if (!user.UserPackage.IsPackSpare(5))
                         {
-                            await user.SendAsync(string.Format(Language.StrNotEnoughSpaceN, 5), MsgTalk.TalkChannel.TopLeft, Color.Red);
+                            await user.SendAsync(string.Format(Language.StrNotEnoughSpaceN, 5), TalkChannel.TopLeft, Color.Red);
                             return;
                         }
 
@@ -258,7 +258,7 @@ namespace Comet.Game.Packets
                     {
                         if (client.Character.IsPm())
                         {
-                            await client.SendAsync(new MsgTalk(client.Identity, MsgTalk.TalkChannel.Service,
+                            await client.SendAsync(new MsgTalk(client.Identity, TalkChannel.Service,
                                 $"Missing packet {Type}, Action {Action}, Length {Length}"));
                         }
 

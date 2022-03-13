@@ -24,7 +24,7 @@ namespace Comet.Game.Database.Repositories
         public static async Task<List<DbDynamap>> GetDynaAsync()
         {
             await using var db = new ServerDbContext();
-            return db.DynaMaps.Where(x => x.ServerIndex == -1 || x.ServerIndex == Kernel.GameConfiguration.ServerIdentity)
+            return db.DynaMaps.Where(x => x.Identity > 10000000 && (x.ServerIndex == -1 || x.ServerIndex == Kernel.GameConfiguration.ServerIdentity))
                 .ToList();
         }
     }

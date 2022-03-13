@@ -5,6 +5,7 @@
         public AiAction Action { get; set; }
         public int Data { get; set; }
         public int Param { get; set; }
+        public int Command { get; set; }
         public ushort X { get; set; }
         public ushort Y { get; set; }
 
@@ -16,6 +17,7 @@
             Action = (AiAction)reader.ReadInt32();
             Data = reader.ReadInt32();
             Param = reader.ReadInt32();
+            Command = reader.ReadInt32();
             X = reader.ReadUInt16();
             Y = reader.ReadUInt16();
         }
@@ -27,6 +29,7 @@
             writer.Write((int)Action);
             writer.Write(Data);
             writer.Write(Param);
+            writer.Write(Command);
             writer.Write(X);
             writer.Write(Y);
             return writer.ToArray();
@@ -38,6 +41,8 @@
             Jump,
             Walk,
             FlyMap,
+            AddTerrainObj,
+            DelTerrainObj
         }
     }
 }

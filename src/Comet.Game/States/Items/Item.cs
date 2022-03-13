@@ -1342,10 +1342,7 @@ namespace Comet.Game.States.Items
                 }
                 else if (type == 11 || subType is 114 or 123 || type == 14) //Head
                 {
-                    if (subType != 112 && subType != 115 && subType != 116)
-                        firstId = Type - Type % 1000 + Type % 10;
-                    else
-                        firstId = Type - Type % 1000 + Type % 10;
+                    firstId = Type - Type % 1000 + Type % 10;
                 }
                 else if (type == 13) // Armor
                 {

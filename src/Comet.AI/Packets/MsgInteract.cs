@@ -10,14 +10,9 @@ namespace Comet.AI.Packets
         public override async Task ProcessAsync(Server client)
         {
             Role sender = RoleManager.GetRole(SenderIdentity);
-            if (sender == null)
-                return;
 
             Role target = sender?.Map.QueryAroundRole(sender, TargetIdentity);
-            if (target == null && Action != MsgInteractType.MagicAttack)
-                return;
-
-            if (target is {IsAlive: false})
+            if (target is not {IsAlive: true})
                 return;
 
             switch (Action)

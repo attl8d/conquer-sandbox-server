@@ -17,7 +17,7 @@ namespace Comet.AI.Packets
             if (target == null && Action != MsgInteractType.MagicAttack)
                 return;
 
-            if (!target.IsAlive)
+            if (target is {IsAlive: false})
                 return;
 
             switch (Action)

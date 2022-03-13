@@ -15,11 +15,11 @@ namespace Comet.Game.States.Items
 {
     public class Item
     {
-        private const int SPECIAL_FLAG_SUSPICIOUS = 0x1;
+        private const int SpecialFlagSuspicious = 0x1;
 
-        private readonly Character m_user;
-        private DbItem m_dbItem;
-        private DbItemAddition m_dbItemAddition;
+        private readonly Character mUser;
+        private DbItem mDbItem;
+        private DbItemAddition mDbItemAddition;
 
         public Item()
         {
@@ -27,7 +27,7 @@ namespace Comet.Game.States.Items
 
         public Item(Character user)
         {
-            m_user = user;
+            mUser = user;
         }
 
         public async Task<bool> CreateAsync(DbItemtype type, ItemPosition position = ItemPosition.Inventory)
@@ -35,9 +35,9 @@ namespace Comet.Game.States.Items
             if (type == null)
                 return false;
 
-            m_dbItem = new DbItem
+            mDbItem = new DbItem
             {
-                PlayerId = m_user.Identity,
+                PlayerId = mUser.Identity,
                 Type = type.Type,
                 Position = (byte) position,
                 Amount = type.Amount,
@@ -50,9 +50,9 @@ namespace Comet.Game.States.Items
             };
 
             Itemtype = type;
-            m_dbItemAddition = ItemManager.GetItemAddition(Type, Plus);
+            mDbItemAddition = ItemManager.GetItemAddition(Type, Plus);
 
-            return await SaveAsync() && (m_user.LastAddItemIdentity = Identity) != 0;
+            return await SaveAsync() && (mUser.LastAddItemIdentity = Identity) != 0;
         }
 
         public async Task<bool> CreateAsync(DbItem item)
@@ -60,18 +60,18 @@ namespace Comet.Game.States.Items
             if (item == null)
                 return false;
 
-            m_dbItem = item;
+            mDbItem = item;
             Itemtype = ItemManager.GetItemtype(item.Type);
 
             if (Itemtype == null)
                 return false;
 
-            m_dbItemAddition = ItemManager.GetItemAddition(item.Type, item.Magic3);
+            mDbItemAddition = ItemManager.GetItemAddition(item.Type, item.Magic3);
 
-            if (m_dbItem.Id == 0)
+            if (mDbItem.Id == 0)
             {
                 await SaveAsync();
-                m_user.LastAddItemIdentity = Identity;
+                mUser.LastAddItemIdentity = Identity;
             }
 
             return true;
@@ -358,7 +358,7 @@ namespace Comet.Game.States.Items
 
         public DbItemtype Itemtype { get; private set; }
 
-        public uint Identity => m_dbItem.Id;
+        public uint Identity => mDbItem.Id;
 
         public string Name => Itemtype?.Name ?? Language.StrNone;
 
@@ -407,8 +407,8 @@ namespace Comet.Game.States.Items
         /// </summary>
         public uint OwnerIdentity
         {
-            get => m_dbItem.OwnerId;
-            set => m_dbItem.OwnerId = value;
+            get => mDbItem.OwnerId;
+            set => mDbItem.OwnerId = value;
         }
 
         /// <summary>
@@ -416,14 +416,14 @@ namespace Comet.Game.States.Items
         /// </summary>
         public uint PlayerIdentity
         {
-            get => m_dbItem.PlayerId;
-            set => m_dbItem.PlayerId = value;
+            get => mDbItem.PlayerId;
+            set => mDbItem.PlayerId = value;
         }
 
         public ushort Durability
         {
-            get => m_dbItem.Amount;
-            set => m_dbItem.Amount = value;
+            get => mDbItem.Amount;
+            set => mDbItem.Amount = value;
         }
 
         public ushort MaximumDurability
@@ -451,91 +451,91 @@ namespace Comet.Game.States.Items
 
                 return result;
             }
-            set => m_dbItem.AmountLimit = value;
+            set => mDbItem.AmountLimit = value;
         }
 
         public ushort OriginalMaximumDurability => Itemtype.AmountLimit;
 
         public SocketGem SocketOne
         {
-            get => (SocketGem) m_dbItem.Gem1;
-            set => m_dbItem.Gem1 = (byte) value;
+            get => (SocketGem) mDbItem.Gem1;
+            set => mDbItem.Gem1 = (byte) value;
         }
 
         public SocketGem SocketTwo
         {
-            get => (SocketGem) m_dbItem.Gem2;
-            set => m_dbItem.Gem2 = (byte) value;
+            get => (SocketGem) mDbItem.Gem2;
+            set => mDbItem.Gem2 = (byte) value;
         }
 
         public ItemPosition Position
         {
-            get => (ItemPosition) m_dbItem.Position;
-            set => m_dbItem.Position = (byte) value;
+            get => (ItemPosition) mDbItem.Position;
+            set => mDbItem.Position = (byte) value;
         }
 
         public byte Plus
         {
-            get => (byte) (GetItemSubType() == 730 ? Type % 100 : m_dbItem.Magic3);
-            set => m_dbItem.Magic3 = value;
+            get => (byte) (GetItemSubType() == 730 ? Type % 100 : mDbItem.Magic3);
+            set => mDbItem.Magic3 = value;
         }
 
         public uint SocketProgress
         {
-            get => m_dbItem.Data;
-            set => m_dbItem.Data = value;
+            get => mDbItem.Data;
+            set => mDbItem.Data = value;
         }
 
         public uint CompositionProgress
         {
-            get => m_dbItem.AddlevelExp;
-            set => m_dbItem.AddlevelExp = value;
+            get => mDbItem.AddlevelExp;
+            set => mDbItem.AddlevelExp = value;
         }
 
         public ItemEffect Effect
         {
-            get => (ItemEffect) m_dbItem.Magic1;
-            set => m_dbItem.Magic1 = (byte) value;
+            get => (ItemEffect) mDbItem.Magic1;
+            set => mDbItem.Magic1 = (byte) value;
         }
 
         public byte ReduceDamage
         {
-            get => m_dbItem.ReduceDmg;
-            set => m_dbItem.ReduceDmg = value;
+            get => mDbItem.ReduceDmg;
+            set => mDbItem.ReduceDmg = value;
         }
 
         public byte Enchantment
         {
-            get => (byte) (Position != ItemPosition.Steed ? m_dbItem.AddLife : 0);
-            set => m_dbItem.AddLife = value;
+            get => (byte) (Position != ItemPosition.Steed ? mDbItem.AddLife : 0);
+            set => mDbItem.AddLife = value;
         }
 
         public byte AntiMonster
         {
-            get => m_dbItem.AntiMonster;
-            set => m_dbItem.AntiMonster = value;
+            get => mDbItem.AntiMonster;
+            set => mDbItem.AntiMonster = value;
         }
 
         public ItemColor Color
         {
-            get => (ItemColor) m_dbItem.Color;
-            set => m_dbItem.Color = (byte) value;
+            get => (ItemColor) mDbItem.Color;
+            set => mDbItem.Color = (byte) value;
         }
 
         public bool IsBound
         {
-            get => m_dbItem.Monopoly != 0;
+            get => mDbItem.Monopoly != 0;
             set
             {
                 if (value)
                 {
-                    m_dbItem.Monopoly |= ITEM_MONOPOLY_MASK;
+                    mDbItem.Monopoly |= ITEM_MONOPOLY_MASK;
                 }
                 else
                 {
-                    int monopoly = m_dbItem.Monopoly;
+                    int monopoly = mDbItem.Monopoly;
                     monopoly &= ~ITEM_MONOPOLY_MASK;
-                    m_dbItem.Monopoly = (byte) monopoly;
+                    mDbItem.Monopoly = (byte) monopoly;
                 }
             }
         }
@@ -545,20 +545,20 @@ namespace Comet.Game.States.Items
         /// </summary>
         public uint Data
         {
-            get => m_dbItem.Data;
-            set => m_dbItem.Data = value;
+            get => mDbItem.Data;
+            set => mDbItem.Data = value;
         }
 
         public uint SyndicateIdentity
         {
-            get => m_dbItem.Syndicate;
-            set => m_dbItem.Syndicate = value;
+            get => mDbItem.Syndicate;
+            set => mDbItem.Syndicate = value;
         }
 
         public uint AccumulateNum
         {
-            get => m_dbItem.AccumulateNum;
-            set => m_dbItem.AccumulateNum = value;
+            get => mDbItem.AccumulateNum;
+            set => mDbItem.AccumulateNum = value;
         }
 
         public uint MaxAccumulateNum => Itemtype?.AccumulateLimit ?? 1u;
@@ -627,7 +627,7 @@ namespace Comet.Game.States.Items
             {
                 int result = Itemtype?.Life ?? 0;
                 result += Enchantment;
-                result += m_dbItemAddition?.Life ?? 0;
+                result += mDbItemAddition?.Life ?? 0;
                 return result;
             }
         }
@@ -639,8 +639,8 @@ namespace Comet.Game.States.Items
             get
             {
                 int result = Itemtype?.AttackMin ?? 0;
-                result += m_dbItemAddition?.AttackMin ?? 0;
-                DbWeaponSkill ws = m_user.WeaponSkill[(ushort) GetItemSubType()];
+                result += mDbItemAddition?.AttackMin ?? 0;
+                DbWeaponSkill ws = mUser.WeaponSkill[(ushort) GetItemSubType()];
                 if (ws != null && ws.Level > 12)
                     result += result * (1 + (Role.MAX_WEAPONSKILLLEVEL - ws.Level) / 100);
                 return result;
@@ -654,8 +654,8 @@ namespace Comet.Game.States.Items
                 int result = Itemtype?.AttackMax ?? 0;
                 if (Position == ItemPosition.LeftHand && !IsShield())
                     result /= 2;
-                result += m_dbItemAddition?.AttackMax ?? 0;
-                DbWeaponSkill ws = m_user.WeaponSkill[(ushort) GetItemSubType()];
+                result += mDbItemAddition?.AttackMax ?? 0;
+                DbWeaponSkill ws = mUser.WeaponSkill[(ushort) GetItemSubType()];
                 if (ws != null && ws.Level > 12)
                     result += result * (1 + (Role.MAX_WEAPONSKILLLEVEL - ws.Level) / 100);
                 return result;
@@ -669,7 +669,7 @@ namespace Comet.Game.States.Items
                 if (Position == ItemPosition.AttackTalisman)
                 {
                     int result = Itemtype?.AttackMax ?? 0;
-                    result += m_dbItemAddition?.AttackMax ?? 0;
+                    result += mDbItemAddition?.AttackMax ?? 0;
                     return result;
                 }
 
@@ -682,8 +682,8 @@ namespace Comet.Game.States.Items
             get
             {
                 int result = Itemtype?.MagicAtk ?? 0;
-                result += m_dbItemAddition?.MagicAtk ?? 0;
-                DbWeaponSkill ws = m_user.WeaponSkill[(ushort) GetItemSubType()];
+                result += mDbItemAddition?.MagicAtk ?? 0;
+                DbWeaponSkill ws = mUser.WeaponSkill[(ushort) GetItemSubType()];
                 if (ws != null && ws.Type == 421 && ws.Level > 12)
                     result += result * (1 + (Role.MAX_WEAPONSKILLLEVEL - ws.Level) / 100);
                 return result;
@@ -697,7 +697,7 @@ namespace Comet.Game.States.Items
                 if (Position == ItemPosition.AttackTalisman)
                 {
                     int result = Itemtype?.MagicAtk ?? 0;
-                    result += m_dbItemAddition?.MagicAtk ?? 0;
+                    result += mDbItemAddition?.MagicAtk ?? 0;
                     return result;
                 }
 
@@ -712,7 +712,7 @@ namespace Comet.Game.States.Items
                 int result = Itemtype?.Defense ?? 0;
                 if (IsArrowSort())
                     return result;
-                result += m_dbItemAddition?.Defense ?? 0;
+                result += mDbItemAddition?.Defense ?? 0;
                 return result;
             }
         }
@@ -724,7 +724,7 @@ namespace Comet.Game.States.Items
                 if (Position == ItemPosition.DefenceTalisman)
                 {
                     int result = Itemtype?.Defense ?? 0;
-                    result += m_dbItemAddition?.Defense ?? 0;
+                    result += mDbItemAddition?.Defense ?? 0;
                     return result;
                 }
 
@@ -737,7 +737,7 @@ namespace Comet.Game.States.Items
             get
             {
                 if (Position == ItemPosition.Armor || Position == ItemPosition.Headwear ||
-                    Position == ItemPosition.Necklace) return m_dbItemAddition?.MagicDef ?? 0;
+                    Position == ItemPosition.Necklace) return mDbItemAddition?.MagicDef ?? 0;
 
                 return Itemtype?.MagicDef ?? 0;
             }
@@ -750,7 +750,7 @@ namespace Comet.Game.States.Items
                 if (Position == ItemPosition.DefenceTalisman)
                 {
                     int result = Itemtype?.MagicDef ?? 0;
-                    result += m_dbItemAddition?.MagicDef ?? 0;
+                    result += mDbItemAddition?.MagicDef ?? 0;
                     return result;
                 }
 
@@ -776,7 +776,7 @@ namespace Comet.Game.States.Items
                     return 0;
 
                 int result = Itemtype?.Dexterity ?? 0;
-                result += m_dbItemAddition?.Dexterity ?? 0;
+                result += mDbItemAddition?.Dexterity ?? 0;
                 if (IsWeaponTwoHand())
                     result *= 2;
                 if (IsBow())
@@ -790,12 +790,12 @@ namespace Comet.Game.States.Items
             get
             {
                 int result = Itemtype?.Dodge ?? 0;
-                result += m_dbItemAddition?.Dodge ?? 0;
+                result += mDbItemAddition?.Dodge ?? 0;
                 return result;
             }
         }
 
-        public int Blessing => Position == ItemPosition.Steed ? 0 : m_dbItem?.ReduceDmg ?? 0;
+        public int Blessing => Position == ItemPosition.Steed ? 0 : mDbItem?.ReduceDmg ?? 0;
 
         public int DragonGemEffect
         {
@@ -993,7 +993,7 @@ namespace Comet.Game.States.Items
             get
             {
                 int result = Itemtype.Dexterity;
-                result += m_dbItemAddition?.Dexterity ?? 0;
+                result += mDbItemAddition?.Dexterity ?? 0;
                 return result;
             }
         }
@@ -1026,11 +1026,11 @@ namespace Comet.Game.States.Items
                 return false;
             }
 
-            m_dbItem.Type = itemtype.Type;
+            mDbItem.Type = itemtype.Type;
             Itemtype = itemtype;
 
-            m_dbItemAddition = ItemManager.GetItemAddition(newType, m_dbItem.Magic3);
-            await m_user.SendAsync(new MsgItemInfo(this, MsgItemInfo<Client>.ItemMode.Update));
+            mDbItemAddition = ItemManager.GetItemAddition(newType, mDbItem.Magic3);
+            await mUser.SendAsync(new MsgItemInfo(this, MsgItemInfo<Client>.ItemMode.Update));
             await SaveAsync();
             return true;
         }
@@ -1050,7 +1050,7 @@ namespace Comet.Game.States.Items
             }
 
             Plus = (byte) level;
-            m_dbItemAddition = add;
+            mDbItemAddition = add;
             return true;
         }
 
@@ -1324,40 +1324,35 @@ namespace Comet.Game.States.Items
             var type = (byte) (Type / 10000);
             var subType = (short) (Type / 1000);
 
-            if (Type == 150000 || Type == 150310 || Type == 150320 || Type == 410301 || Type == 421301 || Type == 500301
-                || Type == 601301 || Type == 610301)
+            if (Type is 150000 or 150310 or 150320 or 410301 or 421301 or 500301 or 601301 or 610301)
                 return Type;
 
-            if (Type >= 120310 && Type <= 120319)
+            if (Type is >= 120310 and <= 120319)
                 return Type;
 
             if (sort == 1) //!Weapon
             {
-                if (subType == 120 || subType == 121) //Necklace
+                if (subType is 120 or 121) // Necklace
                 {
                     firstId = Type - Type % 1000 + Type % 10;
                 }
-                else if (type == 15 || type == 16) //Ring || Boots
+                else if (type is 15 or 16) // Ring || Boots
                 {
                     firstId = Type - Type % 1000 + 10 + Type % 10;
                 }
-                else if (type == 11 || subType == 114 || subType == 123 || type == 14) //Head
+                else if (type == 11 || subType is 114 or 123 || type == 14) //Head
                 {
                     if (subType != 112 && subType != 115 && subType != 116)
                         firstId = Type - Type % 1000 + Type % 10;
                     else
                         firstId = Type - Type % 1000 + Type % 10;
                 }
-                else if (type == 14)
-                {
-                    firstId = Type - Type % 1000 + Type % 10;
-                }
-                else if (type == 13) //Armor
+                else if (type == 13) // Armor
                 {
                     firstId = Type - Type % 1000 + Type % 10;
                 }
             }
-            else if (sort == 4 || sort == 5 || sort == 6) //Weapon
+            else if (sort is 4 or 5 or 6) // Weapon
             {
                 firstId = Type - Type % 1000 + 20 + Type % 10;
             }
@@ -1390,7 +1385,7 @@ namespace Comet.Game.States.Items
             if (bCheckDura)
                 if (Durability / 100 < MaximumDurability / 100)
                 {
-                    await m_user.SendAsync(Language.StrItemErrRepairItem);
+                    await mUser.SendAsync(Language.StrItemErrRepairItem);
                     return false;
                 }
 
@@ -1405,28 +1400,28 @@ namespace Comet.Game.States.Items
         {
             if (Durability / 100 < MaximumDurability / 100)
             {
-                await m_user.SendAsync(Language.StrItemErrRepairItem);
+                await mUser.SendAsync(Language.StrItemErrRepairItem);
                 return false;
             }
 
             if (!GetUpEpQualityInfo(out double nChance, out uint newId))
             {
-                await m_user.SendAsync(Language.StrItemErrMaxQuality);
+                await mUser.SendAsync(Language.StrItemErrMaxQuality);
                 return false;
             }
 
             DbItemtype newType = ItemManager.GetItemtype(newId);
             if (newType == null)
             {
-                await m_user.SendAsync(Language.StrItemErrMaxLevel);
+                await mUser.SendAsync(Language.StrItemErrMaxLevel);
                 return false;
             }
 
             int gemCost = (int) (100 / nChance + 1) * 12 / 10;
 
-            if (!await m_user.UserPackage.SpendDragonBallsAsync(gemCost, IsBound))
+            if (!await mUser.UserPackage.SpendDragonBallsAsync(gemCost, IsBound))
             {
-                await m_user.SendAsync(string.Format(Language.StrItemErrNotEnoughDragonBalls, gemCost));
+                await mUser.SendAsync(string.Format(Language.StrItemErrNotEnoughDragonBalls, gemCost));
                 return false;
             }
 
@@ -1449,13 +1444,13 @@ namespace Comet.Game.States.Items
         {
             if (Durability / 100 < MaximumDurability / 100)
             {
-                await m_user.SendAsync(Language.StrItemErrRepairItem);
+                await mUser.SendAsync(Language.StrItemErrRepairItem);
                 return false;
             }
 
             if (!GetUpLevelChance(out double nChance, out int newId))
             {
-                await m_user.SendAsync(Language.StrItemErrMaxLevel);
+                await mUser.SendAsync(Language.StrItemErrMaxLevel);
                 return false;
             }
 
@@ -1463,20 +1458,20 @@ namespace Comet.Game.States.Items
             DbItemtype newType = ItemManager.GetItemtype((uint) newId);
             if (newType == null)
             {
-                await m_user.SendAsync(Language.StrItemErrMaxLevel);
+                await mUser.SendAsync(Language.StrItemErrMaxLevel);
                 return false;
             }
 
-            if (newType.ReqLevel > m_user.Level)
+            if (newType.ReqLevel > mUser.Level)
             {
-                await m_user.SendAsync(Language.StrItemErrNotEnoughLevel);
+                await mUser.SendAsync(Language.StrItemErrNotEnoughLevel);
                 return false;
             }
 
             int gemCost = (int) (100 / nChance + 1) * 12 / 10;
-            if (!await m_user.UserPackage.SpendMeteorsAsync(gemCost))
+            if (!await mUser.UserPackage.SpendMeteorsAsync(gemCost))
             {
-                await m_user.SendAsync(string.Format(Language.StrItemErrNotEnoughMeteors, gemCost));
+                await mUser.SendAsync(string.Format(Language.StrItemErrNotEnoughMeteors, gemCost));
                 return false;
             }
 
@@ -1497,7 +1492,7 @@ namespace Comet.Game.States.Items
         {
             if (Durability / 100 < MaximumDurability / 100)
             {
-                await m_user.SendAsync(Language.StrItemErrRepairItem);
+                await mUser.SendAsync(Language.StrItemErrRepairItem);
                 return false;
             }
 
@@ -1505,13 +1500,13 @@ namespace Comet.Game.States.Items
 
             if (newType == null || newType.Type == Type)
             {
-                await m_user.SendAsync(Language.StrItemErrMaxLevel);
+                await mUser.SendAsync(Language.StrItemErrMaxLevel);
                 return false;
             }
 
-            if (newType.ReqLevel > m_user.Level)
+            if (newType.ReqLevel > mUser.Level)
             {
-                await m_user.SendAsync(Language.StrItemErrNotEnoughLevel);
+                await mUser.SendAsync(Language.StrItemErrNotEnoughLevel);
                 return false;
             }
 
@@ -1555,7 +1550,7 @@ namespace Comet.Game.States.Items
         public async Task<bool> RecoverDurabilityAsync()
         {
             MaximumDurability = OriginalMaximumDurability;
-            await m_user.SendAsync(new MsgItemInfo(this, MsgItemInfo<Client>.ItemMode.Update));
+            await mUser.SendAsync(new MsgItemInfo(this, MsgItemInfo<Client>.ItemMode.Update));
             await SaveAsync();
             return true;
         }
@@ -1566,7 +1561,7 @@ namespace Comet.Game.States.Items
 
         public async Task RepairItemAsync()
         {
-            if (m_user == null)
+            if (mUser == null)
                 return;
 
             if (!IsEquipment() && !IsWeapon())
@@ -1574,15 +1569,15 @@ namespace Comet.Game.States.Items
 
             if (IsBroken())
             {
-                if (!await m_user.UserPackage.SpendMeteorsAsync(5))
+                if (!await mUser.UserPackage.SpendMeteorsAsync(5))
                 {
-                    await m_user.SendAsync(Language.StrItemErrRepairMeteor);
+                    await mUser.SendAsync(Language.StrItemErrRepairMeteor);
                     return;
                 }
 
                 Durability = MaximumDurability;
                 await SaveAsync();
-                await m_user.SendAsync(new MsgItemInfo(this, MsgItemInfo<Client>.ItemMode.Update));
+                await mUser.SendAsync(new MsgItemInfo(this, MsgItemInfo<Client>.ItemMode.Update));
                 await Log.GmLogAsync(
                     "Repair",
                     string.Format("User [{2}] repaired broken [{0}][{1}] with 5 meteors.", Type, Identity,
@@ -1596,12 +1591,12 @@ namespace Comet.Game.States.Items
 
             int nRepairCost = GetRecoverDurCost() - 1;
 
-            if (!await m_user.SpendMoneyAsync(Math.Max(1, nRepairCost), true))
+            if (!await mUser.SpendMoneyAsync(Math.Max(1, nRepairCost), true))
                 return;
 
             Durability = MaximumDurability;
             await SaveAsync();
-            await m_user.SendAsync(new MsgItemInfo(this, MsgItemInfo<Client>.ItemMode.Update));
+            await mUser.SendAsync(new MsgItemInfo(this, MsgItemInfo<Client>.ItemMode.Update));
             await Log.GmLogAsync(
                 "Repair",
                 string.Format("User [{2}] repaired broken [{0}][{1}] with {3} silvers.", Type, Identity, PlayerIdentity,
@@ -1616,9 +1611,9 @@ namespace Comet.Game.States.Items
         {
             if (HasUnlocked())
             {
-                await m_user.SendAsync(new MsgEquipLock
+                await mUser.SendAsync(new MsgEquipLock
                                            {Action = MsgEquipLock<Client>.LockMode.UnlockedItem, Identity = Identity});
-                await m_user.SendAsync(new MsgEquipLock
+                await mUser.SendAsync(new MsgEquipLock
                                            {Action = MsgEquipLock<Client>.LockMode.RequestUnlock, Identity = Identity});
 
                 await DoUnlockAsync();
@@ -1627,13 +1622,13 @@ namespace Comet.Game.States.Items
 
             if (IsUnlocking())
             {
-                await m_user.SendAsync(new MsgEquipLock
+                await mUser.SendAsync(new MsgEquipLock
                 {
                     Action = MsgEquipLock<Client>.LockMode.RequestUnlock,
                     Identity = Identity,
                     Mode = 3,
-                    Param = (uint) (m_dbItem.Plunder.Value.Year * 10000 + m_dbItem.Plunder.Value.Day * 100 +
-                                    m_dbItem.Plunder.Value.Month)
+                    Param = (uint) (mDbItem.Plunder.Value.Year * 10000 + mDbItem.Plunder.Value.Day * 100 +
+                                    mDbItem.Plunder.Value.Month)
                 });
                 return false;
             }
@@ -1643,36 +1638,36 @@ namespace Comet.Game.States.Items
 
         public Task SetLockAsync()
         {
-            m_dbItem.Plunder = DateTime.MinValue;
+            mDbItem.Plunder = DateTime.MinValue;
             return SaveAsync();
         }
 
         public Task SetUnlockAsync()
         {
-            m_dbItem.Plunder = DateTime.Now.AddDays(3);
+            mDbItem.Plunder = DateTime.Now.AddDays(3);
             return SaveAsync();
         }
 
         public Task DoUnlockAsync()
         {
-            m_dbItem.Plunder = null;
+            mDbItem.Plunder = null;
             return SaveAsync();
         }
 
         public bool HasUnlocked()
         {
-            return m_dbItem.Plunder != null && m_dbItem.Plunder != DateTime.MinValue &&
-                   m_dbItem.Plunder <= DateTime.Now;
+            return mDbItem.Plunder != null && mDbItem.Plunder != DateTime.MinValue &&
+                   mDbItem.Plunder <= DateTime.Now;
         }
 
         public bool IsLocked()
         {
-            return m_dbItem.Plunder != null;
+            return mDbItem.Plunder != null;
         }
 
         public bool IsUnlocking()
         {
-            return m_dbItem.Plunder != null && m_dbItem.Plunder != DateTime.MinValue && m_dbItem.Plunder > DateTime.Now;
+            return mDbItem.Plunder != null && mDbItem.Plunder != DateTime.MinValue && mDbItem.Plunder > DateTime.Now;
         }
 
         #endregion
@@ -1789,7 +1784,7 @@ namespace Comet.Game.States.Items
 
         public bool IsSuspicious()
         {
-            return (m_dbItem.Specialflag & SPECIAL_FLAG_SUSPICIOUS) != 0;
+            return (mDbItem.Specialflag & SpecialFlagSuspicious) != 0;
         }
 
         public bool IsMonopoly()
@@ -2149,7 +2144,7 @@ namespace Comet.Game.States.Items
 
         public string ToJson()
         {
-            return JsonConvert.SerializeObject(m_dbItem);
+            return JsonConvert.SerializeObject(mDbItem);
         }
 
         #endregion
@@ -2158,7 +2153,7 @@ namespace Comet.Game.States.Items
 
         public Task<bool> SaveAsync()
         {
-            return ServerDbContext.SaveAsync(m_dbItem);
+            return ServerDbContext.SaveAsync(mDbItem);
         }
 
         public async Task<bool> DeleteAsync(ChangeOwnerType type = ChangeOwnerType.DeleteItem)
@@ -2166,8 +2161,8 @@ namespace Comet.Game.States.Items
             try
             {
                 await ChangeOwnerAsync(0, type);
-                m_dbItem.OwnerId = 0;
-                m_dbItem.DeleteTime = UnixTimestamp.Now();
+                mDbItem.OwnerId = 0;
+                mDbItem.DeleteTime = UnixTimestamp.Now();
                 return await SaveAsync();
             }
             catch (Exception ex)
@@ -2184,7 +2179,7 @@ namespace Comet.Game.States.Items
 
         public async Task SendJarAsync()
         {
-            if (m_user == null)
+            if (mUser == null)
                 return;
 
             var msg = new MsgInteract
@@ -2195,7 +2190,7 @@ namespace Comet.Game.States.Items
                 PosX = MaximumDurability,
                 Command = (int) Data * 2
             };
-            await m_user.SendAsync(msg);
+            await mUser.SendAsync(msg);
         }
 
         #endregion

@@ -29,9 +29,9 @@ namespace Comet.Database.Entities
         public enum AccountStatus
         {
             None,
-            Banned,
-            Locked,
-            NotActivated
+            Banned = 0x1,
+            Locked = 0x2,
+            NotActivated = 0x4
         }
     }
 }

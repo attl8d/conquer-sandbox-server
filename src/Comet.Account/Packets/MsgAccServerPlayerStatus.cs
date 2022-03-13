@@ -44,7 +44,9 @@ namespace Comet.Account.Packets
                         return;
                     }
 
-                    if (account.StatusID == 5 || account.StatusID == 4)
+                    if ((account.StatusID & DbAccount.AccountStatus.Banned) != 0 
+                        || (account.StatusID & DbAccount.AccountStatus.Locked) != 0
+                        || (account.StatusID & DbAccount.AccountStatus.NotActivated) != DbAccount.AccountStatus.NotActivated)
                     {
                         await client.SendAsync(new MsgAccServerCmd
                         {

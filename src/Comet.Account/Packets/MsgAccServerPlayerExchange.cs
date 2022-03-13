@@ -1,11 +1,11 @@
-﻿using Comet.Account.Database;
+﻿using System.Linq;
+using System.Threading.Tasks;
+using Comet.Account.Database;
 using Comet.Account.Database.Repositories;
 using Comet.Account.States;
 using Comet.Database.Entities;
 using Comet.Network.Packets.Internal;
 using Comet.Shared;
-using System.Linq;
-using System.Threading.Tasks;
 
 namespace Comet.Account.Packets
 {
@@ -16,17 +16,19 @@ namespace Comet.Account.Packets
             DbRealm realm = Kernel.Realms.Values.FirstOrDefault(x => x.Name.Equals(ServerName));
             if (realm == null)
             {
-                await Log.WriteLogAsync(LogLevel.Warning, $"Invalid server name [{ServerName}] tried to update data from [{client.IPAddress}].");
+                await Log.WriteLogAsync(LogLevel.Warning,
+                                        $"Invalid server name [{ServerName}] tried to update data from [{client.IPAddress}].");
                 return;
             }
 
             if (realm.Server == null)
             {
-                await Log.WriteLogAsync(LogLevel.Warning, $"{ServerName} is not connected and tried to update player status from [{client.IPAddress}].");
+                await Log.WriteLogAsync(LogLevel.Warning,
+                                        $"{ServerName} is not connected and tried to update player status from [{client.IPAddress}].");
                 return;
             }
 
-            foreach (var info in Data)
+            foreach (PlayerData info in Data)
             {
                 DbRecordUser user = await RecordUserRepository.GetByIdAsync(info.Identity, realm.RealmID);
                 if (user == null)
@@ -37,9 +39,9 @@ namespace Comet.Account.Packets
                 user.MateId = 0; // 
                 user.Level = info.Level;
                 user.Experience = 0;
-                user.Profession = (byte)info.Profession;
-                user.NewProfession = (byte)info.PreviousProfession;
-                user.OldProfession = (byte)info.FirstProfession;
+                user.Profession = (byte) info.Profession;
+                user.NewProfession = (byte) info.PreviousProfession;
+                user.OldProfession = (byte) info.FirstProfession;
                 user.Metempsychosis = info.Metempsychosis;
                 user.Strength = info.Force;
                 user.Agility = info.Speed;

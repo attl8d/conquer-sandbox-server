@@ -1,7 +1,7 @@
-﻿using Comet.Account.Database;
+﻿using System.Threading.Tasks;
+using Comet.Account.Database;
 using Comet.Account.States;
 using Comet.Network.Packets;
-using System.Threading.Tasks;
 
 namespace Comet.Account.Packets
 {
@@ -12,16 +12,16 @@ namespace Comet.Account.Packets
 
         public override void Decode(byte[] bytes)
         {
-            PacketReader reader = new PacketReader(bytes);
-            Type = (PacketType)reader.ReadUInt16();
+            var reader = new PacketReader(bytes);
+            Type = (PacketType) reader.ReadUInt16();
             AccountIdentity = reader.ReadUInt32();
             MacAddress = reader.ReadString(12);
         }
 
         public override byte[] Encode()
         {
-            PacketWriter writer = new PacketWriter();
-            writer.Write((ushort)PacketType.MsgPCNum);
+            var writer = new PacketWriter();
+            writer.Write((ushort) PacketType.MsgPCNum);
             writer.Write(AccountIdentity);
             writer.Write(MacAddress, 12);
             return writer.ToArray();

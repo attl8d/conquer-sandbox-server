@@ -1,10 +1,10 @@
-﻿using Comet.Database.Entities;
-using Microsoft.EntityFrameworkCore;
-using Org.BouncyCastle.Utilities.Encoders;
-using System.Linq;
+﻿using System.Linq;
 using System.Security.Cryptography;
 using System.Text;
 using System.Threading.Tasks;
+using Comet.Database.Entities;
+using Microsoft.EntityFrameworkCore;
+using Org.BouncyCastle.Utilities.Encoders;
 
 namespace Comet.Account.Database.Repositories
 {
@@ -25,16 +25,16 @@ namespace Comet.Account.Database.Repositories
         {
             await using var db = new ServerDbContext();
             return await db.Accounts
-                .Where(x => x.Username == username)
-                .SingleOrDefaultAsync();
+                           .Where(x => x.Username == username)
+                           .SingleOrDefaultAsync();
         }
 
         public static async Task<DbAccount> FindAsync(uint identity)
         {
             await using var db = new ServerDbContext();
             return await db.Accounts
-                .Where(x => x.AccountID == identity)
-                .SingleOrDefaultAsync();
+                           .Where(x => x.AccountID == identity)
+                           .SingleOrDefaultAsync();
         }
 
         /// <summary>
@@ -44,7 +44,7 @@ namespace Comet.Account.Database.Repositories
         /// </summary>
         /// <param name="input">Inputted password from the client's request</param>
         /// <param name="hash">Hashed password in the database</param>
-        /// <param name="salt">Salt for the hashed password in the databse</param>
+        /// <param name="salt">Salt for the hashed password in the database.</param>
         /// <returns>Returns true if the password is correct.</returns>
         public static bool CheckPassword(string input, string hash, string salt)
         {
@@ -55,24 +55,25 @@ namespace Comet.Account.Database.Repositories
         {
             byte[] inputHashed;
             using (var sha256 = SHA256.Create())
+            {
                 inputHashed = sha256.ComputeHash(Encoding.ASCII.GetBytes(password + salt));
-            var final = Hex.ToHexString(inputHashed);
+            }
+
+            string final = Hex.ToHexString(inputHashed);
             return final;
         }
 
         public static string GenerateSalt()
         {
-            const string UPPER_S = "QWERTYUIOPASDFGHJKLZXCVBNM";
-            const string LOWER_S = "qwertyuioplkjhgfdsazxcvbnm";
-            const string NUMBER_S = "1236547890";
-            const string POOL_S = UPPER_S + LOWER_S + NUMBER_S;
-            const int SIZE_I = 30;
+            const string upperS = "QWERTYUIOPASDFGHJKLZXCVBNM";
+            const string lowerS = "qwertyuioplkjhgfdsazxcvbnm";
+            const string numberS = "1236547890";
+            const string poolS = upperS + lowerS + numberS;
+            const int sizeI = 30;
 
-            StringBuilder output = new StringBuilder();
-            for (int i = 0; i < SIZE_I; i++)
-            {
-                output.Append(POOL_S[RandomNumberGenerator.GetInt32(int.MaxValue) % POOL_S.Length]);
-            }
+            var output = new StringBuilder();
+            for (var i = 0; i < sizeI; i++)
+                output.Append(poolS[RandomNumberGenerator.GetInt32(int.MaxValue) % poolS.Length]);
             return output.ToString();
         }
     }

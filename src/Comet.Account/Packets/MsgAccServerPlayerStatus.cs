@@ -1,10 +1,10 @@
-﻿using Comet.Account.Database.Repositories;
+﻿using System.Linq;
+using System.Threading.Tasks;
+using Comet.Account.Database.Repositories;
 using Comet.Account.States;
 using Comet.Database.Entities;
 using Comet.Network.Packets.Internal;
 using Comet.Shared;
-using System.Linq;
-using System.Threading.Tasks;
 
 namespace Comet.Account.Packets
 {
@@ -15,21 +15,22 @@ namespace Comet.Account.Packets
             DbRealm realm = Kernel.Realms.Values.FirstOrDefault(x => x.Name.Equals(ServerName));
             if (realm == null)
             {
-                await Log.WriteLogAsync(LogLevel.Warning, $"Invalid server name [{ServerName}] tried to update data from [{client.IPAddress}].");
+                await Log.WriteLogAsync(LogLevel.Warning,
+                                        $"Invalid server name [{ServerName}] tried to update data from [{client.IPAddress}].");
                 return;
             }
 
             if (realm.Server == null)
             {
-                await Log.WriteLogAsync(LogLevel.Warning, $"{ServerName} is not connected and tried to update player status from [{client.IPAddress}].");
+                await Log.WriteLogAsync(LogLevel.Warning,
+                                        $"{ServerName} is not connected and tried to update player status from [{client.IPAddress}].");
                 return;
             }
 
             if (Count == 0)
                 return;
 
-            foreach (var info in Status)
-            {
+            foreach (PlayerStatus info in Status)
                 if (info.Online)
                 {
                     DbAccount account = await AccountsRepository.FindAsync(info.Identity);
@@ -64,7 +65,6 @@ namespace Comet.Account.Packets
                 {
                     Kernel.Players.TryRemove(info.Identity, out _);
                 }
-            }
         }
     }
 }

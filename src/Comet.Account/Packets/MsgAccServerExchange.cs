@@ -1,12 +1,12 @@
 ﻿using System;
-using Comet.Account.States;
-using Comet.Network.Packets.Internal;
 using System.Linq;
 using System.Threading.Tasks;
-using Comet.Shared;
-using Comet.Database.Entities;
 using Comet.Account.Database;
+using Comet.Account.States;
+using Comet.Database.Entities;
+using Comet.Network.Packets.Internal;
 using Comet.Network.Security;
+using Comet.Shared;
 
 namespace Comet.Account.Packets
 {
@@ -18,16 +18,19 @@ namespace Comet.Account.Packets
         {
             try
             {
-                DbRealm realm = Kernel.Realms.Values.FirstOrDefault(x => x.Name.Equals(ServerName, StringComparison.InvariantCultureIgnoreCase));
+                DbRealm realm =
+                    Kernel.Realms.Values.FirstOrDefault(
+                        x => x.Name.Equals(ServerName, StringComparison.InvariantCultureIgnoreCase));
 
                 if (realm == null)
                 {
                     await client.SendAsync(new MsgAccServerAction
                     {
                         Action = MsgAccServerAction<GameServer>.ServerAction.ConnectionResult,
-                        Data = (int)MsgAccServerAction<GameServer>.ConnectionStatus.AuthorizationError
+                        Data = (int) MsgAccServerAction<GameServer>.ConnectionStatus.AuthorizationError
                     });
-                    await Log.WriteLogAsync(LogLevel.Exception, $"Invalid server {ServerName} [Connection: {client.IPAddress}].");
+                    await Log.WriteLogAsync(LogLevel.Exception,
+                                            $"Invalid server {ServerName} [Connection: {client.IPAddress}].");
                     client.Disconnect();
                     return;
                 }
@@ -35,15 +38,17 @@ namespace Comet.Account.Packets
                 string username = AesCipher.Decrypt(RealmDataKey, realm.Username);
                 string password = AesCipher.Decrypt(RealmDataKey, realm.Password);
 
-                if (!Username.Equals(username, StringComparison.InvariantCulture) || !Password.Equals(password, StringComparison.InvariantCulture))
+                if (!Username.Equals(username, StringComparison.InvariantCulture) ||
+                    !Password.Equals(password, StringComparison.InvariantCulture))
                 {
                     await client.SendAsync(new MsgAccServerAction
                     {
                         Action = MsgAccServerAction<GameServer>.ServerAction.ConnectionResult,
-                        Data = (int)MsgAccServerAction<GameServer>.ConnectionStatus.InvalidUsernamePassword
+                        Data = (int) MsgAccServerAction<GameServer>.ConnectionStatus.InvalidUsernamePassword
                     });
-                    await Log.WriteLogAsync(LogLevel.Exception, $"Invalid server {ServerName} Username or Password ({username}={Username}:{password}={Password})" +
-                        $" [Connection: {client.IPAddress}].");
+                    await Log.WriteLogAsync(LogLevel.Exception,
+                                            $"Invalid server {ServerName} Username or Password ({username}={Username}:{password}={Password})" +
+                                            $" [Connection: {client.IPAddress}].");
                     client.Disconnect();
                     return;
                 }
@@ -53,9 +58,10 @@ namespace Comet.Account.Packets
                     await client.SendAsync(new MsgAccServerAction
                     {
                         Action = MsgAccServerAction<GameServer>.ServerAction.ConnectionResult,
-                        Data = (int)MsgAccServerAction<GameServer>.ConnectionStatus.AddressNotAuthorized
+                        Data = (int) MsgAccServerAction<GameServer>.ConnectionStatus.AddressNotAuthorized
                     });
-                    await Log.WriteLogAsync(LogLevel.Exception, $"Invalid server {ServerName} not authorized connection [Connection: {client.IPAddress}].");
+                    await Log.WriteLogAsync(LogLevel.Exception,
+                                            $"Invalid server {ServerName} not authorized connection [Connection: {client.IPAddress}].");
                     client.Disconnect();
                     return;
                 }
@@ -71,7 +77,7 @@ namespace Comet.Account.Packets
                 await client.SendAsync(new MsgAccServerAction
                 {
                     Action = MsgAccServerAction<GameServer>.ServerAction.ConnectionResult,
-                    Data = (int)MsgAccServerAction<GameServer>.ConnectionStatus.Success
+                    Data = (int) MsgAccServerAction<GameServer>.ConnectionStatus.Success
                 });
             }
             catch (Exception ex)
@@ -79,7 +85,7 @@ namespace Comet.Account.Packets
                 await client.SendAsync(new MsgAccServerAction
                 {
                     Action = MsgAccServerAction<GameServer>.ServerAction.ConnectionResult,
-                    Data = (int)MsgAccServerAction<GameServer>.ConnectionStatus.AuthorizationError
+                    Data = (int) MsgAccServerAction<GameServer>.ConnectionStatus.AuthorizationError
                 });
                 await Log.WriteLogAsync(LogLevel.Exception, ex.ToString());
                 client.Disconnect();

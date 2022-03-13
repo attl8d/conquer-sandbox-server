@@ -1,9 +1,9 @@
-﻿using Comet.Account.Database;
+﻿using System;
+using System.Threading.Tasks;
+using Comet.Account.Database;
 using Comet.Account.States;
 using Comet.Database.Entities;
 using Comet.Network.Packets.Internal;
-using System;
-using System.Threading.Tasks;
 
 namespace Comet.Account.Packets
 {
@@ -17,8 +17,8 @@ namespace Comet.Account.Packets
                 RealmName = client.Realm.Name,
                 NewStatus = DbRealm.RealmStatus.Online,
                 OldStatus = DbRealm.RealmStatus.Online,
-                MaxPlayersOnline = (uint)PlayerCountRecord,
-                PlayersOnline = (uint)PlayerCount,
+                MaxPlayersOnline = (uint) PlayerCountRecord,
+                PlayersOnline = (uint) PlayerCount,
                 Time = DateTime.Now
             });
         }

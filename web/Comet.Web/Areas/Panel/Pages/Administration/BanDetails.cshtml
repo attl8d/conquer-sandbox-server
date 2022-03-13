@@ -1,7 +1,7 @@
 ﻿@page "{BanId:int=0}"
-@using Comet.Web.Model.Identity
-@using Comet.Web.Services
 @inject LanguageService Language
+@using Comet.Web.Services
+@using Comet.Web.Model.Identity
 @model Comet.Web.Areas.Panel.Pages.Administration.BanDetailsModel
 @{
     ViewData["Title"] = Language.GetString("BanDetailsTitle", Model.BanId, Model.Data.TargetName);
@@ -87,7 +87,7 @@
     </div>
 </div>
 
-<div class="row">    
+<div class="row">
     <div class="col">
         <h2>@Language.GetString("NextBan")</h2>
         <div class="alert alert-warning">
@@ -103,14 +103,14 @@
         <div class="table-responsive">
             <table id="tblBanHistory" class="table table-striped">
                 <thead>
-                    <tr>
-                        <td>#</td>
-                        <td>@Language.GetString("BannedBy")</td>
-                        <td>@Language.GetString("Reason")</td>
-                        <td>@Language.GetString("From")</td>
-                        <td>@Language.GetString("To")</td>
-                        <td></td>
-                    </tr>
+                <tr>
+                    <td>#</td>
+                    <td>@Language.GetString("BannedBy")</td>
+                    <td>@Language.GetString("Reason")</td>
+                    <td>@Language.GetString("From")</td>
+                    <td>@Language.GetString("To")</td>
+                    <td></td>
+                </tr>
                 </thead>
                 <tbody>
 
@@ -126,7 +126,7 @@
             <div class="col-sm-4">
                 <p>
                     <button class="btn btn-sm btn-primary" id="btnCancelBan"
-                    @(User.HasPermission(Security.Claims.CancelAccountBan) || Model.Data.Flags != BanFlags.None || Model.Data.IsExpired ? "" : "disabled")>
+                            @((User.HasPermission(Security.Claims.CancelAccountBan) && Model.Data.Flags == BanFlags.None && !Model.Data.IsExpired) ? "" : "disabled")>
                         @Language.GetString("EndBan")
                     </button>
                 </p>
@@ -136,7 +136,7 @@
             <div class="col-sm-4">
                 <p>
                     <button class="btn btn-sm btn-primary" id="btnForgiveBan"
-                    @(User.HasPermission(Security.Claims.ForgiveAccountBan) || Model.Data.Flags != BanFlags.None || Model.Data.IsExpired ? "" : "disabled")>
+                            @(User.HasPermission(Security.Claims.ForgiveAccountBan) && Model.Data.Flags == BanFlags.None && !Model.Data.IsExpired ? "" : "disabled")>
                         @Language.GetString("ForgiveBan")
                     </button>
                 </p>
@@ -146,11 +146,11 @@
             <div class="col-sm-4">
                 <p>
                     <button class="btn btn-sm btn-primary" id="btnSignalFalsePositive"
-                        @(User.HasPermission(Security.Claims.SignalFalsePositiveAccountBan) || Model.Data.Flags.HasFlag(BanFlags.FalsePositive) || Model.Data.IsExpired ? "" : "disabled")>
+                            @(User.HasPermission(Security.Claims.SignalFalsePositiveAccountBan) && !Model.Data.Flags.HasFlag(BanFlags.FalsePositive) ? "" : "disabled")>
                         @Language.GetString("SignalFalsePositive")
                     </button>
                 </p>
-                
+
                 <small class="form-text text-muted">@Language.GetString("SignalFalsePositiveDesc")</small>
             </div>
         </div>
@@ -159,95 +159,95 @@
 
 @section Scripts
 {
-<script>
+    <script>
 
-    $('#btnCancelBan').click(function() {
-        $.ajax({
-            url: '@Url.Action("CancelBan", "Bans", new { version = "1" })',
-            type: 'POST',
-            headers: {
-                'Content-Type': 'application/json'
-            },
-            data: JSON.stringify({
-                userId: @Model.Data.AccountId,
-                banId: @Model.BanId
-            }),
-            success: function(result) {
-                window.location.reload();
-            },
-            error: function(result) {
-                console.log(result);
-            }
-        });
-    });
-
-    $('#btnForgiveBan').click(function() {
-        $.ajax({
-            url: '@Url.Action("ForgiveBan", "Bans", new { version = "1" })',
-            type: 'POST',
-            headers: {
-                'Content-Type': 'application/json'
-            },
-            data: JSON.stringify({
-                userId: @Model.Data.AccountId,
-                banId: @Model.BanId
-            }),
-            success: function(result) {
-                window.location.reload();
-            },
-            error: function(result) {
-                console.log(result);
-            }
-        });
-    });
-
-    $('#btnSignalFalsePositive').click(function() {
-        $.ajax({
-            url: '@Url.Action("FalsePositiveBan", "Bans", new { version = "1" })',
-            type: 'POST',
-            headers: {
-                'Content-Type': 'application/json'
-            },
-            data: JSON.stringify({
-                userId: @Model.Data.AccountId,
-                banId: @Model.BanId
-            }),
-            success: function(result) {
-                window.location.reload();
-            },
-            error: function(result) {
-                console.log(result);
-            }
-        });
-    });
-
-    $.ajax({
-        url: `@Url.Action("QueryAccountBans", "Bans", new { version = "1" })?userId=@Model.Data.AccountId`,
-        method: 'GET',
-        success: function(result) {
-
-            let table = document.getElementById('tblBanHistory');
-            let body = table.tBodies[0];
-
-            $(body).empty();
-
-            if (result.length) {
-
-                for (let idx = 0; idx < result.length; idx++) {
-                    let row = body.insertRow();
-
-                    $(row.insertCell()).html(`${result[idx].banIdentity}`);
-                    $(row.insertCell()).html(`${result[idx].reason}`);
-                    $(row.insertCell()).html(`${result[idx].bannedBy}`);
-                    let date = new Date(result[idx].from);
-                    $(row.insertCell()).html(date.toLocaleDateString('pt-BR') + ' ' + date.toLocaleTimeString('pt-BR'));
-                    date = new Date(result[idx].to);
-                    $(row.insertCell()).html(date.toLocaleDateString('pt-BR') + ' ' + date.toLocaleTimeString('pt-BR'));
-                    $(row.insertCell()).html(`<a href="/Panel/Admin/BanDetails/${result[idx].banIdentity}"><i class="fa fa-edit"></i></a>`);
+        $('#btnCancelBan').click(function() {
+            $.ajax({
+                url: '@Url.Action("CancelBan", "Bans", new {version = "1"})',
+                type: 'PATCH',
+                headers: {
+                    'Content-Type': 'application/json'
+                },
+                data: JSON.stringify({
+                    userId: @Model.Data.AccountId,
+                    banId: @Model.BanId
+                }),
+                success: function(result) {
+                    window.location.reload();
+                },
+                error: function(result) {
+                    console.log(result);
                 }
+            });
+        });
 
+        $('#btnForgiveBan').click(function() {
+            $.ajax({
+                url: '@Url.Action("ForgiveBan", "Bans", new {version = "1"})',
+                type: 'PATCH',
+                headers: {
+                    'Content-Type': 'application/json'
+                },
+                data: JSON.stringify({
+                    userId: @Model.Data.AccountId,
+                    banId: @Model.BanId
+                }),
+                success: function(result) {
+                    window.location.reload();
+                },
+                error: function(result) {
+                    console.log(result);
+                }
+            });
+        });
+
+        $('#btnSignalFalsePositive').click(function() {
+            $.ajax({
+                url: '@Url.Action("FalsePositiveBan", "Bans", new {version = "1"})',
+                type: 'PATCH',
+                headers: {
+                    'Content-Type': 'application/json'
+                },
+                data: JSON.stringify({
+                    userId: @Model.Data.AccountId,
+                    banId: @Model.BanId
+                }),
+                success: function(result) {
+                    window.location.reload();
+                },
+                error: function(result) {
+                    console.log(result);
+                }
+            });
+        });
+
+        $.ajax({
+            url: `@Url.Action("QueryAccountBans", "Bans", new {version = "1"})?userId=@Model.Data.AccountId`,
+            method: 'GET',
+            success: function(result) {
+
+                const table = document.getElementById('tblBanHistory');
+                const body = table.tBodies[0];
+
+                $(body).empty();
+
+                if (result.length) {
+
+                    for (let idx = 0; idx < result.length; idx++) {
+                        const row = body.insertRow();
+
+                        $(row.insertCell()).html(`${result[idx].banIdentity}`);
+                        $(row.insertCell()).html(`${result[idx].reason}`);
+                        $(row.insertCell()).html(`${result[idx].bannedBy}`);
+                        let date = new Date(result[idx].from);
+                        $(row.insertCell()).html(date.toLocaleDateString('pt-BR') + ' ' + date.toLocaleTimeString('pt-BR'));
+                        date = new Date(result[idx].to);
+                        $(row.insertCell()).html(date.toLocaleDateString('pt-BR') + ' ' + date.toLocaleTimeString('pt-BR'));
+                        $(row.insertCell()).html(`<a href="/Panel/Administration/BanDetails/${result[idx].banIdentity}"><i class="fa fa-edit"></i></a>`);
+                    }
+
+                }
             }
-        }
-    });
-</script>
+        });
+    </script>
 }

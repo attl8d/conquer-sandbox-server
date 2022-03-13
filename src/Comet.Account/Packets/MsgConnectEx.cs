@@ -1,26 +1,20 @@
+using Comet.Account.States;
+using Comet.Network.Packets;
+
 namespace Comet.Account.Packets
 {
-    using Comet.Account.States;
-    using Comet.Network.Packets;
-
     /// <remarks>Packet Type 1055</remarks>
     /// <summary>
-    /// Message containing an authentication response from the server to the client. Can
-    /// either accept a client with realm connection details and an access token, or 
-    /// reject a client with a reason on why the login attempt was rejected.
+    ///     Message containing an authentication response from the server to the client. Can
+    ///     either accept a client with realm connection details and an access token, or
+    ///     reject a client with a reason on why the login attempt was rejected.
     /// </summary>
     public sealed class MsgConnectEx : MsgBase<Client>
     {
-        // Packet Properties
-        public ulong Token { get; set; }
-        public RejectionCode Code { get; set; }
-        public string IPAddress { get; set; }
-        public uint Port { get; set; }
-
         /// <summary>
-        /// Instantiates a new instance of <see cref="MsgConnectEx"/> for rejecting a
-        /// client connection using a rejection code. The rejection code spawns an error
-        /// dialog in the client with a respective error message.
+        ///     Instantiates a new instance of <see cref="MsgConnectEx" /> for rejecting a
+        ///     client connection using a rejection code. The rejection code spawns an error
+        ///     dialog in the client with a respective error message.
         /// </summary>
         /// <param name="rejectionCode">Rejection code / error message ID</param>
         public MsgConnectEx(RejectionCode rejectionCode)
@@ -29,9 +23,9 @@ namespace Comet.Account.Packets
         }
 
         /// <summary>
-        /// Instantiates a new instance of <see cref="MsgConnectEx"/> for accepting a
-        /// client connection. Provides the client with redirect information for the game
-        /// server of their choice, accompanied by an access token for that server.
+        ///     Instantiates a new instance of <see cref="MsgConnectEx" /> for accepting a
+        ///     client connection. Provides the client with redirect information for the game
+        ///     server of their choice, accompanied by an access token for that server.
         /// </summary>
         /// <param name="ipAddress">IP address of the game server</param>
         /// <param name="port">Port the game server is listening on</param>
@@ -43,38 +37,44 @@ namespace Comet.Account.Packets
             Port = port;
         }
 
+        // Packet Properties
+        public ulong Token { get; set; }
+        public RejectionCode Code { get; set; }
+        public string IPAddress { get; set; }
+        public uint Port { get; set; }
+
         /// <summary>
-        /// Encodes the packet structure defined by this message class into a byte packet
-        /// that can be sent to the client. Invoked automatically by the client's send 
-        /// method. Encodes using byte ordering rules interoperable with the game client.
+        ///     Encodes the packet structure defined by this message class into a byte packet
+        ///     that can be sent to the client. Invoked automatically by the client's send
+        ///     method. Encodes using byte ordering rules interoperable with the game client.
         /// </summary>
         /// <returns>Returns a byte packet of the encoded packet.</returns>
         public override byte[] Encode()
         {
             var writer = new PacketWriter();
-            writer.Write((ushort)PacketType.MsgConnectEx);
+            writer.Write((ushort) PacketType.MsgConnectEx);
             if (Code != RejectionCode.Clear)
             {
                 // Failed login
-                writer.Write((uint)0);
-                writer.Write((uint)Code);
+                writer.Write((uint) 0);
+                writer.Write((uint) Code);
             }
             else
             {
                 // Successful login
-                writer.Write(Token); // 4
+                writer.Write(Token);         // 4
                 writer.Write(IPAddress, 16); // 12
-                writer.Write(Port); // 28
-                writer.Write((ushort)0); // 32
+                writer.Write(Port);          // 28
+                writer.Write((ushort) 0);    // 32
             }
-            
+
             return writer.ToArray();
         }
 
         /// <summary>
-        /// Rejection codes are sent to the client in offset 8 of this packet when the
-        /// client has failed authentication with the account server. These codes define
-        /// which error message will be displayed in the client.
+        ///     Rejection codes are sent to the client in offset 8 of this packet when the
+        ///     client has failed authentication with the account server. These codes define
+        ///     which error message will be displayed in the client.
         /// </summary>
         public enum RejectionCode : uint
         {

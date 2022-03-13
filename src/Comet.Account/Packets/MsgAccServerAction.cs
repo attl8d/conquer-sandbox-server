@@ -1,6 +1,6 @@
-﻿using Comet.Account.States;
+﻿using System.Threading.Tasks;
+using Comet.Account.States;
 using Comet.Network.Packets.Internal;
-using System.Threading.Tasks;
 
 namespace Comet.Account.Packets
 {

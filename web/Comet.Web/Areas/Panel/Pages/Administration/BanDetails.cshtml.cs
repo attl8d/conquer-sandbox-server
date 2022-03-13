@@ -77,25 +77,26 @@ namespace Comet.Web.Areas.Panel.Pages.Administration
 
             Data.AccountId = ban.AccountId;
             Data.Reason = mLanguage.GetString(reason.Name);
-            Data.Description = ban.Reason;
+            Data.Description = ban.ReasonMessage;
             Data.From = ban.BanTime;
             Data.To = ban.ExpireTime;
             Data.Id = ban.Id;
             Data.Flags = (BanFlags)ban.Flags;
             Data.IsBanned = false;
 
-            if (Data.Flags.HasFlag(BanFlags.Removed))
+            if (Data.Flags.HasFlag(BanFlags.FalsePositive))
             {
-                Data.FlagMessage = $"<span class=\"tx-secondary\">{mLanguage.GetString("Removed")}</span>";
+                Data.FlagMessage = $"<span class=\"tx-warning\">{mLanguage.GetString("FalsePositive")}</span>";
             }
             else if (Data.Flags.HasFlag(BanFlags.Forgiven))
             {
                 Data.FlagMessage = $"<span class=\"tx-primary\">{mLanguage.GetString("Forgiven")}</span>";
             }
-            else if (Data.Flags.HasFlag(BanFlags.FalsePositive))
+            else if (Data.Flags.HasFlag(BanFlags.Removed))
             {
-                Data.FlagMessage = $"<span class=\"tx-warning\">{mLanguage.GetString("FalsePositive")}</span>";
+                Data.FlagMessage = $"<span class=\"tx-secondary\">{mLanguage.GetString("Removed")}</span>";
             }
+            
             else
             {
                 if (ban.ExpireTime > DateTime.Now)

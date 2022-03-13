@@ -19,10 +19,19 @@ namespace Comet.Database.Entities
         public string Password { get; set; }
         public string Salt { get; set; }
         public ushort AuthorityID { get; set; }
-        public ushort StatusID { get; set; }
+        public AccountStatus StatusID { get; set; }
         public string IPAddress { get; set; }
         public string MacAddress { get; set; }
         public DateTime Registered { get; set; }
         public int ParentId { get; set; }
+
+        [Flags]
+        public enum AccountStatus
+        {
+            None,
+            Banned,
+            Locked,
+            NotActivated
+        }
     }
 }

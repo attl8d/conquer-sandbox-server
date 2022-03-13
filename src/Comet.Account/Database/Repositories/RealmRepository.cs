@@ -1,5 +1,5 @@
-﻿using Microsoft.EntityFrameworkCore;
-using System.Threading.Tasks;
+﻿using System.Threading.Tasks;
+using Microsoft.EntityFrameworkCore;
 
 namespace Comet.Account.Database.Repositories
 {
@@ -19,8 +19,10 @@ namespace Comet.Account.Database.Repositories
         {
             // Load realm connection information
             await using (var db = new ServerDbContext())
+            {
                 Kernel.Realms = await db.Realms
-                    .ToDictionaryAsync(x => x.Name);
+                                        .ToDictionaryAsync(x => x.Name);
+            }
         }
     }
 }

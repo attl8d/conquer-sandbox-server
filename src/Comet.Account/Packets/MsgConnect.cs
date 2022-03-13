@@ -1,10 +1,7 @@
-﻿using Comet.Account.States;
-using Comet.Network.Packets;
-using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
+﻿using System;
 using System.Threading.Tasks;
+using Comet.Account.States;
+using Comet.Network.Packets;
 
 namespace Comet.Account.Packets
 {
@@ -35,7 +32,7 @@ namespace Comet.Account.Packets
         {
             var reader = new PacketReader(bytes);
             Length = reader.ReadUInt16();
-            Type = (PacketType)reader.ReadUInt16();
+            Type = (PacketType) reader.ReadUInt16();
             Token = reader.ReadUInt64();
             Patch = reader.ReadUInt16();
             Language = reader.ReadString(10);
@@ -44,8 +41,8 @@ namespace Comet.Account.Packets
 
         public override Task ProcessAsync(Client client)
         {
-            byte a = (byte)(Patch >> 8);
-            byte b = (byte)Patch;
+            var a = (byte) (Patch >> 8);
+            var b = (byte) Patch;
 
             return base.ProcessAsync(client);
         }

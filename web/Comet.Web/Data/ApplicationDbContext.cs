@@ -93,6 +93,8 @@ namespace Comet.Web.Data
             builder.Entity<ApplicationUserRole>().HasKey(x => new { x.UserId, x.RoleId });
             builder.Entity<ApplicationUserLogin>().HasKey(x => new { x.LoginProvider, x.ProviderKey });
 
+            builder.Entity<DbAccount>().Property(x => x.StatusID).HasConversion<ushort>();
+
             builder.Entity<ApplicationUserBanReasonFactor>().HasKey(x => new { x.ReasonId, x.Ocurrences });
 
             builder.Entity<DeviceFlowCodes>().HasKey(x => x.UserCode);

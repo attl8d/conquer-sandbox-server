@@ -1,12 +1,14 @@
-﻿using Comet.Web.Areas.Panel.Models;
+﻿using System.Collections.Generic;
+using System.Security.Claims;
+using System.Threading.Tasks;
+using Comet.Web.Areas.Panel.Models;
 using Comet.Web.Data.Entities;
+using Comet.Web.Model.Identity;
 using Comet.Web.Services;
 using Comet.Web.Services.Identity;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
-using System.Collections.Generic;
-using System.Threading.Tasks;
 using static Comet.Web.Services.Security;
 
 namespace Comet.Web.API
@@ -17,18 +19,18 @@ namespace Comet.Web.API
     [Authorize(Policy = Moderator)]
     public class BansController : ControllerBase
     {
+        private readonly BanService mBanService;
+        private readonly LanguageService mLanguage;
+        private readonly RoleManager mRoleManager;
+        private readonly SignInManager mSignInManager;
 
         private readonly UserManager mUserManager;
-        private readonly LanguageService mLanguage;
-        private readonly SignInManager mSignInManager;
-        private readonly RoleManager mRoleManager;
-        private readonly BanService mBanService;
 
         public BansController(UserManager userManager,
-            LanguageService language,
-            SignInManager signinManager,
-            RoleManager roleManager,
-            BanService banService)
+                              LanguageService language,
+                              SignInManager signinManager,
+                              RoleManager roleManager,
+                              BanService banService)
         {
             mUserManager = userManager;
             mLanguage = language;
@@ -38,12 +40,12 @@ namespace Comet.Web.API
         }
 
         /// <summary>
-        /// 
         /// </summary>
         /// <param name="page"></param>
         /// <param name="ipp"></param>
         [ActionName("")]
-        [HttpGet, MapToApiVersion("1")]
+        [HttpGet]
+        [MapToApiVersion("1")]
         [ProducesResponseType(StatusCodes.Status200OK)]
         [ProducesResponseType(StatusCodes.Status500InternalServerError)]
         public async Task<IActionResult> GetBansV1Async(int page, int ipp = 25)
@@ -52,18 +54,17 @@ namespace Comet.Web.API
         }
 
         /// <summary>
-        /// 
         /// </summary>
         /// <param name="type"></param>
         [ActionName("QueryBanReasons")]
-        [HttpGet, MapToApiVersion("1")]
+        [HttpGet]
+        [MapToApiVersion("1")]
         [ProducesResponseType(StatusCodes.Status200OK)]
         [ProducesResponseType(StatusCodes.Status500InternalServerError)]
         public async Task<IActionResult> QueryBanReasonsV1Async(int type)
         {
-            List<AdminBanReasonModel> model = new List<AdminBanReasonModel>();
-            foreach (var reason in await mBanService.GetBanReasonsAsync(type))
-            {
+            var model = new List<AdminBanReasonModel>();
+            foreach (ApplicationUserBanReason reason in await mBanService.GetBanReasonsAsync(type))
                 model.Add(new AdminBanReasonModel
                 {
                     Id = reason.Id,
@@ -71,16 +72,15 @@ namespace Comet.Web.API
                     GameType = reason.GameType,
                     Name = mLanguage.GetString(reason.Name)
                 });
-            }
             return Ok(model);
         }
 
         /// <summary>
-        /// 
         /// </summary>
         /// <param name="userId"></param>
         [ActionName("QueryAccountBans")]
-        [HttpGet, MapToApiVersion("1")]
+        [HttpGet]
+        [MapToApiVersion("1")]
         [ProducesResponseType(StatusCodes.Status200OK)]
         [ProducesResponseType(StatusCodes.Status404NotFound)]
         [ProducesResponseType(StatusCodes.Status500InternalServerError)]
@@ -90,16 +90,16 @@ namespace Comet.Web.API
             if (user == null)
                 return NotFound();
 
-            var bans = await mUserManager.GetBanInformationAsync(user);
+            BanReport bans = await mUserManager.GetBanInformationAsync(user);
             return Ok(bans.Account);
         }
 
         /// <summary>
-        /// 
         /// </summary>
         /// <param name="model"></param>
         [ActionName("GetUserBanFactor")]
-        [HttpPost, MapToApiVersion("1")]
+        [HttpPost]
+        [MapToApiVersion("1")]
         [ProducesResponseType(StatusCodes.Status200OK)]
         [ProducesResponseType(StatusCodes.Status400BadRequest)]
         [ProducesResponseType(StatusCodes.Status404NotFound)]
@@ -110,7 +110,7 @@ namespace Comet.Web.API
             if (user == null)
                 return NotFound();
 
-            var factor = await mUserManager.QueryNextBanTermAsync(user, model.Reason);
+            BanReport.BanTerm factor = await mUserManager.QueryNextBanTermAsync(user, model.Reason);
             if (factor == null)
                 return BadRequest();
 
@@ -118,11 +118,11 @@ namespace Comet.Web.API
         }
 
         /// <summary>
-        /// 
         /// </summary>
         /// <param name="model"></param>
         [ActionName("DoBanAccount")]
-        [HttpPost, MapToApiVersion("1")]
+        [HttpPost]
+        [MapToApiVersion("1")]
         [ProducesResponseType(StatusCodes.Status200OK)]
         [ProducesResponseType(StatusCodes.Status401Unauthorized)]
         [ProducesResponseType(StatusCodes.Status404NotFound)]
@@ -140,7 +140,7 @@ namespace Comet.Web.API
             if (admin == null)
                 return Unauthorized();
 
-            var principal = await mSignInManager.CreateUserPrincipalAsync(user);
+            ClaimsPrincipal principal = await mSignInManager.CreateUserPrincipalAsync(user);
             if (!User.IsInRole(SuperAdministrator) && principal.IsInRole(Administrator))
                 return Unauthorized();
 
@@ -151,36 +151,49 @@ namespace Comet.Web.API
         }
 
         [ActionName("CancelBan")]
-        [HttpPatch, MapToApiVersion("1")]
+        [HttpPatch]
+        [MapToApiVersion("1")]
         [ProducesResponseType(StatusCodes.Status200OK)]
         [ProducesResponseType(StatusCodes.Status401Unauthorized)]
         [ProducesResponseType(StatusCodes.Status404NotFound)]
         [ProducesResponseType(StatusCodes.Status500InternalServerError)]
-        public async Task<IActionResult> CancelBanV1Async()
+        public async Task<IActionResult> CancelBanV1Async([FromBody] UserRemoveBalModel model)
         {
-            return Ok();
+            if (!User.HasPermission(Claims.CancelAccountBan) && !User.HasPermission(Claims.CancelGameBan))
+                return Unauthorized();
+
+            return StatusCode(await mBanService.CancelBanAsync(User, model.userId, model.banId));
         }
 
         [ActionName("ForgiveBan")]
-        [HttpPatch, MapToApiVersion("1")]
+        [HttpPatch]
+        [MapToApiVersion("1")]
         [ProducesResponseType(StatusCodes.Status200OK)]
         [ProducesResponseType(StatusCodes.Status401Unauthorized)]
         [ProducesResponseType(StatusCodes.Status404NotFound)]
         [ProducesResponseType(StatusCodes.Status500InternalServerError)]
-        public async Task<IActionResult> ForgiveBanV1Async()
+        public async Task<IActionResult> ForgiveBanV1Async([FromBody] UserRemoveBalModel model)
         {
-            return Ok();
+            if (!User.HasPermission(Claims.ForgiveAccountBan) && !User.HasPermission(Claims.ForgiveGameBan))
+                return Unauthorized();
+
+            return StatusCode(await mBanService.ForgiveBanAsync(User, model.userId, model.banId));
         }
 
         [ActionName("FalsePositiveBan")]
-        [HttpPatch, MapToApiVersion("1")]
+        [HttpPatch]
+        [MapToApiVersion("1")]
         [ProducesResponseType(StatusCodes.Status200OK)]
         [ProducesResponseType(StatusCodes.Status401Unauthorized)]
         [ProducesResponseType(StatusCodes.Status404NotFound)]
         [ProducesResponseType(StatusCodes.Status500InternalServerError)]
-        public async Task<IActionResult> FalsePositiveBanV1Async()
+        public async Task<IActionResult> FalsePositiveBanV1Async([FromBody] UserRemoveBalModel model)
         {
-            return Ok();
+            if (!User.HasPermission(Claims.SignalFalsePositiveAccountBan) &&
+                !User.HasPermission(Claims.SignalFalsePositiveGameBan))
+                return Unauthorized();
+
+            return StatusCode(await mBanService.FalsePositiveBanAsync(User, model.userId, model.banId));
         }
 
         public class UserRemoveBalModel

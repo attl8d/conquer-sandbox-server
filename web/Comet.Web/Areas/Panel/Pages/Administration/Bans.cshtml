@@ -56,7 +56,7 @@
                         $(row.insertCell()).html(date.toLocaleDateString('pt-BR') + ' ' + date.toLocaleTimeString('pt-BR'));
                         date = new Date(result[idx].to);
                         $(row.insertCell()).html(date.toLocaleDateString('pt-BR') + ' ' + date.toLocaleTimeString('pt-BR'));
-                        $(row.insertCell()).html(`<a href="/Panel/Admin/BanDetails/${result[idx].id}"><i class="fa fa-edit"></i></a>`);
+                        $(row.insertCell()).html(`<a href="/Panel/Administration/BanDetails/${result[idx].id}"><i class="fa fa-edit"></i></a>`);
                     }
 
                 }

@@ -155,7 +155,7 @@ namespace Comet.Web.Services.Identity
                 info.BanIdentity = dbBan.Id;
                 info.ReasonId = banReason.Id;
                 info.Reason = mLanguage.GetString(banReason.Name);
-                info.Description = dbBan.Reason;
+                info.Description = dbBan.ReasonMessage;
                 info.From = dbBan.BanTime;
                 info.To = dbBan.ExpireTime;
                 info.Flags = (BanFlags)dbBan.Flags;
@@ -194,7 +194,7 @@ namespace Comet.Web.Services.Identity
             term.Type = mLanguage.GetString(banType.Name);
             if (banType.Type == 0)
             {
-                int banCount = report.Account.Count(x => x.ReasonId == type && (x.Flags & BanFlags.Forgiven) == 0);
+                int banCount = report.Account.Count(x => x.ReasonId == type && (x.Flags & BanFlags.Forgiven) == 0 && (x.Flags & BanFlags.FalsePositive) == 0);
                 var factors = await mContext.ApplicationUserBanReasonsFactors.Where(x => x.ReasonId == banType.Id).ToListAsync();
                 if (banCount > 0 && factors.All(x => x.Ocurrences != banCount))
                 {
@@ -210,7 +210,7 @@ namespace Comet.Web.Services.Identity
             }
             else
             {
-                int banCount = report.Game.Count(x => x.ReasonId == type && (x.Flags & BanFlags.Forgiven) == 0);
+                int banCount = report.Game.Count(x => x.ReasonId == type && (x.Flags & BanFlags.Forgiven) == 0 && (x.Flags & BanFlags.FalsePositive) == 0);
                 var factors = await mContext.ApplicationUserBanReasonsFactors.Where(x => x.ReasonId == banType.Id).ToListAsync();
                 if (banCount > 0 && factors.All(x => x.Ocurrences != banCount))
                 {

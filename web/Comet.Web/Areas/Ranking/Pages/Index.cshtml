@@ -1,0 +1,112 @@
+﻿@page "{RankType}/{ServerName}/{PageNum=1}"
+@using System.Data
+@using Comet.Web.Services
+@inject LanguageService Language
+@model Comet.Web.Areas.Ranking.Pages.IndexModel
+@{
+    ViewData["Title"] = Language.GetString("RankingS", Model.RankName);
+}
+
+@await Html.PartialAsync("../../../Pages/Shared/_ViewTitleContainer")
+
+<div class="container youplay-news">
+    <!-- News List -->
+    <div class="col-md-9">
+        <div class="mb-30">
+            <div class="form-group">
+                <label class="control-label col-sm-2">@Language.GetString("Server"):</label>
+                <div class="col-sm-10">
+                    <div class="youplay-select">
+                        <select id="GameServer">
+                            <option value="All">@Language.GetString("AllServers")</option>
+                            @foreach (var server in Model.Servers)
+                            {
+                                if (server.RealmName.Equals(Model.ServerName, StringComparison.InvariantCultureIgnoreCase))
+                                {
+                                    <option value="@server.RealmName" selected="selected">@server.RealmName</option>
+                                }
+                                else
+                                {
+                                    <option value="@server.RealmName">@server.RealmName</option>
+                                }
+                            }
+                        </select>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div>
+            <table class="table table-bordered table-striped">
+                <thead>
+                <tr>
+                    <td>#</td>
+                    @for (int i = 0; i < Model.DataTable.Columns.Count; i++)
+                    {
+                        <td>@Language.GetString($"{Model.DataTable.Columns[i].ColumnName}")</td>
+                    }
+                </tr>
+                </thead>
+                <tbody>
+                @{
+                    int pos = 1;
+                }
+                @foreach (DataRow row in Model.DataTable.Rows)
+                {
+                    <tr>
+                        <td>@Html.Raw(Model.GetPositionHtml(pos))</td>
+                        @for (int i = 0; i < Model.DataTable.Columns.Count; i++)
+                        {
+                            if (Model.DataTable.Columns[i].DataType == typeof(ulong))
+                            {
+                                <td>@($"{ulong.Parse(row[i]?.ToString() ?? "0"):N0}")</td>
+                            }
+                            else
+                            {
+                                <td>@row[i].ToString()</td>
+                            }
+                        }
+                    </tr>
+                    pos++;
+                }
+                </tbody>
+            </table>
+        </div>
+        
+    </div>
+    <!-- /News List -->
+    <!-- Right Side -->
+    <div class="col-md-3">
+        <!-- Side Categories -->
+        <div class="side-block">
+            <ul class="block-content">
+                <li>
+                    <a asp-area="Ranking" asp-page="Index" asp-route-ServerName="@Model.ServerName" asp-route-RankType="Players">@Language.GetString("TopPlayers")</a>
+                    <a asp-area="Ranking" asp-page="Index" asp-route-ServerName="@Model.ServerName" asp-route-RankType="Trojan">@Language.GetString("TopTrojan")</a>
+                    <a asp-area="Ranking" asp-page="Index" asp-route-ServerName="@Model.ServerName" asp-route-RankType="Warrior">@Language.GetString("TopWarrior")</a>
+                    <a asp-area="Ranking" asp-page="Index" asp-route-ServerName="@Model.ServerName" asp-route-RankType="Archer">@Language.GetString("TopArcher")</a>
+                    <a asp-area="Ranking" asp-page="Index" asp-route-ServerName="@Model.ServerName" asp-route-RankType="WaterTaoist">@Language.GetString("TopWaterTaoist")</a>
+                    <a asp-area="Ranking" asp-page="Index" asp-route-ServerName="@Model.ServerName" asp-route-RankType="FireTaoist">@Language.GetString("TopFireTaoist")</a>
+                    <a asp-area="Ranking" asp-page="Index" asp-route-ServerName="@Model.ServerName" asp-route-RankType="Moneybag">@Language.GetString("TopMoneybag")</a>
+                    <a asp-area="Ranking" asp-page="Index" asp-route-ServerName="@Model.ServerName" asp-route-RankType="Syndicate">@Language.GetString("TopSyndicate")</a>
+                    <a asp-area="Ranking" asp-page="Index" asp-route-ServerName="@Model.ServerName" asp-route-RankType="Family">@Language.GetString("TopFamily")</a>
+                    <a asp-area="Ranking" asp-page="Index" asp-route-ServerName="@Model.ServerName" asp-route-RankType="GuildWarWinners">@Language.GetString("TopGuildWarWinners")</a>
+                    <a asp-area="Ranking" asp-page="Index" asp-route-ServerName="@Model.ServerName" asp-route-RankType="Superman">@Language.GetString("TopSuperman")</a>
+                    <a asp-area="Ranking" asp-page="Index" asp-route-ServerName="@Model.ServerName" asp-route-RankType="Noble">@Language.GetString("TopNoble")</a>
+                </li>
+            </ul>
+        </div>
+        <!-- /Side Categories -->
+    </div>
+    <!-- /Right Side -->
+</div>
+
+@section Scripts
+{
+    <script>
+        $("#GameServer").on("change",
+            function() {
+                window.location.href = `/Ranking/@Model.RankType/${this.value}`;
+            });
+    </script>
+}

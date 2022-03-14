@@ -24,10 +24,10 @@ namespace Comet.Web.Middlewares
         {
             bool isUnderMaintenance = await httpContextAccessor.HttpContext.IsUnderMaintenanceAsync(dbContext);
             var userHasAccess = true;
-            if (isUnderMaintenance && !httpContextAccessor.HttpContext.Request.Path.Equals("/Maintenance"))
+            if (isUnderMaintenance && httpContextAccessor.HttpContext?.Request.Path.Equals("/Maintenance") != true)
             {
                 var notAuthorized = true;
-                if (httpContextAccessor.HttpContext.User.Identity.IsAuthenticated)
+                if (httpContextAccessor.HttpContext?.User.Identity?.IsAuthenticated == true)
                 {
                     AuthorizationResult authorization =
                         await authorizationService.AuthorizeAsync(httpContextAccessor.HttpContext.User,
@@ -35,21 +35,20 @@ namespace Comet.Web.Middlewares
                     if (authorization.Succeeded)
                     {
                         notAuthorized = false;
-                        userHasAccess = true;
                     }
                 }
 
                 if (notAuthorized)
                 {
-                    if (!httpContextAccessor.HttpContext.Request.Path.Equals("/Login"))
-                        httpContextAccessor.HttpContext.Response.Redirect("/Maintenance");
+                    if (httpContextAccessor.HttpContext?.Request.Path.Equals("/Login") != true)
+                        httpContextAccessor.HttpContext?.Response.Redirect("/Maintenance");
                     userHasAccess = false;
                 }
             }
 
-            if (!httpContextAccessor.HttpContext.Items.ContainsKey("Maintenance"))
+            if (httpContextAccessor.HttpContext?.Items.ContainsKey("Maintenance") == false)
                 httpContextAccessor.HttpContext.Items.Add("Maintenance", isUnderMaintenance);
-            if (!httpContextAccessor.HttpContext.Items.ContainsKey("MaintenanceAccess"))
+            if (httpContextAccessor.HttpContext?.Items.ContainsKey("MaintenanceAccess") == false)
                 httpContextAccessor.HttpContext.Items.Add("MaintenanceAccess", userHasAccess);
 
             await mNext(context);

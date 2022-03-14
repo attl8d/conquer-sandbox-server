@@ -11,58 +11,61 @@
         <div class="col-md-3">
             <div class="side-block">
                 <h4 class="block-title">
-                    Usuário
+                    @Language.GetString("User")
                 </h4>
                 <ul class="block-content">
                     <li>
-                        <a asp-area="Panel" asp-page="/Administration/Users">Usuários</a>
+                        <a asp-area="Panel" asp-page="/Administration/Users">@Language.GetString("Users")</a>
                     </li>
                     <li>
-                        <a asp-area="Panel" asp-page="/Administration/Roles">Grupos de Úsuário</a>
+                        <a asp-area="Panel" asp-page="/Administration/Roles">@Language.GetString("UsersGroups")</a>
                     </li>
                     <li>
-                        <a asp-area="Panel" asp-page="/Administration/Bans">Banimentos</a>
+                        <a asp-area="Panel" asp-page="/Administration/Bans">@Language.GetString("Bans")</a>
                     </li>
                 </ul>
 
                 <h4 class="block-title">
-                    Fóruns
+                    @Language.GetString("Forums")
                 </h4>
                 <ul class="block-content">
                     <li>
-                        <a href="#">Fóruns</a>
+                        <a href="#">@Language.GetString("Forums")</a>
                     </li>
                     <li>
-                        <a href="#">Publicações</a>
-                    </li>
-                </ul>
-
-                <h4 class="block-title">
-                    Artigos
-                </h4>
-                <ul class="block-content">
-                    <li>
-                        <a asp-area="Panel" asp-page="/Administration/Articles/Index">Artigos</a>
+                        <a href="#">@Language.GetString("Publications")</a>
                     </li>
                 </ul>
 
                 <h4 class="block-title">
-                    Loja
+                    @Language.GetString("Articles")
                 </h4>
                 <ul class="block-content">
                     <li>
-                        <a href="#">Produtos</a>
+                        <a asp-area="Panel" asp-page="/Administration/Articles/Index">@Language.GetString("Articles")</a>
+                    </li>
+                </ul>
+
+                <h4 class="block-title">
+                    @Language.GetString("Shop")
+                </h4>
+                <ul class="block-content">
+                    <li>
+                        <a href="#">@Language.GetString("Products")</a>
                     </li>
                 </ul>
 
                 @if (User.IsInRole(Security.SuperAdministrator))
                 {
                     <h4 class="block-title">
-                        Administrativo
+                        @Language.GetString("Administrative")
                     </h4>
                     <ul class="block-content">
                         <li>
-                            <a asp-area="Panel" asp-page="/Administration/Realms">Servidores</a>
+                            <a asp-area="Panel" asp-page="/Administration/Maintenance">@Language.GetString("Maintenance")</a>
+                        </li>
+                        <li>
+                            <a asp-area="Panel" asp-page="/Administration/Realms">@Language.GetString("Realms")</a>
                         </li>
                     </ul>
                 }

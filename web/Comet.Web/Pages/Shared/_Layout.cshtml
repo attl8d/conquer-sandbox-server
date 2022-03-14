@@ -145,13 +145,13 @@
                                     <a asp-area="Ranking" asp-page="/Index" asp-route-ServerName="All" asp-route-RankType="WaterTaoist">@LanguageManager.GetString("TopWaterTaoist")</a>
                                 </li>
                                 <li>
+                                    <a asp-area="Ranking" asp-page="/Index" asp-route-ServerName="All" asp-route-RankType="Family">@LanguageManager.GetString("TopFamily")</a>
+                                </li>
+                                <li>
                                     <a asp-area="Ranking" asp-page="/Index" asp-route-ServerName="All" asp-route-RankType="Moneybag">@LanguageManager.GetString("TopMoneybag")</a>
                                 </li>
                                 <li>
                                     <a asp-area="Ranking" asp-page="/Index" asp-route-ServerName="All" asp-route-RankType="GuildWarWinners">@LanguageManager.GetString("TopGuildWarWinners")</a>
-                                </li>
-                                <li>
-                                    <a asp-area="Ranking" asp-page="/Index" asp-route-ServerName="All" asp-route-RankType="Superman">@LanguageManager.GetString("TopSuperman")</a>
                                 </li>
                             </ul>
                             <ul role="menu">
@@ -169,6 +169,9 @@
                                 </li>
                                 <li>
                                     <a asp-area="Ranking" asp-page="/Index" asp-route-ServerName="All" asp-route-RankType="Noble">@LanguageManager.GetString("TopNoble")</a>
+                                </li>
+                                <li>
+                                    <a asp-area="Ranking" asp-page="/Index" asp-route-ServerName="All" asp-route-RankType="Superman">@LanguageManager.GetString("TopSuperman")</a>
                                 </li>
                             </ul>
                         </div>
@@ -210,18 +213,18 @@
                 </ul>
             }
             <ul class="nav navbar-nav navbar-right">
-                @if (User.Identity.IsAuthenticated)
+                @if (User.Identity?.IsAuthenticated == true)
                 {
                     <li class=" dropdown dropdown-hover">
                         <a href="#" class="dropdown-toggle" data-toggle="dropdown" role="button" aria-expanded="false">
-                            @User.FindFirst(ClaimTypes.Name).Value @*<span class="badge bg-default">8</span>*@
+                            @User.FindFirst(ClaimTypes.Name)?.Value @*<span class="badge bg-default">8</span>*@
                             <span class="caret"></span>
                             <span class="label">@LanguageManager.GetString(User.FindFirst(ClaimTypes.Role)?.Value)</span>
                         </a>
                         <div class="dropdown-menu">
                             <ul role="menu">
                                 <li>
-                                    <a asp-area="Profile" asp-page="/Index" asp-route-UserName="@User.FindFirst(ClaimTypes.Name).Value"> @LanguageManager.GetString("Profile") </a>
+                                    <a asp-area="Profile" asp-page="/Index" asp-route-UserName="@User.FindFirst(ClaimTypes.Name)?.Value"> @LanguageManager.GetString("Profile") </a>
                                 </li>
                                 <li>
                                     <a href="#">
@@ -244,8 +247,7 @@
                         </div>
                     </li>
                 }
-
-                @if (!User.Identity.IsAuthenticated)
+                else
                 {
                     <li class="dropdown dropdown-hover dropdown-user">
                         <a asp-area="" asp-page="/Login" asp-route-returnUrl="@Context.Request.Path" role="button" aria-expanded="true">
@@ -279,7 +281,7 @@
         </div>
         <div class="info align-center">
             <div>
-                <h2 class="mb-40">Parceiros</h2>
+                <h2 class="mb-40">@LanguageManager.GetString("Partners")</h2>
                 <div class="row">
                     <div class="col-md-10 col-md-offset-1">
                         <div class="youplay-carousel youplay-carousel-size-6" data-autoplay="6000" data-arrows="false" data-stage-padding="0">
@@ -378,7 +380,7 @@
                             <!-- Instagram -->
                             <div class="side-block">
                                 <h4 class="block-title">Fale Conosco</h4>
-                                <p>@Html.Raw(LanguageManager.GetString("FooterMailTo", "service@ftwmasters.com.br", "service@ftwmasters.com.br"))</a></p>
+                                <p>@Html.Raw(LanguageManager.GetString("FooterMailTo", "service@ftwmasters.com.br", "service@ftwmasters.com.br"))</p>
                                 <p>@Html.Raw(LanguageManager.GetString("FooterDiscord", "https://discord.gg/DqVDkTU"))</p>
                             </div>
                             <!-- /Instagram -->
@@ -399,10 +401,11 @@
                              || User.IsInRole(Security.SuperAdministrator))
                         {
                             <text> | <a asp-area="Panel" asp-page="/Administration/Index">@LanguageManager.GetString("AdminPanel")</a></text>
-                        }
-                        @if (User.IsInRole(Security.Moderator)
-                             || User.IsInRole(Security.Administrator)
-                             || User.IsInRole(Security.SuperAdministrator))
+                        } 
+                        @if (User.IsInRole(Security.Administrator)
+                                 || User.IsInRole(Security.SuperAdministrator) 
+                                 || User.IsInRole(Security.Moderator) 
+                                 || User.IsInRole(Security.Editor))
                         {
                             <text> | <a asp-area="Panel" asp-page="/Moderation/Index">@LanguageManager.GetString("ModeratorPanel")</a></text>
                         }

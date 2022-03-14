@@ -93,19 +93,7 @@ namespace Comet.AI.World.Maps
                     m_dbDynamap.PortalY = value;
             }
         }
-
-        public byte ResLev
-        {
-            get => m_dbMap?.ResourceLevel ?? m_dbDynamap?.ResourceLevel ?? 0;
-            set
-            {
-                if (m_dbMap != null)
-                    m_dbMap.ResourceLevel = value;
-                else if (m_dbDynamap != null)
-                    m_dbDynamap.ResourceLevel = value;
-            }
-        }
-
+        
         public int Width => m_mapData?.Width ?? 0;
         public int Height => m_mapData?.Height ?? 0;
 
@@ -227,7 +215,7 @@ namespace Comet.AI.World.Maps
 
         #region Role Management
 
-        public async Task<bool> AddAsync(Role role)
+        public Task<bool> AddAsync(Role role)
         {
             if (m_roles.TryAdd(role.Identity, role))
             {
@@ -235,13 +223,13 @@ namespace Comet.AI.World.Maps
 
                 EnterBlock(role, role.MapX, role.MapY);
                 RoleManager.AddRole(role);
-                return true;
+                return Task.FromResult(true);
             }
 
-            return false;
+            return Task.FromResult(false);
         }
 
-        public async Task<bool> RemoveAsync(uint idRole)
+        public Task<bool> RemoveAsync(uint idRole)
         {
             if (m_roles.TryRemove(idRole, out Role role))
             {
@@ -250,9 +238,10 @@ namespace Comet.AI.World.Maps
 
                 if (role is not Character)
                     RoleManager.RemoveRole(idRole);
+                return Task.FromResult(true);
             }
 
-            return false;
+            return Task.FromResult(false);
         }
 
         #endregion
@@ -475,7 +464,6 @@ namespace Comet.AI.World.Maps
                 }
 
             return false;
-            //return GetBlock(GetBlockX(x), GetBlockY(y))?.RoleSet.Values.Any(a => a.MapX == x && a.MapY == y && a.IsAlive) != false;
         }
 
         /// <summary>
@@ -512,7 +500,7 @@ namespace Comet.AI.World.Maps
                 return false;
 
             int enableVal = sizeAdd % 2;
-            if (sizeAdd > 0 && sizeAdd <= 2)
+            if (sizeAdd is > 0 and <= 2)
             {
                 int moreDir = (int) dir % 2 != 0 ? 1 : 2;
                 for (int i = -1 * moreDir; i <= moreDir; i++)
@@ -543,70 +531,6 @@ namespace Comet.AI.World.Maps
             if (block == null)
                 return 0;
             return block.RoleSet.Values.Count(role => role.MapX == x && role.MapY == y);
-        }
-
-        #endregion
-
-        #region Indexes
-
-        public int Pos2Index(int x, int y, int cx, int cy)
-        {
-            return x + y * cx;
-        }
-
-        public int Index2X(int idx, int cx, int cy)
-        {
-            return idx % cy;
-        }
-
-        public int Index2Y(int idx, int cx, int cy)
-        {
-            return idx / cy;
-        }
-
-        #endregion
-
-        #region Portals and Passages
-
-        public bool GetRebornMap(ref uint idMap, ref Point target)
-        {
-            idMap = m_dbMap?.RebornMap ?? m_dbDynamap.RebornMap;
-            GameMap targetMap = MapManager.GetMap(idMap);
-            if (targetMap == null)
-            {
-                Log.WriteLogAsync(LogLevel.Error, $"Could not get reborn map [{Identity}]!").ConfigureAwait(false);
-                return false;
-            }
-
-            if (m_dbMap.LinkX == 0 || m_dbMap.LinkY == 0)
-                target = new Point(targetMap.PortalX, targetMap.PortalY);
-            else
-                target = new Point(m_dbMap.LinkX, m_dbMap.LinkY);
-
-            return true;
-        }
-
-        public bool GetPassageMap(ref uint idMap, ref Point target, ref Point source)
-        {
-            if (!IsValidPoint(source.X, source.Y))
-                return false;
-
-            int idxPassage = m_mapData.GetPassage(source.X, source.Y);
-            if (idxPassage < 0)
-                return false;
-
-            if (IsDynamicMap())
-            {
-                idMap = m_dbDynamap.LinkMap;
-                target.X = m_dbDynamap.LinkX;
-                target.Y = m_dbDynamap.LinkY;
-                return true;
-            }
-
-            Passway passway = m_passway.FirstOrDefault(x => x.Index == idxPassage);
-            idMap = passway.TargetMap;
-            target = new Point(passway.TargetX, passway.TargetY);
-            return true;
         }
 
         #endregion

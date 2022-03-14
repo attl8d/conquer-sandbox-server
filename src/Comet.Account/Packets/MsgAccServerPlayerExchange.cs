@@ -30,9 +30,7 @@ namespace Comet.Account.Packets
 
             foreach (PlayerData info in Data)
             {
-                DbRecordUser user = await RecordUserRepository.GetByIdAsync(info.Identity, realm.RealmID);
-                if (user == null)
-                    user = new DbRecordUser();
+                DbRecordUser user = await RecordUserRepository.GetByIdAsync(info.Identity, realm.RealmID) ?? new DbRecordUser();
 
                 user.ServerIdentity = realm.RealmID;
                 user.Name = info.Name;

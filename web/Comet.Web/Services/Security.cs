@@ -7,6 +7,7 @@ namespace Comet.Web.Services
         public const string SuperAdministrator = "Founder";
         public const string Administrator = "Administrator";
         public const string Moderator = "Moderator";
+        public const string Editor = "Editor";
         public const string Member = "Member";
 
         public enum Claims
@@ -35,6 +36,7 @@ namespace Comet.Web.Services
             ChangeUserRole,
             SignalFalsePositiveAccountBan,
             SignalFalsePositiveGameBan,
+            ManageMaintenanceMode,
 
             // Articles
             CanViewArticlesList,

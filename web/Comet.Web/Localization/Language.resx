@@ -171,6 +171,9 @@
   <data name="AdminDashboard" xml:space="preserve">
     <value>Dashboard Administrativo</value>
   </data>
+  <data name="Administrative" xml:space="preserve">
+    <value>Administrativo</value>
+  </data>
   <data name="Administrator" xml:space="preserve">
     <value>Administrador</value>
   </data>
@@ -182,6 +185,9 @@
   </data>
   <data name="AdmPanelPasswordAlert" xml:space="preserve">
     <value>Preencha o campo da senha com qualquer valor para que o usuário receba uma nova senha em seu e-mail.</value>
+  </data>
+  <data name="AllServers" xml:space="preserve">
+    <value>Todos os servidores</value>
   </data>
   <data name="ArticleCategory" xml:space="preserve">
     <value>Categoria</value>
@@ -613,6 +619,9 @@
   <data name="LeaveAResponse" xml:space="preserve">
     <value>Deixe um comentário</value>
   </data>
+  <data name="Level" xml:space="preserve">
+    <value>Nível</value>
+  </data>
   <data name="Location" xml:space="preserve">
     <value>Localização</value>
   </data>
@@ -636,6 +645,9 @@
   <data name="Logout" xml:space="preserve">
     <value>Desconectar</value>
   </data>
+  <data name="Maintenance" xml:space="preserve">
+    <value>Manutenção</value>
+  </data>
   <data name="MaintenanceDefaultMessage" xml:space="preserve">
     <value>&lt;p&gt;O sistema está em manutenção. Tente se conectar novamente mais tarde.&lt;/p&gt;</value>
   </data>
@@ -647,6 +659,9 @@
   </data>
   <data name="ManageGameAccountTitle" xml:space="preserve">
     <value>Gerenciamento de Contas de Jogo</value>
+  </data>
+  <data name="MateName" xml:space="preserve">
+    <value>Cônjuge</value>
   </data>
   <data name="Member" xml:space="preserve">
     <value>Membro</value>
@@ -903,6 +918,9 @@
   <data name="PhoneNumber" xml:space="preserve">
     <value>Telefone</value>
   </data>
+  <data name="PlayerName" xml:space="preserve">
+    <value>Nome</value>
+  </data>
   <data name="Posts" xml:space="preserve">
     <value>Publicações</value>
   </data>
@@ -917,6 +935,12 @@
   </data>
   <data name="PrivateMessage" xml:space="preserve">
     <value>&lt;i class="fa fa-envelope"&gt;&lt;/i&gt; Enviar Mensagem</value>
+  </data>
+  <data name="Products" xml:space="preserve">
+    <value>Produtos</value>
+  </data>
+  <data name="Profession" xml:space="preserve">
+    <value>Profissão</value>
   </data>
   <data name="Profile" xml:space="preserve">
     <value>Perfil</value>
@@ -933,11 +957,17 @@
   <data name="Pronoun" xml:space="preserve">
     <value>Pronome</value>
   </data>
+  <data name="Publications" xml:space="preserve">
+    <value>Publicações</value>
+  </data>
   <data name="PublishDate" xml:space="preserve">
     <value>Data de Publicação</value>
   </data>
   <data name="Published" xml:space="preserve">
     <value>Publicado</value>
+  </data>
+  <data name="RankingS" xml:space="preserve">
+    <value>Ranking de {0}</value>
   </data>
   <data name="ReadMore" xml:space="preserve">
     <value>Leia mais</value>
@@ -956,6 +986,9 @@
   </data>
   <data name="RealmPassword" xml:space="preserve">
     <value>Senha</value>
+  </data>
+  <data name="Realms" xml:space="preserve">
+    <value>Servidores</value>
   </data>
   <data name="RealmStatus" xml:space="preserve">
     <value>Status</value>
@@ -1137,6 +1170,9 @@
   <data name="SendVerificationEmail" xml:space="preserve">
     <value>Enviar e-mail de verificação</value>
   </data>
+  <data name="Server" xml:space="preserve">
+    <value>Servidor</value>
+  </data>
   <data name="ServerAdvertisement" xml:space="preserve">
     <value>Divulgação de Servidores Terceiros</value>
   </data>
@@ -1151,6 +1187,9 @@
   </data>
   <data name="SetupAuthenticatorApp" xml:space="preserve">
     <value>Configurar Aplicativo de Dois Fatores</value>
+  </data>
+  <data name="Shop" xml:space="preserve">
+    <value>Loja</value>
   </data>
   <data name="ShowRecoveryCodesAlert" xml:space="preserve">
     <value>&lt;p&gt;
@@ -1193,6 +1232,9 @@
   </data>
   <data name="Super Administrator" xml:space="preserve">
     <value>Fundador</value>
+  </data>
+  <data name="SyndicateName" xml:space="preserve">
+    <value>Guilda</value>
   </data>
   <data name="TargetUserName" xml:space="preserve">
     <value>Usuário Banido</value>
@@ -1278,6 +1320,9 @@
   <data name="UseAnotherRegistrationProvider" xml:space="preserve">
     <value>Use outro provedor para se conectar.</value>
   </data>
+  <data name="User" xml:space="preserve">
+    <value>Usuário</value>
+  </data>
   <data name="UserAdministration" xml:space="preserve">
     <value>{0} - Gerenciar Usuário</value>
   </data>
@@ -1340,6 +1385,12 @@
   </data>
   <data name="UserPanelRestoreDeletedCharacters" xml:space="preserve">
     <value>Restaurar Contas Deletadas</value>
+  </data>
+  <data name="Users" xml:space="preserve">
+    <value>Usuários</value>
+  </data>
+  <data name="UsersGroups" xml:space="preserve">
+    <value>Grupos de Usuários</value>
   </data>
   <data name="VerificationCode" xml:space="preserve">
     <value>Código de Verificação</value>

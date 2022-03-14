@@ -31,3 +31,67 @@
     list-style: none;
     margin: 10px 0;
 }
+
+.rank-1 {
+    margin: 0 auto;
+    display: block;
+    width: 32px;
+    height: 32px;
+    background: url('/assets/images/ranking/rank-1.png') no-repeat;
+}
+
+.rank-2 {
+    margin: 0 auto;
+    display: block;
+    width: 32px;
+    height: 32px;
+    background: url('/assets/images/ranking/rank-2.png');
+}
+
+.rank-3 {
+    margin: 0 auto;
+    display: block;
+    width: 32px;
+    height: 32px;
+    background: url('/assets/images/ranking/rank-3.png');
+}
+
+.rank-4 {
+    margin: 0 auto;
+    display: block;
+    width: 32px;
+    height: 32px;
+    background: url('/assets/images/ranking/rank-4.png');
+}
+
+.rank-5 {
+    margin: 0 auto;
+    display: block;
+    width: 32px;
+    height: 32px;
+    background: url('/assets/images/ranking/rank-5.png');
+}
+
+.rank-6 {
+    margin: 0 auto;
+    display: block;
+    width: 32px;
+    height: 32px;
+    background: url('/assets/images/ranking/rank-6.png');
+}
+
+.rank-7 {
+    margin: 0 auto;
+    display: block;
+    width: 32px;
+    height: 32px;
+    background: url('/assets/images/ranking/rank-7.png');
+}
+
+.rank-8 {
+    margin: 0 auto;
+    display: block;
+    width: 32px;
+    height: 32px;
+    background: url('/assets/images/ranking/rank-8.png');
+}

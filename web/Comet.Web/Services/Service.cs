@@ -20,6 +20,7 @@ namespace Comet.Web.Services
             service.AddTransient<RealmService>();
             service.AddTransient<MaintenanceService>();
             service.AddTransient<BanService>();
+            service.AddTransient<RankingService>();
             return service;
         }
     }

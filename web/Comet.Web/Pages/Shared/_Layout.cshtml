@@ -15,6 +15,18 @@
     <meta name="author" content="FTW! Masters">
     <link rel="icon" type="image/png" href="~/assets/images/icon.png">
     <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
+    
+    <meta property="og:type" content="website" />
+    <meta property="og:locale" content="@LanguageManager.CurrentLocale.Replace("-","_")" />
+    @foreach (Languages language in LanguageService.AvailableLanguages)
+    {
+    <meta property="og:locale:alternate" content="@language.LanguageCultureName.Replace("-","_")" />
+    }
+    <meta property="og:url" content="@($"{Context.Request.Scheme}://{Context.Request.Host}{Context.Request.Path}")" />
+    <meta property="og:description" content="@LanguageManager.GetString("HeaderDescription")" />
+    <meta property="og:site_name" content="World Conquer Online" />
+    <meta property="article:publisher" content="@($"{Context.Request.Scheme}://{Context.Request.Host}")" />
+    @await RenderSectionAsync("SEO", false)
 
     <meta name="google-signin-client_id" content="896235637960-b1tf0mehtncprcq9fioialju1kp9jvgj.apps.googleusercontent.com">
 

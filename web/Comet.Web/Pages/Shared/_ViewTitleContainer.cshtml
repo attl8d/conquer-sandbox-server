@@ -1,6 +1,14 @@
-﻿<section class="youplay-banner banner-top youplay-banner-parallax small">
+﻿@{
+    string url = Url.Content("~/assets/images/parallax/archer_1920x1200.jpg");
+    if (!string.IsNullOrEmpty(ViewData["TitleImage"]?.ToString()))
+    {
+        url = Url.Content(ViewData["TitleImage"].ToString());
+    }
+}
+
+<section class="youplay-banner banner-top youplay-banner-parallax small">
     <div class="image" data-speed="0.4">
-        <img src="~/assets/images/parallax/archer_1920x1200.jpg" alt="" class="jarallax-img">
+        <img src="@url" alt="" class="jarallax-img">
     </div>
     <div class="info">
         <div>

@@ -23,7 +23,7 @@ namespace Comet.Web.Pages
 
         public async Task<IActionResult> OnGetAsync()
         {
-            Articles = await mArticleService.GetAsync();
+            Articles = await mArticleService.GetAsync(1);
             return Page();
         }
     }

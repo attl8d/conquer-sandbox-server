@@ -12,12 +12,10 @@ namespace Comet.Web.Pages
 {
     public class MaintenanceModel : PageModel
     {
-        private readonly ApplicationDbContext mContext;
         private readonly MaintenanceService mService;
 
         public MaintenanceModel(ApplicationDbContext dbContext, MaintenanceService repository)
         {
-            mContext = dbContext;
             mService = repository;
         }
 
@@ -27,7 +25,7 @@ namespace Comet.Web.Pages
 
         public async Task<IActionResult> OnGetAsync()
         {
-            if (!await HttpContext.IsUnderMaintenanceAsync(mContext)) return Redirect("/");
+            if (!await mService.IsUnderMaintenanceAsync()) return Redirect("/");
 
             SystemConfig maintenanceConfig = await mService.GetAsync();
             if (maintenanceConfig != null)

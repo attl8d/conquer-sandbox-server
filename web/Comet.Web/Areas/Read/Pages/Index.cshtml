@@ -1,0 +1,139 @@
+﻿@page "{ArticleId=0}"
+@using Comet.Web.Services
+@using Comet.Web.Model.Helpers
+@inject LanguageService Language;
+@model Comet.Web.Areas.Read.Pages.IndexModel
+@{
+    ViewData["Title"] = Model.ArticleContent.Title;
+    string partialId = Guid.NewGuid().ToString();
+    string formId = $"comment-form-{partialId}";
+}
+
+<article class="news-one">
+
+    <div class="description">
+        @Html.Raw(Model.ArticleContent.Content)
+    </div>
+
+    <div class="tags">
+        <i class="fa fa-tags"></i> <a asp-area="News" asp-page="Index" asp-route-CategoryName="@Model.Article.Category.Name">@Language.GetString(Model.Article.Category.Name)</a>
+    </div>
+
+    <div class="meta">
+        <div class="item">
+            <i class="fa fa-user meta-icon"></i> @Language.GetString("Author") <a href="#">@Model.Author</a>
+        </div>
+        <div class="item">
+            <i class="fa fa-calendar meta-icon"></i> @Language.GetString("Published") <a href="#">@Model.Article.PublishDate.ToDateString(Language)</a>
+        </div>
+        <div class="item">
+            <i class="fa fa-bookmark meta-icon"></i> @Language.GetString("Category") <a href="#">@Language.GetString(@Model.Article.Category.Name)</a>
+        </div>
+        <div class="item">
+            <i class="fa fa-eye meta-icon"></i> @Language.GetString("Views") @Model.Article.Views
+        </div>
+    </div>
+
+</article>
+
+
+<div class="comments-block">
+    <h2>@Language.GetString("Comments")<small>(@(Model.Comments.Count == 0 ? Language.GetString("BeTheFirstToComment") : $"{Model.Comments.Count}"))</small></h2>
+
+    <ul class="comments-list">
+
+        @foreach (var comment in Model.Comments)
+        {
+            <li>
+                <article>
+                    <div class="comment-avatar pull-left">
+                        <img src="@Href("~/assets/images/avatar.png")" />
+                    </div>
+                    <div class="review-cont clearfix">
+                        <a class="comment-author h4" href="#">
+                            @comment.UserName
+                        </a>
+
+                        <div class="date">
+                            <i class="fa fa-calendar"></i>
+                            @comment.Date.ToDateString(Language)
+
+                            @*&nbsp;
+                                <button class="btn btn-danger@(comment.HasDislike ? " active" : "") pull-right" href="#" id="CommentDislike_@comment.Identity">
+                                <i class="fa fa-thumbs-down"></i> <span id="commentDislike_@comment.Identity">@comment.Dislikes</span>
+                                </button>
+                                <button class="btn btn-success@(comment.HasLike ? " active" : "") pull-right" href="#" id="CommentLike_@comment.Identity">
+                                <i class="fa fa-thumbs-up"></i> <span id="commentLike_@comment.Identity">@comment.Likes</span>
+                                </button>
+                                &nbsp;*@
+                        </div>
+                    </div>
+
+                    <div class="comment-text">
+                        @comment.Message
+                    </div>
+                </article>
+            </li>
+        }
+
+    </ul>
+
+    @if (Model.IsAllowedToComment)
+    {
+        <h2>@Language.GetString("LeaveAResponse")</h2>
+        <form class="comment-form" enctype="application/x-www-form-urlencoded" id="@formId">
+            <div class="comment-cont clearfix">
+                <div class="youplay-input">
+                    <input type="text" name="username" readonly value="@Model.CurrentUserName">
+                </div>
+                <div class="youplay-textarea">
+                    <textarea name="message" rows="5" placeholder="@Language.GetString("GoodComment")"></textarea>
+                </div>
+                <button class="btn btn-default pull-right">@Language.GetString("Submit")</button>
+            </div>
+        </form>
+    }
+</div>
+
+@section Scripts
+{
+<script>
+
+    const cannotInteract = @(Model.IsAllowedToComment ? "false" : "true");
+
+    $("#@formId").submit(function() {
+        event.preventDefault();
+
+        let formData =
+        {
+            PostId: @Model.ArticleId,
+            Message: $('textarea[name=message]').val(),
+            Rating: 0
+        };
+
+        if (formData.Message.length < 6 || formData.Message.length > 1024) {
+            alert('@Language.GetString("CommentMessageSize", 6, 1024)');
+            return;
+        }
+
+        $.ajax({
+            url: '@Url.Action("Comment", "Articles", new { version = "1" })',
+            type: 'POST',
+            data: JSON.stringify(formData),
+            contentType: "application/json",
+            success: function (data) {
+                window.location.href = '@(HttpContext.Request.Path)';
+            },
+            error: function(data) {
+                alert('@Language.GetString("UnableToProcess")');
+            }
+        });
+    });
+
+</script>
+}
+
+@section SEO
+{
+<meta property="og:title" content="@Model.ArticleContent.Title" />
+}

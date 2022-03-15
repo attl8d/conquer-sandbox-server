@@ -100,10 +100,10 @@ namespace Comet.Web.Services.Identity
                 Title = title,
                 EmailConfirmed = user.EmailConfirmed,
                 PhoneConfirmed = user.PhoneNumberConfirmed,
-                TwoFactorEnabled = user.TwoFactorEnabled
+                TwoFactorEnabled = user.TwoFactorEnabled,
+                Name = principal.FindFirst(ClaimTypes.Name)?.Value ?? user.UserName
             };
 
-            profile.Name = principal.FindFirst(ClaimTypes.Name)?.Value ?? user.UserName;
             if (principal.HasClaim(x => x.Type.Equals(CustomClaimTypes.SocialName)))
                 profile.Name += $" ({principal.FindFirstValue(CustomClaimTypes.SocialName)})";
             profile.AboutMe = principal.FindFirst(CustomClaimTypes.SelfDescription)?.Value ?? string.Empty;

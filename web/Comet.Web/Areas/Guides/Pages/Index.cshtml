@@ -1,0 +1,61 @@
+﻿@page
+@inject LanguageService Language;
+@using Comet.Web.Model.Helpers
+@using Comet.Web.Services
+@model Comet.Web.Areas.Guides.Pages.IndexModel
+@{
+    ViewData["Title"] = Language.GetString("Guides");
+}
+
+@await Html.PartialAsync("../../../Pages/Shared/_ViewTitleContainer")
+
+<div class="container youplay-news">
+    @if (Model.Categories.Count > 0)
+    {
+        @foreach (ArticleCategory category in Model.Categories)
+        {
+            <div class="row vertical-gutter multi-columns-row mb-20">
+                <h3 class="block-title">@Language.GetString(category.Name)</h3>
+                <hr/>
+                @if (category.Articles.Count > 0)
+                {
+                    @foreach (Article article in category.Articles)
+                    {
+                        ArticleContent content = article.Content.FirstOrDefault(x => x.Locale.Equals(Language.CurrentLocale, StringComparison.InvariantCultureIgnoreCase))
+                                                 ?? article.Content.FirstOrDefault();
+                        if (content == null)
+                        {
+                            continue;
+                        }
+
+                        <div class="col-lg-3 col-md-4 col-sm-6">
+                            <div class="news-one">
+                                <a asp-area="Guides" asp-page="Read" asp-route-ArticleId="@article.Id" class="angled-img">
+                                    <div class="img img-offset">
+                                        <img src="@Href("~/assets/images/no-img.jpg")" alt="">
+                                    </div>
+                                    <div class="bottom-info align-center">
+                                        <h3>@content.Title</h3>
+                                        <span class="date">
+                                            <svg class="svg-inline--fa fa-calendar-alt fa-w-14" aria-hidden="true" focusable="false" data-prefix="fa" data-icon="calendar-alt" role="img" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 448 512" data-fa-i2svg="">
+                                                <path fill="currentColor" d="M0 464c0 26.5 21.5 48 48 48h352c26.5 0 48-21.5 48-48V192H0v272zm320-196c0-6.6 5.4-12 12-12h40c6.6 0 12 5.4 12 12v40c0 6.6-5.4 12-12 12h-40c-6.6 0-12-5.4-12-12v-40zm0 128c0-6.6 5.4-12 12-12h40c6.6 0 12 5.4 12 12v40c0 6.6-5.4 12-12 12h-40c-6.6 0-12-5.4-12-12v-40zM192 268c0-6.6 5.4-12 12-12h40c6.6 0 12 5.4 12 12v40c0 6.6-5.4 12-12 12h-40c-6.6 0-12-5.4-12-12v-40zm0 128c0-6.6 5.4-12 12-12h40c6.6 0 12 5.4 12 12v40c0 6.6-5.4 12-12 12h-40c-6.6 0-12-5.4-12-12v-40zM64 268c0-6.6 5.4-12 12-12h40c6.6 0 12 5.4 12 12v40c0 6.6-5.4 12-12 12H76c-6.6 0-12-5.4-12-12v-40zm0 128c0-6.6 5.4-12 12-12h40c6.6 0 12 5.4 12 12v40c0 6.6-5.4 12-12 12H76c-6.6 0-12-5.4-12-12v-40zM400 64h-48V16c0-8.8-7.2-16-16-16h-32c-8.8 0-16 7.2-16 16v48H160V16c0-8.8-7.2-16-16-16h-32c-8.8 0-16 7.2-16 16v48H48C21.5 64 0 85.5 0 112v48h448v-48c0-26.5-21.5-48-48-48z"></path>
+                                            </svg><!-- <i class="fa fa-calendar"></i> --> @article.PublishDate.ToDateString(Language)
+                                        </span>
+                                    </div>
+                                </a>
+                            </div>
+                        </div>
+                    }
+                }
+                else
+                {
+                    <p>@Language.GetString("NoGuideCatArticles")</p>
+                }
+            </div>
+        }
+    }
+    else
+    {
+        <p>@Language.GetString("NoGuideCategory")</p>
+    }
+</div>

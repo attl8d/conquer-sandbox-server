@@ -17,6 +17,7 @@ namespace Comet.Web.Data.Entities
 
         public virtual ArticleFlags Flags { get; set; }
         public virtual int? ThumbId { get; set; }
+        public virtual int? BackgroundId { get; set; }
         public virtual int Views { get; set; }
         public virtual DateTime PublishDate { get; set; }
         public virtual DateTime CreationDate { get; set; }
@@ -26,6 +27,9 @@ namespace Comet.Web.Data.Entities
         public virtual ArticleCategory Category { get; set; }
         public virtual ApplicationUser User { get; set; }
         public virtual IList<ArticleContent> Content { get; set; }
+        
+        public virtual Images Thumb { get; set; }
+        public virtual Images Background { get; set; }
 
         [Flags]
         public enum ArticleFlags : ulong

@@ -1,0 +1,51 @@
+﻿@using Comet.Web.Model.Identity
+@using System.Globalization
+@using Comet.Web.Data.Entities
+@inject ArticleService mService;
+@inject LanguageService mLanguage;
+@{
+    List<Article> popularArticles = await mService.QueryMostPopularArticlesAsync(5);
+}
+
+<div class="side-block">
+    <h4 class="block-title">@mLanguage.GetString("PopularArticles")</h4>
+    <div class="block-content p-0">
+
+        @foreach (var article in popularArticles)
+        {
+            string url;
+            if (article.Category.CategoryTypeId == 1) // article
+            {
+                url = Url.Page("/Index", new { Area = "Read", ArticleId = article.Id });
+            }
+            else // guide
+            {
+                url = Url.Page("/Read", new { Area = "Guides", ArticleId = article.Id });
+            }
+
+            string locale = User.FindFirst(CustomClaimTypes.Language)?.Value ?? mLanguage.CurrentLocale;
+            ArticleContent content = article.Content.FirstOrDefault(x => x.Locale.Equals(locale, StringComparison.InvariantCultureIgnoreCase))
+                             ?? article.Content.FirstOrDefault();
+
+            if (content == null)
+            {
+                continue;
+            }
+
+            <div class="row youplay-side-news">
+                <div class="col-xs-3 col-md-4">
+                    <a href="" class="angled-img">
+                        <div class="img">
+                            <img src="@Url.Content(article.Thumb?.StorageUrl ?? "~/assets/images/no-img.jpg")" alt="@(article.Thumb?.FileName)">
+                        </div>
+                    </a>
+                </div>
+                <div class="col-xs-9 col-md-8">
+                    <span class="date">@mLanguage.GetString(article.Category.CategoryType.Name)</span>
+                    <h4 class="ellipsis"><a href="@(url)" title="@content.Title">@content.Title</a></h4>
+                    <span class="date"><i class="fa fa-calendar"></i> @article.PublishDate.ToString("d", new CultureInfo(mLanguage.CurrentLocale))</span>
+                </div>
+            </div>
+        }
+    </div>
+</div>

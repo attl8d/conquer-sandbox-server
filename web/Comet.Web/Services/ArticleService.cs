@@ -1,7 +1,9 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Data;
 using System.Linq;
 using System.Threading.Tasks;
+using Comet.Web.Areas.Panel.Pages.Administration.Articles;
 using Comet.Web.Areas.Profile.Models;
 using Comet.Web.Data;
 using Comet.Web.Data.Entities;
@@ -15,6 +17,8 @@ namespace Comet.Web.Services
 {
     public sealed class ArticleService
     {
+        private const int CommentsIpp = 25;
+
         private readonly ApplicationDbContext mContext;
         private readonly IHttpContextAccessor mHttpContextAccessor;
         private readonly LanguageService mLanguage;
@@ -34,23 +38,52 @@ namespace Comet.Web.Services
             mHttpContextAccessor = httpContextAccessor;
         }
 
-        public Task<List<Article>> GetAsync(int page = 0, int ipp = 5)
+        public Task<List<Article>> GetAsync(int type, int page = 0, int ipp = 5)
         {
             return mContext
                    .Articles
-                   .Where(x => x.PublishDate <= DateTime.Now)
+                   .Where(x => x.Category.CategoryTypeId == type && x.PublishDate <= DateTime.Now && x.Flags == Article.ArticleFlags.Visible)
                    .Include(x => x.Category)
                    .Include(x => x.User)
                    .Include(x => x.Content).ThenInclude(x => x.Writer)
                    .Include(x => x.Content).ThenInclude(x => x.LastEditor)
+                   .Include(x => x.Category).ThenInclude(x => x.CategoryType)
                    .OrderByDescending(x => x.Id)
-                   .Take(5)
+                   .Skip(page * ipp)
+                   .Take(ipp)
+                   .ToListAsync();
+        }
+
+        public Task<List<Article>> GetByCategoryAsync(int type, int page, int ipp = 5)
+        {
+            return mContext
+                   .Articles
+                   .Where(x => x.CategoryId == type && x.PublishDate <= DateTime.Now && x.Flags == Article.ArticleFlags.Visible)
+                   .Include(x => x.Category)
+                   .Include(x => x.User)
+                   .Include(x => x.Content).ThenInclude(x => x.Writer)
+                   .Include(x => x.Content).ThenInclude(x => x.LastEditor)
+                   .Include(x => x.Category).ThenInclude(x => x.CategoryType)
+                   .OrderByDescending(x => x.Id)
+                   .Skip(page * ipp)
+                   .Take(ipp)
                    .ToListAsync();
         }
 
         public Task<Article> QueryArticleByIdAsync(int articleId)
         {
             return mContext.Articles.FirstOrDefaultAsync(x => x.Id == articleId);
+        }
+
+        public Task<Article> QueryFullArticleByIdAsync(int articleId)
+        {
+            return mContext.Articles
+                    .Include(x => x.User)
+                    .Include(x => x.Category)
+                    .Include(x => x.Content).ThenInclude(x => x.Writer)
+                    .Include(x => x.Content).ThenInclude(x => x.LastEditor)
+                    .Include(x => x.Category).ThenInclude(x => x.CategoryType)
+                    .FirstOrDefaultAsync(x => x.Id == articleId);
         }
 
         public Task<List<ArticleCategoryTypeModel>> QueryActiveArticleCategoryTypeAsync()
@@ -68,8 +101,18 @@ namespace Comet.Web.Services
                 x => new ArticleCategoryModel
                 {
                     Id = x.Id,
-                    Name = mLanguage.GetString(x.Name)
+                    Name = mLanguage.GetString(x.Name),
+                    RealName = x.Name
                 }).ToListAsync();
+        }
+
+        public Task<List<ArticleCategory>> QueryActiveArticleCategoriesByTypeCompleteAsync(int type)
+        {
+            return mContext.ArticleCategories.Where(x => x.CategoryTypeId == type)
+                           .OrderBy(x => x.Order)
+                           .Include(x => x.Articles)
+                           .ThenInclude(y => y.Content)
+                           .ToListAsync();
         }
 
         public async Task<List<AdminArticleListModel>> QueryByCategoryTypeAsync(
@@ -177,6 +220,116 @@ namespace Comet.Web.Services
             comment.Flag |= 1;
             await mContext.SaveAsync(comment);
             return StatusCodes.Status200OK;
+        }
+
+        public async Task<(int Result, int ArticleId)> PostArticleAsync(ApplicationUser user, int articleId, ArticleModel.InputModel model)
+        {
+            var article = await QueryFullArticleByIdAsync(articleId);
+            try
+            {
+                await mContext.Database.BeginTransactionAsync();
+
+                ArticleContent content = null;
+                if (article != null)
+                {
+                    content = article.Content.FirstOrDefault(x => x.Locale.Equals(model.Locale, StringComparison.InvariantCultureIgnoreCase));
+                }
+                else
+                {
+                    article = new Article
+                    {
+                        CategoryId = model.ArticleCategoryId,
+                        CreationDate = DateTime.Now,
+                        Flags = Article.ArticleFlags.Visible,
+                        UserId = user.Id
+                    };
+
+                    if (model.NotPublished)
+                    {
+                        article.Flags |= Article.ArticleFlags.NotPublished;
+                    }
+                    else
+                    {
+                        article.PublishDate = model.PublishDate ?? DateTime.Now;
+                    }
+                }
+
+                if (content != null)
+                {
+                    content.Title = model.Title;
+                    content.Content = model.Content;
+                    content.LastEditorId = user.Id;
+                }
+                else
+                {
+                    content = new ArticleContent
+                    {
+                        Title = model.Title,
+                        Content = model.Content,
+                        WriterId = user.Id,
+                        Locale = model.Locale
+                    };
+                    article.Content ??= new List<ArticleContent>();
+                    article.Content.Add(content);
+                }
+
+                await mContext.SaveAsync(article);
+                await mContext.Database.CommitTransactionAsync();
+            }
+            catch
+            {
+                await mContext.Database.RollbackTransactionAsync();
+                return (StatusCodes.Status500InternalServerError, 0);
+            }
+            return (StatusCodes.Status200OK, article.Id);
+        }
+
+        public Task SaveArticleAsync(Article article) => mContext.SaveAsync(article);
+
+        public Task<ArticleReadToken> QueryUserReadTokenAsync(int articleId, string readToken)
+        {
+            return mContext.ArticleReadTokens.FirstOrDefaultAsync(x => x.ArticleId == articleId && x.TokenId.Equals(readToken));
+        }
+
+        public Task SaveReadUserTokenAsync(ArticleReadToken token) => mContext.SaveAsync(token);
+
+        public Task<List<ArticleComment>> QueryArticleCommentsAsync(int articleId, int page) => mContext.ArticleComments
+                                                                   .Include(x => x.User)
+                                                                   .Include(x => x.Article)
+                                                                   .Where(x => x.ArticleId == articleId)
+                                                                   .OrderBy(x => x.Id)
+                                                                   .Skip(page * CommentsIpp)
+                                                                   .Take(CommentsIpp)
+                                                                   .ToListAsync();
+
+        public async Task<List<Article>> QueryMostPopularArticlesAsync(int num)
+        {
+            DataTable articles = await mContext.SelectAsync($"SELECT COUNT(1), ArticleId FROM article_read_token GROUP BY ArticleId ORDER BY 1 DESC LIMIT {num};");
+            List<Article> result = new();
+
+            foreach (DataRow row in articles.Rows)
+            {
+                int idArticle = int.Parse(row["ArticleId"]?.ToString() ?? "0");
+                Article article = await QueryFullArticleByIdAsync(idArticle);
+                if (article != null)
+                    result.Add(article);
+            }
+
+            if (result.Count < num)
+            {
+                int amount = num - result.Count;
+                result.AddRange(await mContext.Articles
+                                              .Where(x => result.Select(y => y.Id).All(y => y != x.Id))
+                                              .Include(x => x.User)
+                                              .Include(x => x.Category)
+                                              .Include(x => x.Content).ThenInclude(x => x.Writer)
+                                              .Include(x => x.Content).ThenInclude(x => x.LastEditor)
+                                              .Include(x => x.Category).ThenInclude(x => x.CategoryType)
+                                              .Take(amount)
+                                              .OrderByDescending(x => x.Views).ToListAsync());
+            }
+
+            return result;
         }
     }
 }

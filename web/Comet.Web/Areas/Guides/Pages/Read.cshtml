@@ -1,0 +1,42 @@
+﻿@page "{ArticleId=0}"
+@using Comet.Web.Services
+@using Comet.Web.Model.Helpers
+@inject LanguageService Language;
+@model Comet.Web.Areas.Guides.Pages.ReadModel
+@{
+    ViewData["Title"] = Model.ArticleContent.Title;
+}
+
+<div class="content-wrap no-banner">
+    <h1 class="container">@Model.ArticleContent.Title</h1>
+    <div class="container youplay-news youplay-post">
+
+        <article class="news-one">
+
+            <div class="description">
+                @Html.Raw(Model.ArticleContent.Content)
+            </div>
+
+            <div class="tags">
+                <i class="fa fa-tags"></i> <a href="#">@Language.GetString(Model.Article.Category.Name)</a>
+            </div>
+
+
+            <div class="meta">
+                <div class="item">
+                    <i class="fa fa-user meta-icon"></i> @Language.GetString("Author") <a href="#">@Model.Author</a>
+                </div>
+                <div class="item">
+                    <i class="fa fa-calendar meta-icon"></i> @Language.GetString("Published") <a href="#">@Model.Article.PublishDate.ToDateString(Language)</a>
+                </div>
+                <div class="item">
+                    <i class="fa fa-bookmark meta-icon"></i> @Language.GetString("Category") <a href="#">@Language.GetString(@Model.Article.Category.Name)</a>
+                </div>
+                <div class="item">
+                    <i class="fa fa-eye meta-icon"></i> @Language.GetString("Views") @Model.Article.Views
+                </div>
+            </div>
+
+        </article>
+    </div>
+</div>

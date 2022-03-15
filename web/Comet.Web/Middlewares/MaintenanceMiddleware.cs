@@ -20,18 +20,17 @@ namespace Comet.Web.Middlewares
         public async Task InvokeAsync(HttpContext context,
                                       IHttpContextAccessor httpContextAccessor,
                                       ApplicationDbContext dbContext,
-                                      IAuthorizationService authorizationService)
+                                      IAuthorizationService authorizationService, 
+                                      MaintenanceService service)
         {
-            bool isUnderMaintenance = await httpContextAccessor.HttpContext.IsUnderMaintenanceAsync(dbContext);
+            bool isUnderMaintenance = await service.IsUnderMaintenanceAsync();
             var userHasAccess = true;
             if (isUnderMaintenance && httpContextAccessor.HttpContext?.Request.Path.Equals("/Maintenance") != true)
             {
                 var notAuthorized = true;
                 if (httpContextAccessor.HttpContext?.User.Identity?.IsAuthenticated == true)
                 {
-                    AuthorizationResult authorization =
-                        await authorizationService.AuthorizeAsync(httpContextAccessor.HttpContext.User,
-                                                                  Security.Administrator);
+                    AuthorizationResult authorization = await authorizationService.AuthorizeAsync(httpContextAccessor.HttpContext.User,Security.Administrator);
                     if (authorization.Succeeded)
                     {
                         notAuthorized = false;

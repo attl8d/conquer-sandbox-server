@@ -186,6 +186,12 @@
   <data name="AdmPanelPasswordAlert" xml:space="preserve">
     <value>Preencha o campo da senha com qualquer valor para que o usuário receba uma nova senha em seu e-mail.</value>
   </data>
+  <data name="AdvancedQuests" xml:space="preserve">
+    <value>Missões Avançadas</value>
+  </data>
+  <data name="All" xml:space="preserve">
+    <value>Todos(as)</value>
+  </data>
   <data name="AllServers" xml:space="preserve">
     <value>Todos os servidores</value>
   </data>
@@ -263,6 +269,9 @@
   </data>
   <data name="BanTypeWindowTitle" xml:space="preserve">
     <value>Banimento de conta - {0}</value>
+  </data>
+  <data name="BasicQuests" xml:space="preserve">
+    <value>Missões Básicas</value>
   </data>
   <data name="BestChildMemory" xml:space="preserve">
     <value>Melhor lembrança de quando criança</value>
@@ -441,6 +450,9 @@
   <data name="ErrorChangingEmail" xml:space="preserve">
     <value>Não foi possível alterar o seu endereço de e-mail. O código não é mais válido ou você já fez a validação com este código.</value>
   </data>
+  <data name="Events" xml:space="preserve">
+    <value>Eventos</value>
+  </data>
   <data name="ExclusiveWindowsRelease" xml:space="preserve">
     <value>Lançamento exclusivo para Windows</value>
   </data>
@@ -598,17 +610,26 @@
   <data name="InappropriateSyndicateName" xml:space="preserve">
     <value>Nome Inapropriado de Sindicato</value>
   </data>
+  <data name="InternalServerError" xml:space="preserve">
+    <value>Erro interno no servidor.</value>
+  </data>
   <data name="Interviews" xml:space="preserve">
     <value>Entrevistas</value>
   </data>
   <data name="InvalidBanType" xml:space="preserve">
     <value>Tipo de banimento inválido.</value>
   </data>
+  <data name="InvalidEndDate" xml:space="preserve">
+    <value>Data final inválida. Por favor, valide o formato da data e certifique-se de que a data final não é menro que a data inicial.</value>
+  </data>
   <data name="InvalidLoginAttempt" xml:space="preserve">
     <value>Nome de usuário ou senha inválidos.</value>
   </data>
   <data name="InvalidLoginAttempt2" xml:space="preserve">
     <value>Nome de usuário ou senha inválidos. Você já ativou a sua conta?</value>
+  </data>
+  <data name="InvalidStartDate" xml:space="preserve">
+    <value>Data de início inválida. Por favor, valide o formato da data e certifique-se de que a data de início não é maior que a data final.</value>
   </data>
   <data name="Language" xml:space="preserve">
     <value>Idioma</value>
@@ -650,6 +671,15 @@
   </data>
   <data name="MaintenanceDefaultMessage" xml:space="preserve">
     <value>&lt;p&gt;O sistema está em manutenção. Tente se conectar novamente mais tarde.&lt;/p&gt;</value>
+  </data>
+  <data name="MaintenanceEnable" xml:space="preserve">
+    <value>Modo de Manutenção</value>
+  </data>
+  <data name="MaintenanceEnableWarning" xml:space="preserve">
+    <value>Durante o modo de manutenção apenas Administradores podem navegar pelo website. Portanto, certifique-se de deixar uma mensagem descritiva e defina um prazo caso queira deixar o site fora do ar por um período fixo de tempo. ATENÇÃO: Habilitar o modo de manutenção IGNORA as datas de início e final. Caso deseje configurar com as datas desmarque esta opção.</value>
+  </data>
+  <data name="MaintenanceShouldHaveDescription" xml:space="preserve">
+    <value>A manutenção DEVE ter uma descrição.</value>
   </data>
   <data name="MaintenanceTitle" xml:space="preserve">
     <value>Sistema em Manutenção</value>
@@ -774,8 +804,14 @@
   <data name="NewArticle" xml:space="preserve">
     <value>Novo Artigo</value>
   </data>
+  <data name="Newbies" xml:space="preserve">
+    <value>Novatos</value>
+  </data>
   <data name="NewEmail" xml:space="preserve">
     <value>Novo E-mail</value>
+  </data>
+  <data name="Newer" xml:space="preserve">
+    <value>Mais recentes</value>
   </data>
   <data name="NewPassword" xml:space="preserve">
     <value>Nova Senha</value>
@@ -800,6 +836,9 @@
   </data>
   <data name="NoData" xml:space="preserve">
     <value>Sem dados</value>
+  </data>
+  <data name="NoNews" xml:space="preserve">
+    <value>Sem notícias na categoria selecionada.</value>
   </data>
   <data name="NoPermission" xml:space="preserve">
     <value>Você não tem permissão para executar esta ação.</value>
@@ -827,6 +866,9 @@
   </data>
   <data name="OfensiveLanguage" xml:space="preserve">
     <value>Linguagem Ofensiva</value>
+  </data>
+  <data name="Older" xml:space="preserve">
+    <value>Mais antigos</value>
   </data>
   <data name="ParentStaffRepresentation" xml:space="preserve">
     <value>Representação de Parente de Equipe</value>
@@ -920,6 +962,9 @@
   </data>
   <data name="PlayerName" xml:space="preserve">
     <value>Nome</value>
+  </data>
+  <data name="PopularArticles" xml:space="preserve">
+    <value>Artigos Populares</value>
   </data>
   <data name="Posts" xml:space="preserve">
     <value>Publicações</value>
@@ -1236,6 +1281,9 @@
   <data name="SyndicateName" xml:space="preserve">
     <value>Guilda</value>
   </data>
+  <data name="System" xml:space="preserve">
+    <value>Sistema</value>
+  </data>
   <data name="TargetUserName" xml:space="preserve">
     <value>Usuário Banido</value>
   </data>
@@ -1409,6 +1457,9 @@
   </data>
   <data name="Visitor" xml:space="preserve">
     <value>Visitante</value>
+  </data>
+  <data name="Warning" xml:space="preserve">
+    <value>Aviso</value>
   </data>
   <data name="WatchTrailer" xml:space="preserve">
     <value>Assista ao trailer</value>

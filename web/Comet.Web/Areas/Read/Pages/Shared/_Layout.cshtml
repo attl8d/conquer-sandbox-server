@@ -1,0 +1,32 @@
+﻿@{
+    Layout = "/Pages/Shared/_Layout.cshtml";
+}
+
+@await Html.PartialAsync("../../Pages/Shared/_ViewTitleContainer")
+
+<div class="container youplay-news youplay-post">
+    <div class="col-md-9 col-md-push-3">
+        @RenderBody()
+    </div>
+
+    <div class="col-md-3 col-md-pull-9">
+
+        @await Html.PartialAsync("_Categories")
+        
+        @await Html.PartialAsync("_PopularNews")
+
+    </div>
+
+</div>
+
+@section Styles {
+    @await RenderSectionAsync("Styles", false)
+}
+
+@section Scripts {
+    @await RenderSectionAsync("Scripts", false)
+}
+
+@section SEO {
+    @await RenderSectionAsync("SEO", false)
+}

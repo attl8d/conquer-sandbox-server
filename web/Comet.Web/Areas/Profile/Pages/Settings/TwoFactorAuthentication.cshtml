@@ -1,0 +1,51 @@
+﻿@page
+@inject LanguageService Language
+@model Comet.Web.Areas.Profile.Pages.Settings.TwoFactorAuthenticationModel
+@{
+    ViewData["Title"] = Language.GetString("TwoFactorAuthentication");
+}
+
+@await Html.PartialAsync("../../../Pages/Shared/_ViewTitleContainer")
+
+<div class="container youplay-content">
+    <h4>@ViewData["Title"]</h4>
+    @if (Model.Is2faEnabled)
+    {
+        if (Model.RecoveryCodesLeft == 0)
+        {
+            @Html.Raw(Language.GetString("RecoveryCodesLeft0Alert"))
+        }
+        else if (Model.RecoveryCodesLeft == 1)
+        {
+            @Html.Raw(Language.GetString("RecoveryCodesLeft1Alert", Url.Page("GenerateRecoveryCodes")))
+        }
+        else if (Model.RecoveryCodesLeft <= 3)
+        {
+            @Html.Raw(Language.GetString("RecoveryCodesLeft3Alert", Model.RecoveryCodesLeft, Url.Page("GenerateRecoveryCodes")))
+        }
+
+        if (Model.IsMachineRemembered)
+        {
+            <form method="post" style="display: inline-block">
+                <button type="submit" class="btn btn-primary">@Language.GetString("ForgetThisBrowser")</button>
+            </form>
+        }
+        <a asp-page="./Disable2fa" class="btn btn-primary">@Language.GetString("Disable2fa")</a>
+        <a asp-page="./GenerateRecoveryCodes" class="btn btn-primary">@Language.GetString("ResetRecoveryCodes")</a>
+    }
+
+    <h5>@Language.GetString("AuthenticationApp")</h5>
+    @if (!Model.HasAuthenticator)
+    {
+        <a id="enable-authenticator" asp-page="./EnableAuthenticator" class="btn btn-primary">@Language.GetString("AddAuthenticatorApp")</a>
+    }
+    else
+    {
+        <a id="enable-authenticator" asp-page="./EnableAuthenticator" class="btn btn-primary">@Language.GetString("SetupAuthenticatorApp")</a>
+        <a id="reset-authenticator" asp-page="./ResetAuthenticator" class="btn btn-primary">@Language.GetString("ResetAuthenticatorApp")</a>
+    }
+</div>
+
+@section Scripts {
+    <partial name="_ValidationScriptsPartial" />
+}

@@ -1,0 +1,95 @@
+﻿@using Comet.Web.Services
+@using Comet.Web.Areas.Profile.Models
+@inject LanguageService mLanguage
+@{
+    string path = Context.Request.Path;
+    string[] splitPath = path.Split('/', StringSplitOptions.RemoveEmptyEntries);
+    string currentPage = "INDEX";
+    if (splitPath.Length > 2)
+    {
+        currentPage = splitPath[2].ToUpper();
+    }
+
+    ProfileModel profile = (ProfileModel) Context.Items["Profile"];
+    if (profile == null)
+    {
+        Context.Response.Redirect("/Error");
+        return;
+    }
+}
+
+<!-- Banner -->
+<section class="youplay-banner banner-top youplay-banner-parallax small">
+    <div class="image" data-speed="0.4">
+        <img src="@Href(profile.BackgroundImage)" alt="" class="jarallax-img">
+    </div>
+    <div class="youplay-user-navigation">
+        <div class="container">
+            <ul>
+                <li @Html.Raw(currentPage.Equals("ACTIVITY") ? " class=\"active\"" : "")>
+                    <a href="#">@mLanguage.GetString("Activity")</a>
+                </li>
+                <li @Html.Raw(currentPage.Equals("INDEX") ? " class=\"active\"" : "")>
+                    <a asp-area="Profile" asp-page="/Index" asp-route-UserName="@profile.UserName">@mLanguage.GetString("Profile")</a>
+                </li>
+                @if (profile.LoadedByOwner)
+                {
+                    <li @Html.Raw(currentPage.Equals("MESSAGES") ? " class=\"active\"" : "")>
+                        <a href="#">@mLanguage.GetString("Messages") <span class="badge">0</span></a>
+                    </li>
+                    <li @Html.Raw(currentPage.Equals("SETTINGS") ? " class=\"active\"" : "")>
+                        <a asp-area="Profile" asp-page="/Settings/Index">@mLanguage.GetString("Settings")</a>
+                    </li>
+                }
+                <li @Html.Raw(currentPage.Equals("GROUPS") ? " class=\"active\"" : "")>
+                    <a href="#">@mLanguage.GetString("Groups")</a>
+                </li>
+                <li @Html.Raw(currentPage.Equals("FORUMS") ? " class=\"active\"" : "")>
+                    <a href="#">@mLanguage.GetString("Forums")</a>
+                </li>
+            </ul>
+        </div>
+    </div>
+    <div class="info">
+        <div>
+            <div class="container youplay-user">
+                <a href="@Href(profile.ProfileImage)" class="angled-img image-popup">
+                    <div class="img">
+                        <img src="@Href(profile.ProfileImage)" alt="">
+                    </div>
+                    <i class="fa fa-search-plus icon"></i>
+                </a>
+                <div class="user-data">
+                    <h2>@profile.UserName</h2>
+                    <div class="location"><i class="fa fa-users"></i> @profile.Title</div>
+                    <div class="activity">
+                        <div>
+                            <div class="num">@profile.CommentCount</div>
+                            <div class="title">@mLanguage.GetString("Posts")</div>
+                        </div>
+                        <div>
+                            <div class="num">@profile.Reputation</div>
+                            <div class="title">@mLanguage.GetString("Reputation")</div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            @if (!profile.LoadedByOwner && User.Identity?.IsAuthenticated == true)
+            {
+                <div class="container mt-20">
+                    @if (profile.IsFriend)
+                    {
+                        <a href="#" class="btn btn-sm btn-default ml-0">@Html.Raw(mLanguage.GetString("RemoveFriend"))</a>
+                    }
+                    else
+                    {
+                        <a href="#" class="btn btn-sm btn-default ml-0">@Html.Raw(mLanguage.GetString("AddFriend"))</a>
+                    }
+                    <a href="#" class="btn btn-sm btn-default">@Html.Raw(mLanguage.GetString("PrivateMessage"))</a>
+                    <a href="#" class="btn btn-sm btn-default">@Html.Raw(mLanguage.GetString("ReportPlayer"))</a>
+                </div>
+            }
+        </div>
+    </div>
+</section>
+<!-- /Banner -->

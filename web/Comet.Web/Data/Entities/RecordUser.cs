@@ -7,47 +7,47 @@ namespace Comet.Web.Data.Entities
     [Table("records_user")]
     public class RecordUser
     {
-        [Key] public uint Id { get; set; }
-        public uint ServerIdentity { get; set; }
-        public uint UserIdentity { get; set; }
-        public uint AccountIdentity { get; set; }
-        public string Name { get; set; }
-        public uint MateId { get; set; }
-        public byte Level { get; set; }
-        public ulong Experience { get; set; }
-        public byte Profession { get; set; }
-        public byte OldProfession { get; set; }
-        public byte NewProfession { get; set; }
-        public byte Metempsychosis { get; set; }
-        public ushort Strength { get; set; }
-        public ushort Agility { get; set; }
-        public ushort Vitality { get; set; }
-        public ushort Spirit { get; set; }
-        public ushort AdditionalPoints { get; set; }
-        public uint SyndicateIdentity { get; set; }
-        public ushort SyndicatePosition { get; set; }
-        public ulong NobilityDonation { get; set; }
-        public byte NobilityRank { get; set; }
-        public uint SupermanCount { get; set; }
-        public DateTime? DeletedAt { get; set; }
-        public ulong Money { get; set; }
-        public uint WarehouseMoney { get; set; }
-        public uint ConquerPoints { get; set; }
-        public uint ConquerPointsMono { get; set; }
-        public uint FamilyIdentity { get; set; }
-        public ushort FamilyRank { get; set; }
+        [Key] public virtual uint Id { get; set; }
+        public virtual uint ServerIdentity { get; set; }
+        public virtual uint UserIdentity { get; set; }
+        public virtual uint AccountIdentity { get; set; }
+        public virtual string Name { get; set; }
+        public virtual uint MateId { get; set; }
+        public virtual byte Level { get; set; }
+        public virtual ulong Experience { get; set; }
+        public virtual byte Profession { get; set; }
+        public virtual byte OldProfession { get; set; }
+        public virtual byte NewProfession { get; set; }
+        public virtual byte Metempsychosis { get; set; }
+        public virtual ushort Strength { get; set; }
+        public virtual ushort Agility { get; set; }
+        public virtual ushort Vitality { get; set; }
+        public virtual ushort Spirit { get; set; }
+        public virtual ushort AdditionalPoints { get; set; }
+        public virtual uint SyndicateIdentity { get; set; }
+        public virtual ushort SyndicatePosition { get; set; }
+        public virtual ulong NobilityDonation { get; set; }
+        public virtual byte NobilityRank { get; set; }
+        public virtual uint SupermanCount { get; set; }
+        public virtual DateTime? DeletedAt { get; set; }
+        public virtual ulong Money { get; set; }
+        public virtual uint WarehouseMoney { get; set; }
+        public virtual uint ConquerPoints { get; set; }
+        public virtual uint ConquerPointsMono { get; set; }
+        public virtual uint FamilyIdentity { get; set; }
+        public virtual ushort FamilyRank { get; set; }
 
-        public uint QualifierPoints { get; set; }
-        public uint QualifierTotalWins { get; set; }
-        public uint QualifierTotalLoses { get; set; }
-        public uint QualifierTodayWins { get; set; }
-        public uint QualifierTodayLoses { get; set; }
-        public uint CurrentHonorPoint { get; set; }
-        public uint HistoryHonorPoint { get; set; }
-        public uint RedRose { get; set; }
-        public uint WhiteRose { get; set; }
-        public uint Orchid { get; set; }
-        public uint Tulip { get; set; }
-        public bool Deleted { get; set; }
+        public virtual uint QualifierPoints { get; set; }
+        public virtual uint QualifierTotalWins { get; set; }
+        public virtual uint QualifierTotalLoses { get; set; }
+        public virtual uint QualifierTodayWins { get; set; }
+        public virtual uint QualifierTodayLoses { get; set; }
+        public virtual uint CurrentHonorPoint { get; set; }
+        public virtual uint HistoryHonorPoint { get; set; }
+        public virtual uint RedRose { get; set; }
+        public virtual uint WhiteRose { get; set; }
+        public virtual uint Orchid { get; set; }
+        public virtual uint Tulip { get; set; }
+        public virtual bool Deleted { get; set; }
     }
 }

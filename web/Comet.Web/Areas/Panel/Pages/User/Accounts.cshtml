@@ -1,0 +1,73 @@
+﻿@page
+@inject LanguageService mLanguage
+@using Comet.Web.Model.Game
+@model Comet.Web.Areas.Panel.Pages.User.AccountsModel
+@{
+    ViewData["Title"] = mLanguage.GetString("ManageGameAccountTitle");
+}
+
+<div class="row">
+    <div class="col-md-6">
+        <h2 class="mt-0">@mLanguage.GetString("UserCPAccountsCreationTitle")</h2>
+        @Html.Raw(mLanguage.GetString("UserCPAccountsCreationDesc"))
+        <form method="post">
+            <div asp-validation-summary="All"></div>
+            <div class="youplay-input">
+                <input asp-for="Input.Username" placeholder="@mLanguage.GetString("Username")" autocomplete="off">
+            </div>
+            <div class="youplay-input">
+                <input asp-for="Input.Password" placeholder="@mLanguage.GetString("Password")" autocomplete="off">
+            </div>
+            <div class="youplay-input">
+                <input asp-for="Input.ConfirmPassword" placeholder="@mLanguage.GetString("ConfirmPassword")" autocomplete="off">
+            </div>
+            <button type="submit" class="btn btn-primary">@mLanguage.GetString("Submit")</button>
+        </form>
+    </div>
+    <div class="col-md-6">
+        <h2 class="mt-0">@mLanguage.GetString("UserCPAccountsManageTitle")</h2>
+        <table class="table table-bordered table-hover">
+            <thead>
+            <tr>
+                <td>#</td>
+                <td>@mLanguage.GetString("Username")</td>
+                <td>@mLanguage.GetString("Status")</td>
+                <td>@mLanguage.GetString("Characters")</td>
+                <td></td>
+            </tr>
+            </thead>
+            <tbody>
+                @foreach (GameAccountModel account in Model.Accounts)
+                {
+                    <tr>
+                        <td>@account.Id</td>
+                        <td>@account.Name</td>
+                        <td>
+                            @if (account.BanExpire.HasValue)
+                            {
+                                <span class="label label-danger">@mLanguage.GetString("BannedTill", account.BanExpire.Value.ToString("G"))</span>
+                            }
+                            else
+                            {
+                                <span class="label label-success">@mLanguage.GetString("Active")</span>
+                            }
+                        </td>
+                        <td>
+                            @foreach (var character in account.Characters)
+                            {
+                                <p title="@character.Server">@character.Name</p>
+                            }
+                        </td>
+                        <td>
+                            <a asp-area="Panel" asp-page="/User/ChangePassword" asp-route-AccountId="@account.Id"><i class="fa fa-lock"></i></a>
+                        </td>
+                    </tr>
+                }
+            </tbody>
+        </table>
+    </div>
+</div>
+
+@*@section Scripts {
+    <partial name="_ValidationScriptsPartial"/>
+}*@

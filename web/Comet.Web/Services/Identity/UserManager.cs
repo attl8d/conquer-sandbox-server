@@ -301,5 +301,14 @@ namespace Comet.Web.Services.Identity
                                           .ToArrayAsync(cancellationToken);
             return await mContext.Users.Where(x => userIds.Any(y => y == x.Id)).ToListAsync(cancellationToken);
         }
+
+        public Task<ApplicationUser> FindByUserNameAsync(string userName,
+                                                               CancellationToken cancellationToken = default)
+        {
+            ThrowIfDisposed();
+            cancellationToken.ThrowIfCancellationRequested();
+            userName = NormalizeName(userName);
+            return mContext.Users.FirstOrDefaultAsync(x => x.NormalizedUserName.Equals(userName), cancellationToken: cancellationToken);
+        }
     }
 }

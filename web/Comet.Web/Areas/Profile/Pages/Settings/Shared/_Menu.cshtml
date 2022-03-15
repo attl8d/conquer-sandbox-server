@@ -1,0 +1,11 @@
+﻿@inject LanguageService mLanguage
+@model string
+
+<ul class="pagination pagination-sm mt-0">
+    <li @Html.Raw(Model.Equals("PROFILE") ? " class=\"active\"" : "")>
+        <a asp-area="Profile" asp-page="/Settings/Index">@mLanguage.GetString("Profile")</a>
+    </li>
+    <li @Html.Raw(Model.Equals("SECURITY") ? " class=\"active\"" : "")>
+        <a asp-area="Profile" asp-page="/Settings/Security">@mLanguage.GetString("Security")</a>
+    </li>
+</ul>

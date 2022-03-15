@@ -1,0 +1,171 @@
+﻿@page
+@inject LanguageService mLanguage
+@using Microsoft.AspNetCore.Authentication
+@model Comet.Web.Areas.Profile.Pages.Settings.SecurityModel
+@{
+    ViewData["Title"] = mLanguage.GetString("ProfileSettings");
+    Layout = "../Shared/_Layout";
+}
+
+@await Html.PartialAsync("Shared/_Menu", "SECURITY")
+
+<div asp-validation-summary="All" class="text-danger"></div>
+
+<partial name="_StatusMessage" model="Model.StatusMessage"/>
+
+@if (Model.HasPassword)
+{
+    <h3>@mLanguage.GetString("ChangePassword"):</h3>
+    <form asp-page-handler="ChangePassword">
+        <div class="form-horizontal mt-30 mb-40">
+            <div class="form-group">
+                <label class="control-label col-sm-3" for="cur_password">@mLanguage.GetString("CurrentPassword"):</label>
+                <div class="col-sm-9">
+                    <div class="youplay-input">
+                        <input asp-for="PasswordInput.OldPassword" placeholder="@mLanguage.GetString("CurrentPassword")">
+                    </div>
+                </div>
+            </div>
+            <div class="form-group">
+                <label class="control-label col-sm-3" for="new_password">@mLanguage.GetString("NewPassword"):</label>
+                <div class="col-sm-9">
+                    <div class="youplay-input">
+                        <input asp-for="PasswordInput.NewPassword" placeholder="@mLanguage.GetString("NewPassword")">
+                    </div>
+                </div>
+            </div>
+            <div class="form-group">
+                <label class="control-label col-sm-3" for="new_password_confirm">@mLanguage.GetString("ConfirmNewPassword"):</label>
+                <div class="col-sm-9">
+                    <div class="youplay-input">
+                        <input asp-for="PasswordInput.ConfirmPassword" placeholder="@mLanguage.GetString("ConfirmNewPassword")">
+                    </div>
+                </div>
+            </div>
+            <div class="form-group">
+                <div class="col-sm-offset-3 col-sm-9">
+                    <button type="submit" class="btn btn-default">@mLanguage.GetString("ChangePassword")</button>
+                </div>
+            </div>
+        </div>
+    </form>
+
+    if (Model.Profile.TwoFactorEnabled)
+    {
+        <a asp-area="Profile" asp-page="/Settings/TwoFactorAuthentication" class="btn btn-default">@mLanguage.GetString("TwoFactorAuthentication")</a>
+    }
+    else
+    {
+        <a asp-area="Profile" asp-page="/Settings/EnableAuthenticator" class="btn btn-default">@mLanguage.GetString("EnableAuthenticator")</a>
+    }
+}
+else
+{
+    <h3>@mLanguage.GetString("SetPassword"):</h3>
+    <form asp-page-handler="SetPassword">
+        <div class="form-horizontal mt-30 mb-40">
+            <div class="form-group">
+                <label class="control-label col-sm-3" for="new_password">@mLanguage.GetString("NewPassword"):</label>
+                <div class="col-sm-9">
+                    <div class="youplay-input">
+                        <input asp-for="SetPasswordInput.NewPassword" placeholder="@mLanguage.GetString("NewPassword")">
+                    </div>
+                </div>
+            </div>
+            <div class="form-group">
+                <label class="control-label col-sm-3" for="new_password_confirm">@mLanguage.GetString("ConfirmNewPassword"):</label>
+                <div class="col-sm-9">
+                    <div class="youplay-input">
+                        <input asp-for="SetPasswordInput.ConfirmPassword" placeholder="@mLanguage.GetString("ConfirmNewPassword")">
+                    </div>
+                </div>
+            </div>
+            <div class="form-group">
+                <div class="col-sm-offset-3 col-sm-9">
+                    <button type="submit" class="btn btn-default">@mLanguage.GetString("SetPassword")</button>
+                </div>
+            </div>
+        </div>
+    </form>
+}
+
+<h3>@mLanguage.GetString("ChangeEmail"):</h3>
+<form asp-page-handler="ChangeEmail">
+    <div class="form-horizontal mt-30 mb-40">
+        <div class="form-group">
+            <label class="control-label col-sm-3">@mLanguage.GetString("CurrentEmail"):</label>
+            <div class="col-sm-9">
+                @Model.Profile.Email
+                @if (Model.Profile.EmailConfirmed)
+                {
+                    <span class="glyphicon glyphicon-ok text-success"></span>
+                }
+                else
+                {
+                    <button id="email-verification" type="submit" asp-page-handler="SendVerificationEmail" class="btn btn-link">@mLanguage.GetString("SendVerificationEmail")</button>
+                }
+            </div>
+        </div>
+        <div class="form-group">
+            <label class="control-label col-sm-3" for="new_email">@mLanguage.GetString("NewEmail"):</label>
+            <div class="col-sm-9">
+                <div class="youplay-input">
+                    <input asp-for="EmailInput.NewEmail" placeholder="@mLanguage.GetString("NewEmail")">
+                </div>
+            </div>
+        </div>
+        <div class="form-group">
+            <div class="col-sm-offset-3 col-sm-9">
+                <button type="submit" class="btn btn-default">@mLanguage.GetString("ChangeEmail")</button>
+            </div>
+        </div>
+    </div>
+</form>
+
+@if (Model.CurrentLogins?.Count > 0)
+{
+    <h4>@mLanguage.GetString("RegisteredLogins")</h4>
+    <table class="table">
+        <tbody>
+        @foreach (UserLoginInfo login in Model.CurrentLogins)
+        {
+            <tr>
+                <td id="@($"login-provider-{login.LoginProvider}")">@login.ProviderDisplayName</td>
+                <td>
+                    @if (Model.ShowRemoveButton)
+                    {
+                        <form id="@($"remove-login-{login.LoginProvider}")" asp-page-handler="RemoveLogin" method="post">
+                            <div>
+                                <input asp-for="@login.LoginProvider" name="LoginProvider" type="hidden"/>
+                                <input asp-for="@login.ProviderKey" name="ProviderKey" type="hidden"/>
+                                <button type="submit" class="btn btn-default" title="Remove this @login.LoginProvider login from your account">
+                                    @mLanguage.GetString("Remove")
+                                </button>
+                            </div>
+                        </form>
+                    }
+                    else
+                    {
+                        @: &nbsp;
+                    }
+                </td>
+            </tr>
+        }
+        </tbody>
+    </table>
+}
+@if (Model.OtherLogins?.Count > 0)
+{
+    <h4>@mLanguage.GetString("AddAnotherLoginService")</h4>
+    <hr/>
+    <form id="link-login-form" asp-page-handler="LinkLogin" method="post" class="form-horizontal">
+        <div id="socialLoginList">
+            <p>
+                @foreach (AuthenticationScheme provider in Model.OtherLogins)
+                {
+                    <button id="@($"link-login-button-{provider.Name}")" type="submit" class="btn btn-default" name="provider" value="@provider.Name" title="@mLanguage.GetString("Sigin3rdPartyAccount", provider.DisplayName)">@provider.DisplayName</button>
+                }
+            </p>
+        </div>
+    </form>
+}

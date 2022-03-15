@@ -1,0 +1,49 @@
+﻿@page "{UserName}"
+@using Comet.Web.Services
+@using System.Globalization
+@inject LanguageService mLanguage
+@model Comet.Web.Areas.Profile.Pages.IndexModel
+@{
+    ViewData["title"] = mLanguage.GetString("ProfileTitle", Model.Profile.UserName);
+}
+
+<div class="container youplay-content">
+    <div class="row">
+        <div class="col-md-9">
+            <h3 class="mt-0 mb-20">@Model.Profile.Name</h3>
+            <h3 class="mt-40 mb-20">@mLanguage.GetString("PersonalInformation")</h3>
+            <table class="table table-bordered" aria-hidden="true">
+                <tbody>
+                <tr>
+                    <td>@mLanguage.GetString("DateOfBirth")</td>
+                    <td>@Model.Profile.DateOfBirth?.ToString("d", new CultureInfo(mLanguage.CurrentLocale))</td>
+                </tr>
+                <tr>
+                    <td>@mLanguage.GetString("Gender")</td>
+                    <td>@Model.Profile.Gender</td>
+                </tr>
+                <tr>
+                    <td>@mLanguage.GetString("SocialName")</td>
+                    <td>@Model.Profile.SocialName</td>
+                </tr>
+                <tr>
+                    <td>@mLanguage.GetString("Pronoun")</td>
+                    <td>@Model.Profile.Pronoun</td>
+                </tr>
+
+                </tbody>
+            </table>
+        </div>
+        <!-- Right Side -->
+        <div class="col-md-3">
+            @if (!string.IsNullOrEmpty(Model.Profile.AboutMe))
+            {
+                <div class="side-block">
+                    <h4 class="block-title">@mLanguage.GetString("AboutMe")</h4>
+                    <div class="block-content"> @Model.Profile.AboutMe </div>
+                </div>
+            }
+        </div>
+        <!-- Right Side -->
+    </div>
+</div>

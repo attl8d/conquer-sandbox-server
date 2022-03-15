@@ -14,11 +14,11 @@ namespace Comet.Web.API
     [ApiController]
     public class DailyUpdateController : ControllerBase
     {
-        private readonly GameServerDataManager mDataManager;
+        private readonly GameServerDataService mDataService;
 
-        public DailyUpdateController(GameServerDataManager dataManager)
+        public DailyUpdateController(GameServerDataService dataService)
         {
-            mDataManager = dataManager;
+            mDataService = dataService;
         }
 
         /// <summary>
@@ -37,7 +37,7 @@ namespace Comet.Web.API
         [ProducesResponseType(StatusCodes.Status500InternalServerError)]
         public async Task<IActionResult> RefreshGameServerDataV1Async()
         {
-            await mDataManager.ExecuteMigrationAsync();
+            await mDataService.ExecuteMigrationAsync();
             return Ok("Executed");
         }
     }

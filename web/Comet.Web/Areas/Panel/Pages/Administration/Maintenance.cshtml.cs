@@ -72,6 +72,7 @@ namespace Comet.Web.Areas.Panel.Pages.Administration
             config.Data0 = Input.MaintenanceActive ? 1 : 0;
             config.Data1 = Input.StartDate.HasValue ? UnixTimestamp.Timestamp(Input.StartDate.Value) : 0;
             config.Data2 = Input.EndDate.HasValue ? UnixTimestamp.Timestamp(Input.EndDate.Value) : 0;
+            config.Text = Input.Message;
 
             if (!await mService.SaveAsync(config))
             {

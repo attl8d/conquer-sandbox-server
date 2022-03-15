@@ -1,4 +1,6 @@
 ﻿@page
+@inject LanguageService mLanguage
 @model Comet.Web.Areas.Panel.Pages.User.IndexModel
 @{
+    ViewData["Title"] = mLanguage.GetString("UserPanelIndex");
 }

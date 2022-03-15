@@ -294,6 +294,9 @@
   <data name="BugAbuse" xml:space="preserve">
     <value>Abuso de Bugs e Irregularidades</value>
   </data>
+  <data name="CannotCreateGameAccountUserBanned" xml:space="preserve">
+    <value>Você não pode criar uma nova conta pois seu usuário está banido.</value>
+  </data>
   <data name="Category" xml:space="preserve">
     <value>Categoria</value>
   </data>
@@ -1427,6 +1430,9 @@
   </data>
   <data name="UserPanelGameAccounts" xml:space="preserve">
     <value>Contas</value>
+  </data>
+  <data name="UserPanelIndex" xml:space="preserve">
+    <value>Painel do Usuário</value>
   </data>
   <data name="UserPanelPurchases" xml:space="preserve">
     <value>Minhas Compras</value>

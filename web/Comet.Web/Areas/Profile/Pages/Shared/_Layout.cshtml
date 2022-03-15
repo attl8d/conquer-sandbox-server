@@ -1,0 +1,40 @@
+﻿@using Comet.Web.Services
+@inject LanguageService Language
+@{
+    Layout = "/Pages/Shared/_Layout.cshtml";
+}
+
+@await Html.PartialAsync("_ProfileHeader")
+
+<div class="container youplay-content">
+    <div class="row">
+        <div class="col-md-9">
+            
+            @RenderBody()
+
+        </div>
+        <!-- Right Side -->
+        <div class="col-md-3">
+            @if (!string.IsNullOrEmpty(Model.Profile.AboutMe))
+            {
+                <div class="side-block">
+                    <h4 class="block-title">@Language.GetString("AboutMe")</h4>
+                    <div class="block-content"> @Model.Profile.AboutMe </div>
+                </div>
+            }
+        </div>
+        <!-- Right Side -->
+    </div>
+</div>
+
+@section Styles {
+    @await RenderSectionAsync("Styles", false)
+}
+
+@section Scripts {
+    @await RenderSectionAsync("Scripts", false)
+}
+
+@section SEO {
+    @await RenderSectionAsync("SEO", false)
+}

@@ -5,7 +5,7 @@
 		<Nullable>disable</Nullable>
 		<ImplicitUsings>false</ImplicitUsings>
 		<UserSecretsId>26f1c52f-5146-432f-964f-d9a79e716fe7</UserSecretsId>
-		<Version>3.0.2</Version>
+		<Version>3.0.3</Version>
 		<NoWarn>$(NoWarn);1591</NoWarn>
 		<GenerateDocumentationFile>true</GenerateDocumentationFile>
 		<SonarQubeExclude>true</SonarQubeExclude>
@@ -40,10 +40,6 @@
 
 	<ItemGroup>
 		<ProjectReference Include="..\..\src\Comet.Database\Comet.Database.csproj" />
-	</ItemGroup>
-
-	<ItemGroup>
-		<Folder Include="Areas\Profile\Pages\" />
 	</ItemGroup>
 
 </Project>

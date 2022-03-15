@@ -7,18 +7,19 @@ using System.Threading.Tasks;
 using Comet.Web.Data;
 using Comet.Web.Data.Entities;
 using Comet.Web.Services.Realms;
+using Microsoft.EntityFrameworkCore;
 using static Comet.Web.Data.Entities.LogHistory;
 
 namespace Comet.Web.Services
 {
-    public sealed class GameServerDataManager
+    public sealed class GameServerDataService
     {
         private readonly ApplicationDbContext mContext;
-        private readonly LogService<GameServerDataManager> mLog;
+        private readonly LogService<GameServerDataService> mLog;
         private readonly RealmService mRealmService;
 
-        public GameServerDataManager(RealmService realmService, ApplicationDbContext ctx,
-                                     LogService<GameServerDataManager> log)
+        public GameServerDataService(RealmService realmService, ApplicationDbContext ctx,
+                                     LogService<GameServerDataService> log)
         {
             mRealmService = realmService;
             mContext = ctx;
@@ -100,8 +101,7 @@ namespace Comet.Web.Services
                 foreach (DataRow row in data.Rows)
                 {
                     uint idUser = uint.Parse(row["Identity"].ToString());
-                    RecordUser user =
-                        mContext.RecordUsers.FirstOrDefault(x => x.ServerIdentity == realm.RealmID && x.Id == idUser);
+                    RecordUser user = await mContext.RecordUsers.FirstOrDefaultAsync(x => x.ServerIdentity == realm.RealmID && x.UserIdentity == idUser);
 
                     if (user == null)
                         user = new RecordUser
@@ -148,6 +148,8 @@ namespace Comet.Web.Services
                     user.WhiteRose = uint.Parse(row["WhiteRose"].ToString());
                     user.Orchid = uint.Parse(row["Orchid"].ToString());
                     user.Tulip = uint.Parse(row["Tulip"].ToString());
+
+                    saveOrUpdateUser.Add(user);
                 }
 
                 await mContext.SaveAsync(saveOrUpdateUser);

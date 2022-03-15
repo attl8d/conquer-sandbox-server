@@ -1,0 +1,38 @@
+﻿@page
+@using Comet.Web.Services
+@inject LanguageService Language;
+@model Comet.Web.Areas.Panel.Pages.Administration.RealmsModel
+@{
+    ViewData["Title"] = Language.GetString("RealmManagement");
+}
+
+<a class="btn btn-link" asp-area="Panel" asp-page="/Administration/Realm" asp-route-RealmID="0">
+    <i aria-hidden="true" class="fa fa-plus"></i> @Language.GetString("NewRealm")
+</a>
+<div class="mt-10 table-responsive">
+    <table id="tblBansManagement" class="table table-bordered table-striped">
+        <thead>
+        <tr>
+            <td>@Language.GetString("RealmID")</td>
+            <td>@Language.GetString("RealmName")</td>
+            <td>@Language.GetString("RealmStatus")</td>
+            <td></td>
+        </tr>
+        </thead>
+        <tbody>
+        @foreach (var realm in Model.Realms)
+        {
+            <tr>
+                <td>@realm.RealmID</td>
+                <td>@realm.RealmName</td>
+                <td>@realm.RealmStatus</td>
+                <td>
+                    <a asp-area="Panel" asp-page="/Administration/Realm" asp-route-RealmID="@realm.RealmID">
+                        <i aria-hidden="true" class="fa fa-search"></i>
+                    </a>
+                </td>
+            </tr>
+        }
+        </tbody>
+    </table>
+</div>

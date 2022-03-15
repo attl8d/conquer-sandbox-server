@@ -170,6 +170,7 @@ app.UseCometLocalization();
 app.UseCometSession();
 app.UseMaintenanceMiddleware();
 app.UseBanMiddleware();
+app.UseProfileMiddleware();
 
 app.UseRequestLocalization(opt =>
 {

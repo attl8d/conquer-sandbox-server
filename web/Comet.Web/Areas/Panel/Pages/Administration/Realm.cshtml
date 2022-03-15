@@ -1,0 +1,134 @@
+﻿@page
+@using Comet.Web.Services
+@inject LanguageService mLanguage
+@model Comet.Web.Areas.Panel.Pages.Administration.RealmModel
+@{
+    ViewData["Title"] = mLanguage.GetString("RealmDataTitle", Model.Realm.RealmName);
+}
+
+<a class="btn btn-sm btn-primary" asp-area="Panel" asp-page="/Admin/Realms">@mLanguage.GetString("GoBack")</a>
+<div class="row">
+    <form method="post">
+        <div class="form-horizontal mt-30 mb-40">
+            <div asp-validation-summary="All" class="text-danger"></div>
+            <div class="form-group">
+                <label class="control-label col-sm-4">#</label>
+                <div class="col-sm-8">
+                    <div class="youplay-input">
+                        <input type="number" value="@Model.Input.RealmID" readonly>
+                    </div>
+                </div>
+            </div>
+
+             <div class="form-group">
+                <label class="control-label col-sm-4">@mLanguage.GetString("RealmName")</label>
+                <div class="col-sm-8">
+                    <div class="youplay-input">
+                        <input asp-for="Input.RealmName">
+                    </div>
+                </div>
+            </div>
+
+            <div class="form-group">
+                <label class="control-label col-sm-4">@mLanguage.GetString("RealmUsername")</label>
+                <div class="col-sm-8">
+                    <div class="youplay-input">
+                        <input asp-for="Input.Username">
+                    </div>
+                </div>
+            </div>
+
+            <div class="form-group">
+                <label class="control-label col-sm-4">@mLanguage.GetString("RealmPassword")</label>
+                <div class="col-sm-8">
+                    <div class="youplay-input">
+                        <input asp-for="Input.Password">
+                    </div>
+                </div>
+            </div>
+
+            <div class="form-group">
+                <label class="control-label col-sm-4">@mLanguage.GetString("GameIpAddress")</label>
+                <div class="col-sm-8">
+                    <div class="youplay-input">
+                        <input asp-for="Input.GameIPAddress">
+                    </div>
+                </div>
+            </div>
+
+            <div class="form-group">
+                <label class="control-label col-sm-4">@mLanguage.GetString("GameIpPort")</label>
+                <div class="col-sm-8">
+                    <div class="youplay-input">
+                        <input asp-for="Input.GamePort">
+                    </div>
+                </div>
+            </div>
+
+            <div class="form-group">
+                <label class="control-label col-sm-4">@mLanguage.GetString("RpcIpAddress")</label>
+                <div class="col-sm-8">
+                    <div class="youplay-input">
+                        <input asp-for="Input.RpcIPAddress">
+                    </div>
+                </div>
+            </div>
+
+            <div class="form-group">
+                <label class="control-label col-sm-4">@mLanguage.GetString("RpcPort")</label>
+                <div class="col-sm-8">
+                    <div class="youplay-input">
+                        <input asp-for="Input.RpcPort">
+                    </div>
+                </div>
+            </div>
+
+            <div class="form-group">
+                <label class="control-label col-sm-4">@mLanguage.GetString("DatabaseHostname")</label>
+                <div class="col-sm-8">
+                    <div class="youplay-input">
+                        <input asp-for="Input.DatabaseHost">
+                    </div>
+                </div>
+            </div>
+
+            <div class="form-group">
+                <label class="control-label col-sm-4">@mLanguage.GetString("DatabaseUsername")</label>
+                <div class="col-sm-8">
+                    <div class="youplay-input">
+                        <input asp-for="Input.DatabaseUser">
+                    </div>
+                </div>
+            </div>
+
+            <div class="form-group">
+                <label class="control-label col-sm-4">@mLanguage.GetString("DatabasePassword")</label>
+                <div class="col-sm-8">
+                    <div class="youplay-input">
+                        <input asp-for="Input.DatabasePass">
+                    </div>
+                </div>
+            </div>
+
+            <div class="form-group">
+                <label class="control-label col-sm-4">@mLanguage.GetString("DatabaseSchema")</label>
+                <div class="col-sm-8">
+                    <div class="youplay-input">
+                        <input asp-for="Input.DatabaseSchema">
+                    </div>
+                </div>
+            </div>
+
+            <div class="form-group">
+                <label class="control-label col-sm-4">@mLanguage.GetString("DatabasePort")</label>
+                <div class="col-sm-8">
+                    <div class="youplay-input">
+                        <input asp-for="Input.DatabasePort">
+                    </div>
+                </div>
+            </div>
+
+            <button class="btn btn-success" type="submit">@Html.Raw(mLanguage.GetString(Model.RealmID == 0 ? "Create" : "Save"))</button>
+        </div>
+    </form>
+</div>

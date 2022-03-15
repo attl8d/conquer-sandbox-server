@@ -6,7 +6,6 @@ namespace Comet.Web.Areas.Profile.Models
     {
         public string BackgroundImage = "~/assets/images/parallax/trojan1_1920x1200.jpg";
         public string ProfileImage = "~/assets/images/avatar.png";
-        public string CurrentPage { get; set; } // for pagination
 
         public int Id { get; set; }
 

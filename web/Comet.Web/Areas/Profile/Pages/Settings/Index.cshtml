@@ -1,0 +1,93 @@
+﻿@page
+@using System.Security.Claims
+@inject LanguageService mLanguage
+@model Comet.Web.Areas.Profile.Pages.Settings.IndexModel
+@{
+    ViewData["title"] = mLanguage.GetString("ProfileSettings");
+    Layout = "../Shared/_Layout";
+}
+
+@await Html.PartialAsync("Shared/_Menu", "PROFILE")
+
+<h3>@mLanguage.GetString("Profile")</h3>
+<p>@mLanguage.GetString("ProfileDisclaimer")</p>
+<form method="post">
+    <div class="form-horizontal mt-30 mb-40">
+        <div class="form-group">
+            <label class="control-label col-sm-3">@mLanguage.GetString("UserName"):</label>
+            <div class="col-sm-9">
+                @Model.User.FindFirst(ClaimTypes.Name)?.Value
+            </div>
+        </div>
+
+        <div class="form-group">
+            <label class="control-label col-sm-3">@mLanguage.GetString("Email"):</label>
+            <div class="col-sm-9">
+                @Model.User.FindFirst(ClaimTypes.Email)?.Value
+                <a class="btn btn-sm btn-success" asp-area="Profile" asp-page="/Settings/Security">@mLanguage.GetString("ChangeEmail")</a>
+            </div>
+        </div>
+
+        <div class="form-group">
+            <label class="control-label col-sm-3">@mLanguage.GetString("Password"):</label>
+            <div class="col-sm-9">
+                ******
+                <a class="btn btn-sm btn-success" asp-area="Profile" asp-page="/Settings/Security">@mLanguage.GetString("ChangePassword")</a>
+            </div>
+        </div>
+
+        <div class="form-group">
+            <label class="control-label col-sm-3">@mLanguage.GetString("AccountType"):</label>
+            <div class="col-sm-9">
+                @mLanguage.GetString(User.FindFirst(ClaimTypes.Role)?.Value)
+            </div>
+        </div>
+
+        <div class="form-group">
+            <label class="control-label col-sm-3">@mLanguage.GetString("BirthDate"):</label>
+            <div class="col-sm-9">
+                <div class="youplay-input">
+                    <input asp-for="Input.DateOfBirth" />
+                </div>
+            </div>
+        </div>
+
+        <div class="form-group">
+            <label class="control-label col-sm-3">@mLanguage.GetString("Gender"):</label>
+            <div class="col-sm-9">
+                <div class="youplay-select">
+                    <select asp-for="Input.Gender">
+                        <option value=""></option>
+                        <option value="M">Masculino</option>
+                        <option value="F">Feminino</option>
+                        <option value="O">Outro</option>
+                    </select>
+                </div>
+            </div>
+        </div>
+
+        <div class="form-group">
+            <label class="control-label col-sm-3">@mLanguage.GetString("Pronoun"):</label>
+            <div class="col-sm-9">
+                <div class="youplay-input">
+                    <input asp-for="Input.Pronoun" class="youplay-input" />
+                </div>
+            </div>
+        </div>
+
+        <div class="form-group">
+            <label class="control-label col-sm-3">@mLanguage.GetString("Location"):</label>
+            <div class="col-sm-9">
+                <div class="youplay-input">
+                    <input asp-for="Input.Locality" class="youplay-input" />
+                </div>
+            </div>
+        </div>
+
+        <div class="form-group">
+            <div class="col-sm-offset-3 col-sm-9">
+                <button type="submit" class="btn btn-default">@mLanguage.GetString("SaveSettings")</button>
+            </div>
+        </div>
+    </div>
+</form>

@@ -984,6 +984,9 @@
   <data name="PrivateMessage" xml:space="preserve">
     <value>&lt;i class="fa fa-envelope"&gt;&lt;/i&gt; Enviar Mensagem</value>
   </data>
+  <data name="ProArcher" xml:space="preserve">
+    <value>Archer</value>
+  </data>
   <data name="Products" xml:space="preserve">
     <value>Produtos</value>
   </data>
@@ -1272,6 +1275,141 @@
   <data name="StartDate" xml:space="preserve">
     <value>Início</value>
   </data>
+  <data name="ProArcherMaster" xml:space="preserve">
+    <value>Archer Master</value>
+  </data>
+  <data name="ProBrassWarrior" xml:space="preserve">
+    <value>Brass Warrior</value>
+  </data>
+  <data name="ProCaptainPirate" xml:space="preserve">
+    <value>Captain Pirate</value>
+  </data>
+  <data name="ProDarkNinja" xml:space="preserve">
+    <value>Dark Ninja</value>
+  </data>
+  <data name="ProDharmaMonk" xml:space="preserve">
+    <value>Dharma Monk</value>
+  </data>
+  <data name="ProDhyanaMonk" xml:space="preserve">
+    <value>Dhyana Monk</value>
+  </data>
+  <data name="ProDragonArcher" xml:space="preserve">
+    <value>Dragon Archer</value>
+  </data>
+  <data name="ProDragonTrojan" xml:space="preserve">
+    <value>Dragon Trojan</value>
+  </data>
+  <data name="ProEagleArcher" xml:space="preserve">
+    <value>Eagle Archer</value>
+  </data>
+  <data name="ProFireMaster" xml:space="preserve">
+    <value>Fire Master</value>
+  </data>
+  <data name="ProFireSaint" xml:space="preserve">
+    <value>Fire Saint</value>
+  </data>
+  <data name="ProFireTaoist" xml:space="preserve">
+    <value>Fire Taoist</value>
+  </data>
+  <data name="ProFireWizard" xml:space="preserve">
+    <value>Fire Wizard</value>
+  </data>
+  <data name="ProGoldWarrior" xml:space="preserve">
+    <value>Gold Warrior</value>
+  </data>
+  <data name="ProGunnerPirate" xml:space="preserve">
+    <value>Gunner Pirate</value>
+  </data>
+  <data name="ProInternArcher" xml:space="preserve">
+    <value>Intern Archer</value>
+  </data>
+  <data name="ProInternMonk" xml:space="preserve">
+    <value>Intern Monk</value>
+  </data>
+  <data name="ProInternNinja" xml:space="preserve">
+    <value>Intern Ninja</value>
+  </data>
+  <data name="ProInternPirate" xml:space="preserve">
+    <value>Intern Pirate</value>
+  </data>
+  <data name="ProInternTaoist" xml:space="preserve">
+    <value>Intern Taoist</value>
+  </data>
+  <data name="ProInternTrojan" xml:space="preserve">
+    <value>Intern Trojan</value>
+  </data>
+  <data name="ProInternWarrior" xml:space="preserve">
+    <value>Intern Warrior</value>
+  </data>
+  <data name="ProLordPirate" xml:space="preserve">
+    <value>Lord Pirate</value>
+  </data>
+  <data name="ProMiddleNinja" xml:space="preserve">
+    <value>Middle Ninja</value>
+  </data>
+  <data name="ProMonk" xml:space="preserve">
+    <value>Monk</value>
+  </data>
+  <data name="ProMysticNinja" xml:space="preserve">
+    <value>Mystic Ninja</value>
+  </data>
+  <data name="ProNinja" xml:space="preserve">
+    <value>Ninja</value>
+  </data>
+  <data name="ProNinjaMaster" xml:space="preserve">
+    <value>Ninja Master</value>
+  </data>
+  <data name="ProNirvanaMonk" xml:space="preserve">
+    <value>Nirvana Monk</value>
+  </data>
+  <data name="ProPirate" xml:space="preserve">
+    <value>Pirate</value>
+  </data>
+  <data name="ProPrajnaMonk" xml:space="preserve">
+    <value>Prajna Monk</value>
+  </data>
+  <data name="ProQuarterPirate" xml:space="preserve">
+    <value>Quarter Pirate</value>
+  </data>
+  <data name="ProSilverWarrior" xml:space="preserve">
+    <value>Silver Warrior</value>
+  </data>
+  <data name="ProTaoist" xml:space="preserve">
+    <value>Taoist</value>
+  </data>
+  <data name="ProTigerArcher" xml:space="preserve">
+    <value>Tiger Archer</value>
+  </data>
+  <data name="ProTigerTrojan" xml:space="preserve">
+    <value>Tiger Trojan</value>
+  </data>
+  <data name="ProTrojan" xml:space="preserve">
+    <value>Trojan</value>
+  </data>
+  <data name="ProTrojanMaster" xml:space="preserve">
+    <value>Trojan Master</value>
+  </data>
+  <data name="ProVeteranTrojan" xml:space="preserve">
+    <value>Veteran Trojan</value>
+  </data>
+  <data name="ProWarrior" xml:space="preserve">
+    <value>Warrior</value>
+  </data>
+  <data name="ProWarriorMaster" xml:space="preserve">
+    <value>Warrior Master</value>
+  </data>
+  <data name="ProWaterMaster" xml:space="preserve">
+    <value>Water Master</value>
+  </data>
+  <data name="ProWaterSaint" xml:space="preserve">
+    <value>Water Saint</value>
+  </data>
+  <data name="ProWaterTaoist" xml:space="preserve">
+    <value>Water Taoist</value>
+  </data>
+  <data name="ProWaterWizard" xml:space="preserve">
+    <value>Water Wizard</value>
+  </data>
   <data name="StudiedAt" xml:space="preserve">
     <value>Estudou em</value>
   </data>
@@ -1478,5 +1616,17 @@
   </data>
   <data name="Yesterday" xml:space="preserve">
     <value>Ontem</value>
+  </data>
+  <data name="TopFamily" xml:space="preserve">
+    <value>Maiores Famílias</value>
+  </data>
+  <data name="FamilyCount" xml:space="preserve">
+    <value>Membros</value>
+  </data>
+  <data name="LeaderName" xml:space="preserve">
+    <value>Líder</value>
+  </data>
+  <data name="Money" xml:space="preserve">
+    <value>Dinheiro</value>
   </data>
 </root>

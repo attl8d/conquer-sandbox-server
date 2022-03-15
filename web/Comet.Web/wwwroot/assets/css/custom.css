@@ -35,63 +35,71 @@
 .rank-1 {
     margin: 0 auto;
     display: block;
-    width: 32px;
-    height: 32px;
+    width: 24px;
+    height: 24px;
     background: url('/assets/images/ranking/rank-1.png') no-repeat;
+    background-size: contain;
 }
 
 .rank-2 {
     margin: 0 auto;
     display: block;
-    width: 32px;
-    height: 32px;
+    width: 24px;
+    height: 24px;
     background: url('/assets/images/ranking/rank-2.png');
+    background-size: contain;
 }
 
 .rank-3 {
     margin: 0 auto;
     display: block;
-    width: 32px;
-    height: 32px;
+    width: 24px;
+    height: 24px;
     background: url('/assets/images/ranking/rank-3.png');
+    background-size: contain;
 }
 
 .rank-4 {
     margin: 0 auto;
     display: block;
-    width: 32px;
-    height: 32px;
+    width: 24px;
+    height: 24px;
     background: url('/assets/images/ranking/rank-4.png');
+    background-size: contain;
 }
 
 .rank-5 {
     margin: 0 auto;
     display: block;
-    width: 32px;
-    height: 32px;
+    width: 24px;
+    height: 24px;
     background: url('/assets/images/ranking/rank-5.png');
+    background-size: contain;
 }
 
 .rank-6 {
     margin: 0 auto;
     display: block;
-    width: 32px;
-    height: 32px;
+    width: 24px;
+    height: 24px;
     background: url('/assets/images/ranking/rank-6.png');
+    background-size: contain;
 }
 
 .rank-7 {
     margin: 0 auto;
     display: block;
-    width: 32px;
-    height: 32px;
+    width: 24px;
+    height: 24px;
     background: url('/assets/images/ranking/rank-7.png');
+    background-size: contain;
 }
 
 .rank-8 {
     margin: 0 auto;
     display: block;
-    width: 32px;
-    height: 32px;
+    width: 24px;
+    height: 24px;
     background: url('/assets/images/ranking/rank-8.png');
+    background-size: contain;
 }

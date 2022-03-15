@@ -119,9 +119,15 @@ namespace Comet.Web.Areas.Ranking.Pages
 
             if (DataTable.Columns.Contains("Profession"))
             {
+                DataTable temp = DataTable.Clone();
+                temp.Columns["Profession"].DataType = typeof(string);
+
+                for (int row = 0; row < DataTable.Rows.Count; row++) temp.ImportRow(DataTable.Rows[row]);
+
+                DataTable = temp;
                 foreach (DataRow row in DataTable.Rows)
                 {
-                    row["Profession"] = mLanguageService.GetString($"StrPro{(ProfessionType)int.Parse(row["Profession"].ToString() ?? "0")}");
+                    row["Profession"] = mLanguageService.GetString($"Pro{(ProfessionType)int.Parse(row["Profession"]?.ToString() ?? "0")}");
                 }
             }
 

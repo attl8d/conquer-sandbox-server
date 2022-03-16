@@ -38,6 +38,12 @@ namespace Comet.Game.Packets
                     if (user.FamilyPosition != Family.FamilyRank.ClanLeader)
                         return;
 
+                    if ((DateTime.Now - user.Family.CreationDate).TotalDays < 1)
+                    {
+                        // not enough time
+                        return;
+                    }
+
                     var npc = RoleManager.FindRole<DynamicNpc>(x => x.Identity == Identity);
                     if (npc == null)
                         return;

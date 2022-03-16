@@ -85,11 +85,11 @@ namespace Comet.Game.States.Families
         #region Properties
 
         public uint Identity => m_attr.UserIdentity;
-        public string Name { get; private set; }
+        public string Name { get; private init; }
         public byte Level { get; set; }
-        public uint MateIdentity { get; private set; }
-        public uint LookFace { get; private set; }
-        public ushort Profession { get; private set; }
+        public uint MateIdentity { get; private init; }
+        public uint LookFace { get; private init; }
+        public ushort Profession { get; private init; }
 
         public Family.FamilyRank Rank
         {

@@ -295,9 +295,9 @@ namespace Comet.Game.States.Events
 
             uint nowTime = uint.Parse(now.ToString("HHmmss"));
             uint lastTime = uint.Parse(now.ToString("HHmmss"));
-            if (lastTime >= 210000 && lastTime <= 235959)
+            if (lastTime is >= 210000 and <= 235959)
             {
-                if (nowTime >= 210000 && nowTime <= 235959 && now.DayOfYear != time.DayOfYear)
+                if (nowTime is >= 210000 and <= 235959 && now.DayOfYear != time.DayOfYear)
                     return true;
 
                 if (nowTime < 203000)
@@ -323,6 +323,11 @@ namespace Comet.Game.States.Events
 
             if (user?.Family == null)
                 return false;
+
+            //int daysSinceCreation = (int) (DateTime.Now - user.Family.CreationDate).TotalDays;
+            //int daysSinceJoin = (int)(DateTime.Now - user.FamilyMember.JoinDate).TotalDays;
+            //if (daysSinceCreation > 0 && daysSinceJoin < 1)
+            //    return false;
 
             DynamicNpc npc = GetDominatingNpc(user.Family);
             if (npc == null)

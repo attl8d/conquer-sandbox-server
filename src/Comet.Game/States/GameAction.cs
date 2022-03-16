@@ -6666,80 +6666,8 @@ namespace Comet.Game.States
             var war = EventManager.GetEvent<FamilyWar>();
             if (war == null)
                 return false;
-            if (!war.IsInTime)
-                return false;
 
-            GameMap map = MapManager.GetMap((uint) npc.Data1);
-            if (map == null)
-                return false;
-
-            var families = new Dictionary<uint, Family>();
-            foreach (Character player in map.QueryPlayers(x =>
-                                                              x.FamilyIdentity != 0 &&
-                                                              (x.Family.FamilyMap == map.Identity ||
-                                                               x.Family.ChallengeMap == map.Identity) && x.IsAlive))
-                if (!families.ContainsKey(player.FamilyIdentity))
-                    families.Add(player.FamilyIdentity, player.Family);
-
-            if (families.Count == 1)
-            {
-                Family winner = families.Values.ToList()[0];
-                if (winner.ChallengeMap != npc.Data1 || winner.FamilyMap != npc.Data1)
-                {
-                    // this map is now transfered
-                    // the clan will lose the old one
-                    Family old = FamilyManager.GetOccupyOwner((uint) npc.Data1);
-                    if (old != null)
-                    {
-                        old.FamilyMap = 0;
-                        old.OccupyDate = 0;
-                        await old.SaveAsync();
-                    }
-
-                    winner.FamilyMap = map.Identity;
-                    if (winner.OccupyDate == 0)
-                        winner.OccupyDate = uint.Parse(DateTime.Now.ToString("yyyyMMdd"));
-                    await winner.SaveAsync();
-                }
-            }
-            else if (families.Count > 1)
-            {
-                uint currentTime = uint.Parse(DateTime.Now.ToString("HHmmss"));
-                if (currentTime < 204500 || currentTime > 205459)
-                    return false;
-
-                Family current = FamilyManager.GetOccupyOwner((uint) npc.Data1);
-                if (families.All(x => x.Key != current?.Identity))
-                {
-                    Character higherBpPlayer = map.QueryPlayers(x =>
-                                                                    x.FamilyIdentity != 0 &&
-                                                                    (x.Family.FamilyMap == map.Identity ||
-                                                                     x.Family.ChallengeMap == map.Identity) &&
-                                                                    x.IsAlive)
-                                                  .OrderByDescending(x => x.BattlePower)
-                                                  .FirstOrDefault();
-
-                    if (higherBpPlayer == null)
-                        return true; // wont be null, but doesnt hurt to check
-
-                    if (current != null)
-                    {
-                        current.FamilyMap = 0;
-                        current.OccupyDate = 0;
-                        await current.SaveAsync();
-                    }
-
-                    higherBpPlayer.Family.FamilyMap = map.Identity;
-                    higherBpPlayer.Family.OccupyDate = uint.Parse(DateTime.Now.ToString("yyyyMMdd"));
-                    await higherBpPlayer.Family.SaveAsync();
-                } // return true even if false because the winner is the clan whose is already dominating. wont change
-            }
-            else
-            {
-                return false;
-            }
-
-            return true;
+            return await war.ValidateResultAsync(user, npc.Identity);
         }
 
         private static async Task<bool> ExecuteActionFamilyWarAuthorityCheckAsync(

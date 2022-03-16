@@ -100,7 +100,7 @@ namespace Comet.Game.Packets
 
                     if (owner?.Identity == user.FamilyIdentity)
                     {
-                        WarRunning = war.IsInTime;
+                        WarRunning = war.IsAllowedToJoin(user);
                         SubAction = user.Identity == owner.LeaderIdentity ? 1u : 2u;
 
                         CanClaimRevenue = owner.LeaderIdentity == user.Identity && war.HasRewardToClaim(user);
@@ -110,7 +110,7 @@ namespace Comet.Game.Packets
                     }
                     else
                     {
-                        WarRunning = war.IsInTime && user.Family != null && user.Family.ChallengeMap == npc?.Data1;
+                        WarRunning = war.IsAllowedToJoin(user) && user.Family != null && user.Family.ChallengeMap == npc?.Data1;
                         CanRemoveChallenge = npc?.Data1 == user.Family?.ChallengeMap && !WarRunning;
                         if (CanRemoveChallenge)
                         {

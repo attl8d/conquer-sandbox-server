@@ -256,7 +256,8 @@ namespace Comet.Game.Packets
                     for (var pos = Item.ItemPosition.EquipmentBegin;
                          pos <= Item.ItemPosition.EquipmentEnd;
                          pos++)
-                        if (user.UserPackage[pos] != null)
+                        if (user.UserPackage[pos] != null 
+                            && user.UserPackage.TryItem(user.UserPackage[pos], pos))
                             await user.UserPackage[pos].RepairItemAsync();
 
                     break;

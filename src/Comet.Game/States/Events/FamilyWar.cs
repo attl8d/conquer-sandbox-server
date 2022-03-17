@@ -59,7 +59,7 @@ namespace Comet.Game.States.Events
         private int mLastUpdate;
         private FamilyWarStage mStage = FamilyWarStage.Idle;
 
-        private const string OriginMap = "data0";
+        private const string OwnerCity = "data0";
         private const string ChallengeMap = "data1";
         private const string TemporaryWinner = "data2";
         private const string PrizePool = "data3";

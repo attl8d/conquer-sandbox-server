@@ -342,6 +342,8 @@ namespace Comet.Game.States
 
             await DetachStatusAsync(StatusSet.LUCKY_DIFFUSE);
             await DetachStatusAsync(StatusSet.LUCKY_ABSORB);
+
+            await DetachStatusAsync(StatusSet.RIDING);
         }
 
         #endregion
@@ -621,7 +623,7 @@ namespace Comet.Game.States
                 case StatusSet.FATAL_STRIKE:
                 case StatusSet.AZURE_SHIELD:
                 case StatusSet.SUPER_SHIELD_HALO:
-                case StatusSet.CARYING_FLAG:
+                case StatusSet.CARRYING_FLAG:
                 case StatusSet.EARTH_AURA:
                 case StatusSet.FEND_AURA:
                 case StatusSet.FIRE_AURA:

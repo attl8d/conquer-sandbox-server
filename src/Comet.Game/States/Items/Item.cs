@@ -430,7 +430,7 @@ namespace Comet.Game.States.Items
         {
             get
             {
-                ushort result = OriginalMaximumDurability;
+                ushort result = mDbItem.AmountLimit;
                 switch (SocketOne)
                 {
                     case SocketGem.NormalKylinGem:
@@ -1372,7 +1372,7 @@ namespace Comet.Game.States.Items
         {
             if (!GetUpLevelChance(out double nChance, out _))
                 return 0;
-            return (uint) (100 / nChance + 1) * 12 / 10;
+            return (uint) Math.Max(3, (100 / nChance + 1) * 12 / 10);
         }
 
         public async Task<bool> DegradeItemAsync(bool bCheckDura = true)
@@ -1507,6 +1507,7 @@ namespace Comet.Game.States.Items
                 return false;
             }
 
+            Durability = MaximumDurability;
             return await ChangeTypeAsync(newType.Type);
         }
 

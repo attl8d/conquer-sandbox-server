@@ -408,8 +408,8 @@ namespace Comet.Game.States.Items
             if (m_user.Team != null)
                 await m_user.Team.SyncFamilyBattlePowerAsync();
 
-            //if (m_user.ApprenticeCount > 0)
-            //    await m_user.SynchroApprenticesSharedBattlePowerAsync();
+            if (m_user.ApprenticeCount > 0)
+                await m_user.SynchroApprenticesSharedBattlePowerAsync();
 
             return true;
         }
@@ -420,6 +420,11 @@ namespace Comet.Game.States.Items
             if (item == null)
                 return false;
 
+            return TryItem(item, position);
+        }
+
+        public bool TryItem(Item item, Item.ItemPosition position)
+        {
             if (item.IsSuspicious())
                 return false;
 
@@ -435,7 +440,7 @@ namespace Comet.Game.States.Items
             if (item.Durability == 0 && !item.IsExpend())
                 return false;
 
-            if (m_user.Metempsychosis > 0 && m_user.Level >= 70)
+            if (item.RequiredLevel <= 70 && m_user.Metempsychosis > 0 && m_user.Level >= 70)
                 return true;
 
             if (item.RequiredProfession > 0)
@@ -467,7 +472,7 @@ namespace Comet.Game.States.Items
                 return false;
 
             if (item.RequiredWeaponSkill > 0 &&
-                m_user.WeaponSkill[(ushort) item.GetItemtype()]?.Level < item.RequiredWeaponSkill)
+                m_user.WeaponSkill[(ushort)item.GetItemtype()]?.Level < item.RequiredWeaponSkill)
                 return false;
 
             return true;

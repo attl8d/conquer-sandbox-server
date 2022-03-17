@@ -5,6 +5,7 @@ using System.Drawing;
 using System.Linq;
 using System.Threading.Tasks;
 using Comet.Core;
+using Comet.Core.World.Maps;
 using Comet.Core.World.Maps.Enums;
 using Comet.Database.Entities;
 using Comet.Game.Database;
@@ -1231,6 +1232,7 @@ namespace Comet.Game.States
         {
             BattleSystem.ResetBattle();
             await MagicData.AbortMagicAsync(false);
+            await KillCallPetAsync();
             StopMining();
 
             if (Map != null)
@@ -1331,6 +1333,31 @@ namespace Comet.Game.States
                 return false;
             }
 
+            if (!newMap.IsStandEnable(x, y))
+            {
+                bool succ = false;
+                for (int i = 0; i < 8; i++)
+                {
+                    int testX = x + GameMapData.WalkXCoords[i];
+                    int testY = y + GameMapData.WalkYCoords[i];
+
+                    if (newMap.IsStandEnable(testX, testY))
+                    {
+                        x = testX;
+                        y = testY;
+                        succ = true;
+                        break;
+                    }
+                }
+
+                if (!succ)
+                {
+                    newMap = MapManager.GetMap(1002);
+                    x = 430;
+                    y = 378;
+                }
+            }
+
             try
             {
                 await LeaveMapAsync();
@@ -1364,7 +1391,6 @@ namespace Comet.Game.States
             {
                 await Log.WriteLogAsync(LogLevel.Error, "FlyMap error");
             }
-
             return true;
         }
 
@@ -5322,7 +5348,8 @@ namespace Comet.Game.States
                             return true;
                         if (Map?.IsFamilyMap() == true)
                         {
-                            if (Family.GetMember(user.Identity) != null)
+                            if (Family.GetMember(user.Identity) != null
+                                || user.Family?.IsAlly(FamilyIdentity) == true)
                                 return true;
                         }
                         else
@@ -5527,6 +5554,8 @@ namespace Comet.Game.States
 
             m_ghost.Startup(4);
 
+            await KillCallPetAsync();
+
             if (CurrentEvent is ArenaQualifier qualifier)
             {
                 ArenaQualifier.QualifierMatch match = qualifier.FindMatchByMap(MapIdentity);
@@ -5593,8 +5622,6 @@ namespace Comet.Game.States
 
                 if (attacker.Identity != Identity && attacker is Character atkrUser)
                 {
-                    await CreateEnemyAsync(atkrUser);
-
                     if (QueryStatus(StatusSet.CRIME) == null)
                         await CreateEnemyAsync(atkrUser);
 
@@ -5865,6 +5892,51 @@ namespace Comet.Game.States
 
         #endregion
 
+        #region Call Pet
+
+        private TimeOut mCallPetKeepSecs = new();
+        private Monster mCallPet;
+
+        public async Task<bool> CallPetAsync(uint type, ushort x, ushort y, int keepSecs = 0)
+        {
+            await KillCallPetAsync();
+
+            Monster pet = await Monster.CreateCallPetAsync(this, type, x, y);
+            if (pet == null)
+                return false;
+
+            mCallPet = pet;
+
+            if (keepSecs > 0)
+            {
+                mCallPetKeepSecs.Startup(keepSecs);
+            }
+            else
+            {
+                mCallPetKeepSecs.Clear();
+            }
+            return true;
+        }
+
+        public async Task KillCallPetAsync(bool now = false)
+        {
+            if (mCallPet == null)
+                return;
+
+            if (!mCallPet.IsDeleted())
+            {
+                await mCallPet.DelMonsterAsync(now);
+                mCallPet = null;
+            }
+        }
+
+        public Role GetCallPet()
+        {
+            return mCallPet;
+        }
+
+        #endregion
+
         #region On Timer
 
         public override async Task OnTimerAsync()
@@ -6064,6 +6136,17 @@ namespace Comet.Game.States
             catch (Exception ex)
             {
                 await Log.WriteLogAsync($"Character::OnTimerAsync() => {Identity}:{Name} Vigor Update: {ex.Message}");
+                await Log.WriteLogAsync(ex);
+            }
+
+            try
+            {
+                if (mCallPet != null && mCallPetKeepSecs.IsActive() && mCallPetKeepSecs.ToNextTime())
+                    await KillCallPetAsync();
+            }
+            catch (Exception ex)
+            {
+                await Log.WriteLogAsync($"Character::OnTimerAsync() => {Identity}:{Name} Kill call pet: {ex.Message}");
                 await Log.WriteLogAsync(ex);
             }
 

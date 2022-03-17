@@ -333,6 +333,9 @@ namespace Comet.Game.States
                     case MagicSort.Addmana:
                         result = await ProcessAddManaAsync(magic);
                         break;
+                    case MagicSort.Callpet:
+                        result = await ProcessCallPetAsync(magic);
+                        break;
                     case MagicSort.Groundsting:
                         result = await ProcessGroundstingAsync(magic);
                         break;
@@ -1176,6 +1179,30 @@ namespace Comet.Game.States
             await target.AddAttributesAsync(ClientUpdateType.Mana, addMana);
 
             await AwardExpAsync(0, 0, Math.Max(addMana, AWARDEXP_BY_TIMES), magic);
+            return true;
+        }
+
+        private async Task<bool> ProcessCallPetAsync(Magic magic)
+        {
+            if (magic == null)
+                return false;
+
+            if (mOwner is not Character user)
+                return false;
+
+            MsgMagicEffect msg = new MsgMagicEffect
+            {
+                AttackerIdentity = user.Identity,
+                MapX = user.MapX,
+                MapY = user.MapY,
+                MagicIdentity = magic.Type,
+                MagicLevel = magic.Level
+            };
+            await user.BroadcastRoomMsgAsync(msg, true);
+
+            await user.CallPetAsync((uint) magic.Power, user.MapX, user.MapY, (int) magic.StepSeconds);
+
+            await AwardExpAsync(0, 0, AWARDEXP_BY_TIMES, magic);
             return true;
         }
 

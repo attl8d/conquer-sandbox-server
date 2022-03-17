@@ -1,4 +1,5 @@
-﻿using System.Linq;
+﻿using System.Diagnostics;
+using System.Linq;
 using System.Threading.Tasks;
 using Comet.Account.Database.Repositories;
 using Comet.Account.States;
@@ -41,18 +42,20 @@ namespace Comet.Account.Packets
                             Action = MsgAccServerCmd<GameServer>.ServerAction.Disconnect,
                             AccountIdentity = info.Identity
                         });
+                        await Log.WriteLogAsync(LogLevel.Info, $"User [{info.Identity}] being disconnected due to invalid account.");
                         return;
                     }
 
-                    if ((account.StatusID & DbAccount.AccountStatus.Banned) != 0 
+                    if ((account.StatusID & DbAccount.AccountStatus.Banned) != 0
                         || (account.StatusID & DbAccount.AccountStatus.Locked) != 0
-                        || (account.StatusID & DbAccount.AccountStatus.NotActivated) != DbAccount.AccountStatus.NotActivated)
+                        || (account.StatusID & DbAccount.AccountStatus.NotActivated) != 0)
                     {
                         await client.SendAsync(new MsgAccServerCmd
                         {
                             Action = MsgAccServerCmd<GameServer>.ServerAction.Disconnect,
                             AccountIdentity = info.Identity
                         });
+                        await Log.WriteLogAsync(LogLevel.Info, $"User [{info.Identity}] being disconnected due to banned account. Flag [{account.StatusID}]");
                         return;
                     }
 

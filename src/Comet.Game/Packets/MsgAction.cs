@@ -46,7 +46,7 @@ namespace Comet.Game.Packets
                 case ActionType.CharacterObservation: // 117
                 case ActionType.FriendObservation:    // 310
                 {
-                    if (user != null)
+                    if (user != null && user.Identity == Identity)
                     {
                         user?.BattleSystem.ResetBattle();
                         await user.MagicData.AbortMagicAsync(true);
@@ -204,11 +204,15 @@ namespace Comet.Game.Packets
 
                 case ActionType.CharacterEmote: // 81
                 {
-                    if (user == null)
-                        return;
-
-                    await user.SetActionAsync((EntityAction) Command, false);
-                    await user.BroadcastRoomMsgAsync(this, true);
+                    if (user != null && user.Identity == Identity)
+                    {
+                        await role.SetActionAsync((EntityAction) Command, false);
+                        await role.BroadcastRoomMsgAsync(this, user?.Identity == Identity);
+                    }
+                    //else if (false)
+                    //{
+                    //    await user.SendAsync(this);
+                    //}
                     break;
                 }
 
@@ -461,7 +465,7 @@ namespace Comet.Game.Packets
                     var newX = (ushort) Command;
                     var newY = (ushort) (Command >> 16);
 
-                    if (user != null) // todo handle ai 
+                    if (user != null && Identity == user.Identity) // todo handle ai 
                     {
                         if (!user.IsAlive)
                         {
@@ -477,6 +481,10 @@ namespace Comet.Game.Packets
                             return;
                         }
                     }
+                    else
+                    {
+
+                    }
 
 #if DEBUG_MOVEMENT
                         Console.WriteLine($"{user.Name} jump [{user.MapX},{user.MapY}] -> [{newX},{newY}]");
@@ -491,7 +499,11 @@ namespace Comet.Game.Packets
                     if (user != null)
                     {
                         await user.SendAsync(this);
-                        await user.Screen.UpdateAsync(this);
+                    }
+
+                    if (role.Screen != null)
+                    {
+                        await role.Screen.UpdateAsync(this);
                     }
                     else
                     {

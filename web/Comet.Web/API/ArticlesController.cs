@@ -86,6 +86,16 @@ namespace Comet.Web.API
             return Ok(await mService.QueryByCategoryTypeAsync(categoryType, page, ipp));
         }
 
+        [ActionName("GetArticleByCategory")]
+        [HttpGet(Name = "GetArticleByCategory")]
+        [MapToApiVersion("1")]
+        [ProducesResponseType(typeof(List<AdminArticleListModel>), StatusCodes.Status200OK)]
+        [ProducesResponseType(StatusCodes.Status500InternalServerError)]
+        public async Task<IActionResult> GetByCategoryV1Async(int category, int page = 0, int ipp = 10)
+        {
+            return Ok(await mService.QueryByCategoryAsync(category, page, ipp));
+        }
+
         /// <summary>
         ///     Saves a comment for the given article.
         /// </summary>
@@ -152,7 +162,23 @@ namespace Comet.Web.API
                 return Unauthorized();
 
             int result = await mService.RemoveCommentAsync(commentId);
-            return Ok(result);
+            return StatusCode(result);
+        }
+
+        [Authorize(Policy = Moderator)]
+        [ActionName("ChangeArticleOrder")]
+        [HttpPatch]
+        [MapToApiVersion("1")]
+        [ProducesResponseType(StatusCodes.Status200OK)]
+        [ProducesResponseType(StatusCodes.Status204NoContent)]
+        [ProducesResponseType(StatusCodes.Status401Unauthorized)]
+        [ProducesResponseType(StatusCodes.Status500InternalServerError)]
+        public async Task<IActionResult> ChangeArticleOrderV1Async([FromBody] PatchArticleOrder patch)
+        {
+            if (!User.HasPermission(Claims.CanWriteArticles))
+                return Unauthorized();
+
+            return Ok();
         }
 
         public class PostCommentModel
@@ -160,6 +186,12 @@ namespace Comet.Web.API
             public int PostId { get; set; }
             public string Message { get; set; }
             public int Rating { get; set; }
+        }
+
+        public class PatchArticleOrder
+        {
+            public int PostId { get; set; }
+            public int Order { get; set; }
         }
     }
 }

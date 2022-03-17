@@ -1,5 +1,6 @@
 ﻿@page
 @using Comet.Web.Services
+@using Newtonsoft.Json
 @inject LanguageService Language
 @model Comet.Web.Areas.Panel.Pages.Administration.Articles.IndexModel
 @{
@@ -11,9 +12,12 @@
     @foreach (var catType in Model.ArticleCategoriesTypes)
     {
         <h2>@Language.GetString(catType.Name)</h2>
-        <div class="table-responsive">
-            <table id="tblArticleCategoryType@(catType.Id)" class="table table-stripped table-bordered">
-                <thead>
+        @foreach (var cat in catType.Categories)
+        {
+            <h3>@Language.GetString(cat.Name)</h3>
+            <div class="table-responsive">
+                <table id="tblArticleCategoryType@(catType.Id)_@cat.Id" class="table table-stripped table-bordered">
+                    <thead>
                     <tr>
                         <td>#</td>
                         <td>Categoria</td>
@@ -23,70 +27,80 @@
                         <td>Data Publicação</td>
                         <td></td>
                     </tr>
-                </thead>
-                <tbody></tbody>
-            </table>
-        </div>
+                    </thead>
+                    <tbody></tbody>
+                </table>
+            </div>
+        }
     }
 </div>
 
 @section Scripts
 {
-<script>
-    const CategoryTypes = [ @(string.Join(',', Model.ArticleCategoriesTypes.Select(x => x.Id))) ];
-    const ipp = 10;
+    <script>
+        const CategoryTypes = JSON.parse('@Html.Raw(JsonConvert.SerializeObject(Model.ArticleCategoriesTypes))');
+        const ipp = 25;
 
-    function loadCategoryData(category, page) {
-        $.ajax({
-            url: `@Url.Action("GetArticleByCategoryType", "Articles", new { version = "1" })?categoryType=${category}&page=${page}&ipp=${ipp}`,
-            type: 'GET',
-            success: function(result) {
-                console.log(result);
-                let table = document.getElementById(`tblArticleCategoryType${category}`);
-                let body = table.tBodies[0];
+        function loadCategoryData(category, type, page) {
+            $.ajax({
+                url: `@Url.Action("GetArticleByCategory", "Articles", new {version = "1"})?category=${type}&page=${page}&ipp=${ipp}`,
+                type: 'GET',
+                success: function(result) {
+                    console.log(`${category}_${type}`);
+                    console.log(result);
+                    let table = document.getElementById(`tblArticleCategoryType${category}_${type}`);
+                    let body = table.tBodies[0];
 
-                $(body).empty();
+                    $(body).empty();
 
-            if (result.length) {
-                for (let idx = 0; idx < result.length; idx++)
-                {
-                    let row = body.insertRow();
+                    if (result.length) {
+                        for (let idx = 0; idx < result.length; idx++) {
+                            let row = body.insertRow();
 
-                    $(row.insertCell()).html(`${result[idx].id}`);
-                    $(row.insertCell()).html(`${result[idx].category}`);
-                    $(row.insertCell()).html(`${result[idx].title}`);
-                    $(row.insertCell()).html(`${result[idx].writer}`);
+                            $(row.insertCell()).html(`${result[idx].id}`);
+                            $(row.insertCell()).html(`${result[idx].category}`);
+                            $(row.insertCell()).html(`${result[idx].title}`);
+                            $(row.insertCell()).html(`${result[idx].writer}`);
 
-                    let localeCell = $(row.insertCell());
-                    for (let idxLocale = 0; idxLocale < result[idx].locales.length; idxLocale++) {
-                        if (idxLocale > 0)
-                            $(localeCell).append('<br />');
-                        $(localeCell).append(`<a href="@Url.Page("Article")/${result[idx].id}/${result[idx].locales[idxLocale]}">${result[idx].locales[idxLocale]}</a>`);
+                            let localeCell = $(row.insertCell());
+                            for (let idxLocale = 0; idxLocale < result[idx].locales.length; idxLocale++) {
+                                if (idxLocale > 0)
+                                    $(localeCell).append('<br />');
+                                $(localeCell).append(`<a href="@Url.Page("Article")/${result[idx].id}/${result[idx].locales[idxLocale]}">${result[idx].locales[idxLocale]}</a>`);
+                            }
+
+                            let date = new Date(result[idx].publishDate);
+                            $(row.insertCell()).html(date.toLocaleDateString('pt-BR') + ' ' + date.toLocaleTimeString('pt-BR'));
+                            $(row.insertCell()).html(`<input class="form-input" style="width: 40px" type="number" data-article-order="${result[idx].id}" value="${result[idx].order}" />`);
+                        }
+                    } else {
+                        let cell = body.insertRow().insertCell();
+                        cell.colSpan = 7;
+                        cell.innerHTML = '@Language.GetString("NoData")';
                     }
-
-                    let date = new Date(result[idx].publishDate);
-                    $(row.insertCell()).html(date.toLocaleDateString('pt-BR') + ' ' + date.toLocaleTimeString('pt-BR'));
-                    $(row.insertCell()).html(``);
+                },
+                error: function(result) {
+                    console.log(result);
                 }
-            }
-            else {
-                let cell = body.insertRow().insertCell();
-                cell.colSpan = 7;
-                cell.innerHTML = '@Language.GetString("NoData")';
-            }
-            },
-            error: function(result) {
-                console.log(result);
-            }
-        });
-    }
-
-    $(document).ready(function(){
-        for (idx in CategoryTypes) {
-            console.log(`${idx} >> ${CategoryTypes[idx]}`);
-            loadCategoryData(CategoryTypes[idx], 0);
+            });
         }
-    });
 
-</script>
+        $(document).ready(function() {
+            console.log(CategoryTypes);
+            for (let i = 0; i < CategoryTypes.length; i++) {
+
+                for (let j = 0; j < CategoryTypes[i].Categories.length; j++) {
+                    //console.log(`${i}:${j} => `);
+                    loadCategoryData(CategoryTypes[i].Id, CategoryTypes[i].Categories[j].Id, 0, ipp);
+                }
+
+            }
+            //for (type in CategoryTypes) {
+            //    for (cat in type.Categories) {
+            //        loadCategoryData(type.Id, cat.Id, 0, ipp);
+            //    }
+            //}
+        });
+
+    </script>
 }

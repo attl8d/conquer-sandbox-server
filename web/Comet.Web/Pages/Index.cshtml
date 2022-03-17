@@ -70,6 +70,10 @@ Additional classes:
     @foreach (Article article in Model.Articles)
     {
         ArticleContent content = article.Content.FirstOrDefault(x => x.Locale.Equals(Language.CurrentLocale, StringComparison.InvariantCultureIgnoreCase)) ?? article.Content.FirstOrDefault();
+        if (content == null)
+        {
+            continue;
+        }
         <div class="news-one">
             <div class="row vertical-gutter">
                 <div class="col-md-4">

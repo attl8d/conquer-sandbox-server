@@ -357,8 +357,8 @@ namespace Comet.Game
 
                     default:
                         Console.WriteLine(
-                            "Missing packet {0}, Length {1}\n{2}",
-                            type, length, PacketDump.Hex(packet));
+                            $@"Missing packet {type}, Length {length}
+{PacketDump.Hex(packet)}");
                         await actor.SendAsync(new MsgTalk(actor.Identity, TalkChannel.Service,
                                                           string.Format("Missing packet {0}, Length {1}",
                                                                         type, length)));

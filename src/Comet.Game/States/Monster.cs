@@ -22,27 +22,29 @@ namespace Comet.Game.States
     {
         private readonly DbMonstertype mDbMonster;
 
-        private readonly TimeOutMS m_tStatusCheck = new(500);
-        private readonly TimeOut m_disappear = new(5);
-        private readonly TimeOut m_leaveMap = new(10);
+        private readonly TimeOutMS mStatusCheck = new(500);
+        private readonly TimeOut mDisappear = new(5);
+        private readonly TimeOut mLeaveMap = new(10);
 
         private uint mIdAction;
 
         public uint GeneratorId { get; }
-
-        private AiStage mStage;
 
         public Monster(DbMonstertype type, uint identity, uint generator, uint ownerId)
         {
             mDbMonster = type;
             Identity = identity;
             GeneratorId = generator;
-            // m_idMap = generator.MapIdentity; // TODO ???
+
+            OwnerIdentity = ownerId;
 
             Screen = new Screen(this);
         }
 
         #region Identity
+
+        /// <inheritdoc />
+        public override uint Identity { get; protected set; }
 
         public override string Name
         {
@@ -53,6 +55,23 @@ namespace Comet.Game.States
         #endregion
 
         #region Initialization
+
+        public static async Task<Monster> CreateCallPetAsync(Character caller, uint type, ushort x, ushort y)
+        {
+            DbMonstertype monsterType = RoleManager.GetMonstertype(type);
+            if (monsterType == null)
+                return null;
+
+            uint idPet = (uint) IdentityGenerator.Pet.GetNextIdentity;
+            Monster pet = new Monster(monsterType, idPet, 0, caller.Identity);
+            if (!await pet.InitializeAsync(caller.MapIdentity, caller.MapX, caller.MapY))
+            {
+                IdentityGenerator.Pet.ReturnIdentity(idPet);
+                return null;
+            }
+            await pet.EnterMapAsync();
+            return pet;
+        }
 
         public async Task<bool> InitializeAsync(uint idMap, ushort x, ushort y)
         {
@@ -66,8 +85,28 @@ namespace Comet.Game.States
 
             Life = MaxLife;
 
-            if (mDbMonster.Action != 0 && EventManager.GetAction(mDbMonster.Action) != null)
-                mIdAction = mDbMonster.Action;
+            if (!IsPet())
+            {
+                if (mDbMonster.Action != 0 && EventManager.GetAction(mDbMonster.Action) != null)
+                    mIdAction = mDbMonster.Action;
+            }
+            else
+            {
+                MsgPetInfo msg = new MsgPetInfo
+                {
+                    Identity = Identity,
+                    LookFace = Mesh,
+                    X = MapX,
+                    Y = MapY,
+                    Name = Name,
+                    AiType = 0
+                };
+
+                Role owner = RoleManager.GetUser(OwnerIdentity);
+                if (owner == null)
+                    return false;
+                await owner.SendAsync(msg);
+            }
 
             if (mDbMonster.MagicType > 0)
             {
@@ -238,6 +277,8 @@ namespace Comet.Game.States
 
         #region Checks
 
+        public bool IsDeleted() => mDisappear.IsActive();
+
         public override bool IsEvil()
         {
             return (mDbMonster.AttackUser & ATKUSER_RIGHTEOUS) == 0 || base.IsEvil();
@@ -245,7 +286,7 @@ namespace Comet.Game.States
 
         public bool CanLeaveMap()
         {
-            return m_leaveMap.IsTimeOut();
+            return mLeaveMap.IsTimeOut();
         }
 
         public override bool IsFarWeapon()
@@ -358,7 +399,7 @@ namespace Comet.Game.States
 
         public override async Task BeKillAsync(Role attacker)
         {
-            if (m_disappear.IsActive())
+            if (mDisappear.IsActive())
                 return;
 
             if (attacker?.BattleSystem.IsActive() == true)
@@ -385,8 +426,8 @@ namespace Comet.Game.States
                 Data = dieType
             }, false);
 
-            m_disappear.Startup(5);
-            m_leaveMap.Startup(NPC_REST_TIME);
+            mDisappear.Startup(5);
+            mLeaveMap.Startup(NPC_REST_TIME);
 
             if (mIdAction > 0) await GameAction.ExecuteActionAsync(mIdAction, user, this, null, string.Empty);
 
@@ -567,6 +608,42 @@ namespace Comet.Game.States
 
         #endregion
 
+        #region Pet
+
+        private PetData mPetData;
+
+        public async Task DelMonsterAsync(bool now)
+        {
+            if (IsDeleted())
+                return;
+
+            if (mPetData != null)
+            {
+                mPetData.Life = 0;
+            }
+
+            Life = 0;
+
+            if (now)
+            {
+                mDisappear.Startup(1);
+                await BroadcastRoomMsgAsync(new MsgAction
+                {
+                    Action = MsgAction<Client>.ActionType.RemoveEntity,
+                    Identity = Identity,
+                    X = MapX,
+                    Y = MapY
+                }, false);
+            }
+            else
+            {
+                mDisappear.Startup(1);
+                mLeaveMap.Startup(5);
+            }
+        }
+
+        #endregion
+
         #region OnTimer
 
         public override async Task OnTimerAsync()
@@ -574,8 +651,8 @@ namespace Comet.Game.States
             try
             {
                 if (!IsAlive
-                    && m_disappear.IsActive()
-                    && m_disappear.IsTimeOut())
+                    && mDisappear.IsActive()
+                    && mDisappear.IsTimeOut())
                     QueueAction(async () => await AttachStatusAsync(this, StatusSet.INVISIBLE, 0, int.MaxValue, 0, 0));
             }
             catch (Exception ex)
@@ -586,7 +663,7 @@ namespace Comet.Game.States
 
             try
             {
-                if (m_leaveMap.IsActive())
+                if (mLeaveMap.IsActive())
                 {
                     if (CanLeaveMap())
                         QueueAction(LeaveMapAsync);
@@ -601,7 +678,7 @@ namespace Comet.Game.States
 
             try
             {
-                if (m_tStatusCheck.ToNextTime())
+                if (mStatusCheck.ToNextTime())
                     foreach (IStatus stts in StatusSet.Status.Values)
                     {
                         QueueAction(async () => await stts.OnTimerAsync());
@@ -714,5 +791,20 @@ namespace Comet.Game.States
         }
 
         #endregion
+    }
+
+    public class PetData
+    {
+        public uint OwnerIdentity;
+        public uint OwnerType;
+        public uint Generator;
+        public uint Type;
+        public string Name;
+        public uint Life;
+        public uint Mana;
+        public uint MapIdentity;
+        public ushort MapX;
+        public ushort MapY;
+        public object Data;
     }
 }

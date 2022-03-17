@@ -162,7 +162,10 @@ namespace Comet.Game.Packets
                     if ((DateTime.Now - user.FamilyMember.JoinDate).TotalHours < 24)
                         return;
 
-                    await user.FlyMapAsync(map.Identity, 50, 50);
+                    Point targetPos = await map.QueryRandomPositionAsync();
+                    if (targetPos.Equals(default))
+                        targetPos = new Point(50, 50);
+                    await user.FlyMapAsync(map.Identity, targetPos.X, targetPos.Y);
                     break;
                 }
 

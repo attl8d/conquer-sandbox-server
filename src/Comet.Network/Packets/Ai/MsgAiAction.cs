@@ -42,7 +42,9 @@
             Walk,
             FlyMap,
             AddTerrainObj,
-            DelTerrainObj
+            DelTerrainObj,
+            SetProtection,
+            ClearProtection
         }
     }
 }

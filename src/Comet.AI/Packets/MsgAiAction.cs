@@ -3,6 +3,7 @@ using Comet.AI.States;
 using Comet.AI.World.Managers;
 using Comet.Network.Packets.Ai;
 using Comet.Shared;
+using Org.BouncyCastle.Asn1.X509;
 
 namespace Comet.AI.Packets
 {
@@ -26,10 +27,8 @@ namespace Comet.AI.Packets
                 case AiAction.FlyMap:
                 {
                     Role target = RoleManager.GetRole((uint) Data);
-                    if (target == null)
-                        return;
 
-                    if (target.Map == null)
+                    if (target?.Map == null)
                         return;
 
                     target.QueueAction(async () =>
@@ -44,6 +43,35 @@ namespace Comet.AI.Packets
                         target.MapY = Y;
                         await target.EnterMapAsync();
                     });
+                    break;
+                }
+
+                case AiAction.SetProtection:
+                {
+                    Role target = RoleManager.GetRole((uint)Data);
+
+                    if (target?.Map == null)
+                        return;
+
+                    if (target is Character user)
+                    {
+                        user.SetProtection();
+                    }
+
+                    break;
+                }
+
+                case AiAction.ClearProtection:
+                {
+                    Role target = RoleManager.GetRole((uint)Data);
+
+                    if (target?.Map == null)
+                        return;
+
+                    if (target is Character user)
+                    {
+                        user.ClearProtection();
+                    }
                     break;
                 }
             }

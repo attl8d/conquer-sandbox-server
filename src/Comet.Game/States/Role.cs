@@ -44,6 +44,8 @@ namespace Comet.Game.States
         /// </summary>
         public virtual string Name { get; set; }
 
+        public virtual uint OwnerIdentity { get; set; }
+
         #endregion
 
         #region Appearence
@@ -893,7 +895,7 @@ namespace Comet.Game.States
         }
 
         #endregion
-
+        
         #region Timers
 
         public virtual Task OnTimerAsync()
@@ -996,7 +998,7 @@ namespace Comet.Game.States
         public const int NPCSERVERID_FIRST = 400001;
         public const int MONSTERID_FIRST = 400001;
         public const int MONSTERID_LAST = 499999;
-        public const int PETID_FIRST = 500001;
+        public const int PETID_FIRST = 590001;
         public const int PETID_LAST = 599999;
         public const int NPCSERVERID_LAST = 699999;
 

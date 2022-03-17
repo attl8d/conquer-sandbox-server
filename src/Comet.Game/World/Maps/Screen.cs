@@ -113,6 +113,10 @@ namespace Comet.Game.World.Maps
 
                             await mRole.SendSpawnToAsync(targetUser, newOldX, newOldY);
                         }
+                        else if (targetUser != null)
+                        {
+                            await mRole.SendSpawnToAsync(targetUser);
+                        }
                     }
                 }
                 else

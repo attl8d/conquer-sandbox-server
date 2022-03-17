@@ -16,12 +16,31 @@ namespace Comet.Web.Areas.Panel.Pages.Administration.Articles
             mService = service;
         }
 
-        public List<ArticleCategoryTypeModel> ArticleCategoriesTypes { get; set; } = new();
+        public List<ArticleCategoriesType> ArticleCategoriesTypes { get; set; } = new();
 
         public async Task<IActionResult> OnGetAsync()
         {
-            ArticleCategoriesTypes = await mService.QueryActiveArticleCategoryTypeAsync();
+            List<ArticleCategoryTypeModel> articleCategoriesTypes =
+                await mService.QueryActiveArticleCategoryTypeAsync();
+            foreach (ArticleCategoryTypeModel type in articleCategoriesTypes)
+            {
+                var cat = new ArticleCategoriesType
+                {
+                    Id = type.Id,
+                    Name = type.Name,
+                    Categories = await mService.QueryActiveArticleCategoriesByTypeAsync(type.Id)
+                };
+                ArticleCategoriesTypes.Add(cat);
+            }
+
             return Page();
+        }
+
+        public struct ArticleCategoriesType
+        {
+            public int Id { get; set; }
+            public string Name { get; set; }
+            public List<ArticleCategoryModel> Categories { get; set; }
         }
     }
 }

@@ -162,6 +162,13 @@ namespace Comet.AI.States
             if (Map == null || !Map.IsValidPoint(x, y))
                 return false;
 
+            Character user = null;
+            if (IsPlayer())
+            {
+                user = (Character) this;
+                user.ClearProtection();
+            }
+
             Map.EnterBlock(this, x, y, MapX, MapY);
 
             Direction = (FacingDirection) Calculations.GetDirectionSector(MapX, MapY, x, y);
@@ -186,7 +193,6 @@ namespace Comet.AI.States
 
         public async Task<bool> MoveTowardAsync(int direction, int mode, bool sync = true)
         {
-            var user = this as Character;
             ushort newX = 0, newY = 0;
 
             if (mode == (int) RoleMoveMode.Track)
@@ -208,6 +214,13 @@ namespace Comet.AI.States
                     newX += (ushort) GameMapData.WalkXCoords[direction];
                     newY += (ushort) GameMapData.WalkYCoords[direction];
                 }
+            }
+
+            Character user = null;
+            if (IsPlayer())
+            {
+                user = (Character)this;
+                user.ClearProtection();
             }
 
             Map.EnterBlock(this, newX, newY, MapX, MapY);

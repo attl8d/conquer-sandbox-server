@@ -137,6 +137,32 @@ namespace Comet.Game.States
                 damage *= 2;
             }
 
+            if (mOwner.QueryStatus(StatusSet.FATAL_STRIKE) != null
+                && target is Monster targetMob)
+            {
+                int oldX = mOwner.MapX;
+                int oldY = mOwner.MapY;
+                if (!targetMob.IsGuard()
+                    && await mOwner.JumpPosAsync(target.MapX, target.MapY))
+                {
+                    var msg = new MsgAction
+                    {
+                        X = mOwner.MapX,
+                        Y = mOwner.MapY,
+                        ArgumentX = (ushort) oldX,
+                        ArgumentY = (ushort) oldY,
+                        Data = target.Identity,
+                        Identity = mOwner.Identity,
+                        Action = MsgAction<Client>.ActionType.NinjaStep,
+                        Direction = (ushort) mOwner.Direction
+                    };
+                    await mOwner.SendAsync(msg);
+                    await mOwner.Screen.UpdateAsync(msg);
+                    ResetBattle();
+                }
+            }
+            else targetMob = null;
+
             var lifeLost = (int) Math.Min(target.MaxLife, Math.Max(1, damage));
             long nExp = Math.Min(Math.Max(0, lifeLost), target.MaxLife);
 
@@ -155,7 +181,7 @@ namespace Comet.Game.States
             if (user != null)
                 await user.CheckCrimeAsync(target);
 
-            if (target is Monster targetMob
+            if (targetMob != null
                 && mOwner.QueryStatus(StatusSet.FATAL_STRIKE) != null
                 && !targetMob.IsGuard())
             {

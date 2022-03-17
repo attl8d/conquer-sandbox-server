@@ -7,6 +7,9 @@ namespace Comet.Network.Packets
     /// </summary>
     public interface IPacket
     {
+        public ushort Length { get; }
+        public PacketType Type { get; }
+
         void Decode(byte[] bytes);
         byte[] Encode();
     }

@@ -268,9 +268,7 @@ namespace Comet.Game.World.Maps
                         await role.Screen.UpdateAsync();
                     else
                         foreach (Character user in m_users.Values.Where(x =>
-                                                                            Calculations.GetDistance(
-                                                                                x.MapX, x.MapY, role.MapX, role.MapY) <=
-                                                                            Screen.BROADCAST_SIZE))
+                                                                            Calculations.GetDistance(x.MapX, x.MapY, role.MapX, role.MapY) <= Screen.BROADCAST_SIZE))
                             await user.Screen.SpawnAsync(role);
                 }
 
@@ -347,6 +345,17 @@ namespace Comet.Game.World.Maps
             {
                 if (user.Identity == exclude ||
                     Calculations.GetDistance(x, y, user.MapX, user.MapY) > Screen.BROADCAST_SIZE)
+                    continue;
+
+                await user.SendAsync(msg);
+            }
+        }
+
+        public async Task BroadcastRoomMsgAsync(IPacket msg, int x, int y, uint exclude, int distance = Screen.VIEW_SIZE * 2)
+        {
+            foreach (Character user in m_users.Values)
+            {
+                if (user.Identity == exclude || Calculations.GetDistance(x, y, user.MapX, user.MapY) > distance)
                     continue;
 
                 await user.SendAsync(msg);
@@ -557,6 +566,25 @@ namespace Comet.Game.World.Maps
 
         #region Position Check
 
+        public async Task<Point> QueryRandomPositionAsync(int sourceX = 0, int sourceY = 0, int radius = 0)
+        {
+            for (int i = 0; i < 20; i++)
+            {
+                int w = radius > 0 ? radius : Width;
+                int h = radius > 0 ? radius : Height;
+
+                int randX = await Kernel.NextAsync(w);
+                int randY = await Kernel.NextAsync(h);
+
+                int x = sourceX + randX;
+                int y = sourceY + randY;
+
+                if (IsStandEnable(x, y))
+                    return new Point(x, y);
+            }
+            return default;
+        }
+
         /// <summary>
         ///     Determinate if a coordinate has already been occupied by another object.
         /// </summary>
@@ -590,18 +618,6 @@ namespace Comet.Game.World.Maps
             return true;
         }
 
-        public bool IsMoveEnable(int sourceX, int sourceY, int x, int y, int climbCap)
-        {
-            //return IsValidPoint(x, y) && IsStandEnable(x, y);
-            if (!IsValidPoint(x, y))
-                return false;
-            if (mMapData.GetFloorMask(x, y) != 0)
-                return false;
-            if (mMapData.GetFloorAlt(x, y) - mMapData.GetFloorAlt(sourceX, sourceY) > climbCap)
-                return false;
-            return true;
-        }
-
         public bool IsAltEnable(int sX, int sY, int x, int y, int altDiff = 26)
         {
             if (!IsValidPoint(x, y))
@@ -624,9 +640,8 @@ namespace Comet.Game.World.Maps
 
         public bool IsLayItemEnable(int x, int y)
         {
-            return IsStandEnable(x, y) && IsMoveEnable(x, y) && m_roles.All(
-                       role => role.Value != null && !(role.Value is MapItem) && !(role.Value is BaseNpc) ||
-                               role.Value.MapX != x || role.Value.MapY != y);
+            return IsStandEnable(x, y) && IsMoveEnable(x, y) && m_roles.Values.All(
+                       role => role is not MapItem && role is not BaseNpc || role.MapX != x || role.MapY != y);
         }
 
         public bool FindDropItemCell(int range, ref Point sender)

@@ -58,7 +58,23 @@ namespace Comet.Game
 
         public static async Task BroadcastWorldMsgAsync(IPacket msg)
         {
-            foreach (AiClient server in AiClients.Values) await server.SendAsync(msg);
+            switch (msg.Type)
+            {
+                case > PacketType.MsgAccServerStart and < PacketType.MsgAccServerEnd:
+                {
+                    if (AccountServer is {Socket: {Connected: true}})
+                        await AccountServer.SendAsync(msg);
+                    break;
+                }
+                case > PacketType.MsgAiServerStart and < PacketType.MsgAiServerEnd:
+                {
+                    foreach (AiClient server in AiClients.Values)
+                    {
+                        await server.SendAsync(msg);
+                    }
+                    break;
+                }
+            }
         }
 
         #endregion
@@ -129,7 +145,6 @@ namespace Comet.Game
                 await MapManager.LoadMapsAsync().ConfigureAwait(true);
 
                 await MagicManager.InitializeAsync().ConfigureAwait(true);
-                await PeerageManager.InitializeAsync().ConfigureAwait(true);
                 await EventManager.InitializeAsync().ConfigureAwait(true);
                 await RoleManager.InitializeAsync().ConfigureAwait(true);
                 await ItemManager.InitializeAsync().ConfigureAwait(true);

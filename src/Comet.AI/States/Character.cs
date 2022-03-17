@@ -1,11 +1,14 @@
 ﻿using System.Threading.Tasks;
 using Comet.AI.Packets;
 using Comet.AI.World.Managers;
+using Comet.Shared;
 
 namespace Comet.AI.States
 {
     public sealed class Character : Role
     {
+        private TimeOut mProtectSecs = new(10);
+
         private int mBattlePower;
 
         public int Metempsychosis { get; set; }
@@ -20,6 +23,28 @@ namespace Comet.AI.States
         public int SyndicatePosition { get; set; }
         public int Family { get; set; }
         public int FamilyPosition { get; set; }
+
+        /// <inheritdoc />
+        public override bool IsAttackable(Role attacker)
+        {
+            if (!IsAlive)
+                return false;
+
+            if (mProtectSecs.IsActive() || !mProtectSecs.IsTimeOut())
+                return false;
+
+            return true;
+        }
+
+        public void SetProtection()
+        {
+            mProtectSecs.Startup(10);
+        }
+
+        public void ClearProtection()
+        {
+            mProtectSecs.Clear();
+        }
 
         public async Task<bool> InitializeAsync(MsgAiPlayerLogin msg)
         {

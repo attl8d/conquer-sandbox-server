@@ -19,6 +19,7 @@ namespace Comet.Web.Data.Entities
         public virtual int? ThumbId { get; set; }
         public virtual int? BackgroundId { get; set; }
         public virtual int Views { get; set; }
+        public virtual int Order { get; set; }
         public virtual DateTime PublishDate { get; set; }
         public virtual DateTime CreationDate { get; set; }
         public virtual DateTime? ModifiedDate { get; set; }

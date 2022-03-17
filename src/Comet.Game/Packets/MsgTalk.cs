@@ -182,6 +182,11 @@ namespace Comet.Game.Packets
                     break;
                 }
 
+                default:
+                {
+                    await Log.WriteLogAsync($"Unhandled MsgTalk: {Channel}");
+                    break;
+                }
                 //case TalkChannel.World:
                 //    {
                 //        if (sender.CanUseWorldChat())
@@ -665,7 +670,22 @@ namespace Comet.Game.Packets
                         if (uint.TryParse(chgMapParams[0], out uint chgMapId)
                             && ushort.TryParse(chgMapParams[1], out ushort chgMapX)
                             && ushort.TryParse(chgMapParams[2], out ushort chgMapY))
-                            await user.FlyMapAsync(chgMapId, chgMapX, chgMapY);
+                        {
+                            bool error = false;
+                            List<Role> roleSet = user.Map.Query9Blocks(chgMapX, chgMapY);
+                            foreach (var role in roleSet)
+                            {
+                                if (role is BaseNpc npc
+                                    && role.MapX == chgMapX && role.MapY == chgMapY)
+                                {
+                                    error = true;
+                                    break;
+                                }
+                            }
+
+                            if (!error)
+                                await user.FlyMapAsync(chgMapId, chgMapX, chgMapY);
+                        }
 
                         return true;
                     }
@@ -818,6 +838,40 @@ namespace Comet.Game.Packets
                             await user.SendAsync($"Players Online on partition [{user.Map.Partition}]: {count}");
                         }
 
+                        return true;
+                    }
+
+                    case "/fly":
+                    {
+                        string[] chgMapParams = param.Split(new[] { ' ' }, 3, StringSplitOptions.RemoveEmptyEntries);
+                        if (chgMapParams.Length < 2)
+                            return true;
+
+                        int x = int.Parse(chgMapParams[0]);
+                        int y = int.Parse(chgMapParams[1]);
+
+                        if (!user.Map.IsStandEnable(x, y))
+                        {
+                            await user.SendAsync(Language.StrInvalidCoordinate);
+                            return true;
+                        }
+
+                        bool error = false;
+                        List<Role> roleSet = user.Map.Query9Blocks(x, y);
+                        foreach (var role in roleSet)
+                        {
+                            if (role is BaseNpc npc
+                                && role.MapX == x && role.MapY == y)
+                            {
+                                error = true;
+                                break;
+                            }
+                        }
+
+                        if (!error)
+                            await user.FlyMapAsync(0, x, y);
+                        else
+                            await user.SendAsync(Language.StrInvalidCoordinate);
                         return true;
                     }
                 }

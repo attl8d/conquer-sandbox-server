@@ -75,6 +75,7 @@ namespace Comet.Network.Packets
         MsgNpc = 2031,
         MsgTaskDialog = 2032,
         MsgFriendInfo = 2033,
+        MsgPetInfo = 2035,
         MsgDataArray = 2036,
         MsgTrainingInfo = 2043,
         MsgTraining = 2044,

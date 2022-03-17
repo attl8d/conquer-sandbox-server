@@ -596,7 +596,11 @@ namespace Comet.Game.Packets
                     case "/vip":
                     {
                         if (byte.TryParse(param, out byte vip))
+                        {
+                            if (!user.HasVip)
+                                user.VipExpiration = DateTime.Now.AddDays(1);
                             await user.SetAttributesAsync(ClientUpdateType.VipLevel, vip);
+                        }
                         return true;
                     }
                 }

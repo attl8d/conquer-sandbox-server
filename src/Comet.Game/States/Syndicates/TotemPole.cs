@@ -56,12 +56,14 @@ namespace Comet.Game.States.Syndicates
             return Totems.Values.Where(x => x.PlayerIdentity == idUser).Sum(x => x.Points);
         }
 
-        public Task<bool> SetEnhancementAsync(DbTotemAdd totem)
+        public async Task<bool> SetEnhancementAsync(DbTotemAdd totem)
         {
-            m_Enhancement = totem;
-            if (totem != null)
-                return ServerDbContext.SaveAsync(m_Enhancement);
-            return Task.FromResult(true);
+            if (totem != null && await ServerDbContext.SaveAsync(totem))
+            {
+                m_Enhancement = totem;
+                return true;
+            }
+            return false;
         }
 
         public async Task<bool> RemoveEnhancementAsync()

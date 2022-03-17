@@ -145,7 +145,7 @@ namespace Comet.Game.States
             {
                 user = (Character) this;
                 // we're trusting this
-                if (!Map.IsStandEnable(x, y) || !user.IsJumpPass(x, y, 26))
+                if (!Map.IsStandEnable(x, y) || !user.IsJumpPass(x, y, 210))
                 {
                     await user.SendAsync(Language.StrInvalidCoordinate, TalkChannel.TopLeft, Color.Red);
                     await user.KickbackAsync();

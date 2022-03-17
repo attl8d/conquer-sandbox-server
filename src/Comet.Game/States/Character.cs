@@ -1420,27 +1420,28 @@ namespace Comet.Game.States
 
         public bool IsArrowPass(int x, int y, int alt)
         {
-            {
-                var setLine = new List<Point>();
-                Calculations.DDALineEx(MapX, MapY, x, y, ref setLine);
+            //{
+            //    var setLine = new List<Point>();
+            //    Calculations.DDALineEx(MapX, MapY, x, y, ref setLine);
 
-                if (x != setLine[setLine.Count - 1].X)
-                    return false;
-                if (y != setLine[setLine.Count - 1].Y)
-                    return false;
+            //    if (x != setLine[setLine.Count - 1].X)
+            //        return false;
+            //    if (y != setLine[setLine.Count - 1].Y)
+            //        return false;
 
-                var fAlt = (float) (Map.GetFloorAlt(MapX, MapY) + alt + 0.5);
-                float fDelta = (Map.GetFloorAlt(x, y) - fAlt) / setLine.Count;
+            //    var fAlt = (float) (Map.GetFloorAlt(MapX, MapY) + alt + 0.5);
+            //    float fDelta = (Map.GetFloorAlt(x, y) - fAlt) / setLine.Count;
 
-                foreach (Point point in setLine)
-                {
-                    if (Map.IsAltOver(point.X, point.Y, (int) fAlt))
-                        return false;
-                    fAlt += fDelta;
-                }
+            //    foreach (Point point in setLine)
+            //    {
+            //        if (Map.IsAltOver(point.X, point.Y, (int) fAlt))
+            //            return false;
+            //        fAlt += fDelta;
+            //    }
 
-                return true;
-            }
+            //    return true;
+            //}
+            return true;
         }
 
         #endregion
@@ -2834,7 +2835,7 @@ namespace Comet.Game.States
             return true;
         }
 
-        public async Task<bool> DecEquipmentDurabilityAsync(bool bAttack, int hitByMagic, ushort useItemNum)
+        public async Task<bool> DecEquipmentDurabilityAsync(bool beingAttacked, int hitByMagic, ushort useItemNum)
         {
             int nInc = -1 * useItemNum;
 
@@ -2851,12 +2852,12 @@ namespace Comet.Game.States
                         || i == Item.ItemPosition.LeftHand
                         || i == Item.ItemPosition.Boots)
                     {
-                        if (!bAttack)
+                        if (!beingAttacked)
                             await AddEquipmentDurabilityAsync(i, nInc);
                     }
                     else
                     {
-                        if (bAttack)
+                        if (beingAttacked)
                             await AddEquipmentDurabilityAsync(i, nInc);
                     }
                 }
@@ -2867,12 +2868,12 @@ namespace Comet.Game.States
                         || i == Item.ItemPosition.LeftHand
                         || i == Item.ItemPosition.Boots)
                     {
-                        if (!bAttack)
+                        if (!beingAttacked)
                             await AddEquipmentDurabilityAsync(i, -1);
                     }
                     else
                     {
-                        if (bAttack)
+                        if (beingAttacked)
                             await AddEquipmentDurabilityAsync(i, nInc);
                     }
                 }

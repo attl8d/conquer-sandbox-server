@@ -147,6 +147,7 @@ namespace Comet.Game.Packets
             MapGold,
             RelationshipsEnemy = 123,
             ClientDialog = 126,
+            CallPetJump = 130,
             LoginComplete = 132,
             MapEffect = 134,
             RemoveEntity = 135,

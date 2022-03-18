@@ -412,7 +412,7 @@ namespace Comet.Game.States
 
         public bool IsPet()
         {
-            return Identity >= PETID_FIRST && Identity < PETID_LAST;
+            return Identity >= CALLPETID_FIRST && Identity < CALLPETID_LAST;
         }
 
         public bool IsTrap()
@@ -1000,7 +1000,7 @@ namespace Comet.Game.States
         public const int NPCSERVERID_FIRST = 400001;
         public const int MONSTERID_FIRST = 400001;
         public const int MONSTERID_LAST = 499999;
-        public const int PETID_FIRST = 590001;
+        public const int PETID_FIRST = 500001;
         public const int PETID_LAST = 599999;
         public const int NPCSERVERID_LAST = 699999;
 

@@ -1232,7 +1232,7 @@ namespace Comet.Game.States
         {
             BattleSystem.ResetBattle();
             await MagicData.AbortMagicAsync(false);
-            await KillCallPetAsync();
+            await KillCallPetAsync(true);
             StopMining();
 
             if (Map != null)

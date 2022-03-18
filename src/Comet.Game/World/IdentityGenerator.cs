@@ -8,7 +8,7 @@ namespace Comet.Game.World
     {
         public static IdentityGenerator MapItem = new(Role.MAPITEM_FIRST, Role.MAPITEM_LAST);
         public static IdentityGenerator Monster = new(Role.MONSTERID_FIRST, Role.MONSTERID_LAST);
-        public static IdentityGenerator Pet = new(Role.PETID_FIRST, Role.PETID_LAST);
+        public static IdentityGenerator Pet = new(Role.CALLPETID_FIRST, Role.CALLPETID_LAST);
         public static IdentityGenerator Furniture = new(Role.SCENE_NPC_MIN, Role.SCENE_NPC_MAX);
         public static IdentityGenerator Traps = new(Role.MAGICTRAPID_FIRST, Role.MAGICTRAPID_LAST);
 

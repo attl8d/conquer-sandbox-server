@@ -58,24 +58,9 @@ namespace Comet.Game
 
         public static async Task BroadcastWorldMsgAsync(IPacket msg)
         {
-            byte[] message = msg.Encode();
-            PacketType type = (PacketType) BitConverter.ToInt16(message, 2);
-            switch (type)
+            foreach (AiClient server in AiClients.Values)
             {
-                case > PacketType.MsgAccServerStart and < PacketType.MsgAccServerEnd:
-                {
-                    if (AccountServer is {Socket: {Connected: true}})
-                        await AccountServer.SendAsync(message);
-                    break;
-                }
-                case > PacketType.MsgAiServerStart and < PacketType.MsgAiServerEnd:
-                {
-                    foreach (AiClient server in AiClients.Values)
-                    {
-                        await server.SendAsync(message);
-                    }
-                    break;
-                }
+                await server.SendAsync(msg);
             }
         }
 
@@ -91,7 +76,7 @@ namespace Comet.Game
         public static readonly EventProcessing EventThread = new();
         public static readonly RoleProcessing RoleThread = new();
 
-        private static SchedulerFactory schedulerFactory { get; set; }
+        private static SchedulerFactory SchedulerFactory { get; set; }
 
         // Background services
         public static class Services
@@ -164,10 +149,10 @@ namespace Comet.Game
                 await EventThread.StartAsync();
                 await RoleThread.StartAsync();
 
-                schedulerFactory = new SchedulerFactory();
-                await schedulerFactory.StartAsync();
-                await schedulerFactory.ScheduleAsync<AutomaticActionJob>("0 * * * * ?");
-                await schedulerFactory.ScheduleAsync<DailyResetJob>("0 0 0 * * ?");
+                SchedulerFactory = new SchedulerFactory();
+                await SchedulerFactory.StartAsync();
+                await SchedulerFactory.ScheduleAsync<AutomaticActionJob>("0 * * * * ?");
+                await SchedulerFactory.ScheduleAsync<DailyResetJob>("0 0 0 * * ?");
                 return true;
             }
             catch (Exception ex)
@@ -179,7 +164,7 @@ namespace Comet.Game
 
         public static async Task<bool> CloseAsync()
         {
-            await schedulerFactory.StopAsync();
+            await SchedulerFactory.StopAsync();
 
             await UserThread.CloseAsync();
             await EventThread.CloseAsync();

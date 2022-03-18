@@ -10,7 +10,6 @@ using Comet.Game.World.Maps;
 using Comet.Network.Packets;
 using Comet.Network.Packets.Game;
 using Comet.Shared;
-using Org.BouncyCastle.Asn1.X509;
 using static Comet.Network.Packets.Game.MsgName<Comet.Game.States.Client>;
 
 namespace Comet.Game.Packets
@@ -26,13 +25,13 @@ namespace Comet.Game.Packets
         /// <param name="client">Client requesting packet processing</param>
         public override async Task ProcessAsync(Client client)
         {
-            Character user = client?.Character;
+            Character user = client.Character;
 
             Role sender = RoleManager.GetRole(SenderIdentity);
-            if (sender == null || user != null && user.Identity != SenderIdentity)
+            if (sender == null || user.Identity != SenderIdentity && sender.Identity != user.GetCallPet()?.Identity)
                 return;
 
-            if (user != null && SenderIdentity == user.Identity && !user.IsAlive)
+            if (SenderIdentity == user.Identity && !user.IsAlive)
             {
                 await user.SendAsync(Language.StrDead);
                 return;
@@ -74,7 +73,7 @@ namespace Comet.Game.Packets
                     if (!sender.IsAlive)
                         return;
 
-                    if (user != null)
+                    if (user.Identity == sender.Identity)
                         if (!await user.SynPositionAsync(PosX, PosY, 8))
                         {
                             await RoleManager.KickOutAsync(sender.Identity, "MsgInteract SynPosition");
@@ -91,37 +90,34 @@ namespace Comet.Game.Packets
                     if (!sender.IsAlive)
                         return;
 
-                    if (client != null)
-                    {
-                        byte[] dataArray = BitConverter.GetBytes(Data);
-                        Data = Convert.ToUInt16((dataArray[0] & 0xFF) | ((dataArray[1] & 0xFF) << 8));
-                        Data ^= 0x915d;
-                        Data ^= (ushort) client.Identity;
-                        Data = (ushort) ((Data << 0x3) | (Data >> 0xd));
-                        Data -= 0xeb42;
+                    byte[] dataArray = BitConverter.GetBytes(Data);
+                    Data = Convert.ToUInt16((dataArray[0] & 0xFF) | ((dataArray[1] & 0xFF) << 8));
+                    Data ^= 0x915d;
+                    Data ^= (ushort)client.Identity;
+                    Data = (ushort)((Data << 0x3) | (Data >> 0xd));
+                    Data -= 0xeb42;
 
-                        dataArray = BitConverter.GetBytes(TargetIdentity);
-                        TargetIdentity = ((uint) dataArray[0] & 0xFF) | (((uint) dataArray[1] & 0xFF) << 8) |
-                                         (((uint) dataArray[2] & 0xFF) << 16) | (((uint) dataArray[3] & 0xFF) << 24);
-                        TargetIdentity = ((((TargetIdentity & 0xffffe000) >> 13) | ((TargetIdentity & 0x1fff) << 19)) ^
-                                          0x5F2D2463 ^ client.Identity) -
-                                         0x746F4AE6;
+                    dataArray = BitConverter.GetBytes(TargetIdentity);
+                    TargetIdentity = ((uint)dataArray[0] & 0xFF) | (((uint)dataArray[1] & 0xFF) << 8) |
+                                     (((uint)dataArray[2] & 0xFF) << 16) | (((uint)dataArray[3] & 0xFF) << 24);
+                    TargetIdentity = ((((TargetIdentity & 0xffffe000) >> 13) | ((TargetIdentity & 0x1fff) << 19)) ^
+                                      0x5F2D2463 ^ client.Identity) -
+                                     0x746F4AE6;
 
-                        dataArray = BitConverter.GetBytes(PosX);
-                        long xx = (dataArray[0] & 0xFF) | ((dataArray[1] & 0xFF) << 8);
-                        dataArray = BitConverter.GetBytes(PosY);
-                        long yy = (dataArray[0] & 0xFF) | ((dataArray[1] & 0xFF) << 8);
-                        xx = xx ^ (client.Identity & 0xffff) ^ 0x2ed6;
-                        xx = ((xx << 1) | ((xx & 0x8000) >> 15)) & 0xffff;
-                        xx |= 0xffff0000;
-                        xx -= 0xffff22ee;
-                        yy = yy ^ (client.Identity & 0xffff) ^ 0xb99b;
-                        yy = ((yy << 5) | ((yy & 0xF800) >> 11)) & 0xffff;
-                        yy |= 0xffff0000;
-                        yy -= 0xffff8922;
-                        PosX = Convert.ToUInt16(xx);
-                        PosY = Convert.ToUInt16(yy);
-                    }
+                    dataArray = BitConverter.GetBytes(PosX);
+                    long xx = (dataArray[0] & 0xFF) | ((dataArray[1] & 0xFF) << 8);
+                    dataArray = BitConverter.GetBytes(PosY);
+                    long yy = (dataArray[0] & 0xFF) | ((dataArray[1] & 0xFF) << 8);
+                    xx = xx ^ (client.Identity & 0xffff) ^ 0x2ed6;
+                    xx = ((xx << 1) | ((xx & 0x8000) >> 15)) & 0xffff;
+                    xx |= 0xffff0000;
+                    xx -= 0xffff22ee;
+                    yy = yy ^ (client.Identity & 0xffff) ^ 0xb99b;
+                    yy = ((yy << 5) | ((yy & 0xF800) >> 11)) & 0xffff;
+                    yy |= 0xffff0000;
+                    yy -= 0xffff8922;
+                    PosX = Convert.ToUInt16(xx);
+                    PosY = Convert.ToUInt16(yy);
 
                     await sender.ProcessMagicAttackAsync((ushort) Data, TargetIdentity, PosX, PosY);
                     break;
@@ -141,9 +137,6 @@ namespace Comet.Game.Packets
 
                 case MsgInteractType.Court:
                 {
-                    if (user == null)
-                        return;
-
                     if (target == null || target.Identity == user.Identity)
                         return;
 
@@ -181,9 +174,6 @@ namespace Comet.Game.Packets
 
                 case MsgInteractType.Marry:
                 {
-                    if (user == null)
-                        return;
-
                     if (target == null || target.Identity == user.Identity)
                         return;
 
@@ -262,9 +252,6 @@ namespace Comet.Game.Packets
                 case MsgInteractType.InitialMerchant:
                 case MsgInteractType.AcceptMerchant:
                 {
-                    if (user == null)
-                        return;
-
                     // ON ACCEPT: Sender = 1 Target = 1
                     await user.SetMerchantAsync();
                     break;
@@ -272,9 +259,6 @@ namespace Comet.Game.Packets
 
                 case MsgInteractType.CancelMerchant:
                 {
-                    if (user == null)
-                        return;
-
                     await user.RemoveMerchantAsync();
                     break;
                 }
@@ -286,9 +270,6 @@ namespace Comet.Game.Packets
 
                 case MsgInteractType.CoupleActionRequest:
                 {
-                    if (user == null)
-                        return;
-
                     Character userTarget = RoleManager.GetUser(TargetIdentity);
                     if (userTarget == null)
                         return;
@@ -309,9 +290,6 @@ namespace Comet.Game.Packets
 
                 case MsgInteractType.CoupleActionConfirm:
                 {
-                    if (user == null)
-                        return;
-
                     uint targetId = user.QueryRequest(RequestType.CoupleInteraction);
                     if (targetId != TargetIdentity)
                         return;
@@ -332,7 +310,7 @@ namespace Comet.Game.Packets
 
                     if (targetUser.HasCoupleInteraction() || targetUser.HasCoupleInteractionStarted())
                         return;
-                    
+
                     await targetUser.SendAsync(this);
 
                     Timestamp = 0;
@@ -347,9 +325,6 @@ namespace Comet.Game.Packets
 
                 case MsgInteractType.CoupleActionRefuse:
                 {
-                    if (user == null)
-                        return;
-
                     uint targetId = user.PopRequest(RequestType.CoupleInteraction);
                     if (targetId != TargetIdentity)
                         return;
@@ -364,9 +339,6 @@ namespace Comet.Game.Packets
 
                 case MsgInteractType.CoupleActionStart:
                 {
-                    if (user == null)
-                        return;
-
                     if (!user.HasCoupleInteraction() || user.HasCoupleInteractionStarted())
                         return;
 
@@ -397,9 +369,6 @@ namespace Comet.Game.Packets
 
                 case MsgInteractType.CoupleActionEnd:
                 {
-                    if (user == null)
-                        return;
-                    
                     await user.BroadcastRoomMsgAsync(this, true);
                     (TargetIdentity, SenderIdentity) = (SenderIdentity, TargetIdentity);
                     await user.BroadcastRoomMsgAsync(this, true);
@@ -407,17 +376,13 @@ namespace Comet.Game.Packets
                     user.CancelCoupleInteraction();
 
                     Character couple = RoleManager.GetUser(SenderIdentity);
-                    if (couple != null)
-                    {
-                        couple.CancelCoupleInteraction();
-                    }
+                    if (couple != null) couple.CancelCoupleInteraction();
                     break;
                 }
 
                 default:
                 {
-                    if (client != null)
-                        await client.SendAsync(new MsgTalk(client.Identity, TalkChannel.Service,
+                    await client.SendAsync(new MsgTalk(client.Identity, TalkChannel.Service,
                                                            $"Missing packet {Type}, Action {Action}, Length {Length}"));
                     await Log.WriteLogAsync(LogLevel.Warning,
                                             "Missing packet {0}, Action {1}, Length {2}\n{3}",

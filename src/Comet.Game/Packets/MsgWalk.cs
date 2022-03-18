@@ -42,13 +42,14 @@ namespace Comet.Game.Packets
                     msg.Targets.Add(couple.Identity);
 
                     await user.SendAsync(this);
+                    await Kernel.BroadcastWorldMsgAsync(this);
                     Identity = couple.Identity;
                     await couple.SendAsync(this);
+                    await Kernel.BroadcastWorldMsgAsync(this);
 
                     await user.SendAsync(msg);
                     await user.Screen.UpdateAsync(msg);
                     await couple.Screen.UpdateAsync();
-                    await Kernel.BroadcastWorldMsgAsync(msg);
                 }
                 else if (moved)
                 {

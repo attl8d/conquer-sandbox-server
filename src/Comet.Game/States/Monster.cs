@@ -99,13 +99,16 @@ namespace Comet.Game.States
                     X = MapX,
                     Y = MapY,
                     Name = Name,
-                    AiType = 0
+                    AiType = mDbMonster.AiType
                 };
 
                 Role owner = RoleManager.GetUser(OwnerIdentity);
                 if (owner == null)
                     return false;
                 await owner.SendAsync(msg);
+
+                // send to the npc server...it might be tracked by other monsters as target
+                
             }
 
             if (mDbMonster.MagicType > 0)

@@ -46,7 +46,7 @@ namespace Comet.Game.Packets
                 case ActionType.CharacterObservation: // 117
                 case ActionType.FriendObservation:    // 310
                 {
-                    if (user != null && user.Identity == Identity)
+                    if (user.Identity == Identity)
                     {
                         user?.BattleSystem.ResetBattle();
                         await user.MagicData.AbortMagicAsync(true);
@@ -55,6 +55,8 @@ namespace Comet.Game.Packets
                     break;
                 }
             }
+
+            Console.WriteLine($"Action {Action} => user: {user.Identity} target: {Identity}");
 
             switch (Action)
             {
@@ -460,12 +462,14 @@ namespace Comet.Game.Packets
                     break;
                 }
 
+                case ActionType.CallPetJump:
                 case ActionType.MapJump: // 133
                 {
                     var newX = (ushort) Command;
                     var newY = (ushort) (Command >> 16);
 
-                    if (user != null && Identity == user.Identity) // todo handle ai 
+                    // user and call pet handles jump
+                    if (Identity == user.Identity)
                     {
                         if (!user.IsAlive)
                         {
@@ -481,9 +485,9 @@ namespace Comet.Game.Packets
                             return;
                         }
                     }
-                    else
+                    else if (!role.IsPet() || role.Identity != user.GetCallPet()?.Identity)
                     {
-
+                        return;
                     }
 
 #if DEBUG_MOVEMENT
@@ -494,7 +498,6 @@ namespace Comet.Game.Packets
                     bool result = await role.JumpPosAsync(newX, newY);
                     Character couple;
                     if (result 
-                        && user != null
                         && user.HasCoupleInteraction()
                         && user.HasCoupleInteractionStarted()
                         && (couple = user.GetCoupleInteractionTarget()) != null)
@@ -503,8 +506,10 @@ namespace Comet.Game.Packets
                         couple.MapY = user.MapY;
 
                         await user.SendAsync(this);
+                        await Kernel.BroadcastWorldMsgAsync(this);
                         Identity = couple.Identity;
                         await couple.SendAsync(this);
+                        await Kernel.BroadcastWorldMsgAsync(this);
 
                         MsgSyncAction msg = new MsgSyncAction
                         {
@@ -517,13 +522,12 @@ namespace Comet.Game.Packets
                         await user.SendAsync(msg);
                         await user.Screen.UpdateAsync(msg);
                         await couple.Screen.UpdateAsync();
-                        await Kernel.BroadcastWorldMsgAsync(msg);
                     }
                     else
                     {
-                        if (user != null)
+                        if (role.IsPlayer())
                         {
-                            await user.SendAsync(this);
+                            await role.SendAsync(this);
                         }
 
                         if (role.Screen != null)

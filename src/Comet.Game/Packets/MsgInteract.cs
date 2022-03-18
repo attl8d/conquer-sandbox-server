@@ -10,6 +10,7 @@ using Comet.Game.World.Maps;
 using Comet.Network.Packets;
 using Comet.Network.Packets.Game;
 using Comet.Shared;
+using Org.BouncyCastle.Asn1.X509;
 using static Comet.Network.Packets.Game.MsgName<Comet.Game.States.Client>;
 
 namespace Comet.Game.Packets
@@ -280,6 +281,136 @@ namespace Comet.Game.Packets
 
                 case MsgInteractType.MerchantProgress:
                 {
+                    break;
+                }
+
+                case MsgInteractType.CoupleActionRequest:
+                {
+                    if (user == null)
+                        return;
+
+                    Character userTarget = RoleManager.GetUser(TargetIdentity);
+                    if (userTarget == null)
+                        return;
+
+                    if (user.GetDistance(userTarget) >= Screen.VIEW_SIZE)
+                        return;
+
+                    if (user.HasCoupleInteraction() || user.HasCoupleInteractionStarted())
+                        return;
+
+                    if (userTarget.HasCoupleInteraction() || userTarget.HasCoupleInteractionStarted())
+                        return;
+
+                    userTarget.SetRequest(RequestType.CoupleInteraction, user.Identity, Data);
+                    await userTarget.SendAsync(this);
+                    break;
+                }
+
+                case MsgInteractType.CoupleActionConfirm:
+                {
+                    if (user == null)
+                        return;
+
+                    uint targetId = user.QueryRequest(RequestType.CoupleInteraction);
+                    if (targetId != TargetIdentity)
+                        return;
+
+                    Character targetUser = RoleManager.GetUser(targetId);
+                    if (targetUser == null)
+                        return;
+
+                    int requiredAction = user.QueryRequestData(RequestType.CoupleInteraction);
+                    if (!Enum.IsDefined(typeof(EntityAction), (ushort) requiredAction))
+                        return;
+
+                    if (user.IsWing || targetUser.IsWing)
+                        return;
+
+                    if (user.HasCoupleInteraction() || user.HasCoupleInteractionStarted())
+                        return;
+
+                    if (targetUser.HasCoupleInteraction() || targetUser.HasCoupleInteractionStarted())
+                        return;
+                    
+                    await targetUser.SendAsync(this);
+
+                    Timestamp = 0;
+                    await user.SendAsync(this);
+
+                    await user.SetActionAsync((EntityAction) requiredAction, targetUser.Identity);
+                    await targetUser.SetActionAsync((EntityAction) requiredAction, user.Identity);
+
+                    user.PopRequest(RequestType.CoupleInteraction);
+                    break;
+                }
+
+                case MsgInteractType.CoupleActionRefuse:
+                {
+                    if (user == null)
+                        return;
+
+                    uint targetId = user.PopRequest(RequestType.CoupleInteraction);
+                    if (targetId != TargetIdentity)
+                        return;
+
+                    Character targetUser = RoleManager.GetUser(targetId);
+                    if (targetUser == null)
+                        return;
+
+                    await targetUser.SendAsync(this);
+                    break;
+                }
+
+                case MsgInteractType.CoupleActionStart:
+                {
+                    if (user == null)
+                        return;
+
+                    if (!user.HasCoupleInteraction() || user.HasCoupleInteractionStarted())
+                        return;
+
+                    Character couple = user.GetCoupleInteractionTarget();
+                    if (couple == null)
+                    {
+                        user.CancelCoupleInteraction();
+                        return;
+                    }
+
+                    if (user.GetDistance(couple) > 1)
+                    {
+                        couple.CancelCoupleInteraction();
+                        user.CancelCoupleInteraction();
+                        return;
+                    }
+
+                    user.StartCoupleInteraction();
+                    couple.StartCoupleInteraction();
+
+                    (SenderIdentity, TargetIdentity) = (TargetIdentity, SenderIdentity);
+                    await user.BroadcastRoomMsgAsync(this, true);
+
+                    (SenderIdentity, TargetIdentity) = (TargetIdentity, SenderIdentity);
+                    await couple.BroadcastRoomMsgAsync(this, true);
+                    break;
+                }
+
+                case MsgInteractType.CoupleActionEnd:
+                {
+                    if (user == null)
+                        return;
+                    
+                    await user.BroadcastRoomMsgAsync(this, true);
+                    (TargetIdentity, SenderIdentity) = (SenderIdentity, TargetIdentity);
+                    await user.BroadcastRoomMsgAsync(this, true);
+
+                    user.CancelCoupleInteraction();
+
+                    Character couple = RoleManager.GetUser(SenderIdentity);
+                    if (couple != null)
+                    {
+                        couple.CancelCoupleInteraction();
+                    }
                     break;
                 }
 

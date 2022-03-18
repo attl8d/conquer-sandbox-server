@@ -28,10 +28,6 @@ namespace Comet.Network.Packets
         MsgDetainItemInfo = 1034,
         MsgGodExp = 1036,
         MsgPing = 1037,
-        MsgEnemyList = 1041,
-        MsgMonsterTransform = 1042,
-        MsgTeamRoll = 1043,
-        MsgLoadMap = 1044,
         MsgTrade = 1056,
 
         // MsgAccount = 1051,

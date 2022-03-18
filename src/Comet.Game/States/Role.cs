@@ -354,7 +354,7 @@ namespace Comet.Game.States
 
         public virtual EntityAction Action { get; protected set; }
 
-        public async Task SetDirectionAsync(FacingDirection direction, bool sync = true)
+        public virtual async Task SetDirectionAsync(FacingDirection direction, bool sync = true)
         {
             Direction = direction;
             if (sync)
@@ -368,7 +368,7 @@ namespace Comet.Game.States
                 }, true);
         }
 
-        public async Task SetActionAsync(EntityAction action, bool sync = true)
+        public virtual async Task SetActionAsync(EntityAction action, bool sync = true)
         {
             if (action != EntityAction.Cool && IsWing)
                 return;
@@ -1081,6 +1081,7 @@ namespace Comet.Game.States
 
     public enum EntityAction : ushort
     {
+        None,
         Dance1 = 1,
         Dance2 = 2,
         Dance3 = 3,
@@ -1098,6 +1099,11 @@ namespace Comet.Game.States
         Kneel = 210,
         Cool = 230,
         Sit = 250,
-        Lie = 270
+        Lie = 270,
+
+        InteractionKiss = 34466,
+        InteractionHold = 34468,
+        InteractionHug = 34469,
+        CoupleDances = 34474
     }
 }

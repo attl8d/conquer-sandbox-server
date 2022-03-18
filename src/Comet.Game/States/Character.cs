@@ -2092,12 +2092,15 @@ namespace Comet.Game.States
 
         #region Requests
 
-        public void SetRequest(RequestType type, uint target)
+        private int mRequestData;
+
+        public void SetRequest(RequestType type, uint target, int data = 0)
         {
             m_dicRequests.TryRemove(type, out _);
             if (target == 0)
                 return;
 
+            mRequestData = data;
             m_dicRequests.TryAdd(type, target);
         }
 
@@ -2106,9 +2109,21 @@ namespace Comet.Game.States
             return m_dicRequests.TryGetValue(type, out uint value) ? value : 0;
         }
 
+        public int QueryRequestData(RequestType type)
+        {
+            if (m_dicRequests.TryGetValue(type, out _))
+                return mRequestData;
+            return 0;
+        }
+
         public uint PopRequest(RequestType type)
         {
-            return m_dicRequests.TryRemove(type, out uint value) ? value : 0;
+            if (m_dicRequests.TryRemove(type, out uint value))
+            {
+                mRequestData = 0;
+                return value;
+            }
+            return 0;
         }
 
         #endregion
@@ -5831,11 +5846,6 @@ namespace Comet.Game.States
             }
             return true;
         }
-            //EnlightmentLastUpdate !=
-            //uint.Parse(DateTime.Now.ToString("yyyyMMdd")) // last enlightenment update yesterday
-            //|| EnlightenedTimes < ENLIGHTENMENT_MAX_TIMES // hasn't been enlightened N times
-            //|| EnlightenExperience <
-            //ENLIGHTENMENT_UPLEV_MAX_EXP / 2 * ENLIGHTENMENT_MAX_TIMES; // isn't waiting exp from other N times
 
         public async Task<bool> EnlightenPlayerAsync(Character target)
         {
@@ -5962,6 +5972,48 @@ namespace Comet.Game.States
         {
             return mCallPet;
         }
+
+        #endregion
+
+        #region Player Pose
+
+        private uint mCoupleInteractionTarget;
+        private bool mCoupleInteractionStarted;
+
+        public bool HasCoupleInteraction()
+        {
+            return mCoupleInteractionTarget != 0;
+        }
+
+        public Character GetCoupleInteractionTarget()
+        {
+            return RoleManager.GetUser(mCoupleInteractionTarget);
+        }
+
+        public EntityAction CoupleAction { get; private set; }
+
+        public async Task<bool> SetActionAsync(EntityAction action, uint target)
+        {
+            // hum
+            CoupleAction = action;
+            mCoupleInteractionTarget = target;
+            return true;
+        }
+
+        public void CancelCoupleInteraction()
+        {
+            CoupleAction = EntityAction.None;
+            mCoupleInteractionTarget = 0;
+            PopRequest(RequestType.CoupleInteraction);
+            mCoupleInteractionStarted = false;
+        }
+
+        public void StartCoupleInteraction()
+        {
+            mCoupleInteractionStarted = true;
+        }
+
+        public bool HasCoupleInteractionStarted() => mCoupleInteractionStarted;
 
         #endregion
 
@@ -6698,7 +6750,8 @@ namespace Comet.Game.States
         Marriage,
         TradePartner,
         Guide,
-        Family
+        Family,
+        CoupleInteraction
     }
 
     public enum UserFlagType : uint

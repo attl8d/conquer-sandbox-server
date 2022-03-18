@@ -30,7 +30,7 @@ namespace Comet.Game.Packets
         ///     Process can be invoked by a packet after decode has been called to structure
         ///     packet fields and properties. For the server implementations, this is called
         ///     in the packet handler after the message has been dequeued from the server's
-        ///     <see cref="PacketProcessor" />.
+        ///     <see cref="PacketProcessor{TClient}" />.
         /// </summary>
         /// <param name="client">Client requesting packet processing</param>
         public override async Task ProcessAsync(Client client)
@@ -491,26 +491,53 @@ namespace Comet.Game.Packets
 #endif
 
                     await role.ProcessOnMoveAsync();
-                    await role.JumpPosAsync(newX, newY);
-
-                    //X = role.MapX;
-                    //Y = role.MapY;
-
-                    if (user != null)
+                    bool result = await role.JumpPosAsync(newX, newY);
+                    Character couple;
+                    if (result 
+                        && user != null
+                        && user.HasCoupleInteraction()
+                        && user.HasCoupleInteractionStarted()
+                        && (couple = user.GetCoupleInteractionTarget()) != null)
                     {
+                        couple.MapX = user.MapX;
+                        couple.MapY = user.MapY;
+
                         await user.SendAsync(this);
-                    }
+                        Identity = couple.Identity;
+                        await couple.SendAsync(this);
 
-                    if (role.Screen != null)
-                    {
-                        await role.Screen.UpdateAsync(this);
+                        MsgSyncAction msg = new MsgSyncAction
+                        {
+                            Action = SyncAction.Jump,
+                            X = user.MapX,
+                            Y = user.MapY
+                        };
+                        msg.Targets.Add(user.Identity);
+                        msg.Targets.Add(couple.Identity);
+                        await user.SendAsync(msg);
+                        await user.Screen.UpdateAsync(msg);
+                        await couple.Screen.UpdateAsync();
+                        await Kernel.BroadcastWorldMsgAsync(msg);
                     }
                     else
                     {
-                        await role.BroadcastRoomMsgAsync(this, true);
+                        if (user != null)
+                        {
+                            await user.SendAsync(this);
+                        }
+
+                        if (role.Screen != null)
+                        {
+                            await role.Screen.UpdateAsync(this);
+                        }
+                        else
+                        {
+                            await role.BroadcastRoomMsgAsync(this, true);
+                        }
+
+                        await Kernel.BroadcastWorldMsgAsync(this);
                     }
 
-                    await Kernel.BroadcastWorldMsgAsync(this);
                     break;
                 }
 

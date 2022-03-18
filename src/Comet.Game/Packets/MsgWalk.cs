@@ -19,15 +19,43 @@ namespace Comet.Game.Packets
         {
             if (client != null && Identity == client.Character.Identity)
             {
-                await client.Character.ProcessOnMoveAsync();
+                Character user = client.Character;
+                await user.ProcessOnMoveAsync();
 
-                if (await client.Character.MoveTowardAsync(Direction, Mode))
+                bool moved = await user.MoveTowardAsync(Direction, Mode);
+                Character couple;
+                if (moved 
+                    && user.HasCoupleInteraction() 
+                    && user.HasCoupleInteractionStarted()
+                    && (couple = user.GetCoupleInteractionTarget()) != null)
                 {
-                    await client.SendAsync(this);
-                    await client.Character.Screen.UpdateAsync(this);
+                    couple.MapX = user.MapX;
+                    couple.MapY = user.MapY;
+
+                    MsgSyncAction msg = new MsgSyncAction
+                    {
+                        Action = SyncAction.Walk,
+                        X = user.MapX,
+                        Y = user.MapY
+                    };
+                    msg.Targets.Add(user.Identity);
+                    msg.Targets.Add(couple.Identity);
+
+                    await user.SendAsync(this);
+                    Identity = couple.Identity;
+                    await couple.SendAsync(this);
+
+                    await user.SendAsync(msg);
+                    await user.Screen.UpdateAsync(msg);
+                    await couple.Screen.UpdateAsync();
+                    await Kernel.BroadcastWorldMsgAsync(msg);
+                }
+                else if (moved)
+                {
+                    await user.SendAsync(this);
+                    await user.Screen.UpdateAsync(this);
                     await Kernel.BroadcastWorldMsgAsync(this);
                 }
-
                 return;
             }
 

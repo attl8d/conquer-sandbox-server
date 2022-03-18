@@ -108,11 +108,11 @@ namespace Comet.Network.Packets.Game
         CounterKill = 43,
         CounterKillSwitch = 44,
         FatalStrike = 45,
-        InteractRequest = 46,
-        InteractConfirm,
-        Interact,
-        InteractUnknown,
-        InteractStop,
+        CoupleActionRequest = 46,
+        CoupleActionConfirm,
+        CoupleActionRefuse,
+        CoupleActionStart,
+        CoupleActionEnd,
         AzureDmg = 55
     }
 

@@ -12,7 +12,7 @@ namespace Comet.Game.Packets
     /// </summary>
     public abstract class MsgAction<T> : MsgBase<T>
     {
-        public MsgAction()
+        protected MsgAction()
         {
             Timestamp = (uint) Environment.TickCount;
         }

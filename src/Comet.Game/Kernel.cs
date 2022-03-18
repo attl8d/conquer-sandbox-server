@@ -58,19 +58,21 @@ namespace Comet.Game
 
         public static async Task BroadcastWorldMsgAsync(IPacket msg)
         {
-            switch (msg.Type)
+            byte[] message = msg.Encode();
+            PacketType type = (PacketType) BitConverter.ToInt16(message, 2);
+            switch (type)
             {
                 case > PacketType.MsgAccServerStart and < PacketType.MsgAccServerEnd:
                 {
                     if (AccountServer is {Socket: {Connected: true}})
-                        await AccountServer.SendAsync(msg);
+                        await AccountServer.SendAsync(message);
                     break;
                 }
                 case > PacketType.MsgAiServerStart and < PacketType.MsgAiServerEnd:
                 {
                     foreach (AiClient server in AiClients.Values)
                     {
-                        await server.SendAsync(msg);
+                        await server.SendAsync(message);
                     }
                     break;
                 }

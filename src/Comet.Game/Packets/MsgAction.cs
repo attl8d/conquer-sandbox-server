@@ -585,9 +585,9 @@ namespace Comet.Game.Packets
                     user.IsAway = Data != 0;
 
                     if (user.IsAway && user.Action != EntityAction.Sit)
-                        await user.SetActionAsync(EntityAction.Sit);
+                        await user.SetActionAsync(EntityAction.Sit, true);
                     else if (!user.IsAway && user.Action == EntityAction.Sit)
-                        await user.SetActionAsync(EntityAction.Stand);
+                        await user.SetActionAsync(EntityAction.Stand, true);
 
                     await user.BroadcastRoomMsgAsync(this, true);
                     break;

@@ -326,15 +326,15 @@ namespace Comet.Game.States.Items
                 case Item.ItemPosition.LeftHand:
                 case Item.ItemPosition.Armor:
                 case Item.ItemPosition.Garment:
-                    await m_user.Screen.BroadcastRoomMsgAsync(new MsgPlayer(m_user), false);
+                    await m_user.Screen.SynchroScreenAsync();
                     break;
             }
 
             if (m_user.Team != null)
                 await m_user.Team.SyncFamilyBattlePowerAsync();
 
-            //if (m_user.ApprenticeCount > 0)
-            //    await m_user.SynchroApprenticesSharedBattlePowerAsync();
+            if (m_user.ApprenticeCount > 0)
+                await m_user.SynchroApprenticesSharedBattlePowerAsync();
 
             return true;
         }
@@ -401,7 +401,7 @@ namespace Comet.Game.States.Items
                 case Item.ItemPosition.LeftHand:
                 case Item.ItemPosition.Armor:
                 case Item.ItemPosition.Garment:
-                    await m_user.Screen.BroadcastRoomMsgAsync(new MsgPlayer(m_user), false);
+                    await m_user.Screen.SynchroScreenAsync();
                     break;
             }
 

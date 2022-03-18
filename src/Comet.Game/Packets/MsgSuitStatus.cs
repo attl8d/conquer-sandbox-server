@@ -24,14 +24,7 @@ namespace Comet.Game.Packets
                 await user.BroadcastRoomMsgAsync(this, true);
                 return;
             }
-
-            /**
-             * Suitable fairy:
-             *  - 
-             *  - 
-             *  - 
-             *  - 
-             */
+            
             List<FlowerRankingStruct> ranking;
             List<FlowerRankingStruct> rankingToday;
 

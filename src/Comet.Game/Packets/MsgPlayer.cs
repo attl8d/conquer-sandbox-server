@@ -8,7 +8,7 @@ namespace Comet.Game.Packets
 {
     public sealed class MsgPlayer : MsgPlayer<Client>
     {
-        public MsgPlayer(Character user, ushort x = 0, ushort y = 0)
+        public MsgPlayer(Character user, Character target, ushort x = 0, ushort y = 0)
         {
             Identity = user.Identity;
             Mesh = user.Mesh;
@@ -20,7 +20,7 @@ namespace Comet.Game.Packets
 
             Hairstyle = user.Hairstyle;
             Direction = (byte) user.Direction;
-            Pose = (byte) user.Action;
+            Pose = (ushort) user.Action;
             Metempsychosis = user.Metempsychosis;
             Level = user.Level;
 
@@ -38,17 +38,24 @@ namespace Comet.Game.Packets
             ArmorColor = (ushort) (user.Armor?.Color ?? Item.ItemColor.None);
             Garment = user.Garment?.Type ?? 0;
 
+            Mount = user.Mount?.Type ?? 0;
+            MountExperience = (int) (user.Mount?.CompositionProgress ?? 0);
+            MountAddition = user.Mount?.Plus ?? 0;
+            MountColor = user.Mount?.SocketProgress ?? 0;
+
             FlowerRanking = user.FlowerCharm;
             QuizPoints = user.QuizPoints;
             UserTitle = user.UserTitle;
 
-            EnlightenPoints = (ushort) user.EnlightenPoints;
-            CanBeEnlightened = (ushort) (user.CanBeEnlightened ? 1 : 0);
+            EnlightenPoints = (ushort) (target.CanBeEnlightened(user) ? user.EnlightenPoints : 0);
+            CanBeEnlightened = user.CanBeEnlightened(target);
 
             Away = user.IsAway;
 
             if (user.Syndicate != null)
                 SharedBattlePower = (uint) user.Syndicate.GetSharedBattlePower(user.SyndicateRank);
+
+            TotemBattlePower = user.Syndicate?.TotemSharedBattlePower ?? 0;
 
             FamilyIdentity = user.FamilyIdentity;
             FamilyRank = (uint) user.FamilyPosition;
@@ -72,7 +79,7 @@ namespace Comet.Game.Packets
             Status = (uint) monster.StatusFlag;
 
             Direction = (byte) monster.Direction;
-            Pose = (byte) monster.Action;
+            Pose = (ushort) monster.Action;
 
             MonsterLevel = monster.Level;
             if (monster.Life > ushort.MaxValue)

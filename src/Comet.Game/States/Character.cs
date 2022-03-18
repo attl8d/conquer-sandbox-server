@@ -2781,6 +2781,7 @@ namespace Comet.Game.States
         public Item Armor => UserPackage[Item.ItemPosition.Armor];
         public Item Boots => UserPackage[Item.ItemPosition.Boots];
         public Item Garment => UserPackage[Item.ItemPosition.Garment];
+        public Item Mount => UserPackage[Item.ItemPosition.Steed];
 
         #endregion
 
@@ -5121,6 +5122,9 @@ namespace Comet.Game.States
 
                 await AttachStatusAsync(status);
             }
+
+            if (VipLevel > 0)
+                await AttachStatusAsync(this, StatusSet.ORANGE_HALO_GLOW, 0, (int)(VipExpiration - DateTime.Now).TotalSeconds, 0, 0, true);
         }
 
         #endregion
@@ -5141,12 +5145,12 @@ namespace Comet.Game.States
 
         #region Mining
 
-        private int m_mineCount;
+        private int mMineCount;
 
         public void StartMining()
         {
             m_mine.Startup(3);
-            m_mineCount = 0;
+            mMineCount = 0;
         }
 
         public void StopMining()
@@ -5189,11 +5193,11 @@ namespace Comet.Game.States
                     float nChance = 30f + (float) (WeaponSkill[562]?.Level ?? 0) / 2;
                     if (await Kernel.ChanceCalcAsync(nChance))
                     {
-                        const int EuxiniteOre = 1072031;
-                        const int IronOre = 1072010;
-                        const int CopperOre = 1072020;
-                        const int SilverOre = 1072040;
-                        const int GoldOre = 1072050;
+                        const int euxiniteOre = 1072031;
+                        const int ironOre = 1072010;
+                        const int copperOre = 1072020;
+                        const int silverOre = 1072040;
+                        const int goldOre = 1072050;
                         int oreRate = await Kernel.NextAsync(100);
                         int oreLevel = await Kernel.NextAsync(10) % 10;
                         switch (Map.ResLev) // TODO gems
@@ -5201,33 +5205,33 @@ namespace Comet.Game.States
                             case 1:
                             {
                                 if (oreRate < 4) // 4% Euxinite
-                                    idItem = EuxiniteOre;
+                                    idItem = euxiniteOre;
                                 else if (oreRate < 6) // 6% Gold Ore
-                                    idItem = (uint) (GoldOre + oreLevel);
+                                    idItem = (uint) (goldOre + oreLevel);
                                 else if (oreRate < 50) // 40% Iron Ore
-                                    idItem = (uint) (IronOre + oreLevel);
+                                    idItem = (uint) (ironOre + oreLevel);
                                 break;
                             }
                             case 2:
                             {
                                 if (oreRate < 5) // 5% Gold Ore
-                                    idItem = (uint) (GoldOre + oreLevel);
+                                    idItem = (uint) (goldOre + oreLevel);
                                 else if (oreRate < 15) // 10% Copper Ore
-                                    idItem = (uint) (CopperOre + oreLevel);
+                                    idItem = (uint) (copperOre + oreLevel);
                                 else if (oreRate < 50) // 35% Iron Ore
-                                    idItem = (uint) (IronOre + oreLevel);
+                                    idItem = (uint) (ironOre + oreLevel);
                                 break;
                             }
                             case 3:
                             {
                                 if (oreRate < 5) // 5% Gold Ore
-                                    idItem = (uint) (GoldOre + oreLevel);
+                                    idItem = (uint) (goldOre + oreLevel);
                                 else if (oreRate < 12) // 7% Silver Ore
-                                    idItem = (uint) (SilverOre + oreLevel);
+                                    idItem = (uint) (silverOre + oreLevel);
                                 else if (oreRate < 25) // 13% Copper Ore
-                                    idItem = (uint) (CopperOre + oreLevel);
+                                    idItem = (uint) (copperOre + oreLevel);
                                 else if (oreRate < 50) // 25% Iron Ore
-                                    idItem = (uint) (IronOre + oreLevel);
+                                    idItem = (uint) (ironOre + oreLevel);
                                 break;
                             }
                         }
@@ -5248,7 +5252,7 @@ namespace Comet.Game.States
                                              $"{Identity},{Name},{idItem},{MapIdentity},{Map?.Name},{MapX},{MapY}");
                     }
 
-                    m_mineCount++;
+                    mMineCount++;
                 }
             }
 
@@ -5292,7 +5296,7 @@ namespace Comet.Game.States
             else if (nRateL > 0)
                 nRate = nRateL;
 
-#if DEBUG
+//#if DEBUG
             if (QueryStatus(StatusSet.CYCLONE) != null)
             {
                 nRate = Calculations.CutTrail(0,
@@ -5300,7 +5304,7 @@ namespace Comet.Game.States
                 if (IsPm())
                     await SendAsync($"attack speed+: {nRate}");
             }
-#endif
+//#endif
 
             return Math.Max(400, nRate);
         }
@@ -5777,6 +5781,8 @@ namespace Comet.Game.States
         public const int ENLIGHTENMENT_UPLEV_MAX_EXP = 600;
         public const int ENLIGHTENMENT_EXP_PART_TIME = 60 * 20;
 
+        private const int EnlightenmentUserStc = 1127;
+
         public uint EnlightenPoints
         {
             get => m_dbObject.MentorOpportunity;
@@ -5806,12 +5812,30 @@ namespace Comet.Game.States
             EnlightmentLastUpdate = uint.Parse(DateTime.Now.ToString("yyyyMMdd"));
         }
 
-        public bool CanBeEnlightened =>
-            EnlightmentLastUpdate !=
-            uint.Parse(DateTime.Now.ToString("yyyyMMdd")) // last enlightenment update yesterday
-            || EnlightenedTimes < ENLIGHTENMENT_MAX_TIMES // hasn't been enlightened N times
-            || EnlightenExperience <
-            ENLIGHTENMENT_UPLEV_MAX_EXP / 2 * ENLIGHTENMENT_MAX_TIMES; // isn't waiting exp from other N times
+        public bool CanBeEnlightened(Character mentor)
+        {
+            if (mentor == null) return false;
+            if (EnlightenedTimes >= ENLIGHTENMENT_MAX_TIMES)
+                return false;
+            if (EnlightenExperience >= ENLIGHTENMENT_UPLEV_MAX_EXP / 2 * ENLIGHTENMENT_MAX_TIMES)
+                return false;
+            if (mentor.Level - Level < 20)
+                return false;
+
+            DbStatistic stc = Statistic.GetStc(EnlightenmentUserStc, mentor.Identity);
+            if (stc?.Timestamp != null)
+            {
+                int day = int.Parse(stc.Timestamp.Value.ToString("yyyyMMdd"));
+                int now = int.Parse(DateTime.Now.ToString("yyyyMMdd"));
+                return day != now;
+            }
+            return true;
+        }
+            //EnlightmentLastUpdate !=
+            //uint.Parse(DateTime.Now.ToString("yyyyMMdd")) // last enlightenment update yesterday
+            //|| EnlightenedTimes < ENLIGHTENMENT_MAX_TIMES // hasn't been enlightened N times
+            //|| EnlightenExperience <
+            //ENLIGHTENMENT_UPLEV_MAX_EXP / 2 * ENLIGHTENMENT_MAX_TIMES; // isn't waiting exp from other N times
 
         public async Task<bool> EnlightenPlayerAsync(Character target)
         {
@@ -5823,7 +5847,7 @@ namespace Comet.Game.States
                 // todo send message
                 return false;
 
-            if (!target.CanBeEnlightened)
+            if (!target.CanBeEnlightened(this))
                 // todo send message
                 return false;
 
@@ -5835,8 +5859,11 @@ namespace Comet.Game.States
             target.EnlightenedTimes += 1;
             target.EnlightenExperience += ENLIGHTENMENT_UPLEV_MAX_EXP / 2;
 
+            await target.Statistic.AddOrUpdateAsync(EnlightenmentUserStc, Identity, 1, true);
+
             // we will send instand 300 uplev exp and 300 will be awarded for 5 minutes later
             await target.AwardExperienceAsync(CalculateExpBall(ENLIGHTENMENT_UPLEV_MAX_EXP / 2), true);
+            await target.SendAsync(new MsgUserAttrib(Identity, ClientUpdateType.EnlightenPoints, 0));
             //await SynchroAttributesAsync(ClientUpdateType.EnlightenPoints, EnlightenPoints, true);
 
             await SaveAsync();
@@ -6518,7 +6545,7 @@ namespace Comet.Game.States
 
         public override async Task SendSpawnToAsync(Character player)
         {
-            await player.SendAsync(new MsgPlayer(this, MapX, MapY));
+            await player.SendAsync(new MsgPlayer(this, player, MapX, MapY));
 
             if (Syndicate != null)
                 await Syndicate.SendAsync(player);
@@ -6534,7 +6561,7 @@ namespace Comet.Game.States
 
         public override async Task SendSpawnToAsync(Character player, int x, int y)
         {
-            await player.SendAsync(new MsgPlayer(this, (ushort) x, (ushort) y));
+            await player.SendAsync(new MsgPlayer(this, player, (ushort) x, (ushort) y));
 
             if (Syndicate != null)
                 await Syndicate.SendAsync(player);
@@ -6550,7 +6577,7 @@ namespace Comet.Game.States
 
         public async Task SendWindowToAsync(Character player)
         {
-            await player.SendAsync(new MsgPlayer(this)
+            await player.SendAsync(new MsgPlayer(this, player)
             {
                 WindowSpawn = true
             });

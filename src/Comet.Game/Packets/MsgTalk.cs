@@ -487,6 +487,25 @@ namespace Comet.Game.Packets
                         return true;
                     }
 
+
+                    case "/toggleaction":
+                    {
+                        user.ShowAction = !user.ShowAction;
+                        return true;
+                    }
+
+                    case "/vip":
+                    {
+                        if (byte.TryParse(param, out byte vip))
+                        {
+                            if (!user.HasVip)
+                                user.VipExpiration = DateTime.Now.AddDays(1);
+                            await user.SetAttributesAsync(ClientUpdateType.VipLevel, vip);
+                        }
+
+                        return true;
+                    }
+
                     case "/testpb": // test progress bar
                     {
                         var msg = new MsgAction();
@@ -526,7 +545,7 @@ namespace Comet.Game.Packets
 
                     case "/msgrank":
                     {
-                        using var writer = new PacketWriter();
+                        await using var writer = new PacketWriter();
                         writer.Write((ushort) PacketType.MsgRank);
                         writer.Write(2);         // 4
                         writer.Write(0x1c9c4ae); // 8 
@@ -587,20 +606,131 @@ namespace Comet.Game.Packets
                         return true;
                     }
 
-                    case "/toggleaction":
+                    case "/msgplayer":
                     {
-                        user.ShowAction = !user.ShowAction;
-                        return true;
-                    }
+                        var startOffset = 0;
+                        var endOffset = 1;
+                        long value = 0;
+                        byte size = 0;
 
-                    case "/vip":
-                    {
-                        if (byte.TryParse(param, out byte vip))
+                        bool overrideOffset = false;
+                        string[] splitParam = param.Split(' ');
+                        if (splitParam.Length >= 3)
                         {
-                            if (!user.HasVip)
-                                user.VipExpiration = DateTime.Now.AddDays(1);
-                            await user.SetAttributesAsync(ClientUpdateType.VipLevel, vip);
+                            byte.TryParse(splitParam[0], out size);
+                            long.TryParse(splitParam[1], out value);
+                            int.TryParse(splitParam[2], out startOffset);
+                            endOffset = startOffset + 1;
+                            overrideOffset = true;
                         }
+                        if (splitParam.Length >= 4)
+                        {
+                            int.TryParse(splitParam[3], out endOffset);
+                            overrideOffset = true;
+                        }
+
+                        int x = 0,
+                            y = 0;
+
+                        int offset = startOffset;
+                        do
+                        {
+                            var mapX = (ushort) (user.MapX + x++);
+                            if (x >= 10)
+                            {
+                                x = 0;
+                                y += 1;
+                            }
+
+                            var mapY = (ushort) (user.MapY + y);
+
+                            await using var writer = new PacketWriter();
+                            writer.Write((ushort) PacketType.MsgPlayer);
+                            writer.Write(user.Mesh);                            // 4
+                            writer.Write(_testUserId++);                        // 8
+                            writer.Write((int) user.SyndicateIdentity);         // 12
+                            writer.Write(900);                                  // 16
+                            writer.Write((ushort) 0);                           // 20
+                            writer.Write(0UL);                                  // 22
+                            writer.Write(user.Headgear?.Type ?? 0);             // 30
+                            writer.Write(user.Garment?.Type ?? 0);              // 34
+                            writer.Write(user.Armor?.Type ?? 0);                // 38
+                            writer.Write(user.RightHand?.Type ?? 0);            // 42
+                            writer.Write(user.LeftHand?.Type ?? 0);             // 46
+                            writer.Write(user.Mount?.Type ?? 0);                // 50
+                            writer.Write(0);                                    // 54
+                            writer.Write((ushort) 0);                           // 58
+                            writer.Write((ushort) 0);                           // 60
+                            writer.Write(user.Hairstyle);                       // 62
+                            writer.Write(mapX);                                 // 64
+                            writer.Write(mapY);                                 // 66
+                            writer.Write((byte) user.Direction);                // 68
+                            writer.Write((byte) user.Action);                   // 69
+                            writer.Write(0);                                    // 70
+                            writer.Write(user.Metempsychosis);                  // 74
+                            writer.Write((ushort) 140);                          // 75
+                            writer.Write(false);                                // 77
+                            writer.Write(user.IsAway);                          // 78
+                            writer.Write(0);                                    // 79
+                            writer.Write(0);                                    // 83
+                            writer.Write(0);                                    // 87
+                            writer.Write(0);                                    // 91
+                            writer.Write((int) user.NobilityRank);              // 95
+                            writer.Write((ushort) (user.Armor?.Color ?? 0));    // 99
+                            writer.Write((ushort) (user.LeftHand?.Color ?? 0)); // 101
+                            writer.Write((ushort) (user.Headgear?.Color ?? 0)); // 103
+                            writer.Write(user.QuizPoints);                      // 105
+                            writer.Write(user.Mount?.Plus ?? 0);                // 109
+                            writer.Write(0);                                    // 110
+                            writer.Write((int) (user.Mount?.Color ?? 0));       // 114
+                            writer.Write((byte) 0);                             // 118
+                            writer.Write((ushort) 0);                           // 119
+                            writer.Write((byte) 0);                             // 121
+                            writer.Write((byte) 0);                             // 122
+                            writer.Write((byte) 0);                             // 123
+                            writer.Write((byte) 0);                             // 124
+                            writer.Write((byte) 0);                             // 125
+                            writer.Write((byte) 0);                             // 126
+                            writer.Write((byte) 0);                             // 127
+                            writer.Write((byte) 0);                             // 128
+                            writer.Write((byte) 0);                             // 129
+                            writer.Write((byte) 0);                             // 130
+                            writer.Write(user.FamilyIdentity);                  // 131
+                            writer.Write(10);                                   // 135
+                            writer.Write(user.FamilyBattlePower);               // 139
+                            writer.Write((int) user.UserTitle);                 // 143
+                            writer.Write(0);                                    // 147
+                            writer.Write(0);                                    // 151
+                            writer.Write(new List<string>                       // 155
+                            {
+                                $"{_testUserId - 1}_123",
+                                user.FamilyName
+                            });
+
+                            if (overrideOffset)
+                            {
+                                writer.BaseStream.Position = offset;
+                                switch (size)
+                                {
+                                    case 1:
+                                        writer.Write((byte) value);
+                                        break;
+                                    case 2:
+                                        writer.Write((ushort) value);
+                                        break;
+                                    case 4:
+                                        writer.Write((int) value);
+                                        break;
+                                    case 8:
+                                        writer.Write(value);
+                                        break;
+                                }
+                            }
+
+                            await user.Client.SendAsync(writer.ToArray());
+                        }
+                        while (++offset < endOffset);
+
                         return true;
                     }
                 }
@@ -675,17 +805,15 @@ namespace Comet.Game.Packets
                             && ushort.TryParse(chgMapParams[1], out ushort chgMapX)
                             && ushort.TryParse(chgMapParams[2], out ushort chgMapY))
                         {
-                            bool error = false;
+                            var error = false;
                             List<Role> roleSet = user.Map.Query9Blocks(chgMapX, chgMapY);
-                            foreach (var role in roleSet)
-                            {
+                            foreach (Role role in roleSet)
                                 if (role is BaseNpc npc
                                     && role.MapX == chgMapX && role.MapY == chgMapY)
                                 {
                                     error = true;
                                     break;
                                 }
-                            }
 
                             if (!error)
                                 await user.FlyMapAsync(chgMapId, chgMapX, chgMapY);
@@ -847,7 +975,7 @@ namespace Comet.Game.Packets
 
                     case "/fly":
                     {
-                        string[] chgMapParams = param.Split(new[] { ' ' }, 3, StringSplitOptions.RemoveEmptyEntries);
+                        string[] chgMapParams = param.Split(new[] {' '}, 3, StringSplitOptions.RemoveEmptyEntries);
                         if (chgMapParams.Length < 2)
                             return true;
 
@@ -860,17 +988,15 @@ namespace Comet.Game.Packets
                             return true;
                         }
 
-                        bool error = false;
+                        var error = false;
                         List<Role> roleSet = user.Map.Query9Blocks(x, y);
-                        foreach (var role in roleSet)
-                        {
+                        foreach (Role role in roleSet)
                             if (role is BaseNpc npc
                                 && role.MapX == x && role.MapY == y)
                             {
                                 error = true;
                                 break;
                             }
-                        }
 
                         if (!error)
                             await user.FlyMapAsync(0, x, y);
@@ -969,5 +1095,7 @@ namespace Comet.Game.Packets
 
             return false;
         }
+
+        private static int _testUserId = 100000000;
     }
 }

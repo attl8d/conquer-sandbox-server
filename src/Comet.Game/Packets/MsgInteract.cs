@@ -128,10 +128,7 @@ namespace Comet.Game.Packets
 
                 case MsgInteractType.Chop:
                 {
-                    if (user == null)
-                        return;
-
-                    Item targetItem = user.UserPackage.GetItemByType(Item.TYPE_JAR);
+                    Item targetItem = user?.UserPackage.GetItemByType(Item.TYPE_JAR);
                     if (targetItem == null)
                         return;
 
@@ -149,7 +146,7 @@ namespace Comet.Game.Packets
                     if (target == null || target.Identity == user.Identity)
                         return;
 
-                    if (!(target is Character targetUser))
+                    if (target is not Character targetUser)
                         return;
 
                     if (targetUser.MapIdentity != user.MapIdentity || user.GetDistance(targetUser) > Screen.VIEW_SIZE)

@@ -54,13 +54,13 @@ namespace Comet.Game
 
         #region AI
 
-        public static readonly ConcurrentDictionary<string, AiClient> AiClients = new();
+        public static AiClient AiServer { get; set; }
 
         public static async Task BroadcastWorldMsgAsync(IPacket msg)
         {
-            foreach (AiClient server in AiClients.Values)
+            if (AiServer != null)
             {
-                await server.SendAsync(msg);
+                await AiServer.SendAsync(msg);
             }
         }
 

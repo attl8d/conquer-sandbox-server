@@ -19,12 +19,13 @@ namespace Comet.Game.Packets.Ai
         ///     Process can be invoked by a packet after decode has been called to structure
         ///     packet fields and properties. For the server implementations, this is called
         ///     in the packet handler after the message has been dequeued from the server's
-        ///     <see cref="PacketProcessor" />.
+        ///     <see cref="PacketProcessor{TClient}" />.
         /// </summary>
         /// <param name="client">Client requesting packet processing</param>
         public override async Task ProcessAsync(AiClient client)
         {
             Role role = RoleManager.GetRole(Identity);
+            if (role == null) return;
 
             switch (Action)
             {

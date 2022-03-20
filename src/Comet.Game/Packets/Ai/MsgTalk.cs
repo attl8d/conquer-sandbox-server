@@ -20,32 +20,11 @@ namespace Comet.Game.Packets.Ai
         {
         }
 
-        public MsgTalk(uint characterID, TalkChannel channel, string text)
-            : base(characterID, channel, text)
-        {
-        }
-
-        public MsgTalk(uint characterID, TalkChannel channel, Color color, string text)
-            : base(characterID, channel, color, text)
-        {
-        }
-
-        public MsgTalk(uint characterID, TalkChannel channel, Color color, string recipient, string sender, string text)
-            : base(characterID, channel, color, recipient, sender, text)
-        {
-        }
-
-        public static MsgTalk LoginOk { get; } = new(0, TalkChannel.Login, "ANSWER_OK");
-        public static MsgTalk LoginInvalid { get; } = new(0, TalkChannel.Login, "Invalid login");
-        public static MsgTalk LoginNewRole { get; } = new(0, TalkChannel.Login, "NEW_ROLE");
-        public static MsgTalk RegisterOk { get; } = new(0, TalkChannel.Register, "ANSWER_OK");
-        public static MsgTalk RegisterInvalid { get; } = new(0, TalkChannel.Register, "Invalid character");
-        public static MsgTalk RegisterNameTaken { get; } = new(0, TalkChannel.Register, "Character name taken");
-        public static MsgTalk RegisterTryAgain { get; } = new(0, TalkChannel.Register, "Error, please try later");
-
         public override async Task ProcessAsync(AiClient client)
         {
             Role sender = RoleManager.GetRole(CharacterID);
+            if (sender == null)
+                return;
 
             switch (Channel)
             {

@@ -64,12 +64,9 @@ namespace Comet.Game.World.Managers
                                             $"Npc {npc.Identity} {npc.Name} no task found [taskid: {npc.Task0}]");
             }
 
-            //await RegisterEventAsync(new TimedGuildWar());
-            //await RegisterEventAsync(new LineSkillPk());
             await RegisterEventAsync(new ArenaQualifier());
             await RegisterEventAsync(new QuizShow());
             await RegisterEventAsync(new FamilyWar());
-            //await RegisterEventAsync(new GuildContest());
 
             mRankingBroadcast.Update();
             return true;

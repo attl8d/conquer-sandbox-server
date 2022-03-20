@@ -173,10 +173,10 @@ namespace Comet.Game.States
             if (sync)
                 await BroadcastRoomMsgAsync(new MsgAction
                 {
-                    X = (ushort) x,
-                    Y = (ushort) y,
-                    ArgumentX = m_posX,
-                    ArgumentY = m_posY,
+                    CommandX = (ushort) x,
+                    CommandY = (ushort) y,
+                    X = m_posX,
+                    Y = m_posY,
                     Identity = Identity,
                     Action = MsgAction<Client>.ActionType.MapJump,
                     Direction = (ushort) Direction
@@ -410,7 +410,7 @@ namespace Comet.Game.States
             return Identity >= DYNANPCID_FIRST && Identity < DYNANPCID_LAST;
         }
 
-        public bool IsPet()
+        public bool IsCallPet()
         {
             return Identity >= CALLPETID_FIRST && Identity < CALLPETID_LAST;
         }

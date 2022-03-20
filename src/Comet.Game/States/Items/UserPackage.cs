@@ -536,7 +536,7 @@ namespace Comet.Game.States.Items
                 }
             }
 
-            if (item.AccumulateNum > item.MaxAccumulateNum)
+            if (item.AccumulateNum > item.MaxAccumulateNum && item.IsPileEnable())
             {
                 uint amount = item.AccumulateNum - item.MaxAccumulateNum;
                 item.AccumulateNum = item.MaxAccumulateNum;

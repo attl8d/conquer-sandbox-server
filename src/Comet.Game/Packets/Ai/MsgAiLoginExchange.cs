@@ -34,7 +34,7 @@ namespace Comet.Game.Packets.Ai
                 return;
             }
 
-            if (!Kernel.AiClients.IsEmpty)
+            if (Kernel.AiServer != null)
             {
                 await Log.WriteLogAsync(
                     $"MsgAiLoginExchange.ProcessAsync >> Server has bound an NPC Server already {client.GUID} [{client.IPAddress}]");
@@ -52,7 +52,7 @@ namespace Comet.Game.Packets.Ai
                 Result = MsgAiLoginExchangeEx<AiClient>.AiLoginResult.Success
             });
 
-            Kernel.AiClients.TryAdd(client.GUID, client);
+            Kernel.AiServer = client;
         }
     }
 }

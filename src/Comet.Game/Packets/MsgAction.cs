@@ -485,7 +485,7 @@ namespace Comet.Game.Packets
                             return;
                         }
                     }
-                    else if (!role.IsPet() || role.Identity != user.GetCallPet()?.Identity)
+                    else if (!role.IsCallPet() || role.Identity != user.GetCallPet()?.Identity)
                     {
                         return;
                     }

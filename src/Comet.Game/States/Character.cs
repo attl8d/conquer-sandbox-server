@@ -5393,6 +5393,12 @@ namespace Comet.Game.States
                     case PkModeType.Capture:
                         if (monster.IsGuard() || monster.IsPkKiller())
                             return true;
+                        if (monster.IsCallPet())
+                        {
+                            Character owner = RoleManager.GetUser(monster.OwnerIdentity);
+                            if (owner?.IsCrime() != true)
+                                return true;
+                        }
                         return false;
                     case PkModeType.FreePk:
                         return false;
@@ -5416,7 +5422,8 @@ namespace Comet.Game.States
             if (target == null)
                 return (0, InteractionEffect.None);
 
-            if (!target.IsEvil() && Map.IsDeadIsland() || target is Monster mob && mob.IsGuard())
+            if (!target.IsEvil() && Map.IsDeadIsland() 
+                || target is Monster mob && (mob.IsGuard() || mob.IsCallPet()))
                 await SetCrimeStatusAsync(15);
 
             return await BattleSystem.CalcPowerAsync(BattleSystem.MagicType.None, this, target);

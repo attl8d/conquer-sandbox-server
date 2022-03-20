@@ -176,13 +176,14 @@ namespace Comet.AI.States
             if (sync)
                 await Kernel.SendAsync(new MsgAction
                 {
-                    X = (ushort) x,
-                    Y = (ushort) y,
-                    ArgumentX = m_posX,
-                    ArgumentY = m_posY,
+                    CommandX = (ushort) x,
+                    CommandY = (ushort) y,
+                    X = m_posX,
+                    Y = m_posY,
                     Identity = Identity,
                     Action = MsgAction<Server>.ActionType.MapJump,
-                    Direction = (ushort) Direction
+                    Direction = (ushort) Direction,
+                    Timestamp = (uint) Environment.TickCount
                 });
 
             m_posX = (ushort) x;

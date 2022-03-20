@@ -85,7 +85,7 @@ namespace Comet.Game.States
 
             Life = MaxLife;
 
-            if (!IsPet())
+            if (!IsCallPet())
             {
                 if (mDbMonster.Action != 0 && EventManager.GetAction(mDbMonster.Action) != null)
                     mIdAction = mDbMonster.Action;
@@ -107,7 +107,7 @@ namespace Comet.Game.States
                     return false;
                 await owner.SendAsync(msg);
 
-                // send to the npc server...it might be tracked by other monsters as target
+                // TODO send to the npc server...it might be tracked by other monsters as target
                 
             }
 

@@ -13,19 +13,18 @@ namespace Comet.Game.Internal.AI
     public sealed class AiServer : TcpServerListener<AiClient>
     {
         // Fields and Properties
-        private readonly PacketProcessor<AiClient> Processor;
+        private readonly PacketProcessor<AiClient> mProcessor;
 
         /// <summary>
         ///     Instantiates a new instance of <see cref="Server" /> by initializing the
-        ///     <see cref="PacketProcessor" /> for processing packets from the players using
+        ///     <see cref="PacketProcessor{TClient}" /> for processing packets from the players using
         ///     channels and worker threads. Initializes the TCP server listener.
         /// </summary>
-        /// <param name="config">The server's read configuration file</param>
         public AiServer()
             : base(1, exchange: false, footerLength: "8a653a5d1e92b4e1db79".Length)
         {
-            Processor = new PacketProcessor<AiClient>(ProcessAsync, 1);
-            _ = Processor.StartAsync(CancellationToken.None).ConfigureAwait(false);
+            mProcessor = new PacketProcessor<AiClient>(ProcessAsync, 1);
+            _ = mProcessor.StartAsync(CancellationToken.None).ConfigureAwait(false);
         }
 
         /// <summary>
@@ -38,7 +37,7 @@ namespace Comet.Game.Internal.AI
         /// <returns>A new instance of a ServerActor around the client socket</returns>
         protected override async Task<AiClient> AcceptedAsync(Socket socket, Memory<byte> buffer)
         {
-            uint partition = Processor.SelectPartition();
+            uint partition = mProcessor.SelectPartition();
             var client = new AiClient(socket, buffer, partition);
 
             await client.SendAsync(new MsgAiAction
@@ -58,7 +57,7 @@ namespace Comet.Game.Internal.AI
         protected override void Received(AiClient actor, ReadOnlySpan<byte> packet)
         {
             Kernel.NetworkMonitor.Receive(packet.Length);
-            Processor.Queue(actor, packet.ToArray());
+            mProcessor.Queue(actor, packet.ToArray());
         }
 
         /// <summary>
@@ -127,9 +126,7 @@ namespace Comet.Game.Internal.AI
                     }
 
                     default:
-                        Console.WriteLine(
-                            "Missing packet {0}, Length {1}\n{2}",
-                            type, length, PacketDump.Hex(packet));
+                        await Log.WriteLogAsync(LogLevel.Socket, $"Missing packet {type}, Length {length}\n{PacketDump.Hex(packet)}");
                         return;
                 }
 
@@ -152,7 +149,7 @@ namespace Comet.Game.Internal.AI
         /// <param name="actor">Server actor that represents the remote client</param>
         protected override void Disconnected(AiClient actor)
         {
-            Kernel.AiClients.TryRemove(actor.GUID, out _);
+            Kernel.AiServer = null;
             _ = Log.WriteLogAsync($"{actor.GUID} [{actor.IPAddress}] AI has disconnected.");
         }
     }

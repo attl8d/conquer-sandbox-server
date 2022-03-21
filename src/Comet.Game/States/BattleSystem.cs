@@ -313,20 +313,27 @@ namespace Comet.Game.States
                 attack = Calculations.CutTrail(0, Calculations.AdjustDataEx(attack, adjustAtk));
 
             if (attacker is Character && target is Character && attacker.IsBowman)
-                attack = (int) (attack * 0.1125f);
-
+            {
+                attack = (int)(attack * (1d - (Math.Min(100, target.Dodge / 2) / 100d)));
+                attack = (int) (attack * 0.1125d);
+            }
+            
             var targetUser = target as Character;
-            int defense = target.Defense;
+            int defense = 0;
+            if (!attacker.IsBowman)
+            {
+                defense = target.Defense;
 
-            if (adjustDef > 0)
-                defense = Calculations.CutTrail(0, Calculations.AdjustDataEx(defense, adjustDef));
+                if (adjustDef > 0)
+                    defense = Calculations.CutTrail(0, Calculations.AdjustDataEx(defense, adjustDef));
 
-            if (targetUser != null)
-                if (targetUser.Metempsychosis > 0 && targetUser.Level >= 70)
-                    defense = (int) (defense * 1.3d);
+                if (targetUser != null)
+                    if (targetUser.Metempsychosis > 0 && targetUser.Level >= 70)
+                        defense = (int) (defense * 1.3d);
 
-            if (target.QueryStatus(StatusSet.SHIELD) != null)
-                defense = Calculations.AdjustData(defense, target.QueryStatus(StatusSet.SHIELD).Power);
+                if (target.QueryStatus(StatusSet.SHIELD) != null)
+                    defense = Calculations.AdjustData(defense, target.QueryStatus(StatusSet.SHIELD).Power);
+            }
 
             damage = Math.Max(1, attack - defense);
 

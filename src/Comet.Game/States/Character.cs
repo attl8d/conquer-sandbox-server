@@ -523,7 +523,10 @@ namespace Comet.Game.States
                     return (int) Transformation.Dodge;
                 var result = 0;
                 for (var pos = Item.ItemPosition.EquipmentBegin; pos <= Item.ItemPosition.EquipmentEnd; pos++)
-                    result += UserPackage[pos]?.Dodge ?? 0;
+                {
+                    if (pos != Item.ItemPosition.Steed || QueryStatus(StatusSet.RIDING) != null)
+                        result += UserPackage[pos]?.Dodge ?? 0;
+                }
                 return result;
             }
         }

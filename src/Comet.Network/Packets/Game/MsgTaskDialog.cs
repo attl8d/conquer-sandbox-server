@@ -4,7 +4,7 @@ namespace Comet.Network.Packets.Game
 {
     public abstract class MsgTaskDialog<T> : MsgBase<T>
     {
-        public MsgTaskDialog()
+        protected MsgTaskDialog()
         {
             Text = string.Empty;
         }

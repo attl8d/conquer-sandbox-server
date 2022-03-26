@@ -7,6 +7,7 @@ using Comet.Account.Database.Repositories;
 using Comet.Account.Packets;
 using Comet.Account.Threading;
 using Comet.Database;
+using Comet.Database.Entities;
 using Comet.Shared;
 
 namespace Comet.Account
@@ -112,6 +113,49 @@ namespace Comet.Account
 
                 switch (full[0].ToLower())
                 {
+#if DEBUG
+                    case "account":
+                    {
+                        if (full.Length < 3)
+                        {
+                            Console.WriteLine(@"account [username] [password]");
+                            continue;
+                        }
+
+                        string username = full[1];
+                        string password = full[2];
+
+                        if (string.IsNullOrEmpty(username) || string.IsNullOrEmpty(password))
+                        {
+                            Console.WriteLine(@"Username and Password cannot be Null or Empty.");
+                            continue;
+                        }
+
+                        string salt = ConquerAccount.GenerateSalt();
+                        DbAccount dbAccount = new ()
+                        {
+                            StatusID = DbAccount.AccountStatus.None,
+                            Username = username,
+                            Password = ConquerAccount.HashPassword(password, salt),
+                            Salt = salt,
+                            AuthorityID = 255, // don't use in production
+                            IPAddress = "127.0.0.1",
+                            Registered = DateTime.Now,
+                            MacAddress = "CMD_ACC",
+                            ParentId = 1
+                        };
+
+                        if (!await ServerDbContext.SaveAsync(dbAccount))
+                        {
+                            Console.WriteLine(@"Could not save account to database.");
+                            continue;
+                        }
+
+                        Console.WriteLine($@"User created with name {username} and password {password}");
+                        continue;
+                    }
+#endif
+
                     case "exit":
                     {
                         return true;

@@ -40,7 +40,7 @@ namespace Comet.Game.Packets
                         if (source == null)
                             continue;
 
-                        if (source.Type < Item.TYPE_STONE1 || source.Type > Item.TYPE_STONE8)
+                        if (source.Type is < Item.TYPE_STONE1 or > Item.TYPE_STONE8)
                         {
                             if (source.IsWeaponOneHand())
                             {
@@ -167,7 +167,7 @@ namespace Comet.Game.Packets
             }
         }
 
-        private static ushort GetAddLevelExp(uint plus, bool steed)
+        public static ushort GetAddLevelExp(uint plus, bool steed)
         {
             switch (plus)
             {

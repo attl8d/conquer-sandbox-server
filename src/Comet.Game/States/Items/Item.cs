@@ -79,6 +79,20 @@ namespace Comet.Game.States.Items
 
         #region Static
 
+        public static int AdditionPoints(Item item)
+        {
+            int points = 0;
+            for (int i = 0; i < item.Plus; i++)
+            {
+                points += MsgDataArray.GetAddLevelExp((uint) i, item.IsMount());
+            }
+            if (item.Plus >= 12 && item.IsMount())
+            {
+                points += (int) item.CompositionProgress;
+            }
+            return points;
+        }
+
         public static async Task<MapItemInfo> CreateItemInfoAsync(DbMonstertype monstertype, int quality)
         {
             if (monstertype == null)

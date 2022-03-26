@@ -30,7 +30,11 @@ namespace Comet.Account.Packets
 
             foreach (PlayerData info in Data)
             {
-                DbRecordUser user = await RecordUserRepository.GetByIdAsync(info.Identity, realm.RealmID) ?? new DbRecordUser();
+                DbRecordUser user = await RecordUserRepository.GetByIdAsync(info.Identity, realm.RealmID) ?? new DbRecordUser
+                {
+                    AccountIdentity = info.AccountIdentity,
+                    UserIdentity = info.Identity
+                };
 
                 user.ServerIdentity = realm.RealmID;
                 user.Name = info.Name;
@@ -57,6 +61,7 @@ namespace Comet.Account.Packets
                 user.ConquerPoints = info.ConquerPoints;
                 //user.ConquerPointsMono = info.ConquerPointsMono;
                 user.WarehouseMoney = 0;
+
                 user.DeletedAt = null;
 
                 await ServerDbContext.SaveAsync(user);

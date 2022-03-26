@@ -18,11 +18,15 @@ namespace Comet.Network.Packets.Internal
             for (var i = 0; i < count; i++)
             {
                 uint id = reader.ReadUInt32();
+                uint accountId = reader.ReadUInt32();
                 bool online = reader.ReadBoolean();
+                bool deleted = reader.ReadBoolean();
                 Status.Add(new PlayerStatus
                 {
                     Identity = id,
-                    Online = online
+                    AccountIdentity = accountId,
+                    Online = online,
+                    Deleted = deleted
                 });
             }
         }
@@ -36,7 +40,9 @@ namespace Comet.Network.Packets.Internal
             foreach (PlayerStatus status in Status)
             {
                 writer.Write(status.Identity);
+                writer.Write(status.AccountIdentity);
                 writer.Write(status.Online);
+                writer.Write(status.Deleted);
             }
 
             return writer.ToArray();
@@ -45,7 +51,9 @@ namespace Comet.Network.Packets.Internal
         public struct PlayerStatus
         {
             public uint Identity;
+            public uint AccountIdentity;
             public bool Online;
+            public bool Deleted;
         }
     }
 }

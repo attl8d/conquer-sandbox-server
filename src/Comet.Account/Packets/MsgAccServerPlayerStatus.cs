@@ -1,6 +1,8 @@
-﻿using System.Diagnostics;
+﻿using System;
+using System.Diagnostics;
 using System.Linq;
 using System.Threading.Tasks;
+using Comet.Account.Database;
 using Comet.Account.Database.Repositories;
 using Comet.Account.States;
 using Comet.Database.Entities;
@@ -32,17 +34,19 @@ namespace Comet.Account.Packets
                 return;
 
             foreach (PlayerStatus info in Status)
+            {
                 if (info.Online)
                 {
-                    DbAccount account = await AccountsRepository.FindAsync(info.Identity);
+                    DbAccount account = await AccountsRepository.FindAsync(info.AccountIdentity);
                     if (account == null)
                     {
                         await client.SendAsync(new MsgAccServerCmd
                         {
                             Action = MsgAccServerCmd<GameServer>.ServerAction.Disconnect,
-                            AccountIdentity = info.Identity
+                            AccountIdentity = info.AccountIdentity
                         });
-                        await Log.WriteLogAsync(LogLevel.Info, $"User [{info.Identity}] being disconnected due to invalid account.");
+                        await Log.WriteLogAsync(LogLevel.Info,
+                                                $"User [{info.Identity}] being disconnected due to invalid account.");
                         return;
                     }
 
@@ -53,9 +57,10 @@ namespace Comet.Account.Packets
                         await client.SendAsync(new MsgAccServerCmd
                         {
                             Action = MsgAccServerCmd<GameServer>.ServerAction.Disconnect,
-                            AccountIdentity = info.Identity
+                            AccountIdentity = info.AccountIdentity
                         });
-                        await Log.WriteLogAsync(LogLevel.Info, $"User [{info.Identity}] being disconnected due to banned account. Flag [{account.StatusID}]");
+                        await Log.WriteLogAsync(LogLevel.Info,
+                                                $"User [{info.Identity}] being disconnected due to banned account. Flag [{account.StatusID}]");
                         return;
                     }
 
@@ -69,7 +74,18 @@ namespace Comet.Account.Packets
                 else
                 {
                     Kernel.Players.TryRemove(info.Identity, out _);
+
+                    if (info.Deleted)
+                    {
+                        var player = await RecordUserRepository.GetByIdAsync(info.Identity, client.Realm.RealmID);
+                        if (player != null)
+                        {
+                            player.DeletedAt = DateTime.Now;
+                            await ServerDbContext.SaveAsync(player);
+                        }
+                    }
                 }
+            }
         }
     }
 }

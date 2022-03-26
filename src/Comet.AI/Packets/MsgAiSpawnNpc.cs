@@ -49,13 +49,12 @@ namespace Comet.AI.Packets
                                                   generator);
                         if (!await monster.InitializeAsync(target.MapId, target.X, target.Y))
                         {
-                            await Log.WriteLogAsync(LogLevel.Warning,
-                                                    $"ExecuteActionEventCreatepet could not initialize monster: {JsonConvert.SerializeObject(target)}");
+                            await Log.WriteLogAsync(LogLevel.Warning,$"ExecuteActionEventCreatepet could not initialize monster: {JsonConvert.SerializeObject(target)}");
+                            IdentityGenerator.Monster.ReturnIdentity(monster.Identity);
                             continue;
                         }
 
-                        IdentityGenerator.Monster.ReturnIdentity(monster.Identity);
-
+                        RoleManager.AddRole(monster);
                         generator.Add(monster);
                         await monster.EnterMapAsync();
                     }
@@ -73,6 +72,7 @@ namespace Comet.AI.Packets
                             continue;
 
                         await target.LeaveMapAsync();
+                        RoleManager.RemoveRole(target.Identity);
                     }
 
                     break;

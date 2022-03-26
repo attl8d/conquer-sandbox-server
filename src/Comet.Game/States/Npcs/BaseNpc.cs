@@ -124,9 +124,9 @@ namespace Comet.Game.States.Npcs
                     return false;
 
                 await LeaveMapAsync();
-                m_idMap = idMap;
-                m_posX = x;
-                m_posY = y;
+                mIdMap = idMap;
+                mPosX = x;
+                mPosY = y;
                 await EnterMapAsync();
                 return true;
             }

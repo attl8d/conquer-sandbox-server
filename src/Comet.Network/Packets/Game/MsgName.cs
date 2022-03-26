@@ -55,33 +55,33 @@ namespace Comet.Network.Packets.Game
             writer.Write(Strings);       // 13
             return writer.ToArray();
         }
+    }
 
-        public enum StringAction : byte
-        {
-            None = 0,
-            Fireworks,
-            CreateGuild,
-            Guild,
-            ChangeTitle,
-            DeleteRole = 5,
-            Mate,
-            QueryNpc,
-            Wanted,
-            MapEffect,
-            RoleEffect = 10,
-            MemberList,
-            KickoutGuildMember,
-            QueryWanted,
-            QueryPoliceWanted,
-            PoliceWanted = 15,
-            QueryMate,
-            AddDicePlayer,
-            DeleteDicePlayer,
-            DiceBonus,
-            PlayerWave = 20,
-            SetAlly,
-            SetEnemy,
-            WhisperWindowInfo = 26
-        }
+    public enum StringAction : byte
+    {
+        None = 0,
+        Fireworks,
+        CreateGuild,
+        Guild,
+        ChangeTitle,
+        DeleteRole = 5,
+        Mate,
+        QueryNpc,
+        Wanted,
+        MapEffect,
+        RoleEffect = 10,
+        MemberList,
+        KickoutGuildMember,
+        QueryWanted,
+        QueryPoliceWanted,
+        PoliceWanted = 15,
+        QueryMate,
+        AddDicePlayer,
+        DeleteDicePlayer,
+        DiceBonus,
+        PlayerWave = 20,
+        SetAlly,
+        SetEnemy,
+        WhisperWindowInfo = 26
     }
 }

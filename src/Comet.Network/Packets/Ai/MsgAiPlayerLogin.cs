@@ -1,4 +1,6 @@
-﻿namespace Comet.Network.Packets.Ai
+﻿using System;
+
+namespace Comet.Network.Packets.Ai
 {
     public abstract class MsgAiPlayerLogin<T> : MsgBase<T>
     {
@@ -56,7 +58,7 @@
         {
             var writer = new PacketWriter();
             writer.Write((ushort) PacketType.MsgAiPlayerLogin);
-            writer.Write(Timestamp);
+            writer.Write(Environment.TickCount);
             writer.Write(Id);
             writer.Write(Name, 16);
             writer.Write(Level);

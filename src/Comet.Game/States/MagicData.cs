@@ -268,8 +268,8 @@ namespace Comet.Game.States
             if (mOwner.Map.Identity == TC_PK_ARENA_ID)
                 return true;
 
-            if (mOwner.Map.IsTrainingMap() && pMagic.AutoActive == 0 && m_autoAttackNum > 0 &&
-                m_autoAttackNum % 10 != 0)
+            if (mOwner.Map.IsTrainingMap() && pMagic.AutoActive == 0 && mAutoAttackNum > 0 &&
+                mAutoAttackNum % 10 != 0)
                 return true;
 
             if (pMagic.NeedExp > 0
@@ -377,7 +377,7 @@ namespace Comet.Game.States
 
         #endregion
 
-        public Magic QueryMagic => Magics.TryGetValue(m_typeMagic, out Magic magic) ? magic : null;
+        public Magic QueryMagic => Magics.TryGetValue(mTypeMagic, out Magic magic) ? magic : null;
 
         public Magic this[ushort nType] => Magics.TryGetValue(nType, out Magic ret) ? ret : null;
 

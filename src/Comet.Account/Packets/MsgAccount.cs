@@ -37,7 +37,7 @@ namespace Comet.Account.Packets
         {
             // Fetch account info from the database
             client.Account = await AccountsRepository.FindAsync(Username).ConfigureAwait(false);
-            if (client.Account == null || !AccountsRepository.CheckPassword(
+            if (client.Account == null || !ConquerAccount.CheckPassword(
                     DecryptPassword(Password, client.Seed), client.Account.Password, client.Account.Salt))
             {
                 await Log.WriteLogAsync("login_fail", LogLevel.Info,

@@ -56,7 +56,7 @@ namespace Comet.Game.Packets
                 }
             }
 
-            Console.WriteLine($"Action {Action} => user: {user.Identity} target: {Identity}");
+            //Console.WriteLine($"Action {Action} => user: {user.Identity} target: {Identity}");
 
             switch (Action)
             {
@@ -94,30 +94,7 @@ namespace Comet.Game.Packets
                     if (user.Life == 0)
                         await user.SetAttributesAsync(ClientUpdateType.Hitpoints, 10);
 
-                    await Kernel.BroadcastWorldMsgAsync(new MsgAiPlayerLogin
-                    {
-                        Timestamp = Environment.TickCount,
-                        Id = user.Identity,
-                        Name = user.Name,
-                        BattlePower = user.BattlePower,
-                        Level = user.Level,
-                        Metempsychosis = user.Metempsychosis,
-                        Flag1 = user.StatusFlag,
-                        Flag2 = 0,
-                        Flag3 = 0,
-                        Life = (int) Math.Max(1, user.Life),
-                        MaxLife = (int) user.MaxLife,
-                        Money = (int) user.Silvers,
-                        ConquerPoints = (int) user.ConquerPoints,
-                        Syndicate = user.SyndicateIdentity,
-                        SyndicatePosition = (int) user.SyndicateRank,
-                        Family = (int) user.FamilyIdentity,
-                        FamilyPosition = (int) user.FamilyPosition,
-                        MapId = user.MapIdentity,
-                        X = user.MapX,
-                        Y = user.MapY,
-                        Nobility = (int) user.NobilityRank
-                    });
+                    await Kernel.BroadcastWorldMsgAsync(new MsgAiPlayerLogin(user));
                     break;
                 }
 

@@ -4,9 +4,9 @@ using Comet.Network.Packets.Game;
 
 namespace Comet.Game.States
 {
-    public sealed class EventInviationBox : MessageBox
+    public sealed class EventInvitationBox : MessageBox
     {
-        public EventInviationBox(Character user, int seconds)
+        public EventInvitationBox(Character user, int seconds)
             : base(user)
         {
             TimeOut = seconds;
@@ -34,12 +34,7 @@ namespace Comet.Game.States
 
             await m_owner.FlyMapAsync(TargetMapIdentity, x, y);
         }
-
-        public override Task OnTimerAsync()
-        {
-            return base.OnTimerAsync();
-        }
-
+        
         public override Task SendAsync()
         {
             m_expiration.Startup(TimeOut);

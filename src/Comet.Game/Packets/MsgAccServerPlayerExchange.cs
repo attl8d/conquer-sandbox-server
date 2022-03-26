@@ -12,7 +12,7 @@ namespace Comet.Game.Packets
             return new PlayerData
             {
                 Identity = player.Identity,
-                AccountIdentity = player.Client.Identity,
+                AccountIdentity = player.Client.AccountIdentity,
                 Name = player.Name,
 
                 Level = player.Level,
@@ -25,13 +25,13 @@ namespace Comet.Game.Packets
                 ConquerPoints = player.ConquerPoints,
                 ConquerPointsMono = 0,
 
-                //Donation = player.NobilityDonation,
+                Donation = player.NobilityDonation,
 
-                //SyndicateIdentity = player.SyndicateIdentity,
-                //SyndicatePosition = (ushort)player.SyndicateRank,
+                SyndicateIdentity = player.SyndicateIdentity,
+                SyndicatePosition = (ushort)player.SyndicateRank,
 
-                //FamilyIdentity = player.FamilyIdentity,
-                //FamilyPosition = (ushort)player.FamilyPosition,
+                FamilyIdentity = player.FamilyIdentity,
+                FamilyPosition = (ushort)player.FamilyPosition,
 
                 Force = player.Strength,
                 Speed = player.Agility,
@@ -43,10 +43,10 @@ namespace Comet.Game.Packets
                 LastLogout = UnixTimestamp.Timestamp(player.LastLogout),
                 TotalOnlineTime = player.TotalOnlineTime,
 
-                //AthletePoints = (int)player.QualifierPoints,
-                //AthleteHistoryWins = (int)player.QualifierHistoryWins,
-                //AthleteHistoryLoses = (int)player.QualifierHistoryLoses,
-                //HonorPoints = (int)player.HonorPoints,
+                AthletePoints = (int)player.QualifierPoints,
+                AthleteHistoryWins = (int)player.QualifierHistoryWins,
+                AthleteHistoryLoses = (int)player.QualifierHistoryLoses,
+                HonorPoints = (int)player.HonorPoints,
 
                 RedRoses = player.FlowerRed,
                 WhiteRoses = player.FlowerWhite,

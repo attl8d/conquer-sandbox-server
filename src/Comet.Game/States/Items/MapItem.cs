@@ -46,7 +46,7 @@ namespace Comet.Game.States.Items
             m_tAlive = new TimeOut(_DISAPPEAR_TIME);
             m_tAlive.Startup(_DISAPPEAR_TIME);
 
-            m_idMap = map.Identity;
+            mIdMap = map.Identity;
             Map = map;
             MapX = (ushort) pos.X;
             MapY = (ushort) pos.Y;
@@ -82,7 +82,7 @@ namespace Comet.Game.States.Items
             m_tAlive = new TimeOut(_DISAPPEAR_TIME);
             m_tAlive.Startup(_DISAPPEAR_TIME);
 
-            m_idMap = map.Identity;
+            mIdMap = map.Identity;
             Map = map;
             MapX = (ushort) pos.X;
             MapY = (ushort) pos.Y;
@@ -138,7 +138,7 @@ namespace Comet.Game.States.Items
             m_tAlive = new TimeOut(nAliveSecs);
             m_tAlive.Update();
 
-            m_idMap = map.Identity;
+            mIdMap = map.Identity;
             Map = map;
             MapX = (ushort) pos.X;
             MapY = (ushort) pos.Y;
@@ -169,7 +169,7 @@ namespace Comet.Game.States.Items
             m_tAlive = new TimeOut(nAliveSecs);
             m_tAlive.Update();
 
-            m_idMap = map.Identity;
+            mIdMap = map.Identity;
             Map = map;
             MapX = (ushort) pos.X;
             MapY = (ushort) pos.Y;

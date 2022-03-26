@@ -69,19 +69,20 @@ namespace Comet.Game.States
                 IdentityGenerator.Pet.ReturnIdentity(idPet);
                 return null;
             }
+
             await pet.EnterMapAsync();
             return pet;
         }
 
         public async Task<bool> InitializeAsync(uint idMap, ushort x, ushort y)
         {
-            m_idMap = idMap;
+            mIdMap = idMap;
 
             if ((Map = MapManager.GetMap(idMap)) == null)
                 return false;
 
-            m_posX = x;
-            m_posY = y;
+            mPosX = x;
+            mPosY = y;
 
             Life = MaxLife;
 
@@ -106,9 +107,6 @@ namespace Comet.Game.States
                 if (owner == null)
                     return false;
                 await owner.SendAsync(msg);
-
-                // TODO send to the npc server...it might be tracked by other monsters as target
-                
             }
 
             if (mDbMonster.MagicType > 0)
@@ -536,8 +534,8 @@ namespace Comet.Game.States
         /// </summary>
         public override uint MapIdentity
         {
-            get => m_idMap;
-            set => m_idMap = value;
+            get => mIdMap;
+            set => mIdMap = value;
         }
 
         /// <summary>
@@ -545,8 +543,8 @@ namespace Comet.Game.States
         /// </summary>
         public override ushort MapX
         {
-            get => m_posX;
-            set => m_posX = value;
+            get => mPosX;
+            set => mPosX = value;
         }
 
         /// <summary>
@@ -554,8 +552,8 @@ namespace Comet.Game.States
         /// </summary>
         public override ushort MapY
         {
-            get => m_posY;
-            set => m_posY = value;
+            get => mPosY;
+            set => mPosY = value;
         }
 
         public override async Task EnterMapAsync()
@@ -571,6 +569,11 @@ namespace Comet.Game.States
                 X = MapX,
                 Y = MapY
             }, false);
+
+            if (IsCallPet())
+            {
+                await Kernel.BroadcastWorldMsgAsync(new MsgAiRoleLogin(this));
+            }
         }
 
         public override async Task LeaveMapAsync()
@@ -625,23 +628,18 @@ namespace Comet.Game.States
                 mPetData.Life = 0;
             }
 
-            Life = 0;
+            await BeKillAsync(null);
 
             if (now)
             {
                 mDisappear.Startup(1);
-                await BroadcastRoomMsgAsync(new MsgAction
-                {
-                    Action = MsgAction<Client>.ActionType.RemoveEntity,
-                    Identity = Identity,
-                    X = MapX,
-                    Y = MapY
-                }, false);
+                mLeaveMap.Startup(1);
+                await LeaveMapAsync();
             }
             else
             {
                 mDisappear.Startup(1);
-                mLeaveMap.Startup(5);
+                mLeaveMap.Startup(3);
             }
         }
 

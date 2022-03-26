@@ -118,35 +118,34 @@ namespace Comet.Network.Packets.Game
 
             return writer.ToArray();
         }
+    }
+    public struct NobilityStruct
+    {
+        public uint Identity;
+        public uint LookFace;
+        public string Name;
+        public ulong Donation;
+        public NobilityRank Rank;
+        public int Position;
+    }
 
-        public struct NobilityStruct
-        {
-            public uint Identity;
-            public uint LookFace;
-            public string Name;
-            public ulong Donation;
-            public NobilityRank Rank;
-            public int Position;
-        }
+    public enum NobilityAction : uint
+    {
+        None,
+        Donate,
+        List,
+        Info,
+        QueryRemainingSilver
+    }
 
-        public enum NobilityAction : uint
-        {
-            None,
-            Donate,
-            List,
-            Info,
-            QueryRemainingSilver
-        }
-
-        public enum NobilityRank : byte
-        {
-            Serf,
-            Knight,
-            Baron = 3,
-            Earl = 5,
-            Duke = 7,
-            Prince = 9,
-            King = 12
-        }
+    public enum NobilityRank : byte
+    {
+        Serf,
+        Knight,
+        Baron = 3,
+        Earl = 5,
+        Duke = 7,
+        Prince = 9,
+        King = 12
     }
 }

@@ -14,7 +14,7 @@ namespace Comet.Game.Packets
             {
                 case Action.Accept:
                 {
-                    if (!(user.MessageBox is EventInviationBox box))
+                    if (!(user.MessageBox is EventInvitationBox box))
                         return;
 
                     if (box.HasExpired)

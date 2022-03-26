@@ -136,6 +136,8 @@ namespace Comet.Network.Packets
         MsgAiRoleStatusFlag,
         MsgAiGeneratorManage,
         MsgAiDynaMap,
+        MsgAiRoleLogin,
+        MsgAiRoleLogout,
 
         MsgAiServerEnd = 31999
     }

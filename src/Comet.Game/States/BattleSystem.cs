@@ -120,7 +120,11 @@ namespace Comet.Game.States
                 return false;
             }
 
-            if (user != null && !user.Map.IsTrainingMap()) await user.DecEquipmentDurabilityAsync(false, 0, 1);
+            if (user != null && !user.Map.IsTrainingMap()) 
+                await user.DecEquipmentDurabilityAsync(false, 0, 1);
+
+            if (await target.CheckScapegoatAsync(mOwner))
+                return false;
 
             var adjustAtk = 0;
             if (mOwner.QueryStatus(StatusSet.FATAL_STRIKE) != null)

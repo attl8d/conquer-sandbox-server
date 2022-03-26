@@ -10,6 +10,7 @@ using Comet.Game.World.Maps;
 using Comet.Network.Packets;
 using Comet.Network.Packets.Game;
 using Comet.Shared;
+using Org.BouncyCastle.Asn1.X509;
 using static Comet.Network.Packets.Game.MsgName<Comet.Game.States.Client>;
 
 namespace Comet.Game.Packets
@@ -28,8 +29,6 @@ namespace Comet.Game.Packets
             Character user = client.Character;
 
             Role sender = RoleManager.GetRole(SenderIdentity);
-            if (sender == null || user.Identity != SenderIdentity && sender.Identity != user.GetCallPet()?.Identity)
-                return;
 
             if (SenderIdentity == user.Identity && !user.IsAlive)
             {
@@ -37,11 +36,12 @@ namespace Comet.Game.Packets
                 return;
             }
 
-            if (sender.QueryStatus(StatusSet.FREEZE) != null
+            if (sender != null 
+                && (sender.QueryStatus(StatusSet.FREEZE) != null
                 || sender.QueryStatus(StatusSet.ICE_BLOCK) != null
                 || sender.QueryStatus(StatusSet.DAZED) != null
                 || sender.QueryStatus(StatusSet.HUGE_DAZED) != null
-                || sender.QueryStatus(StatusSet.CONFUSED) != null)
+                || sender.QueryStatus(StatusSet.CONFUSED) != null))
                 return;
 
             switch (Action)
@@ -62,7 +62,9 @@ namespace Comet.Game.Packets
 
             Role target = sender?.Map.QueryAroundRole(sender, TargetIdentity);
 
-            if (target == null && Action != MsgInteractType.MagicAttack)
+            if (target == null 
+                && Action != MsgInteractType.MagicAttack
+                && Action != MsgInteractType.CounterKillSwitch)
                 return;
 
             switch (Action)
@@ -253,7 +255,8 @@ namespace Comet.Game.Packets
                 case MsgInteractType.AcceptMerchant:
                 {
                     // ON ACCEPT: Sender = 1 Target = 1
-                    await user.SetMerchantAsync();
+                    if (SenderIdentity == 1 && TargetIdentity == 1)
+                        await user.SetMerchantAsync();
                     break;
                 }
 
@@ -265,6 +268,18 @@ namespace Comet.Game.Packets
 
                 case MsgInteractType.MerchantProgress:
                 {
+                    break;
+                }
+
+                case MsgInteractType.CounterKillSwitch:
+                {
+                    if (user.MagicData[6003] == null) // must have skill
+                        return;
+
+                    if (!user.IsAlive || user.IsWing)
+                        return;
+
+                    await user.SetScapegoatAsync(!user.Scapegoat);
                     break;
                 }
 

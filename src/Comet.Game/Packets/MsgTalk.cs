@@ -253,10 +253,10 @@ namespace Comet.Game.Packets
 
                     case "/superman":
                     {
-                        await user.SetAttributesAsync(ClientUpdateType.Strength, 176);
+                        await user.SetAttributesAsync(ClientUpdateType.Strength, 225);
                         await user.SetAttributesAsync(ClientUpdateType.Agility, 256);
-                        await user.SetAttributesAsync(ClientUpdateType.Vitality, 110);
-                        await user.SetAttributesAsync(ClientUpdateType.Spirit, 125);
+                        await user.SetAttributesAsync(ClientUpdateType.Vitality, 225);
+                        await user.SetAttributesAsync(ClientUpdateType.Spirit, 225);
 
                         return true;
                     }
@@ -266,6 +266,25 @@ namespace Comet.Game.Packets
                         if (byte.TryParse(param, out byte uplevValue))
                             await user.AwardLevelAsync(uplevValue);
 
+                        return true;
+                    }
+
+                    case "/awardbattlexp":
+                    {
+                        if (!long.TryParse(param, out var exp))
+                            return true;
+
+                        await user.AwardBattleExpAsync(exp, true);
+                        return true;
+                    }
+
+                    case "/awardexpball":
+                    {
+                        if (!int.TryParse(param, out var amount))
+                            return true;
+
+                        var exp = user.CalculateExpBall(Math.Max(1, amount) * Role.EXPBALL_AMOUNT);
+                        await user.AwardExperienceAsync(exp);
                         return true;
                     }
 
@@ -535,11 +554,6 @@ namespace Comet.Game.Packets
                         writer.Write(0);       // 20
                         writer.Write(0);       // 24
                         await user.Client.SendAsync(writer.ToArray());
-                        //MsgMentorPlayer msg = new MsgMentorPlayer();
-                        //msg.Unknown1 = 2;
-                        //msg.TargetId = user.Identity;
-                        //msg.Unknown2 = 0;
-                        //await user.SendAsync(msg);
                         return true;
                     }
 
@@ -576,26 +590,6 @@ namespace Comet.Game.Packets
 
                     case "/msgflower":
                     {
-                        //using PacketWriter writer = new PacketWriter();
-                        //writer.Write((ushort)PacketType.MsgFlower);
-                        //writer.Write(0); // 4
-                        //writer.Write(0); // 8 
-                        //writer.Write(0); // 12
-                        //writer.Write(0); // 16
-                        //writer.Write(0); // 20
-                        //writer.Write(0); // 24
-                        //writer.Write(0); // 28
-                        //writer.Write(0); // 32
-                        //writer.Write(0); // 36
-                        //writer.Write(0); // 40
-                        //writer.Write(0); // 44
-                        //writer.Write(0); // 48
-                        //writer.Write(0); // 52
-                        //writer.Write(0); // 56
-                        //writer.Write(0); // 60
-                        //writer.Write(0); // 64
-                        //writer.Write(0); // 68
-                        //writer.Write(0); // 72
                         var msg = new MsgFlower();
                         msg.SenderName = user.Name;
                         msg.ReceiverName = "Teste";

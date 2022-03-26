@@ -30,9 +30,9 @@ namespace Comet.Game.States.Npcs
             if (m_ownerNpc == null)
                 return false;
 
-            m_idMap = mOwner.MapIdentity;
-            m_posX = (ushort) (mOwner.MapX + 1);
-            m_posY = mOwner.MapY;
+            mIdMap = mOwner.MapIdentity;
+            mPosX = (ushort) (mOwner.MapX + 1);
+            mPosY = mOwner.MapY;
 
             Mesh = 406;
             Name = $"{mOwner.Name}Stash";

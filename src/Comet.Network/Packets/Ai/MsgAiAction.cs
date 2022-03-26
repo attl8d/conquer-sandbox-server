@@ -44,7 +44,8 @@
             AddTerrainObj,
             DelTerrainObj,
             SetProtection,
-            ClearProtection
+            ClearProtection,
+            QueryRole
         }
     }
 }

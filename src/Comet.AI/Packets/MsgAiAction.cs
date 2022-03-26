@@ -3,7 +3,6 @@ using Comet.AI.States;
 using Comet.AI.World.Managers;
 using Comet.Network.Packets.Ai;
 using Comet.Shared;
-using Org.BouncyCastle.Asn1.X509;
 
 namespace Comet.AI.Packets
 {

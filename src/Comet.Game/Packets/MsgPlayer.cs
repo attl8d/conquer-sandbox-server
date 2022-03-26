@@ -16,7 +16,7 @@ namespace Comet.Game.Packets
             MapX = x == 0 ? user.MapX : x;
             MapY = y == 0 ? user.MapY : y;
 
-            Status = (uint) user.StatusFlag;
+            Status = user.StatusFlag;
 
             Hairstyle = user.Hairstyle;
             Direction = (byte) user.Direction;

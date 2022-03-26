@@ -6,24 +6,23 @@ using Comet.Core;
 using Comet.Core.World.Maps;
 using Comet.Database.Entities;
 using Comet.Game.Packets;
+using Comet.Game.World.Managers;
 using Comet.Game.World.Maps;
 using Comet.Network.Packets;
 using Comet.Network.Packets.Game;
 using Comet.Shared;
-using static Comet.Network.Packets.Game.MsgName<Comet.Game.States.Client>;
-using static Comet.Network.Packets.Game.MsgWalk<Comet.Game.States.Client>;
 
 namespace Comet.Game.States
 {
     public abstract class Role
     {
-        protected uint m_idMap;
+        protected uint mIdMap;
 
-        protected ushort m_posX,
-                         m_posY;
+        protected ushort mPosX,
+                         mPosY;
 
-        protected uint m_maxLife = 0,
-                       m_maxMana = 0;
+        protected uint mMaxLife = 0,
+                       mMaxMana = 0;
 
         protected Role()
         {
@@ -64,9 +63,9 @@ namespace Comet.Game.States
 
         public virtual bool IsAlive => Life > 0;
         public virtual uint Life { get; set; }
-        public virtual uint MaxLife => m_maxLife;
+        public virtual uint MaxLife => mMaxLife;
         public virtual uint Mana { get; set; }
-        public virtual uint MaxMana => m_maxMana;
+        public virtual uint MaxMana => mMaxMana;
 
         #endregion
 
@@ -81,8 +80,8 @@ namespace Comet.Game.States
         /// </summary>
         public virtual uint MapIdentity
         {
-            get => m_idMap;
-            set => m_idMap = value;
+            get => mIdMap;
+            set => mIdMap = value;
         }
 
         /// <summary>
@@ -90,8 +89,8 @@ namespace Comet.Game.States
         /// </summary>
         public virtual ushort MapX
         {
-            get => m_posX;
-            set => m_posX = value;
+            get => mPosX;
+            set => mPosX = value;
         }
 
         /// <summary>
@@ -99,8 +98,8 @@ namespace Comet.Game.States
         /// </summary>
         public virtual ushort MapY
         {
-            get => m_posY;
-            set => m_posY = value;
+            get => mPosY;
+            set => mPosY = value;
         }
 
         public virtual int GetDistance(Role role)
@@ -175,15 +174,15 @@ namespace Comet.Game.States
                 {
                     CommandX = (ushort) x,
                     CommandY = (ushort) y,
-                    X = m_posX,
-                    Y = m_posY,
+                    X = mPosX,
+                    Y = mPosY,
                     Identity = Identity,
                     Action = MsgAction<Client>.ActionType.MapJump,
                     Direction = (ushort) Direction
                 }, true);
 
-            m_posX = (ushort) x;
-            m_posY = (ushort) y;
+            mPosX = (ushort) x;
+            mPosY = (ushort) y;
 
             await ProcessAfterMoveAsync();
             return true;
@@ -254,8 +253,8 @@ namespace Comet.Game.States
                     Mode = (byte) mode
                 }, true);
 
-            m_posX = newX;
-            m_posY = newY;
+            mPosX = newX;
+            mPosY = newY;
 
             await ProcessAfterMoveAsync();
             return true;
@@ -343,7 +342,15 @@ namespace Comet.Game.States
             await DetachStatusAsync(StatusSet.LUCKY_DIFFUSE);
             await DetachStatusAsync(StatusSet.LUCKY_ABSORB);
 
-            await DetachStatusAsync(StatusSet.RIDING);
+            switch (MagicData.QueryMagic?.Sort)
+            {
+                case MagicData.MagicSort.Warcry:
+                case MagicData.MagicSort.Spook:
+                    break;
+                default:
+                    await DetachStatusAsync(StatusSet.RIDING);
+                    break;
+            }
         }
 
         #endregion
@@ -861,7 +868,7 @@ namespace Comet.Game.States
                     return false;
             }
 
-            await SynchroAttributesAsync(type, value, screen);
+            await SynchroAttributesAsync(type, value, !IsPlayer());
             return true;
         }
 
@@ -897,7 +904,53 @@ namespace Comet.Game.States
         }
 
         #endregion
-        
+
+        #region Scapegoat
+
+        public bool Scapegoat { get; set; } = false;
+
+        public virtual async Task<bool> CheckScapegoatAsync(Role target)
+        {
+            Magic scapegoat = MagicData[6003];
+            if (scapegoat != null && Scapegoat && scapegoat.IsReady())
+            {
+                return await ProcessMagicAttackAsync(scapegoat.Type, target.Identity, target.MapX, target.MapY);
+            }
+            return false;
+        }
+
+        public Task SetScapegoatAsync(bool on)
+        {
+            Scapegoat = on;
+            return SendAsync(new MsgInteract
+            {
+                Action = MsgInteractType.CounterKillSwitch,
+                SenderIdentity = Identity,
+                TargetIdentity = Identity,
+                Data = on ? 1 : 0,
+                PosX = MapX,
+                PosY = MapY
+            });
+        }
+
+        #endregion
+
+        #region Team
+
+        public Team GetTeam()
+        {
+            if (IsPlayer())
+                return ((Character) this).Team;
+            if (OwnerIdentity != 0)
+            {
+                Character owner = RoleManager.GetUser(OwnerIdentity);
+                return owner?.Team;
+            }
+            return null;
+        }
+
+        #endregion
+
         #region Timers
 
         public virtual Task OnTimerAsync()

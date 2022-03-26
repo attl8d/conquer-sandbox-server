@@ -101,6 +101,12 @@ namespace Comet.Game.Internal.AI
                         break;
                     }
 
+                    case PacketType.MsgAiRoleLogin:
+                    {
+                        msg = new MsgAiRoleLogin();
+                        break;
+                    }
+
                     case PacketType.MsgAction:
                     {
                         msg = new MsgAction();

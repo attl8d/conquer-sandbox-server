@@ -25,9 +25,9 @@ namespace Comet.Game.States.Npcs
         {
             m_dbNpc = npc;
 
-            m_idMap = npc.Mapid;
-            m_posX = npc.Cellx;
-            m_posY = npc.Celly;
+            mIdMap = npc.Mapid;
+            mPosX = npc.Cellx;
+            mPosY = npc.Celly;
 
             Name = npc.Name;
 

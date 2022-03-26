@@ -40,29 +40,29 @@
             writer.Write(Padding);
             return writer.ToArray();
         }
+    }
 
-        public enum RoleMoveMode
-        {
-            Walk = 0,
+    public enum RoleMoveMode
+    {
+        Walk = 0,
 
-            // PathMove()
-            Run,
-            Shift,
+        // PathMove()
+        Run,
+        Shift,
 
-            // to server only
-            Jump,
-            Trans,
-            Chgmap,
-            JumpMagicAttack,
-            Collide,
-            Synchro,
+        // to server only
+        Jump,
+        Trans,
+        Chgmap,
+        JumpMagicAttack,
+        Collide,
+        Synchro,
 
-            // to server only
-            Track,
+        // to server only
+        Track,
 
-            RunDir0 = 20,
+        RunDir0 = 20,
 
-            RunDir7 = 27
-        }
+        RunDir7 = 27
     }
 }

@@ -4,8 +4,8 @@ using Comet.Database.Entities;
 using Comet.Game.Database;
 using Comet.Game.Database.Repositories;
 using Comet.Game.World.Managers;
+using Comet.Network.Packets.Game;
 using Comet.Shared;
-using static Comet.Network.Packets.Game.MsgPeerage<Comet.Game.States.Client>;
 
 namespace Comet.Game.States.Syndicates
 {

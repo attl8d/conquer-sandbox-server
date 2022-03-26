@@ -338,44 +338,54 @@ namespace Comet.AI.States
 
         #region Role Type
 
+        public static bool IsPlayer(uint id)
+        {
+            return id is >= PLAYER_ID_FIRST and < PLAYER_ID_LAST;
+        }
+
         public bool IsPlayer()
         {
-            return Identity >= PLAYER_ID_FIRST && Identity < PLAYER_ID_LAST;
+            return IsPlayer(Identity);
         }
 
         public bool IsMonster()
         {
-            return Identity >= MONSTERID_FIRST && Identity < MONSTERID_LAST;
+            return Identity is >= MONSTERID_FIRST and < MONSTERID_LAST;
         }
 
         public bool IsNpc()
         {
-            return Identity >= SYSNPCID_FIRST && Identity < SYSNPCID_LAST;
+            return Identity is >= SYSNPCID_FIRST and < SYSNPCID_LAST;
         }
 
         public bool IsDynaNpc()
         {
-            return Identity >= DYNANPCID_FIRST && Identity < DYNANPCID_LAST;
+            return Identity is >= DYNANPCID_FIRST and < DYNANPCID_LAST;
         }
 
-        public bool IsPet()
+        public static bool IsCallPet(uint id)
         {
-            return Identity >= PETID_FIRST && Identity < PETID_LAST;
+            return id is >= PETID_FIRST and < PETID_LAST;
+        }
+
+        public bool IsCallPet()
+        {
+            return IsCallPet(Identity);
         }
 
         public bool IsTrap()
         {
-            return Identity >= TRAPID_FIRST && Identity < TRAPID_LAST;
+            return Identity is >= TRAPID_FIRST and < TRAPID_LAST;
         }
 
         public bool IsMapItem()
         {
-            return Identity >= MAPITEM_FIRST && Identity < MAPITEM_LAST;
+            return Identity is >= MAPITEM_FIRST and < MAPITEM_LAST;
         }
 
         public bool IsFurniture()
         {
-            return Identity >= SCENE_NPC_MIN && Identity < SCENE_NPC_MAX;
+            return Identity is >= SCENE_NPC_MIN and < SCENE_NPC_MAX;
         }
 
         #endregion

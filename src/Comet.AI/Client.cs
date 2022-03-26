@@ -13,31 +13,31 @@ namespace Comet.AI
 {
     public sealed class Client : TcpClientWrapper<Server>
     {
-        private readonly PacketProcessor<Server> Processor;
+        private readonly PacketProcessor<Server> mProcessor;
 
         public Client()
             : base("8a653a5d1e92b4e1db79".Length)
         {
-            Processor = new PacketProcessor<Server>(ProcessAsync);
-            Processor.StartAsync(CancellationToken.None).ConfigureAwait(false);
+            mProcessor = new PacketProcessor<Server>(ProcessAsync);
+            mProcessor.StartAsync(CancellationToken.None).ConfigureAwait(false);
         }
 
-        protected override async Task<Server> ConnectedAsync(Socket socket, Memory<byte> buffer)
+        protected override Task<Server> ConnectedAsync(Socket socket, Memory<byte> buffer)
         {
             Server client = new(socket, buffer, 0);
             if (socket.Connected)
             {
                 Kernel.GameClient = this;
-                return client;
+                return Task.FromResult(client);
             }
 
-            return null;
+            return Task.FromResult<Server>(null);
         }
 
         protected override void Received(Server actor, ReadOnlySpan<byte> packet)
         {
             Kernel.NetworkMonitor.Receive(packet.Length);
-            Processor.Queue(actor, packet.ToArray());
+            mProcessor.Queue(actor, packet.ToArray());
         }
 
         private async Task ProcessAsync(Server actor, byte[] packet)
@@ -105,6 +105,12 @@ namespace Comet.AI
                     case PacketType.MsgAiPing:
                     {
                         msg = new MsgAiPing();
+                        break;
+                    }
+
+                    case PacketType.MsgAiRoleLogin:
+                    {
+                        msg = new MsgAiRoleLogin();
                         break;
                     }
 

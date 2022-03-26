@@ -282,6 +282,7 @@ namespace Comet.AI.States
         {
             Map = MapManager.GetMap(MapIdentity);
             if (Map != null && await Map.AddAsync(this))
+            {
                 if (sync)
                 {
                     var msg = new MsgAiSpawnNpc();
@@ -298,6 +299,7 @@ namespace Comet.AI.States
                     });
                     await Kernel.SendAsync(msg);
                 }
+            }
         }
 
         public override async Task LeaveMapAsync(bool sync = true)

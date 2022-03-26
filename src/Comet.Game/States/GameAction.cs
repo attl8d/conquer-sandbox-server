@@ -982,17 +982,19 @@ namespace Comet.Game.States
             int priority = int.Parse(split[19]);
             int seconds = int.Parse(split[20]);
 
-            if (user.MessageBox is EventInviationBox box)
+            if (user.MessageBox is EventInvitationBox box)
                 if (box.Priority > priority && !box.HasExpired)
                     return true;
 
-            var timedMessageBox = new EventInviationBox(user, seconds);
-            timedMessageBox.MessageId = sendMsg;
-            timedMessageBox.AcceptMsgId = acceptMsg;
-            timedMessageBox.Priority = priority;
-            timedMessageBox.TargetMapIdentity = idMap;
-            timedMessageBox.TargetMapX = px;
-            timedMessageBox.TargetMapY = py;
+            var timedMessageBox = new EventInvitationBox(user, seconds)
+            {
+                MessageId = sendMsg,
+                AcceptMsgId = acceptMsg,
+                Priority = priority,
+                TargetMapIdentity = idMap,
+                TargetMapX = px,
+                TargetMapY = py
+            };
 
             user.MessageBox = timedMessageBox;
 
@@ -2077,6 +2079,9 @@ namespace Comet.Game.States
                         break;
                     case 13: // mount color
                         newItem.Data = (uint) value;
+                        newItem.ReduceDmg = (byte)(value & 0xFF);
+                        newItem.AddLife = (byte)((value >> 8) & 0xFF);
+                        newItem.AntiMonster = (byte)((value >> 16) & 0xFF);
                         break;
                     case 17: // Accumulate Num
                         newItem.AccumulateNum = (uint) value;

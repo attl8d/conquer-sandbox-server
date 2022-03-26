@@ -109,7 +109,7 @@ namespace Comet.Network.Sockets
 #else
                     ValueTask<int> receiveOperation = actor.Socket.ReceiveAsync(
                         actor.Buffer[remaining..],
-                        SocketFlags.None);
+                        SocketFlags.None, timeout.Token);
 #endif
                     examined = await receiveOperation;
                     if (examined == 0) break;

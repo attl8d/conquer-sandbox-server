@@ -29,7 +29,6 @@ using Comet.Network.Packets.Ai;
 using Comet.Network.Packets.Game;
 using Comet.Network.Packets.Internal;
 using Comet.Shared;
-using static Comet.Network.Packets.Game.MsgPeerage<Comet.Game.States.Client>;
 using MsgAction = Comet.Game.Packets.MsgAction;
 using MsgInteract = Comet.Game.Packets.MsgInteract;
 using MsgTalk = Comet.Game.Packets.MsgTalk;
@@ -90,9 +89,9 @@ namespace Comet.Game.States
 
             m_mesh = m_dbObject.Mesh;
 
-            m_posX = character.X;
-            m_posY = character.Y;
-            m_idMap = character.MapID;
+            mPosX = character.X;
+            mPosY = character.Y;
+            mIdMap = character.MapID;
 
             Screen = new Screen(this);
             WeaponSkill = new WeaponSkill(this);
@@ -209,7 +208,7 @@ namespace Comet.Game.States
 
         public ushort Avatar
         {
-            get => (ushort) (Mesh % 1000000 / 10000);
+            get => (ushort) (Mesh % 10000000 / 10000);
             set => Mesh = (uint) (value * 10000 + (int) Body);
         }
 
@@ -773,13 +772,13 @@ namespace Comet.Game.States
                 return;
             }
 
-            const int BATTLE_EXP_TAX = 5;
+            const int battleExpTax = 5;
 
             if (Level >= 120)
                 nExp /= 2;
 
             if (Level < 130)
-                nExp *= BATTLE_EXP_TAX;
+                nExp *= battleExpTax;
 
             double multiplier = 1;
             if (HasMultipleExp)
@@ -846,13 +845,10 @@ namespace Comet.Game.States
 
                 if (newLevel <= 70) virtue += (ushort) dbExp.UpLevTime;
 
-                if (!AutoAllot || Level > 120)
-                {
+                if (!AutoAllot || newLevel >= 120)
                     pointAmount += 3;
-                    continue;
-                }
 
-                mentorUpLevTime += dbExp.MentorUpLevTime; //(leveXp.MentorUpLevTime * ((float)usedExp / leveXp.Exp));
+                mentorUpLevTime += dbExp.MentorUpLevTime;
 
                 if (newLevel < ExperienceManager.GetLevelLimit()) continue;
                 amount = 0;
@@ -873,7 +869,7 @@ namespace Comet.Game.States
             if (newLevel >= checkLevel && Metempsychosis > 0 && m_dbObject.MeteLevel > metLev)
             {
                 byte extra = 0;
-                if (newLevel >= checkLevel && m_dbObject.MeteLevel / 10000 > newLevel)
+                if (m_dbObject.MeteLevel / 10000 > newLevel)
                 {
                     uint mete = m_dbObject.MeteLevel / 10000;
                     extra += (byte) (mete - newLevel);
@@ -904,7 +900,7 @@ namespace Comet.Game.States
                 else
                     job = (byte) ((Profession - Profession % 10) / 10);
 
-                DbPointAllot allot = ExperienceManager.GetPointAllot(job, newLevel);
+                DbPointAllot allot = ExperienceManager.GetPointAllot(job, Math.Min((byte) 120, newLevel));
                 Level = newLevel;
                 if (AutoAllot && allot != null)
                 {
@@ -913,7 +909,8 @@ namespace Comet.Game.States
                     await SetAttributesAsync(ClientUpdateType.Vitality, allot.Vitality);
                     await SetAttributesAsync(ClientUpdateType.Spirit, allot.Spirit);
                 }
-                else if (pointAmount > 0)
+                
+                if (pointAmount > 0)
                 {
                     await AddAttributesAsync(ClientUpdateType.Atributes, (int) pointAmount);
                 }
@@ -1152,8 +1149,8 @@ namespace Comet.Game.States
         /// </summary>
         public override uint MapIdentity
         {
-            get => m_idMap;
-            set => m_idMap = value;
+            get => mIdMap;
+            set => mIdMap = value;
         }
 
         /// <summary>
@@ -1161,8 +1158,8 @@ namespace Comet.Game.States
         /// </summary>
         public override ushort MapX
         {
-            get => m_posX;
-            set => m_posX = value;
+            get => mPosX;
+            set => mPosX = value;
         }
 
         /// <summary>
@@ -1170,8 +1167,8 @@ namespace Comet.Game.States
         /// </summary>
         public override ushort MapY
         {
-            get => m_posY;
-            set => m_posY = value;
+            get => mPosY;
+            set => mPosY = value;
         }
 
         public uint RecordMapIdentity
@@ -1196,7 +1193,7 @@ namespace Comet.Game.States
         /// </summary>
         public override async Task EnterMapAsync()
         {
-            Map = MapManager.GetMap(m_idMap);
+            Map = MapManager.GetMap(mIdMap);
             if (Map != null)
             {
                 await Map.AddAsync(this);
@@ -1214,7 +1211,7 @@ namespace Comet.Game.States
 
                 if (CurrentEvent == null)
                 {
-                    GameEvent @event = EventManager.GetEvent(m_idMap);
+                    GameEvent @event = EventManager.GetEvent(mIdMap);
                     if (@event != null)
                         await SignInEventAsync(@event);
                 }
@@ -1224,7 +1221,7 @@ namespace Comet.Game.States
             }
             else
             {
-                await Log.WriteLogAsync(LogLevel.Error, $"Invalid map {m_idMap} for user {Identity} {Name}");
+                await Log.WriteLogAsync(LogLevel.Error, $"Invalid map {mIdMap} for user {Identity} {Name}");
                 Client?.Disconnect();
             }
         }
@@ -1299,9 +1296,9 @@ namespace Comet.Game.States
         {
             if (!Map.IsRecordDisable())
             {
-                m_dbObject.X = m_posX;
-                m_dbObject.Y = m_posY;
-                m_dbObject.MapID = m_idMap;
+                m_dbObject.X = mPosX;
+                m_dbObject.Y = mPosY;
+                m_dbObject.MapID = mIdMap;
                 await SaveAsync();
             }
         }
@@ -1365,7 +1362,7 @@ namespace Comet.Game.States
             {
                 await LeaveMapAsync();
 
-                m_idMap = newMap.Identity;
+                mIdMap = newMap.Identity;
                 MapX = (ushort) x;
                 MapY = (ushort) y;
 
@@ -4612,7 +4609,7 @@ namespace Comet.Game.States
 
                 if (isSpell)
                 {
-                    await FlyMapAsync(m_idMap, m_posX, m_posY);
+                    await FlyMapAsync(mIdMap, mPosX, mPosY);
                 }
                 else
                 {
@@ -4632,7 +4629,7 @@ namespace Comet.Game.States
                                  || Map.IsSynMap()))
                     await FlyMapAsync(m_dbObject.MapID, m_dbObject.X, m_dbObject.Y);
                 else
-                    await FlyMapAsync(m_idMap, m_posX, m_posY);
+                    await FlyMapAsync(mIdMap, mPosX, mPosY);
             }
 
             m_respawn.Startup(CHGMAP_LOCK_SECS);
@@ -5357,6 +5354,8 @@ namespace Comet.Game.States
                 switch (PkMode)
                 {
                     case PkModeType.Capture:
+                        if (MagicData.QueryMagic?.Crime == 0)
+                            return false;
                         return !user.IsEvil();
                     case PkModeType.Peace:
                         return true;
@@ -5576,8 +5575,8 @@ namespace Comet.Game.States
             await DetachStatusAsync(StatusSet.CRIME);
             await DetachAllStatusAsync();
 
-            //if (Scapegoat)
-            //    await SetScapegoatAsync(false);
+            if (Scapegoat)
+                await SetScapegoatAsync(false);
 
             await AttachStatusAsync(this, StatusSet.DEAD, 0, int.MaxValue, 0, 0);
             await AttachStatusAsync(this, StatusSet.GHOST, 0, int.MaxValue, 0, 0);
@@ -5585,6 +5584,13 @@ namespace Comet.Game.States
             m_ghost.Startup(4);
 
             await KillCallPetAsync();
+
+            if (attacker.IsCallPet() && attacker.OwnerIdentity != 0)
+            {
+                Character owner = RoleManager.GetUser(attacker.OwnerIdentity);
+                if (owner != null)
+                    await owner.ProcessPkAsync(this);
+            }
 
             if (CurrentEvent is ArenaQualifier qualifier)
             {
@@ -5677,18 +5683,21 @@ namespace Comet.Game.States
                         }
                     }
 
+                    int detainAmount = 0;
+
                     if (PkPoints >= 300)
                     {
-                        await ItemManager.DetainItemAsync(this, atkrUser);
-                        await ItemManager.DetainItemAsync(this, atkrUser);
+                        detainAmount = 2;
                     }
-                    else if (PkPoints >= 100)
+                    else if (PkPoints >= 100 || (PkPoints >= 30 && await Kernel.ChanceCalcAsync(40, 100)))
                     {
-                        await ItemManager.DetainItemAsync(this, atkrUser);
+                        detainAmount = 1;
                     }
-                    else if (PkPoints >= 30 && await Kernel.ChanceCalcAsync(40, 100))
+
+                    for (int i = 0; i < detainAmount; i++)
                     {
-                        await ItemManager.DetainItemAsync(this, atkrUser);
+                        if (!await ItemManager.DetainItemAsync(this, atkrUser))
+                            break;
                     }
 
                     if (PkPoints >= 100)
@@ -6376,9 +6385,9 @@ namespace Comet.Game.States
         {
             if (Map?.IsRecordDisable() == false && IsAlive)
             {
-                m_dbObject.MapID = m_idMap;
-                m_dbObject.X = m_posX;
-                m_dbObject.Y = m_posY;
+                m_dbObject.MapID = mIdMap;
+                m_dbObject.X = mPosX;
+                m_dbObject.Y = mPosY;
             }
 
             m_dbObject.LogoutTime = DateTime.Now;
@@ -6386,29 +6395,6 @@ namespace Comet.Game.States
 
             if (!IsAlive)
                 m_dbObject.HealthPoints = 1;
-
-            {
-                // scope to don't create variable externally
-                var msg = new MsgAccServerPlayerExchange
-                {
-                    ServerName = Kernel.GameConfiguration.ServerName
-                };
-                msg.Data.Add(MsgAccServerPlayerExchange.CreatePlayerData(this));
-                await Kernel.AccountServer.SendAsync(msg);
-
-                await Kernel.AccountServer.SendAsync(new MsgAccServerPlayerStatus
-                {
-                    ServerName = Kernel.GameConfiguration.ServerName,
-                    Status = new List<MsgAccServerPlayerStatus<AccountServer>.PlayerStatus>
-                    {
-                        new()
-                        {
-                            Identity = Client.AccountIdentity,
-                            Online = false
-                        }
-                    }
-                });
-            }
 
             try
             {
@@ -6563,8 +6549,33 @@ namespace Comet.Game.States
                 Id = Identity
             });
 
+            // scope to don't create variable externally
+            var msg = new MsgAccServerPlayerExchange
+            {
+                ServerName = Kernel.GameConfiguration.ServerName
+            };
+            msg.Data.Add(MsgAccServerPlayerExchange.CreatePlayerData(this));
+            await Kernel.AccountServer.SendAsync(msg);
+
+            await Kernel.AccountServer.SendAsync(new MsgAccServerPlayerStatus
+            {
+                ServerName = Kernel.GameConfiguration.ServerName,
+                Status = new List<MsgAccServerPlayerStatus<AccountServer>.PlayerStatus>
+                {
+                    new()
+                    {
+                        Identity = Identity,
+                        AccountIdentity = Client.AccountIdentity,
+                        Online = false,
+                        Deleted = m_IsDeleted
+                    }
+                }
+            });
+
             if (!m_IsDeleted)
+            {
                 await SaveAsync();
+            }
 
             try
             {
@@ -6776,33 +6787,36 @@ namespace Comet.Game.States
     [Flags]
     public enum VipFlags
     {
-        VipOne = RefinaryAndArtefacts | Friends | BlessTime,
-        VipTwo = VipOne | BonusLotery | VipFurniture | CityTeleport,
+        VipOne = ItemStatusExtraTime | Friends | BlessTime,
+        VipTwo = VipOne | BonusLottery | VipFurniture | CityTeleport,
         VipThree = VipTwo | PortalTeleport | CityTeleportTeam,
-        VipFour = VipThree | Avatar | DailyQuests | VipHaire,
-        VipFive = VipFour | FrozenGrot,
+        VipFour = VipThree | Avatar | DailyQuests | VipHairStyles,
+        VipFive = VipFour | FrozenGrotto,
         VipSix = FullVip,
 
         PortalTeleport = 0x1,
         Avatar = 0x2,
         MoreForVip = 0x4,
-        FrozenGrot = 0x8,
+        FrozenGrotto = 0x8,
         TeleportTeam = 0x10,
         CityTeleport = 0x20,
         CityTeleportTeam = 0x40,
         BlessTime = 0x80,
-        OflineTG = 0x100,
-        RefinaryAndArtefacts = 0x200,
+        OfflineTrainingGround = 0x100,
+        /// <summary>
+        /// Refinery and Artifacts
+        /// </summary>
+        ItemStatusExtraTime = 0x200,
         Friends = 0x400,
-        VipHaire = 0x800,
+        VipHairStyles = 0x800,
         Labirint = 0x1000,
         DailyQuests = 0x2000,
         VipFurniture = 0x4000,
-        BonusLotery = 0x8000,
+        BonusLottery = 0x8000,
 
-        FullVip = PortalTeleport | Avatar | MoreForVip | FrozenGrot | TeleportTeam
-                  | CityTeleport | CityTeleportTeam | BlessTime | OflineTG | RefinaryAndArtefacts
-                  | Friends | VipHaire | Labirint | DailyQuests | VipFurniture | BonusLotery,
+        FullVip = PortalTeleport | Avatar | MoreForVip | FrozenGrotto | TeleportTeam
+                  | CityTeleport | CityTeleportTeam | BlessTime | OfflineTrainingGround | ItemStatusExtraTime
+                  | Friends | VipHairStyles | Labirint | DailyQuests | VipFurniture | BonusLottery,
         None = 0
     }
 

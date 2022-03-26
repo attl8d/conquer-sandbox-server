@@ -81,9 +81,9 @@ namespace Comet.Game.States
 
             Mesh = m_dbTrap.Look;
 
-            m_idMap = m_dbTrap.MapId;
-            m_posX = m_dbTrap.PosX;
-            m_posY = m_dbTrap.PosY;
+            mIdMap = m_dbTrap.MapId;
+            mPosX = m_dbTrap.PosX;
+            mPosY = m_dbTrap.PosY;
 
             await EnterMapAsync();
             return true;

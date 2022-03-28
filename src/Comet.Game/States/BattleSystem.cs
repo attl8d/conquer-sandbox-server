@@ -144,21 +144,19 @@ namespace Comet.Game.States
             if (mOwner.QueryStatus(StatusSet.FATAL_STRIKE) != null
                 && target is Monster targetMob)
             {
-                int oldX = mOwner.MapX;
-                int oldY = mOwner.MapY;
                 if (!targetMob.IsGuard()
                     && await mOwner.JumpPosAsync(target.MapX, target.MapY))
                 {
                     var msg = new MsgAction
                     {
-                        X = mOwner.MapX,
-                        Y = mOwner.MapY,
-                        ArgumentX = (ushort) oldX,
-                        ArgumentY = (ushort) oldY,
-                        Data = target.Identity,
                         Identity = mOwner.Identity,
-                        Action = MsgAction<Client>.ActionType.NinjaStep,
-                        Direction = (ushort) mOwner.Direction
+                        Action = MsgAction.ActionType.NinjaStep,
+                        Data = target.Identity,
+                        CommandX = target.MapX,
+                        CommandY = target.MapY,
+                        X = target.MapX,
+                        Y = target.MapY,
+                        Timestamp = (uint) Environment.TickCount
                     };
                     await mOwner.SendAsync(msg);
                     await mOwner.Screen.UpdateAsync(msg);

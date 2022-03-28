@@ -7,6 +7,7 @@ using Comet.Core;
 using Comet.Core.World.Maps;
 using Comet.Core.World.Maps.Enums;
 using Comet.Game.Packets;
+using Comet.Game.Packets.Ai;
 using Comet.Game.States.Items;
 using Comet.Game.States.Npcs;
 using Comet.Game.World.Managers;
@@ -14,6 +15,8 @@ using Comet.Game.World.Maps;
 using Comet.Network.Packets.Game;
 using Comet.Shared;
 using static Comet.Network.Packets.Game.MsgWalk<Comet.Game.States.Client>;
+using MsgAction = Comet.Game.Packets.MsgAction;
+using MsgInteract = Comet.Game.Packets.MsgInteract;
 
 namespace Comet.Game.States
 {
@@ -405,6 +408,11 @@ namespace Comet.Game.States
                 power *= 2;
             }
 
+            if (mOwner.IsCallPet())
+            {
+                user = RoleManager.GetUser(mOwner.OwnerIdentity);
+            }
+
             var msg = new MsgMagicEffect
             {
                 AttackerIdentity = mOwner.Identity,
@@ -440,7 +448,8 @@ namespace Comet.Game.States
             if (!targetRole.IsAlive)
             {
                 var nBonusExp = (int) (targetRole.MaxLife * 20 / 100);
-                await mOwner.BattleSystem.OtherMemberAwardExpAsync(targetRole, nBonusExp);
+                if (user != null)
+                    await user.BattleSystem.OtherMemberAwardExpAsync(targetRole, nBonusExp);
                 await mOwner.KillAsync(targetRole, GetDieMode());
             }
             else

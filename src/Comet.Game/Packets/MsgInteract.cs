@@ -53,8 +53,8 @@ namespace Comet.Game.Packets
                 case MsgInteractType.Court:
                 case MsgInteractType.Marry:
                 {
-                    sender.BattleSystem.ResetBattle();
-                    if (sender.MagicData.QueryMagic != null)
+                    sender?.BattleSystem.ResetBattle();
+                    if (sender?.MagicData.QueryMagic != null)
                         await sender.MagicData.AbortMagicAsync(true);
                     break;
                 }
@@ -72,15 +72,17 @@ namespace Comet.Game.Packets
                 case MsgInteractType.Attack:
                 case MsgInteractType.Shoot:
                 {
-                    if (!sender.IsAlive)
+                    if (sender?.IsAlive != true)
                         return;
 
                     if (user.Identity == sender.Identity)
-                        if (!await user.SynPositionAsync(PosX, PosY, 8))
+                    {
+                        if (user.QueryStatus(StatusSet.FATAL_STRIKE) == null && !await user.SynPositionAsync(PosX, PosY, 8))
                         {
                             await RoleManager.KickOutAsync(sender.Identity, "MsgInteract SynPosition");
                             return;
                         }
+                    }
 
                     if (sender.SetAttackTarget(target))
                         sender.BattleSystem.CreateBattle(TargetIdentity);
@@ -89,7 +91,7 @@ namespace Comet.Game.Packets
 
                 case MsgInteractType.MagicAttack:
                 {
-                    if (!sender.IsAlive)
+                    if (sender?.IsAlive != true)
                         return;
 
                     byte[] dataArray = BitConverter.GetBytes(Data);

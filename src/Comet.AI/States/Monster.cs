@@ -695,6 +695,7 @@ namespace Comet.AI.States
 
             if (mActTarget != 0)
             {
+                FindPath();
                 if (mMoveTarget != 0)
                     await PathMoveAsync(RoleMoveMode.Run);
                 else
@@ -1003,8 +1004,8 @@ namespace Comet.AI.States
                     return true;
             }
 
-            int newX = MapX + GameMapData.WalkXCoords[(int) mNextDir];
-            int newY = MapY + GameMapData.WalkYCoords[(int) mNextDir];
+            //int newX = MapX + GameMapData.WalkXCoords[(int) mNextDir];
+            //int newY = MapY + GameMapData.WalkYCoords[(int) mNextDir];
 
             //if (!Map.IsSuperPosition(newX, newY))
             {

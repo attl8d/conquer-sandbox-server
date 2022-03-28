@@ -215,18 +215,22 @@ namespace Comet.Game.States
         public async Task<bool> AwardExpOfLifeAsync(Role pTarget, int nLifeLost, Magic magic = null,
                                                     bool bMagicRecruit = false)
         {
-            var pOwner = mOwner as Character;
-            if (pOwner != null && (pTarget.IsMonster() || pTarget is DynamicNpc dynamicNpc && dynamicNpc.IsGoal()))
+            if (mOwner is not Character owner)
+            {
+                owner = mOwner.IsCallPet() ? RoleManager.GetUser(mOwner.OwnerIdentity) : null;
+            }
+
+            if (owner != null && (pTarget.IsMonster() || pTarget is DynamicNpc dynamicNpc && dynamicNpc.IsGoal()))
             {
                 int exp = nLifeLost;
-                long battleExp = pOwner.AdjustExperience(pTarget, nLifeLost, false);
+                long battleExp = owner.AdjustExperience(pTarget, nLifeLost, false);
 
                 if (!pTarget.IsAlive && !bMagicRecruit)
                 {
                     var nBonusExp = (int) (pTarget.MaxLife * (5 / 100));
                     battleExp += nBonusExp;
-                    if (!pOwner.Map.IsTrainingMap() && nBonusExp > 0)
-                        await pOwner.SendAsync(string.Format(Language.StrKillingExperience, nBonusExp));
+                    if (!owner.Map.IsTrainingMap() && nBonusExp > 0)
+                        await owner.SendAsync(string.Format(Language.StrKillingExperience, nBonusExp));
                 }
 
                 await AwardExpAsync(0, (int) battleExp, exp, magic);

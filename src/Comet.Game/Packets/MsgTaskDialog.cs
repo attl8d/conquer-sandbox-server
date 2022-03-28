@@ -48,7 +48,7 @@ namespace Comet.Game.Packets
 
                 case TaskInteraction.Answer:
                 {
-                    if (OptionIndex == byte.MaxValue) return;
+                    if (OptionIndex is 0 or byte.MaxValue) return;
 
                     Role targetRole = RoleManager.GetRole(user.InteractingNpc);
                     if (targetRole != null

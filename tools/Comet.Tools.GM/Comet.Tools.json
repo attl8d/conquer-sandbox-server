@@ -1,0 +1,9 @@
+{
+  "Database": {
+    "Hostname": "127.0.0.1",
+    "Schema": "cq_amorim",
+    "Username": "root",
+    "Password": "1234",
+    "Port": 3306
+  }
+}

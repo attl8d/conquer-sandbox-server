@@ -31,6 +31,7 @@ namespace Comet.Game.Packets
             else
                 Plus = item.Plus;
 
+            IsSuspicious = item.IsSuspicious();
             Bless = (byte) item.Blessing;
             Enchantment = item.Enchantment;
             Color = (byte) item.Color;

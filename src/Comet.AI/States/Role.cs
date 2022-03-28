@@ -9,7 +9,6 @@ using Comet.Game.Packets;
 using Comet.Network.Packets;
 using Comet.Network.Packets.Game;
 using Comet.Shared;
-using static Comet.Network.Packets.Game.MsgWalk<Comet.AI.States.Server>;
 
 namespace Comet.AI.States
 {
@@ -208,8 +207,7 @@ namespace Comet.AI.States
                 newX = (ushort) (MapX + GameMapData.WalkXCoords[direction]);
                 newY = (ushort) (MapY + GameMapData.WalkYCoords[direction]);
 
-                bool isRunning = mode >= (int) RoleMoveMode.RunDir0 &&
-                                 mode <= (int) RoleMoveMode.RunDir7;
+                bool isRunning = mode is >= (int) RoleMoveMode.RunDir0 and <= (int) RoleMoveMode.RunDir7;
                 if (isRunning && IsAlive)
                 {
                     newX += (ushort) GameMapData.WalkXCoords[direction];
@@ -365,7 +363,7 @@ namespace Comet.AI.States
 
         public static bool IsCallPet(uint id)
         {
-            return id is >= PETID_FIRST and < PETID_LAST;
+            return id is >= CALLPETID_FIRST and < CALLPETID_LAST;
         }
 
         public bool IsCallPet()

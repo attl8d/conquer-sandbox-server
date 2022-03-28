@@ -2395,9 +2395,9 @@ namespace Comet.Game.States
             if (user?.UserPackage == null)
                 return false;
 
-            string[] Params = SplitParam(param);
+            string[] @params = SplitParam(param);
             if (param.Length >= 1 && user.UserPackage[(Item.ItemPosition) action.Data] != null)
-                return user.UserPackage[(Item.ItemPosition) action.Data].GetItemSubType() == ushort.Parse(Params[0]);
+                return user.UserPackage[(Item.ItemPosition) action.Data].GetItemSubType() == ushort.Parse(@params[0]);
             return user.UserPackage[(Item.ItemPosition) action.Data] != null;
         }
 
@@ -2673,7 +2673,7 @@ namespace Comet.Game.States
                 {
                     if (opt == "set")
                     {
-                        if (value < 200 || value > 203)
+                        if (value is < 200 or > 203)
                             return false;
                         pItem.Effect = (Item.ItemEffect) value;
                     }
@@ -2718,32 +2718,32 @@ namespace Comet.Game.States
                     break;
                 }
 
-                //case 13: // data
-                //    {
-                //        if (opt == "set")
-                //        {
-                //            if (value < 0)
-                //                value = 0;
-                //            else if (value > 20000)
-                //                value = 20000;
+                case 13: // data
+                {
+                    if (opt == "set")
+                    {
+                        if (value < 0)
+                            value = 0;
+                        else if (value > 20000)
+                            value = 20000;
 
-                //            pItem.SocketProgress = (ushort)value;
-                //        }
-                //        else if (opt == "==")
-                //        {
-                //            return pItem.SocketProgress == value;
-                //        }
-                //        else if (opt == "<")
-                //        {
-                //            return pItem.SocketProgress < value;
-                //        }
-                //        else
-                //        {
-                //            return false;
-                //        }
+                        pItem.SocketProgress = (ushort)value;
+                    }
+                    else if (opt == "==")
+                    {
+                        return pItem.SocketProgress == value;
+                    }
+                    else if (opt == "<")
+                    {
+                        return pItem.SocketProgress < value;
+                    }
+                    else
+                    {
+                        return false;
+                    }
 
-                //        break;
-                //    }
+                    break;
+                }
 
                 case 14: // reduce damage
                 {
@@ -2829,32 +2829,32 @@ namespace Comet.Game.States
                     break;
                 }
 
-                //case 21: // add lev exp
-                //    {
-                //        if (opt == "set")
-                //        {
-                //            if (value < 0)
-                //                value = 0;
-                //            if (value > ushort.MaxValue)
-                //                value = ushort.MaxValue;
+                case 21: // add lev exp
+                    {
+                        if (opt == "set")
+                        {
+                            if (value < 0)
+                                value = 0;
+                            if (value > ushort.MaxValue)
+                                value = ushort.MaxValue;
 
-                //            pItem.AdditionProgress = (ushort)value;
-                //        }
-                //        else if (opt == "==")
-                //        {
-                //            return pItem.AdditionProgress == value;
-                //        }
-                //        else if (opt == "<")
-                //        {
-                //            return pItem.AdditionProgress < value;
-                //        }
-                //        else
-                //        {
-                //            return false;
-                //        }
+                            pItem.CompositionProgress = (ushort)value;
+                        }
+                        else if (opt == "==")
+                        {
+                            return pItem.CompositionProgress == value;
+                        }
+                        else if (opt == "<")
+                        {
+                            return pItem.CompositionProgress < value;
+                        }
+                        else
+                        {
+                            return false;
+                        }
 
-                //        break;
-                //    }
+                        break;
+                    }
                 default:
                     return false;
             }
@@ -2940,30 +2940,26 @@ namespace Comet.Game.States
                         // magic2.. w/e
                         break;
                     case 7:
-                        if (value > 0 && value < 256)
+                        if (value < 256)
                             newItem.Magic3 = (byte) value;
                         break;
                     case 8:
-                        if (value > 0
-                            && value < 8)
+                        if (value < 8)
                             newItem.ReduceDmg = (byte) value;
                         break;
                     case 9:
-                        if (value > 0
-                            && value < 256)
+                        if (value < 256)
                             newItem.AddLife = (byte) value;
                         break;
                     case 10:
                         newItem.Plunder = null;
                         break;
                     case 11:
-                        if (value == 0)
-                            value = 3;
                         if (Enum.IsDefined(typeof(Item.ItemColor), value))
                             newItem.Color = (byte) value;
                         break;
                     case 12:
-                        if (value > 0 && value < 256)
+                        if (value < 256)
                             newItem.Monopoly = (byte) value;
                         break;
                     case 13:
@@ -3781,22 +3777,18 @@ namespace Comet.Game.States
 
                 case "profession":
                 case "pro":
+                {
                     int proValue = int.Parse(value);
                     if (opt.Equals(">"))
-                        return user.Profession > proValue
-                            ;
+                        return user.Profession > proValue;
                     if (opt.Equals(">="))
-                        return user.Profession >= proValue
-                            ;
+                        return user.Profession >= proValue;
                     if (opt.Equals("<"))
-                        return user.Profession < proValue
-                            ;
+                        return user.Profession < proValue;
                     if (opt.Equals("<="))
-                        return user.Profession <= proValue
-                            ;
+                        return user.Profession <= proValue;
                     if (opt.Equals("=") || opt.Equals("=="))
-                        return user.Profession == proValue
-                            ;
+                        return user.Profession == proValue;
                     if (opt.Equals("+=")) return await user.AddAttributesAsync(ClientUpdateType.Class, proValue);
 
                     if (opt.Equals("set"))
@@ -3806,6 +3798,47 @@ namespace Comet.Game.States
                     }
 
                     break;
+                }
+
+                #endregion
+
+                #region First Profession (>, >=, <, <=, =)
+
+                case "first_prof":
+                {
+                    int proValue = int.Parse(value);
+                    if (opt.Equals(">"))
+                        return user.FirstProfession > proValue;
+                    if (opt.Equals(">="))
+                        return user.FirstProfession >= proValue;
+                    if (opt.Equals("<"))
+                        return user.FirstProfession < proValue;
+                    if (opt.Equals("<="))
+                        return user.FirstProfession <= proValue;
+                    if (opt.Equals("=") || opt.Equals("=="))
+                        return user.FirstProfession == proValue;
+                    break;
+                }
+
+                #endregion
+
+                #region Last Profession (>, >=, <, <=, =)
+
+                case "old_prof":
+                {
+                    int proValue = int.Parse(value);
+                    if (opt.Equals(">"))
+                        return user.PreviousProfession > proValue;
+                    if (opt.Equals(">="))
+                        return user.PreviousProfession >= proValue;
+                    if (opt.Equals("<"))
+                        return user.PreviousProfession < proValue;
+                    if (opt.Equals("<="))
+                        return user.PreviousProfession <= proValue;
+                    if (opt.Equals("=") || opt.Equals("=="))
+                        return user.PreviousProfession == proValue;
+                    break;
+                }
 
                 #endregion
 

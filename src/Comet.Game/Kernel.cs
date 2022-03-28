@@ -143,6 +143,7 @@ namespace Comet.Game
                 await FlowerManager.InitializeAsync().ConfigureAwait(true);
                 await MineManager.InitializeAsync().ConfigureAwait(true);
                 await ExperienceManager.InitializeAsync().ConfigureAwait(true);
+                await LotteryManager.InitializeAsync().ConfigureAwait(true);
 
                 await SystemThread.StartAsync();
                 await UserThread.StartAsync();

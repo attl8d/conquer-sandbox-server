@@ -12,7 +12,6 @@ using Comet.Game.Internal.AI;
 using Comet.Game.Packets;
 using Comet.Game.Packets.Ai;
 using Comet.Game.States.Events;
-using Comet.Game.States.Families;
 using Comet.Game.States.Items;
 using Comet.Game.States.Npcs;
 using Comet.Game.States.Syndicates;
@@ -23,7 +22,6 @@ using Comet.Network.Packets.Ai;
 using Comet.Network.Packets.Game;
 using Comet.Shared;
 using Newtonsoft.Json;
-using static Comet.Network.Packets.Game.MsgName<Comet.Game.States.Client>;
 using MsgAction = Comet.Game.Packets.MsgAction;
 using MsgTalk = Comet.Game.Packets.MsgTalk;
 
@@ -5993,55 +5991,12 @@ namespace Comet.Game.States
                 await Log.WriteLogAsync(LogLevel.Error, $"No user for ExecuteGeneralLottery, {action.Identity}");
                 return false;
             }
-
-            List<DbLottery> allItems = await LotteryRepository.GetAsync();
-            int lottoChance = await Kernel.NextAsync(10000);
-            if (lottoChance > 20) allItems.RemoveAll(x => x.Rank == 1);
-
-            if (lottoChance > 75) allItems.RemoveAll(x => x.Rank == 2);
-
-            if (lottoChance > 200) allItems.RemoveAll(x => x.Rank == 3);
-
-            if (lottoChance > 1000) allItems.RemoveAll(x => x.Rank == 4);
-
-            if (lottoChance > 2000) allItems.RemoveAll(x => x.Rank == 5);
-
-            if (lottoChance > 4000) allItems.RemoveAll(x => x.Rank == 6);
-
-            allItems.RemoveAll(x => ItemManager.GetItemtype(x.ItemIdentity) == null);
-
-            DbLottery lottery = allItems[await Kernel.NextAsync(allItems.Count) % allItems.Count];
-            DbItemtype itemtype = ItemManager.GetItemtype(lottery.ItemIdentity);
-
-            var lottoItem = new DbItem
+            
+            for (int i = 0; i < 10; i++) // 10 tries
             {
-                Type = lottery.ItemIdentity,
-                Amount = itemtype.Amount,
-                AmountLimit = itemtype.AmountLimit,
-                Magic3 = lottery.Plus > 0 ? lottery.Plus : itemtype.Magic3,
-                Gem1 = (byte) (lottery.SocketNum > 0 ? 255 : 0),
-                Gem2 = (byte) (lottery.SocketNum > 1 ? 255 : 0),
-                Color = 3,
-                PlayerId = user.Identity
-            };
-
-            var newItem = new Item(user);
-            if (!await newItem.CreateAsync(lottoItem))
-            {
-                await Log.WriteLogAsync(LogLevel.Error, $"Error to create lottery item {newItem.ToJson()}");
-                return false;
+                if (await LotteryManager.QueryPrizeAsync(user, (int) action.Data))
+                    break;
             }
-
-            await user.UserPackage.AddItemAsync(newItem);
-
-            await Log.GmLogAsync("lottery",
-                                 $"{user.Identity},{user.Name},{lottery.Rank},{lottery.Color},{newItem.Type},{newItem.Plus},{newItem.SocketOne},{newItem.SocketTwo}");
-
-            if (lottery.Rank <= 5)
-                await RoleManager.BroadcastMsgAsync(
-                    string.Format(Language.StrLotteryHigh, user.Name, lottery.Itemname), TalkChannel.Talk);
-            else
-                await user.SendAsync(string.Format(Language.StrLotteryLow, lottery.Itemname));
 
             return true;
         }

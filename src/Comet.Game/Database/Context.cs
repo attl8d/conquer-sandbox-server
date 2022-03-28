@@ -89,6 +89,7 @@ namespace Comet.Game.Database
         public virtual DbSet<DbCard> Cards { get; set; }
         public virtual DbSet<DbDetainedItem> DetainedItems { get; set; }
         public virtual DbSet<DbMonsterTypeMagic> MonsterTypeMagic { get; set; }
+        public virtual DbSet<DbConfig> Configs { get; set; }
 
         /// <summary>
         ///     Typically called only once when the first instance of the context is created.

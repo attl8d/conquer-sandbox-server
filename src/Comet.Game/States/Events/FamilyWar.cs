@@ -123,7 +123,8 @@ namespace Comet.Game.States.Events
                             });
                         }
 
-                        foreach (var challenger in GetChallengers(idNpc))
+                        var npc = RoleManager.GetRole<DynamicNpc>(idNpc);
+                        foreach (var challenger in GetChallengersByMap((uint) npc.GetData(ChallengeMap)))
                         {
                             await challenger.SendAsync(new MsgFamilyOccupy
                             {
@@ -207,7 +208,7 @@ namespace Comet.Game.States.Events
                     }
                 }
 
-                foreach (Family challenger in GetChallengers(npcId))
+                foreach (Family challenger in GetChallengersByMap((uint) npc.GetData(ChallengeMap)))
                 {
                     if (challenger.ChallengeTime <= 0)
                     {
@@ -335,20 +336,17 @@ namespace Comet.Game.States.Events
             return MapManager.GetMap(idNpc);
         }
 
-        public List<Family> GetChallengers(uint idNpc)
+        public List<Family> GetChallengersByMap(uint idMap)
         {
-            DynamicNpc npc = RoleManager.GetRole<DynamicNpc>(idNpc);
-            if (npc == null)
-                return new List<Family>();
-            return FamilyManager.QueryFamilies(x => x.ChallengeMap == npc.GetData(ChallengeMap));
+            return FamilyManager.QueryFamilies(x => x.ChallengeMap == idMap);
         }
 
-        public bool IsChallenged(uint idNpc)
+        public bool IsChallenged(uint idMap)
         {
-            if (idNpc == 0)
+            if (idMap == 0)
                 return false;
 
-            List<Family> challengers = GetChallengers(idNpc);
+            List<Family> challengers = GetChallengersByMap(idMap);
             return challengers is {Count: > 0};
         }
 

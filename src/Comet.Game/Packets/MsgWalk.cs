@@ -29,8 +29,12 @@ namespace Comet.Game.Packets
                     && user.HasCoupleInteractionStarted()
                     && (couple = user.GetCoupleInteractionTarget()) != null)
                 {
+                    await couple.ProcessOnMoveAsync();
+
                     couple.MapX = user.MapX;
                     couple.MapY = user.MapY;
+
+                    await couple.ProcessAfterMoveAsync();
 
                     MsgSyncAction msg = new MsgSyncAction
                     {

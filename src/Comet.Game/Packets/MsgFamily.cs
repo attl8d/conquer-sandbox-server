@@ -51,10 +51,13 @@ namespace Comet.Game.Packets
                         return;
 
                     Character target = RoleManager.GetUser(Identity);
-                    if (target == null)
+                    if (target is not {Family: null})
                         return;
-                    if (target.Family != null)
+
+#if !DEBUG
+                    if (target.IsPm() && !user.IsPm())
                         return;
+#endif
 
                     user.SetRequest(RequestType.Family, target.Identity);
 
@@ -98,12 +101,15 @@ namespace Comet.Game.Packets
                         return;
 
                     Character leader = RoleManager.GetUser(Identity);
-                    if (leader == null)
-                        return;
-                    if (leader.FamilyPosition != Family.FamilyRank.ClanLeader)
+                    if (leader is not {FamilyPosition: Family.FamilyRank.ClanLeader})
                         return;
                     if (leader.Family.PureMembersCount >= Family.MAX_MEMBERS)
                         return;
+
+#if !DEBUG
+                    if (leader.IsPm() && !user.IsPm())
+                        return;
+#endif
 
                     user.SetRequest(RequestType.Family, leader.Identity);
 

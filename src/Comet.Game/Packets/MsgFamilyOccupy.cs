@@ -114,7 +114,7 @@ namespace Comet.Game.Packets
                         CanClaimRevenue = owner.LeaderIdentity == user.Identity && war.HasRewardToClaim(user);
                         CanClaimExperience = war.HasExpToClaim(user);
 
-                        IsChallenged = war.GetChallengers((uint) npc.Data1).Count > 0 ? 1u : 0u;
+                        IsChallenged = war.GetChallengersByMap((uint) npc.Data1).Count > 0 ? 1u : 0u;
                     }
                     else
                     {

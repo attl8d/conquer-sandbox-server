@@ -3585,7 +3585,7 @@ namespace Comet.Game.States
             if (map == null)
                 return;
 
-            if (war.GetChallengers(map.Identity).Count == 0)
+            if (war.GetChallengersByMap(map.Identity).Count == 0)
                 return;
 
             await SendAsync(string.Format(Language.StrPrepareToDefendFamilyLogin, map.Name), TalkChannel.Talk,

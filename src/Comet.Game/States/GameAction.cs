@@ -6487,11 +6487,11 @@ namespace Comet.Game.States
             GameEvent baseEvent;
             switch (param.ToLower())
             {
-                //case "timedguildwar":
-                //    {
-                //        //baseEvent = EventManager.GetEvent<TimedGuildWar>();
-                //        break;
-                //    }
+                case "timedguildwar":
+                {
+                    baseEvent = EventManager.GetEvent(GameEvent.EventType.TimedGuildWar);
+                    break;
+                }
                 case "lineskillpk":
                 {
                     baseEvent = EventManager.GetEvent(GameEvent.EventType.LineSkillPk);
@@ -6529,7 +6529,7 @@ namespace Comet.Game.States
                                                                    Item item, string input)
         {
             var eventType = (GameEvent.EventType) action.Data;
-            if (eventType == GameEvent.EventType.None || eventType >= GameEvent.EventType.Limit)
+            if (eventType is GameEvent.EventType.None or >= GameEvent.EventType.Limit)
                 return false;
 
             GameEvent @event = EventManager.GetEvent(eventType);

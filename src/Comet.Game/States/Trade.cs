@@ -14,17 +14,17 @@ namespace Comet.Game.States
 {
     public sealed class Trade
     {
-        private const int MAX_TRADE_ITEMS = 20;
-        private const int MAX_TRADE_MONEY = 1000000000;
-        private const int MAX_TRADE_EMONEY = 1000000000;
+        private const int MaxTradeItems = 20;
+        private const int MaxTradeMoney = 1000000000;
+        private const int MaxTradeEmoney = 1000000000;
 
-        private readonly ConcurrentDictionary<uint, Item> m_dicItems1 = new();
-        private readonly ConcurrentDictionary<uint, Item> m_dicItems2 = new();
+        private readonly ConcurrentDictionary<uint, Item> mDicItems1 = new();
+        private readonly ConcurrentDictionary<uint, Item> mDicItems2 = new();
 
-        private uint m_money1, m_money2;
-        private uint m_emoney1, m_emoney2;
+        private uint mMoney1, mMoney2;
+        private uint mEmoney1, mEmoney2;
 
-        private bool m_accept1, m_accept2;
+        private bool mAccept1, mAccept2;
 
         public Trade(Character p1, Character p2)
         {
@@ -38,7 +38,7 @@ namespace Comet.Game.States
         public Character User1 { get; }
         public Character User2 { get; }
 
-        public bool Accepted => m_accept1 && m_accept2;
+        public bool Accepted => mAccept1 && mAccept2;
 
         public async Task<bool> AddItemAsync(uint idItem, Character sender)
         {
@@ -47,7 +47,7 @@ namespace Comet.Game.States
                 return false;
 
             Character target = sender.Identity == User1.Identity ? User2 : User1;
-            ConcurrentDictionary<uint, Item> items = User1.Identity == sender.Identity ? m_dicItems1 : m_dicItems2;
+            ConcurrentDictionary<uint, Item> items = User1.Identity == sender.Identity ? mDicItems1 : mDicItems2;
 
             Item item = sender.UserPackage[idItem];
             if (item == null)
@@ -63,25 +63,28 @@ namespace Comet.Game.States
                 return false;
             }
 
-            if (item.IsMonopoly() || item.IsBound)
+            if (!sender.IsPm())
             {
-                await sender.SendAsync(Language.StrNotToTrade);
-                await sender.SendAsync(RemoveMsg(idItem));
-                return false;
-            }
+                if (item.IsMonopoly() || item.IsBound)
+                {
+                    await sender.SendAsync(Language.StrNotToTrade);
+                    await sender.SendAsync(RemoveMsg(idItem));
+                    return false;
+                }
 
-            if (item.IsSuspicious())
-            {
-                await sender.SendAsync(Language.StrNotToTrade);
-                await sender.SendAsync(RemoveMsg(idItem));
-                return false;
-            }
+                if (item.IsSuspicious())
+                {
+                    await sender.SendAsync(Language.StrNotToTrade);
+                    await sender.SendAsync(RemoveMsg(idItem));
+                    return false;
+                }
 
-            if (item.IsLocked() && !sender.IsValidTradePartner(target.Identity))
-            {
-                await sender.SendAsync(Language.StrNotToTrade);
-                await sender.SendAsync(RemoveMsg(idItem));
-                return false;
+                if (item.IsLocked() && !sender.IsValidTradePartner(target.Identity))
+                {
+                    await sender.SendAsync(Language.StrNotToTrade);
+                    await sender.SendAsync(RemoveMsg(idItem));
+                    return false;
+                }
             }
 
             if (item.SyndicateIdentity != 0)
@@ -98,7 +101,7 @@ namespace Comet.Game.States
                 return false;
             }
 
-            if (items.Count >= MAX_TRADE_ITEMS)
+            if (items.Count >= MaxTradeItems)
             {
                 await sender.SendAsync(Language.StrTradeSashFull);
                 await sender.SendAsync(RemoveMsg(idItem));
@@ -126,9 +129,9 @@ namespace Comet.Game.States
 
             Character target = sender.Identity == User1.Identity ? User2 : User1;
 
-            if (amount > MAX_TRADE_MONEY)
+            if (amount > MaxTradeMoney)
             {
-                await sender.SendAsync(string.Format(Language.StrTradeMuchMoney, MAX_TRADE_MONEY));
+                await sender.SendAsync(string.Format(Language.StrTradeMuchMoney, MaxTradeMoney));
                 await SendCloseAsync();
                 return false;
             }
@@ -141,9 +144,9 @@ namespace Comet.Game.States
             }
 
             if (sender.Identity == User1.Identity)
-                m_money1 = amount;
+                mMoney1 = amount;
             else
-                m_money2 = amount;
+                mMoney2 = amount;
 
             await target.SendAsync(new MsgTrade
             {
@@ -161,9 +164,9 @@ namespace Comet.Game.States
 
             Character target = sender.Identity == User1.Identity ? User2 : User1;
 
-            if (amount > MAX_TRADE_EMONEY)
+            if (amount > MaxTradeEmoney)
             {
-                await sender.SendAsync(string.Format(Language.StrTradeMuchEmoney, MAX_TRADE_EMONEY));
+                await sender.SendAsync(string.Format(Language.StrTradeMuchEmoney, MaxTradeEmoney));
                 await SendCloseAsync();
                 return false;
             }
@@ -176,9 +179,9 @@ namespace Comet.Game.States
             }
 
             if (sender.Identity == User1.Identity)
-                m_emoney1 = amount;
+                mEmoney1 = amount;
             else
-                m_emoney2 = amount;
+                mEmoney2 = amount;
 
             await target.SendAsync(new MsgTrade
             {
@@ -192,7 +195,7 @@ namespace Comet.Game.States
         {
             if (acceptId == User1.Identity)
             {
-                m_accept1 = true;
+                mAccept1 = true;
                 await User2.SendAsync(new MsgTrade
                 {
                     Action = MsgTrade<Client>.TradeAction.Accept,
@@ -201,7 +204,7 @@ namespace Comet.Game.States
             }
             else if (acceptId == User2.Identity)
             {
-                m_accept2 = true;
+                mAccept2 = true;
                 await User1.SendAsync(new MsgTrade
                 {
                     Action = MsgTrade<Client>.TradeAction.Accept,
@@ -212,19 +215,19 @@ namespace Comet.Game.States
             if (!Accepted)
                 return;
 
-            bool success =
-                m_dicItems1.Values.All(x => User1.UserPackage[x.Identity] != null && !x.IsBound && !x.IsMonopoly());
-            success = m_dicItems2.Values.All(
-                x => User2.UserPackage[x.Identity] != null && !x.IsBound && !x.IsMonopoly());
+            bool success1 = mDicItems1.Values.All(x => User1.UserPackage[x.Identity] != null && !x.IsBound && !x.IsMonopoly());
+            bool success2 = mDicItems2.Values.All(x => User2.UserPackage[x.Identity] != null && !x.IsBound && !x.IsMonopoly());
 
-            if (!User1.UserPackage.IsPackSpare(m_dicItems2.Count))
+            bool success = success1 && success2;
+
+            if (!User1.UserPackage.IsPackSpare(mDicItems2.Count))
                 success = false;
-            if (!User2.UserPackage.IsPackSpare(m_dicItems1.Count))
+            if (!User2.UserPackage.IsPackSpare(mDicItems1.Count))
                 success = false;
 
-            if (m_money1 > User1.Silvers || m_emoney1 > User1.ConquerPoints)
+            if (mMoney1 > User1.Silvers || mEmoney1 > User1.ConquerPoints)
                 success = false;
-            if (m_money2 > User2.Silvers || m_emoney2 > User2.ConquerPoints)
+            if (mMoney2 > User2.Silvers || mEmoney2 > User2.ConquerPoints)
                 success = false;
 
             if (!success)
@@ -240,10 +243,10 @@ namespace Comet.Game.States
                 TargetIpAddress = User2.Client.IPAddress,
                 TargetMacAddress = User2.Client.MacAddress,
                 MapIdentity = User1.MapIdentity,
-                TargetEmoney = m_emoney2,
-                TargetMoney = m_money2,
-                UserEmoney = m_emoney1,
-                UserMoney = m_money1,
+                TargetEmoney = mEmoney2,
+                TargetMoney = mMoney2,
+                UserEmoney = mEmoney1,
+                UserMoney = mMoney1,
                 TargetIdentity = User2.Identity,
                 UserIdentity = User1.Identity,
                 TargetX = User2.MapX,
@@ -256,20 +259,20 @@ namespace Comet.Game.States
 
             await SendCloseAsync();
 
-            await User1.SpendMoneyAsync((int) m_money1);
-            await User2.AwardMoneyAsync((int) m_money1);
+            await User1.SpendMoneyAsync((int) mMoney1);
+            await User2.AwardMoneyAsync((int) mMoney1);
 
-            await User2.SpendMoneyAsync((int) m_money2);
-            await User1.AwardMoneyAsync((int) m_money2);
+            await User2.SpendMoneyAsync((int) mMoney2);
+            await User1.AwardMoneyAsync((int) mMoney2);
 
-            await User1.SpendConquerPointsAsync((int) m_emoney1);
-            await User2.AwardConquerPointsAsync((int) m_emoney1);
+            await User1.SpendConquerPointsAsync((int) mEmoney1);
+            await User2.AwardConquerPointsAsync((int) mEmoney1);
 
-            await User2.SpendConquerPointsAsync((int) m_emoney2);
-            await User1.AwardConquerPointsAsync((int) m_emoney2);
+            await User2.SpendConquerPointsAsync((int) mEmoney2);
+            await User1.AwardConquerPointsAsync((int) mEmoney2);
 
             var dbItemsRecordTrack = new List<DbTradeItem>(41);
-            foreach (Item item in m_dicItems1.Values)
+            foreach (Item item in mDicItems1.Values)
             {
                 if (item.IsMonopoly() || item.IsBound)
                     continue;
@@ -289,7 +292,7 @@ namespace Comet.Game.States
                 });
             }
 
-            foreach (Item item in m_dicItems2.Values)
+            foreach (Item item in mDicItems2.Values)
             {
                 if (item.IsMonopoly() || item.IsBound)
                     continue;

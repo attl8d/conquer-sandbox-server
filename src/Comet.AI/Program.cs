@@ -20,7 +20,7 @@ namespace Comet.AI
         {
             Log.DefaultFileName = "AiServer";
 
-            Console.Title = "Comet, Ai Server";
+            Console.Title = @"Comet, Ai Server";
             Console.WriteLine();
             await Log.WriteLogAsync(LogLevel.Info, "  Comet: AI Server");
             await Log.WriteLogAsync(LogLevel.Info,

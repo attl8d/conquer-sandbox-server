@@ -6406,10 +6406,10 @@ namespace Comet.Game.States
                                                                      Role role, Item item, string input)
         {
             string[] pszParam = SplitParam(param);
-            if (pszParam.Length < 3)
+            if (pszParam.Length < 2)
                 return false;
 
-            uint npcType = uint.Parse(pszParam[2]);
+            uint npcType = uint.Parse(pszParam[1]);
             foreach (DynamicNpc dynaNpc in RoleManager.QueryRoleByMap<DynamicNpc>(uint.Parse(pszParam[0])))
                 if (dynaNpc.Type == npcType)
                     await dynaNpc.DelNpcAsync();

@@ -131,14 +131,14 @@ namespace Comet.Game
                 await MapManager.LoadMapsAsync().ConfigureAwait(true);
 
                 await MagicManager.InitializeAsync().ConfigureAwait(true);
+                await SyndicateManager.InitializeAsync().ConfigureAwait(true);
+                await FamilyManager.InitializeAsync().ConfigureAwait(true);
                 await EventManager.InitializeAsync().ConfigureAwait(true);
                 await RoleManager.InitializeAsync().ConfigureAwait(true);
                 await ItemManager.InitializeAsync().ConfigureAwait(true);
                 await PigeonManager.InitializeAsync().ConfigureAwait(true);
                 await PeerageManager.InitializeAsync().ConfigureAwait(true);
                 await TutorManager.InitializeAsync().ConfigureAwait(true);
-                await SyndicateManager.InitializeAsync().ConfigureAwait(true);
-                await FamilyManager.InitializeAsync().ConfigureAwait(true);
                 await FlowerManager.InitializeAsync().ConfigureAwait(true);
                 await MineManager.InitializeAsync().ConfigureAwait(true);
                 await ExperienceManager.InitializeAsync().ConfigureAwait(true);

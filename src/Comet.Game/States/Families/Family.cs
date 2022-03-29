@@ -20,10 +20,10 @@ namespace Comet.Game.States.Families
         public const int MAX_MEMBERS = 6;
         public const int MAX_RELATION = 5;
 
-        private DbFamily m_family;
-        private readonly ConcurrentDictionary<uint, FamilyMember> m_members = new();
-        private readonly ConcurrentDictionary<uint, Family> m_allies = new();
-        private readonly ConcurrentDictionary<uint, Family> m_enemies = new();
+        private DbFamily mFamily;
+        private readonly ConcurrentDictionary<uint, FamilyMember> mMembers = new();
+        private readonly ConcurrentDictionary<uint, Family> mAllies = new();
+        private readonly ConcurrentDictionary<uint, Family> mEnemies = new();
 
         private Family()
         {
@@ -66,7 +66,7 @@ namespace Comet.Game.States.Families
 
             var family = new Family
             {
-                m_family = dbFamily
+                mFamily = dbFamily
             };
 
             var fmLeader = await FamilyMember.CreateAsync(leader, family, FamilyRank.ClanLeader, money);
@@ -76,7 +76,7 @@ namespace Comet.Game.States.Families
                 return null;
             }
 
-            family.m_members.TryAdd(fmLeader.Identity, fmLeader);
+            family.mMembers.TryAdd(fmLeader.Identity, fmLeader);
             FamilyManager.AddFamily(family);
 
             await leader.SendFamilyAsync();
@@ -88,7 +88,7 @@ namespace Comet.Game.States.Families
 
         public static async Task<Family> CreateAsync(DbFamily dbFamily)
         {
-            var family = new Family {m_family = dbFamily};
+            var family = new Family {mFamily = dbFamily};
 
             List<DbFamilyAttr> members = await FamilyAttrRepository.GetAsync(family.Identity);
             if (members == null)
@@ -103,16 +103,16 @@ namespace Comet.Game.States.Families
                     continue;
                 }
 
-                family.m_members.TryAdd(member.Identity, member);
+                family.mMembers.TryAdd(member.Identity, member);
             }
 
             // validate our members
-            foreach (FamilyMember member in family.m_members.Values.Where(x => x.Rank == FamilyRank.Spouse))
+            foreach (FamilyMember member in family.mMembers.Values.Where(x => x.Rank == FamilyRank.Spouse))
             {
                 FamilyMember mate = family.GetMember(member.MateIdentity);
                 if (mate == null || mate.Rank == FamilyRank.Spouse)
                 {
-                    family.m_members.TryRemove(member.Identity, out _);
+                    family.mMembers.TryRemove(member.Identity, out _);
                     await member.DeleteAsync();
                 }
             }
@@ -124,46 +124,46 @@ namespace Comet.Game.States.Families
 
         #region Properties
 
-        public uint Identity => m_family.Identity;
-        public string Name => m_family.Name;
-        public int MembersCount => m_members.Count;
-        public int PureMembersCount => m_members.Count(x => x.Value.Rank != FamilyRank.Spouse);
-        public bool IsDeleted => m_family.DeleteDate != null;
+        public uint Identity => mFamily.Identity;
+        public string Name => mFamily.Name;
+        public int MembersCount => mMembers.Count;
+        public int PureMembersCount => mMembers.Count(x => x.Value.Rank != FamilyRank.Spouse);
+        public bool IsDeleted => mFamily.DeleteDate != null;
 
-        public uint LeaderIdentity => m_family.LeaderIdentity;
-        public FamilyMember Leader => m_members.TryGetValue(LeaderIdentity, out FamilyMember value) ? value : null;
+        public uint LeaderIdentity => mFamily.LeaderIdentity;
+        public FamilyMember Leader => mMembers.TryGetValue(LeaderIdentity, out FamilyMember value) ? value : null;
 
         public ulong Money
         {
-            get => m_family.Money;
-            set => m_family.Money = value;
+            get => mFamily.Money;
+            set => mFamily.Money = value;
         }
 
         public byte Rank
         {
-            get => m_family.Rank;
-            set => m_family.Rank = value;
+            get => mFamily.Rank;
+            set => mFamily.Rank = value;
         }
 
         public uint Reputation
         {
-            get => m_family.Repute;
-            set => m_family.Repute = value;
+            get => mFamily.Repute;
+            set => mFamily.Repute = value;
         }
 
         public string Announcement
         {
-            get => m_family.Announcement;
-            set => m_family.Announcement = value;
+            get => mFamily.Announcement;
+            set => mFamily.Announcement = value;
         }
 
         public byte BattlePowerTower
         {
-            get => m_family.StarTower;
-            set => m_family.StarTower = value;
+            get => mFamily.StarTower;
+            set => mFamily.StarTower = value;
         }
 
-        public DateTime CreationDate => m_family.CreationDate;
+        public DateTime CreationDate => mFamily.CreationDate;
 
         #endregion
 
@@ -174,8 +174,14 @@ namespace Comet.Game.States.Families
         /// </summary>
         public uint ChallengeMap
         {
-            get => m_family.ChallengeMap;
-            set => m_family.ChallengeMap = value;
+            get => mFamily.ChallengeMap;
+            set => mFamily.ChallengeMap = value;
+        }
+
+        public int ChallengeTime
+        {
+            get => (int) mFamily.Challenge;
+            set => mFamily.Challenge = (uint) value;
         }
 
         /// <summary>
@@ -183,14 +189,14 @@ namespace Comet.Game.States.Families
         /// </summary>
         public uint FamilyMap
         {
-            get => m_family.FamilyMap;
-            set => m_family.FamilyMap = value;
+            get => mFamily.FamilyMap;
+            set => mFamily.FamilyMap = value;
         }
 
         public uint OccupyDate
         {
-            get => m_family.Occupy;
-            set => m_family.Occupy = value;
+            get => mFamily.Occupy;
+            set => mFamily.Occupy = value;
         }
 
         public uint OccupyDays
@@ -231,12 +237,12 @@ namespace Comet.Game.States.Families
 
         public FamilyMember GetMember(uint idMember)
         {
-            return m_members.TryGetValue(idMember, out FamilyMember value) ? value : null;
+            return mMembers.TryGetValue(idMember, out FamilyMember value) ? value : null;
         }
 
         public FamilyMember GetMember(string name)
         {
-            return m_members.Values.FirstOrDefault(x => x.Name.Equals(name));
+            return mMembers.Values.FirstOrDefault(x => x.Name.Equals(name));
         }
 
         public async Task<bool> AppendMemberAsync(Character caller, Character target,
@@ -248,7 +254,7 @@ namespace Comet.Game.States.Families
             if (target.Level < 50)
                 return false;
 
-            if (m_members.Values.Count(x => x.Rank != FamilyRank.Spouse) > 6 && rank != FamilyRank.Spouse)
+            if (mMembers.Values.Count(x => x.Rank != FamilyRank.Spouse) > 6 && rank != FamilyRank.Spouse)
                 return false;
 
             FamilyMember mate = GetMember(target.MateIdentity);
@@ -259,7 +265,7 @@ namespace Comet.Game.States.Families
             if (member == null)
                 return false;
 
-            m_members.TryAdd(member.Identity, member);
+            mMembers.TryAdd(member.Identity, member);
 
             target.Family = this;
 
@@ -287,7 +293,7 @@ namespace Comet.Game.States.Families
             if (user.FamilyPosition == FamilyRank.Spouse)
                 return false;
 
-            m_members.TryRemove(user.Identity, out _);
+            mMembers.TryRemove(user.Identity, out _);
             user.Family = null;
             await user.SendNoFamilyAsync();
             await user.Screen.SynchroScreenAsync();
@@ -315,7 +321,7 @@ namespace Comet.Game.States.Families
                 if (target.Rank != FamilyRank.Spouse || target.MateIdentity != caller.Identity)
                     return false;
 
-            m_members.TryRemove(idTarget, out _);
+            mMembers.TryRemove(idTarget, out _);
 
             if (target.User != null)
             {
@@ -378,155 +384,155 @@ namespace Comet.Game.States.Families
         public void LoadRelations()
         {
             // Ally
-            Family family = FamilyManager.GetFamily(m_family.AllyFamily0);
+            Family family = FamilyManager.GetFamily(mFamily.AllyFamily0);
             if (family != null)
-                m_allies.TryAdd(family.Identity, family);
-            else m_family.AllyFamily0 = 0;
+                mAllies.TryAdd(family.Identity, family);
+            else mFamily.AllyFamily0 = 0;
 
-            family = FamilyManager.GetFamily(m_family.AllyFamily1);
+            family = FamilyManager.GetFamily(mFamily.AllyFamily1);
             if (family != null)
-                m_allies.TryAdd(family.Identity, family);
-            else m_family.AllyFamily1 = 0;
+                mAllies.TryAdd(family.Identity, family);
+            else mFamily.AllyFamily1 = 0;
 
-            family = FamilyManager.GetFamily(m_family.AllyFamily2);
+            family = FamilyManager.GetFamily(mFamily.AllyFamily2);
             if (family != null)
-                m_allies.TryAdd(family.Identity, family);
-            else m_family.AllyFamily2 = 0;
+                mAllies.TryAdd(family.Identity, family);
+            else mFamily.AllyFamily2 = 0;
 
-            family = FamilyManager.GetFamily(m_family.AllyFamily3);
+            family = FamilyManager.GetFamily(mFamily.AllyFamily3);
             if (family != null)
-                m_allies.TryAdd(family.Identity, family);
-            else m_family.AllyFamily3 = 0;
+                mAllies.TryAdd(family.Identity, family);
+            else mFamily.AllyFamily3 = 0;
 
-            family = FamilyManager.GetFamily(m_family.AllyFamily4);
+            family = FamilyManager.GetFamily(mFamily.AllyFamily4);
             if (family != null)
-                m_allies.TryAdd(family.Identity, family);
-            else m_family.AllyFamily4 = 0;
+                mAllies.TryAdd(family.Identity, family);
+            else mFamily.AllyFamily4 = 0;
 
             // Enemies
-            family = FamilyManager.GetFamily(m_family.EnemyFamily0);
+            family = FamilyManager.GetFamily(mFamily.EnemyFamily0);
             if (family != null)
-                m_allies.TryAdd(family.Identity, family);
-            else m_family.EnemyFamily0 = 0;
+                mAllies.TryAdd(family.Identity, family);
+            else mFamily.EnemyFamily0 = 0;
 
-            family = FamilyManager.GetFamily(m_family.EnemyFamily1);
+            family = FamilyManager.GetFamily(mFamily.EnemyFamily1);
             if (family != null)
-                m_allies.TryAdd(family.Identity, family);
-            else m_family.EnemyFamily1 = 0;
+                mAllies.TryAdd(family.Identity, family);
+            else mFamily.EnemyFamily1 = 0;
 
-            family = FamilyManager.GetFamily(m_family.EnemyFamily2);
+            family = FamilyManager.GetFamily(mFamily.EnemyFamily2);
             if (family != null)
-                m_allies.TryAdd(family.Identity, family);
-            else m_family.EnemyFamily2 = 0;
+                mAllies.TryAdd(family.Identity, family);
+            else mFamily.EnemyFamily2 = 0;
 
-            family = FamilyManager.GetFamily(m_family.EnemyFamily3);
+            family = FamilyManager.GetFamily(mFamily.EnemyFamily3);
             if (family != null)
-                m_allies.TryAdd(family.Identity, family);
-            else m_family.EnemyFamily3 = 0;
+                mAllies.TryAdd(family.Identity, family);
+            else mFamily.EnemyFamily3 = 0;
 
-            family = FamilyManager.GetFamily(m_family.EnemyFamily4);
+            family = FamilyManager.GetFamily(mFamily.EnemyFamily4);
             if (family != null)
-                m_allies.TryAdd(family.Identity, family);
-            else m_family.EnemyFamily4 = 0;
+                mAllies.TryAdd(family.Identity, family);
+            else mFamily.EnemyFamily4 = 0;
         }
 
         #endregion
 
         #region Allies
 
-        public int AllyCount => m_allies.Count;
+        public int AllyCount => mAllies.Count;
 
         public bool IsAlly(uint idAlly)
         {
-            return m_allies.ContainsKey(idAlly);
+            return mAllies.ContainsKey(idAlly);
         }
 
         public void SetAlly(Family ally)
         {
             uint idAlly = ally.Identity;
 
-            if (m_family.AllyFamily0 == 0)
-                m_family.AllyFamily0 = idAlly;
-            else if (m_family.AllyFamily1 == 0)
-                m_family.AllyFamily1 = idAlly;
-            else if (m_family.AllyFamily2 == 0)
-                m_family.AllyFamily2 = idAlly;
-            else if (m_family.AllyFamily3 == 0)
-                m_family.AllyFamily3 = idAlly;
-            else if (m_family.AllyFamily4 == 0)
-                m_family.AllyFamily4 = idAlly;
+            if (mFamily.AllyFamily0 == 0)
+                mFamily.AllyFamily0 = idAlly;
+            else if (mFamily.AllyFamily1 == 0)
+                mFamily.AllyFamily1 = idAlly;
+            else if (mFamily.AllyFamily2 == 0)
+                mFamily.AllyFamily2 = idAlly;
+            else if (mFamily.AllyFamily3 == 0)
+                mFamily.AllyFamily3 = idAlly;
+            else if (mFamily.AllyFamily4 == 0)
+                mFamily.AllyFamily4 = idAlly;
             else return;
 
-            m_allies.TryAdd(idAlly, ally);
+            mAllies.TryAdd(idAlly, ally);
         }
 
         public void UnsetAlly(uint idAlly)
         {
-            if (m_family.AllyFamily0 == idAlly)
-                m_family.AllyFamily0 = 0;
+            if (mFamily.AllyFamily0 == idAlly)
+                mFamily.AllyFamily0 = 0;
 
-            if (m_family.AllyFamily1 == idAlly)
-                m_family.AllyFamily1 = 0;
+            if (mFamily.AllyFamily1 == idAlly)
+                mFamily.AllyFamily1 = 0;
 
-            if (m_family.AllyFamily2 == idAlly)
-                m_family.AllyFamily2 = 0;
+            if (mFamily.AllyFamily2 == idAlly)
+                mFamily.AllyFamily2 = 0;
 
-            if (m_family.AllyFamily3 == idAlly)
-                m_family.AllyFamily3 = 0;
+            if (mFamily.AllyFamily3 == idAlly)
+                mFamily.AllyFamily3 = 0;
 
-            if (m_family.AllyFamily4 == idAlly)
-                m_family.AllyFamily4 = 0;
+            if (mFamily.AllyFamily4 == idAlly)
+                mFamily.AllyFamily4 = 0;
 
-            m_allies.TryRemove(idAlly, out _);
+            mAllies.TryRemove(idAlly, out _);
         }
 
         #endregion
 
         #region Enemies
 
-        public int EnemyCount => m_enemies.Count;
+        public int EnemyCount => mEnemies.Count;
 
         public bool IsEnemy(uint idEnemy)
         {
-            return m_enemies.ContainsKey(idEnemy);
+            return mEnemies.ContainsKey(idEnemy);
         }
 
         public void SetEnemy(Family enemy)
         {
             uint idEnemy = enemy.Identity;
-            if (m_family.EnemyFamily0 == 0)
-                m_family.EnemyFamily0 = idEnemy;
-            else if (m_family.EnemyFamily1 == 0)
-                m_family.EnemyFamily1 = idEnemy;
-            else if (m_family.EnemyFamily2 == 0)
-                m_family.EnemyFamily2 = idEnemy;
-            else if (m_family.EnemyFamily3 == 0)
-                m_family.EnemyFamily3 = idEnemy;
-            else if (m_family.EnemyFamily4 == 0)
-                m_family.EnemyFamily4 = idEnemy;
+            if (mFamily.EnemyFamily0 == 0)
+                mFamily.EnemyFamily0 = idEnemy;
+            else if (mFamily.EnemyFamily1 == 0)
+                mFamily.EnemyFamily1 = idEnemy;
+            else if (mFamily.EnemyFamily2 == 0)
+                mFamily.EnemyFamily2 = idEnemy;
+            else if (mFamily.EnemyFamily3 == 0)
+                mFamily.EnemyFamily3 = idEnemy;
+            else if (mFamily.EnemyFamily4 == 0)
+                mFamily.EnemyFamily4 = idEnemy;
             else return;
 
-            m_enemies.TryAdd(idEnemy, enemy);
+            mEnemies.TryAdd(idEnemy, enemy);
         }
 
         public void UnsetEnemy(uint idEnemy)
         {
-            if (m_family.EnemyFamily0 == idEnemy)
-                m_family.EnemyFamily0 = 0;
+            if (mFamily.EnemyFamily0 == idEnemy)
+                mFamily.EnemyFamily0 = 0;
 
-            if (m_family.EnemyFamily1 == idEnemy)
-                m_family.EnemyFamily1 = 0;
+            if (mFamily.EnemyFamily1 == idEnemy)
+                mFamily.EnemyFamily1 = 0;
 
-            if (m_family.EnemyFamily2 == idEnemy)
-                m_family.EnemyFamily2 = 0;
+            if (mFamily.EnemyFamily2 == idEnemy)
+                mFamily.EnemyFamily2 = 0;
 
-            if (m_family.EnemyFamily3 == idEnemy)
-                m_family.EnemyFamily3 = 0;
+            if (mFamily.EnemyFamily3 == idEnemy)
+                mFamily.EnemyFamily3 = 0;
 
-            if (m_family.EnemyFamily4 == idEnemy)
-                m_family.EnemyFamily4 = 0;
+            if (mFamily.EnemyFamily4 == idEnemy)
+                mFamily.EnemyFamily4 = 0;
 
-            m_enemies.TryRemove(idEnemy, out _);
+            mEnemies.TryRemove(idEnemy, out _);
         }
 
         #endregion
@@ -544,7 +550,7 @@ namespace Comet.Game.States.Families
                 Action = MsgFamily<Client>.FamilyAction.QueryMemberList
             };
 
-            foreach (FamilyMember member in m_members.Values.OrderByDescending(x => x.IsOnline)
+            foreach (FamilyMember member in mMembers.Values.OrderByDescending(x => x.IsOnline)
                                                      .ThenByDescending(x => x.Rank))
                 msg.Objects.Add(new MsgFamily<Client>.MemberListStruct
                 {
@@ -561,7 +567,7 @@ namespace Comet.Game.States.Families
 
         public async Task SendRelationsAsync()
         {
-            foreach (FamilyMember member in m_members.Values.Where(x => x.IsOnline))
+            foreach (FamilyMember member in mMembers.Values.Where(x => x.IsOnline))
                 await SendRelationsAsync(member.User);
         }
 
@@ -572,7 +578,7 @@ namespace Comet.Game.States.Families
                 Identity = Identity,
                 Action = MsgFamily<Client>.FamilyAction.SendAlly
             };
-            foreach (Family ally in m_allies.Values)
+            foreach (Family ally in mAllies.Values)
                 msg.Objects.Add(new MsgFamily<Client>.RelationListStruct
                 {
                     Name = ally.Name,
@@ -585,7 +591,7 @@ namespace Comet.Game.States.Families
                 Identity = Identity,
                 Action = MsgFamily<Client>.FamilyAction.SendEnemy
             };
-            foreach (Family enemy in m_enemies.Values)
+            foreach (Family enemy in mEnemies.Values)
                 msg.Objects.Add(new MsgFamily<Client>.RelationListStruct
                 {
                     Name = enemy.Name,
@@ -601,7 +607,7 @@ namespace Comet.Game.States.Families
 
         public async Task SendAsync(IPacket msg, uint exclude = 0u)
         {
-            foreach (FamilyMember player in m_members.Values)
+            foreach (FamilyMember player in mMembers.Values)
             {
                 if (exclude == player.Identity || player.User == null)
                     continue;
@@ -615,18 +621,18 @@ namespace Comet.Game.States.Families
 
         public Task<bool> SaveAsync()
         {
-            return ServerDbContext.SaveAsync(m_family);
+            return ServerDbContext.SaveAsync(mFamily);
         }
 
         public Task<bool> SoftDeleteAsync()
         {
-            m_family.DeleteDate = DateTime.Now;
+            mFamily.DeleteDate = DateTime.Now;
             return SaveAsync();
         }
 
         public Task<bool> DeleteAsync()
         {
-            return ServerDbContext.DeleteAsync(m_family);
+            return ServerDbContext.DeleteAsync(mFamily);
         }
 
         #endregion

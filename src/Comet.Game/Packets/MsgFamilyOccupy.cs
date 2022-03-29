@@ -60,6 +60,7 @@ namespace Comet.Game.Packets
 
                     user.Family.Money -= fee;
                     user.Family.ChallengeMap = (uint) npc.Data1;
+                    user.Family.ChallengeTime = UnixTimestamp.Now();
                     await user.Family.SaveAsync();
                     await user.SendFamilyAsync();
 
@@ -85,6 +86,7 @@ namespace Comet.Game.Packets
                         return;
 
                     user.Family.ChallengeMap = 0;
+                    user.Family.ChallengeTime = 0;
                     await user.Family.SaveAsync();
                     await user.SendFamilyAsync();
                     break;

@@ -22,11 +22,13 @@ namespace Comet.Account
     {
         private static async Task Main(string[] args)
         {
+            Log.DefaultFileName = "LoginServer";
+
             // Copyright notice may not be commented out. If adding your own copyright or
             // claim of ownership, you may include a second copyright above the existing
             // copyright. Do not remove completely to comply with software license. The
             // project name and version may be removed or changed.
-            Console.Title = "Comet, Account Server";
+            Console.Title = @"Comet, Account Server";
             Console.WriteLine();
             await Log.WriteLogAsync(LogLevel.Info, "  Comet: Account Server");
             await Log.WriteLogAsync(LogLevel.Info, $"  Copyright 2018-{DateTime.Now:yyyy} Gareth Jensen \"Spirited\"");

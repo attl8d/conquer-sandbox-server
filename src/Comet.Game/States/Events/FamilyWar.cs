@@ -5,10 +5,12 @@ using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
 using Comet.Database.Entities;
+using Comet.Game.Packets;
 using Comet.Game.States.Families;
 using Comet.Game.States.Npcs;
 using Comet.Game.World.Managers;
 using Comet.Game.World.Maps;
+using Comet.Network.Packets.Game;
 using Comet.Shared;
 
 namespace Comet.Game.States.Events
@@ -28,7 +30,7 @@ namespace Comet.Game.States.Events
             {10032, new uint[] {0, 722468, 722467, 722466, 722465, 722464}},
             {10033, new uint[] {0, 722468, 722467, 722466, 722465, 722464}},
             {10034, new uint[] {0, 722463, 722462, 722461, 722460, 722459}},
-            {10035, new uint[] {0 ,722463, 722462, 722461, 722460, 722459}}
+            {10035, new uint[] {0, 722463, 722462, 722461, 722460, 722459}}
         };
 
         private Dictionary<uint, uint> mGoldFee { get; } = new()
@@ -86,7 +88,7 @@ namespace Comet.Game.States.Events
             int time = int.Parse(DateTime.Now.ToString("HHmm"));
             if (mStage == FamilyWarStage.Idle)
             {
-                if (time == 2000)
+                if (time is >= 2000 and < 2030)
                 {
                     await Log.WriteLogAsync("FamilyWarDebug", LogLevel.Debug, "Starting Clan Wars!");
                     foreach (uint npcId in mGoldFee.Keys)
@@ -101,6 +103,33 @@ namespace Comet.Game.States.Events
 
                         npc.SetData(TemporaryWinner, int.MaxValue); // temporary winner (if set)
                         await npc.SaveAsync();
+                    }
+
+                    mStage = FamilyWarStage.Preparing;
+                }
+            }
+            else if (mStage == FamilyWarStage.Preparing)
+            {
+                if (time == 2030)
+                {
+                    foreach (var idNpc in mGoldFee.Keys)
+                    {
+                        Family owner = GetFamilyOwner(idNpc);
+                        if (owner != null)
+                        {
+                            await owner.SendAsync(new MsgFamilyOccupy
+                            {
+                                Action = MsgFamilyOccupy<Client>.FamilyPromptType.AnnounceWarBegin
+                            });
+                        }
+
+                        foreach (var challenger in GetChallengers(idNpc))
+                        {
+                            await challenger.SendAsync(new MsgFamilyOccupy
+                            {
+                                Action = MsgFamilyOccupy<Client>.FamilyPromptType.AnnounceWarBegin
+                            });
+                        }
                     }
 
                     mStage = FamilyWarStage.Running;
@@ -119,7 +148,6 @@ namespace Comet.Game.States.Events
                 if (time == 2055 &&
                     mLastUpdate != now)
                 {
-
                     foreach (Family family in FamilyManager.QueryFamilies(x => x.ChallengeMap != 0))
                     {
                         family.ChallengeMap = 0;
@@ -158,7 +186,7 @@ namespace Comet.Game.States.Events
                 int idWinner = npc.GetData(TemporaryWinner);
                 if (idWinner is not 0 and not int.MaxValue)
                 {
-                    uint occupyMap = (uint) npc.GetData(ChallengeMap);
+                    var occupyMap = (uint) npc.GetData(ChallengeMap);
                     Family old = GetFamilyOwner(npcId);
                     if (old != null && old.FamilyMap == occupyMap) // must be occupying this map
                     {
@@ -168,7 +196,7 @@ namespace Comet.Game.States.Events
                         await old.SaveAsync();
                     }
 
-                    Family winner = FamilyManager.GetFamily((uint)idWinner);
+                    Family winner = FamilyManager.GetFamily((uint) idWinner);
                     if (winner != null)
                     {
                         winner.ChallengeMap = 0;
@@ -177,10 +205,44 @@ namespace Comet.Game.States.Events
                             winner.OccupyDate = uint.Parse(DateTime.Now.ToString("yyyyMMdd"));
                         await winner.SaveAsync();
                     }
+                }
 
-                    foreach (Family challenger in GetChallengers(npcId))
+                foreach (Family challenger in GetChallengers(npcId))
+                {
+                    if (challenger.ChallengeTime <= 0)
                     {
                         challenger.ChallengeMap = 0;
+                        challenger.ChallengeTime = 0;
+                        continue;
+                    }
+
+                    DateTime today = DateTime.Now;
+                    var challengeTime = UnixTimestamp.ToDateTime(challenger.ChallengeTime);
+                    int timeNow = int.Parse(DateTime.Now.ToString("HHmm"));
+                    var reset = false;
+                    // If server startup time is day time, we must check for yesterday.
+                    if (timeNow < 2000)
+                    {
+                        DateTime yesterday = today.AddDays(-1);
+                        yesterday = new DateTime(yesterday.Year, yesterday.Month, yesterday.Day, 21, 00, 00);
+
+                        if (challengeTime < yesterday)
+                            reset = true;
+                    }
+                    // If server startup past 21:00 then we must check if family challenged before war time.
+                    else if (timeNow >= 2100)
+                    {
+                        var closeTimeToday = new DateTime(today.Year, today.Month, today.Day, 20, 00, 00);
+
+                        if (challengeTime < closeTimeToday)
+                            reset = true;
+                    }
+                    else continue;
+
+                    if (reset)
+                    {
+                        challenger.ChallengeMap = 0;
+                        challenger.ChallengeTime = 0;
                         await challenger.SaveAsync();
                     }
                 }
@@ -189,7 +251,7 @@ namespace Comet.Game.States.Events
                 await npc.SaveAsync();
             }
         }
-        
+
         private int GetExpRewardIdx(uint occupyDays)
         {
             occupyDays = Math.Max(1, occupyDays);
@@ -275,7 +337,10 @@ namespace Comet.Game.States.Events
 
         public List<Family> GetChallengers(uint idNpc)
         {
-            return FamilyManager.QueryFamilies(x => x.ChallengeMap == idNpc);
+            DynamicNpc npc = RoleManager.GetRole<DynamicNpc>(idNpc);
+            if (npc == null)
+                return new List<Family>();
+            return FamilyManager.QueryFamilies(x => x.ChallengeMap == npc.GetData(ChallengeMap));
         }
 
         public bool IsChallenged(uint idNpc)
@@ -413,7 +478,7 @@ namespace Comet.Game.States.Events
 
             if (npc.Data1 != user.Family.ChallengeMap && npc.Data1 != user.Family.FamilyMap)
                 return false;
-            
+
             if (IsInTime)
                 return false;
 
@@ -450,7 +515,7 @@ namespace Comet.Game.States.Events
                 Family current = FamilyManager.GetOccupyOwner((uint) npc.Data1);
                 if (families.All(x => x.Key != current?.Identity))
                 {
-                    Dictionary<uint, int> bpDict = new Dictionary<uint, int>();
+                    var bpDict = new Dictionary<uint, int>();
                     foreach (Character player in map.QueryPlayers(x =>
                                                                       x.FamilyIdentity != 0 &&
                                                                       (x.Family.FamilyMap == map.Identity ||
@@ -462,13 +527,14 @@ namespace Comet.Game.States.Events
 
                         if (bpDict.ContainsKey(player.FamilyIdentity))
                             bpDict[player.FamilyIdentity] += player.BattlePower;
-                        else 
+                        else
                             bpDict.Add(player.FamilyIdentity, player.BattlePower);
                     }
 
-                    Family winner = FamilyManager.GetFamily(bpDict.OrderByDescending(x => x.Value).FirstOrDefault().Key);
+                    Family winner =
+                        FamilyManager.GetFamily(bpDict.OrderByDescending(x => x.Value).FirstOrDefault().Key);
 
-                    npc.SetData(TemporaryWinner, (int)winner.Identity);
+                    npc.SetData(TemporaryWinner, (int) winner.Identity);
                     await npc.SaveAsync();
                 }
                 else
@@ -490,6 +556,7 @@ namespace Comet.Game.States.Events
         private enum FamilyWarStage
         {
             Idle,
+            Preparing,
             Running,
             WaitingConfirmation
         }

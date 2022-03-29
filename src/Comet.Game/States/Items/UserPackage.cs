@@ -6,6 +6,7 @@ using System.Linq;
 using System.Threading.Tasks;
 using Comet.Core;
 using Comet.Database.Entities;
+using Comet.Game.Database;
 using Comet.Game.Database.Repositories;
 using Comet.Game.Packets;
 using Comet.Game.States.Npcs;
@@ -935,7 +936,25 @@ namespace Comet.Game.States.Items
 
                         await item.ChangeOwnerAsync(0, Item.ChangeOwnerType.DropItem);
 
-                        var pMapItem = new MapItem((uint) IdentityGenerator.MapItem.GetNextIdentity);
+                        var dropItemLog = new DbItemDrop
+                        {
+                            UserId = m_user.Identity,
+                            ItemId = item.Identity,
+                            ItemType = item.Type,
+                            MapId = m_user.MapIdentity,
+                            X = m_user.MapX,
+                            Y = m_user.MapY,
+                            Addition = item.Plus,
+                            Gem1 = (byte)item.SocketOne,
+                            Gem2 = (byte)item.SocketTwo,
+                            ReduceDmg = item.ReduceDamage,
+                            AddLife = item.Enchantment,
+                            Data = item.Data,
+                            DropTime = UnixTimestamp.Now()
+                        };
+                        await ServerDbContext.SaveAsync(dropItemLog);
+
+                        var pMapItem = new MapItem((uint) IdentityGenerator.MapItem.GetNextIdentity, dropItemLog);
                         if (await pMapItem.CreateAsync(m_user.Map, pos, item, m_user.Identity))
                         {
                             await pMapItem.EnterMapAsync();
@@ -993,7 +1012,25 @@ namespace Comet.Game.States.Items
 
                     await item.ChangeOwnerAsync(0, Item.ChangeOwnerType.DropItem);
 
-                    var pMapItem = new MapItem((uint) IdentityGenerator.MapItem.GetNextIdentity);
+                    var dropItemLog = new DbItemDrop
+                    {
+                        UserId = m_user.Identity,
+                        ItemId = item.Identity,
+                        ItemType = item.Type,
+                        MapId = m_user.MapIdentity,
+                        X = m_user.MapX,
+                        Y = m_user.MapY,
+                        Addition = item.Plus,
+                        Gem1 = (byte)item.SocketOne,
+                        Gem2 = (byte)item.SocketTwo,
+                        ReduceDmg = item.ReduceDamage,
+                        AddLife = item.Enchantment,
+                        Data = item.Data,
+                        DropTime = UnixTimestamp.Now()
+                    };
+                    await ServerDbContext.SaveAsync(dropItemLog);
+
+                    var pMapItem = new MapItem((uint) IdentityGenerator.MapItem.GetNextIdentity, dropItemLog);
                     if (await pMapItem.CreateAsync(m_user.Map, pos, item, m_user.Identity))
                     {
                         await pMapItem.EnterMapAsync();

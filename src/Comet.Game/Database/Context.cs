@@ -70,10 +70,7 @@ namespace Comet.Game.Database
         public virtual DbSet<DbTutorAccess> TutorAccess { get; set; }
         public virtual DbSet<DbTutorBattleLimitType> TutorBattleLimitTypes { get; set; }
         public virtual DbSet<DbTutorContribution> TutorContributions { get; set; }
-
         public virtual DbSet<DbTutorType> TutorTypes { get; set; }
-
-        //public virtual DbSet<DbDynaRankRec> DynaRankRec { get; set; }
         public virtual DbSet<DbSuperman> Superman { get; set; }
         public virtual DbSet<DbDisdain> Disdains { get; set; }
         public virtual DbSet<DbTotemAdd> TotemAdds { get; set; }
@@ -90,6 +87,8 @@ namespace Comet.Game.Database
         public virtual DbSet<DbDetainedItem> DetainedItems { get; set; }
         public virtual DbSet<DbMonsterTypeMagic> MonsterTypeMagic { get; set; }
         public virtual DbSet<DbConfig> Configs { get; set; }
+        public virtual DbSet<DbItemDrop> DropItems { get; set; }
+        public virtual DbSet<DbItemPickUp> PickUpItems { get; set; }
 
         /// <summary>
         ///     Typically called only once when the first instance of the context is created.
@@ -100,6 +99,7 @@ namespace Comet.Game.Database
         protected override void OnModelCreating(ModelBuilder builder)
         {
             builder.Entity<DbCharacter>(e => e.HasKey(x => x.Identity));
+            builder.Entity<DbTrade>().Property(x => x.Type).HasConversion<uint>();
         }
 
         public static bool Ping()

@@ -8,6 +8,7 @@ namespace Comet.Database.Entities
     public class DbTrade
     {
         [Key] [Column("id")] public virtual uint Identity { get; set; }
+        [Column("type")] public virtual TradeType Type { get; set; }
         [Column("user_id")] public virtual uint UserIdentity { get; set; }
         [Column("target_id")] public virtual uint TargetIdentity { get; set; }
         [Column("user_money")] public virtual uint UserMoney { get; set; }
@@ -24,5 +25,11 @@ namespace Comet.Database.Entities
         [Column("user_mac_addr")] public virtual string UserMacAddress { get; set; }
         [Column("target_ip_addr")] public virtual string TargetIpAddress { get; set; }
         [Column("target_mac_addr")] public virtual string TargetMacAddress { get; set; }
+
+        public enum TradeType
+        {
+            Trade,
+            Booth
+        }
     }
 }

@@ -267,7 +267,7 @@ namespace Comet.Game.States
             if (Map?.FindDropItemCell(4, ref targetPos) == true)
             {
                 var drop = new MapItem((uint) IdentityGenerator.MapItem.GetNextIdentity);
-                if (drop.CreateMoney(Map, targetPos, amount, idOwner, mode))
+                if (await drop.CreateMoneyAsync(Map, targetPos, amount, idOwner, mode))
                     await drop.EnterMapAsync();
                 else
                     IdentityGenerator.MapItem.ReturnIdentity(drop.Identity);

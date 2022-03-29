@@ -3,6 +3,7 @@ using System.Drawing;
 using System.Runtime.InteropServices;
 using System.Threading.Tasks;
 using Comet.Database.Entities;
+using Comet.Game.Database;
 using Comet.Game.Packets;
 using Comet.Game.World;
 using Comet.Game.World.Managers;
@@ -33,6 +34,13 @@ namespace Comet.Game.States.Items
             Identity = idRole;
         }
 
+        public MapItem(uint idRole, DbItemDrop drop)
+        {
+            Identity = idRole;
+            ItemDrop = drop;
+        }
+
+        public DbItemDrop ItemDrop { get; }
         public DropMode Mode { get; private set; } = DropMode.Common;
 
         #region Creation
@@ -86,6 +94,13 @@ namespace Comet.Game.States.Items
             Map = map;
             MapX = (ushort) pos.X;
             MapY = (ushort) pos.Y;
+
+            if (ItemDrop != null)
+            {
+                ItemDrop.X = MapX;
+                ItemDrop.Y = MapY;
+                await ServerDbContext.SaveAsync(ItemDrop);
+            }
 
             mInfo.Addition = nPlus;
             mInfo.ReduceDamage = nDmg;
@@ -143,6 +158,13 @@ namespace Comet.Game.States.Items
             MapX = (ushort) pos.X;
             MapY = (ushort) pos.Y;
 
+            if (ItemDrop != null)
+            {
+                ItemDrop.X = MapX;
+                ItemDrop.Y = MapY;
+                await ServerDbContext.SaveAsync(ItemDrop);
+            }
+
             Name = pInfo.Itemtype?.Name ?? "";
 
             mItemInfo = pInfo;
@@ -154,7 +176,7 @@ namespace Comet.Game.States.Items
             return true;
         }
 
-        public bool CreateMoney(GameMap map, Point pos, uint dwMoney, uint idOwner, DropMode mode)
+        public async Task<bool> CreateMoneyAsync(GameMap map, Point pos, uint dwMoney, uint idOwner, DropMode mode)
         {
             if (map == null || Identity == 0) return false;
 
@@ -173,6 +195,13 @@ namespace Comet.Game.States.Items
             Map = map;
             MapX = (ushort) pos.X;
             MapY = (ushort) pos.Y;
+
+            if (ItemDrop != null)
+            {
+                ItemDrop.X = MapX;
+                ItemDrop.Y = MapY;
+                await ServerDbContext.SaveAsync(ItemDrop);
+            }
 
             uint idType;
             if (dwMoney < _ITEM_SILVER_MAX)

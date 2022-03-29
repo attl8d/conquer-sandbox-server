@@ -3119,8 +3119,8 @@ namespace Comet.Game.States
 
             Booth.RemoveItem(idItem);
 
-            await SendAsync(new MsgItem(item.Identity, MsgItem<Client>.ItemActionType.BoothRemove)
-                                {Command = Booth.Identity});
+            await BroadcastRoomMsgAsync(new MsgItem(item.Identity, MsgItem<Client>.ItemActionType.BoothRemove)
+                                {Command = Booth.Identity}, true);
             await UserPackage.RemoveFromInventoryAsync(item.Item, UserPackage.RemovalType.RemoveAndDisappear);
             await item.Item.ChangeOwnerAsync(target.Identity, Item.ChangeOwnerType.BoothSale);
             await target.UserPackage.AddItemAsync(item.Item);
@@ -3130,8 +3130,43 @@ namespace Comet.Game.States
             await target.SendAsync(string.Format(Language.StrBoothBought, item.Item.Name, value, moneyType),
                                    TalkChannel.Talk, Color.White);
 
-            await Log.GmLogAsync("booth_sale",
-                                 $"{item.Identity},{item.Item.PlayerIdentity},{Identity},{item.Item.Type},{item.IsSilver},{item.Value},{item.Item.ToJson()}");
+            DbTrade trade = new()
+            {
+                Type = DbTrade.TradeType.Booth,
+                UserIpAddress = Client.IPAddress,
+                UserMacAddress = Client.MacAddress,
+                TargetIpAddress = target.Client.IPAddress,
+                TargetMacAddress = target.Client.MacAddress,
+                MapIdentity = MapIdentity,
+                TargetEmoney = item.IsSilver ? 0 : item.Value,
+                TargetMoney = item.IsSilver ? item.Value : 0,
+                UserEmoney = 0,
+                UserMoney = 0,
+                TargetIdentity = target.Identity,
+                UserIdentity = Identity,
+                TargetX = target.MapX,
+                TargetY = target.MapY,
+                UserX = MapX,
+                UserY = MapY,
+                Timestamp = DateTime.Now
+            };
+
+            if (!await ServerDbContext.SaveAsync(trade))
+            {
+                await Log.GmLogAsync("booth_sale", $"{item.Item.Identity},{item.Item.PlayerIdentity},{Identity},{item.Item.Type},{item.IsSilver},{item.Value},{item.Item.ToJson()}");
+                return true;
+            }
+
+            DbTradeItem tradeItem = new()
+            {
+                TradeIdentity = trade.Identity,
+                SenderIdentity = Identity,
+                ItemIdentity = item.Identity,
+                Itemtype = item.Item.Type,
+                Chksum = (uint)item.Item.ToJson().GetHashCode(),
+                JsonData = item.Item.ToJson()
+            };
+            await ServerDbContext.SaveAsync(tradeItem);
             return true;
         }
 
@@ -3139,13 +3174,13 @@ namespace Comet.Game.States
 
         #region Map Item
 
-        public async Task<bool> DropItemAsync(uint idItem, int x, int y, bool force = false)
+        public async Task<bool> DropItemAsync(uint idItem, int x, int y)
         {
             var pos = new Point(x, y);
             if (!Map.FindDropItemCell(9, ref pos))
                 return false;
 
-            Item item = UserPackage[idItem];
+            Item item = UserPackage.FindByIdentity(idItem);
             if (item == null)
                 return false;
 
@@ -3155,16 +3190,34 @@ namespace Comet.Game.States
             if (Trade != null)
                 return false;
 
-            await Log.GmLogAsync("drop_item",
-                                 $"{Name}({Identity}) drop item:[id={item.Identity}, type={item.Type}], dur={item.Durability}, max_dur={item.OriginalMaximumDurability}\r\n\t{item.ToJson()}");
-
             if (item.IsSuspicious())
                 return false;
 
-            if ((item.CanBeDropped() || force) && item.IsDisappearWhenDropped())
-                return await UserPackage.RemoveFromInventoryAsync(item, UserPackage.RemovalType.Delete);
+            await Log.GmLogAsync("drop_item", $"{Name}({Identity}) drop item:[id={item.Identity}, type={item.Type}], dur={item.Durability}, max_dur={item.OriginalMaximumDurability}\r\n\t{item.ToJson()}");
 
-            if (item.CanBeDropped() || force)
+            var dropItemLog = new DbItemDrop
+            {
+                UserId = Identity,
+                ItemId = item.Identity,
+                ItemType = item.Type,
+                MapId = MapIdentity,
+                X = MapX,
+                Y = MapY,
+                Addition = item.Plus,
+                Gem1 = (byte) item.SocketOne,
+                Gem2 = (byte) item.SocketTwo,
+                ReduceDmg = item.ReduceDamage,
+                AddLife = item.Enchantment,
+                Data = item.Data,
+                DropTime = UnixTimestamp.Now()
+            };
+            await ServerDbContext.SaveAsync(dropItemLog);
+
+            if (item.CanBeDropped() && item.IsDisappearWhenDropped())
+            {
+                return await UserPackage.RemoveFromInventoryAsync(item, UserPackage.RemovalType.Delete);
+            }
+            if (item.CanBeDropped())
             {
                 await UserPackage.RemoveFromInventoryAsync(item, UserPackage.RemovalType.RemoveAndDisappear);
             }
@@ -3177,7 +3230,7 @@ namespace Comet.Game.States
             item.Position = Item.ItemPosition.Floor;
             await item.SaveAsync();
 
-            var mapItem = new MapItem((uint) IdentityGenerator.MapItem.GetNextIdentity);
+            var mapItem = new MapItem((uint) IdentityGenerator.MapItem.GetNextIdentity, dropItemLog);
             if (await mapItem.CreateAsync(Map, pos, item, Identity))
             {
                 await mapItem.EnterMapAsync();
@@ -3210,8 +3263,26 @@ namespace Comet.Game.States
 
             await Log.GmLogAsync("drop_money", $"drop money: {Identity} {Name} has dropped {amount} silvers");
 
-            var mapItem = new MapItem((uint) IdentityGenerator.MapItem.GetNextIdentity);
-            if (mapItem.CreateMoney(Map, pos, amount, 0u, MapItem.DropMode.Common))
+            var dropItemLog = new DbItemDrop
+            {
+                UserId = Identity,
+                ItemId = 0,
+                ItemType = amount,
+                MapId = MapIdentity,
+                X = MapX,
+                Y = MapY,
+                Addition = 0,
+                Gem1 = 0,
+                Gem2 = 0,
+                ReduceDmg = 0,
+                AddLife = 0,
+                Data = 0,
+                DropTime = UnixTimestamp.Now()
+            };
+            await ServerDbContext.SaveAsync(dropItemLog);
+
+            var mapItem = new MapItem((uint) IdentityGenerator.MapItem.GetNextIdentity, dropItemLog);
+            if (await mapItem.CreateMoneyAsync(Map, pos, amount, 0u, MapItem.DropMode.Common))
             {
                 await mapItem.EnterMapAsync();
             }
@@ -3309,6 +3380,19 @@ namespace Comet.Game.States
                     }
                 }
             }
+
+            var itemPickUpLog = new DbItemPickUp
+            {
+                PickUpTime = UnixTimestamp.Now(),
+                UserId = Identity,
+                ItemId = mapItem.IsMoney() ? 0 : mapItem.ItemIdentity,
+                ItemType = mapItem.IsMoney() ? mapItem.Money : mapItem.Itemtype
+            };
+            if (mapItem.ItemDrop != null)
+            {
+                itemPickUpLog.DropId = mapItem.ItemDrop.Id;
+            }
+            await ServerDbContext.SaveAsync(itemPickUpLog);
 
             await mapItem.LeaveMapAsync();
             return true;

@@ -873,7 +873,7 @@ namespace Comet.Game.States
         public async Task SynchroAttributesAsync(ClientUpdateType type, ulong value, bool screen = false)
         {
             var msg = new MsgUserAttrib(Identity, type, value);
-            if (this is Character && !screen)
+            if (IsPlayer() && !screen)
                 await SendAsync(msg);
 
             if (screen)

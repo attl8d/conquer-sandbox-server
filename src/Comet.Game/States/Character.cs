@@ -42,32 +42,32 @@ namespace Comet.Game.States
     /// </summary>
     public class Character : Role
     {
-        private readonly DbCharacter m_dbObject;
+        private readonly DbCharacter mDbObject;
 
-        private readonly TimeOut m_flowerRankRefresh = new(1);
-        private readonly TimeOutMS m_energyTm = new(ADD_ENERGY_STAND_MS);
-        private readonly TimeOut m_autoHeal = new(AUTOHEALLIFE_TIME);
-        private readonly TimeOut m_pkDecrease = new(PK_DEC_TIME);
-        private readonly TimeOutMS m_statusTm = new(200);
-        private readonly TimeOut m_xpPoints = new(3);
-        private readonly TimeOut m_ghost = new(3);
-        private TimeOut m_transformation = new();
-        private readonly TimeOut m_tRevive = new();
-        private readonly TimeOut m_respawn = new();
-        private readonly TimeOut m_mine = new(2);
-        private readonly TimeOut m_teamLeaderPos = new(3);
-        private readonly TimeOut m_heavenBlessing = new(60);
-        private readonly TimeOut m_luckyAbsorbStart = new(2);
-        private readonly TimeOut m_luckyStep = new(1);
-        private readonly TimeOutMS m_tVigor = new(1500);
-        private readonly TimeOut m_enlightTimeExp = new(ENLIGHTENMENT_EXP_PART_TIME);
+        private readonly TimeOut mFlowerRankRefresh = new(1);
+        private readonly TimeOutMS mEnergyTm = new(ADD_ENERGY_STAND_MS);
+        private readonly TimeOut mAutoHeal = new(AUTOHEALLIFE_TIME);
+        private readonly TimeOut mPkDecrease = new(PK_DEC_TIME);
+        private readonly TimeOutMS mStatusTm = new(200);
+        private readonly TimeOut mXpPoints = new(3);
+        private readonly TimeOut mGhost = new(3);
+        private TimeOut mTransformation = new();
+        private readonly TimeOut mRevive = new();
+        private readonly TimeOut mRespawn = new();
+        private readonly TimeOut mMine = new(2);
+        private readonly TimeOut mTeamLeaderPos = new(3);
+        private readonly TimeOut mHeavenBlessing = new(60);
+        private readonly TimeOut mLuckyAbsorbStart = new(2);
+        private readonly TimeOut mLuckyStep = new(1);
+        private readonly TimeOutMS mVigorTimer = new(1500);
+        private readonly TimeOut mEnlightenTimeExp = new(ENLIGHTENMENT_EXP_PART_TIME);
 
-        private int m_blessPoints;
-        private uint m_idLuckyTarget;
-        private int m_luckyTimeCount;
-        private int m_KillsToCaptcha;
+        private int mBlessPoints;
+        private uint mIdLuckyTarget;
+        private int mLuckyTimeCount;
+        private int mKillsToCaptcha;
 
-        private readonly ConcurrentDictionary<RequestType, uint> m_dicRequests = new();
+        private readonly ConcurrentDictionary<RequestType, uint> mDicRequests = new();
 
         /// <summary>
         ///     Instantiates a new instance of <see cref="Character" /> using a database fetched
@@ -75,19 +75,20 @@ namespace Comet.Game.States
         ///     class, which will then be used to save the character from the game world.
         /// </summary>
         /// <param name="character">Database character information</param>
+        /// <param name="socket"></param>
         public Character(DbCharacter character, Client socket)
         {
             /*
              * Removed the base class because we'll be inheriting role stuff.
              */
-            m_dbObject = character;
+            mDbObject = character;
 
             if (socket == null)
                 return; // ?
 
             Client = socket;
 
-            m_mesh = m_dbObject.Mesh;
+            m_mesh = mDbObject.Mesh;
 
             mPosX = character.X;
             mPosY = character.Y;
@@ -99,18 +100,18 @@ namespace Comet.Game.States
             Statistic = new UserStatistic(this);
             TaskDetail = new TaskDetail(this);
 
-            if (m_dbObject.LuckyTime != null)
-                m_luckyTimeCount = (int) Math.Max(0, (m_dbObject.LuckyTime.Value - DateTime.Now).TotalSeconds);
+            if (mDbObject.LuckyTime != null)
+                mLuckyTimeCount = (int) Math.Max(0, (mDbObject.LuckyTime.Value - DateTime.Now).TotalSeconds);
 
             if (EnlightenExperience > 0)
-                m_enlightTimeExp.Startup(ENLIGHTENMENT_EXP_PART_TIME);
+                mEnlightenTimeExp.Startup(ENLIGHTENMENT_EXP_PART_TIME);
 
-            m_energyTm.Update();
-            m_autoHeal.Update();
-            m_pkDecrease.Update();
-            m_xpPoints.Update();
-            m_ghost.Update();
-            m_statusTm.Update();
+            mEnergyTm.Update();
+            mAutoHeal.Update();
+            mPkDecrease.Update();
+            mXpPoints.Update();
+            mGhost.Update();
+            mStatusTm.Update();
         }
 
         public Client Client { get; }
@@ -122,7 +123,7 @@ namespace Comet.Game.States
 
         public override uint Identity
         {
-            get => m_dbObject.Identity;
+            get => mDbObject.Identity;
             protected set
             {
                 // cannot change the identity
@@ -131,28 +132,28 @@ namespace Comet.Game.States
 
         public override string Name
         {
-            get => m_dbObject.Name;
-            set => m_dbObject.Name = value;
+            get => mDbObject.Name;
+            set => mDbObject.Name = value;
         }
 
         public string MateName { get; set; }
 
         public uint MateIdentity
         {
-            get => m_dbObject.Mate;
-            set => m_dbObject.Mate = value;
+            get => mDbObject.Mate;
+            set => mDbObject.Mate = value;
         }
 
         public TimeSpan OnlineTime => TimeSpan.Zero
-                                              .Add(new TimeSpan(0, 0, 0, m_dbObject.OnlineSeconds))
+                                              .Add(new TimeSpan(0, 0, 0, mDbObject.OnlineSeconds))
                                               .Add(new TimeSpan(
                                                        0, 0, 0,
-                                                       (int) (DateTime.Now - m_dbObject.LoginTime).TotalSeconds));
+                                                       (int) (DateTime.Now - mDbObject.LoginTime).TotalSeconds));
 
         public TimeSpan SessionOnlineTime => TimeSpan.Zero
                                                      .Add(new TimeSpan(
                                                               0, 0, 0,
-                                                              (int) (DateTime.Now - m_dbObject.LoginTime)
+                                                              (int) (DateTime.Now - mDbObject.LoginTime)
                                                               .TotalSeconds));
 
         #endregion
@@ -196,7 +197,7 @@ namespace Comet.Game.States
             set
             {
                 m_mesh = value;
-                m_dbObject.Mesh = value % 10000000;
+                mDbObject.Mesh = value % 10000000;
             }
         }
 
@@ -214,8 +215,8 @@ namespace Comet.Game.States
 
         public ushort Hairstyle
         {
-            get => m_dbObject.Hairstyle;
-            set => m_dbObject.Hairstyle = value;
+            get => mDbObject.Hairstyle;
+            set => mDbObject.Hairstyle = value;
         }
 
         #endregion
@@ -244,8 +245,8 @@ namespace Comet.Game.States
                 TransformationMesh = (ushort) pTransform.Lookface;
                 await SetAttributesAsync(ClientUpdateType.Mesh, Mesh);
                 Life = MaxLife;
-                m_transformation = new TimeOut(nKeepSecs);
-                m_transformation.Startup(nKeepSecs);
+                mTransformation = new TimeOut(nKeepSecs);
+                mTransformation.Startup(nKeepSecs);
                 if (bSynchro)
                     await SynchroTransformAsync();
             }
@@ -264,7 +265,7 @@ namespace Comet.Game.States
         {
             TransformationMesh = 0;
             Transformation = null;
-            m_transformation.Clear();
+            mTransformation.Clear();
 
             await SynchroTransformAsync();
             await MagicData.AbortMagicAsync(true);
@@ -306,20 +307,20 @@ namespace Comet.Game.States
 
         public byte Profession
         {
-            get => m_dbObject?.Profession ?? 0;
-            set => m_dbObject.Profession = value;
+            get => mDbObject?.Profession ?? 0;
+            set => mDbObject.Profession = value;
         }
 
         public byte PreviousProfession
         {
-            get => m_dbObject?.PreviousProfession ?? 0;
-            set => m_dbObject.PreviousProfession = value;
+            get => mDbObject?.PreviousProfession ?? 0;
+            set => mDbObject.PreviousProfession = value;
         }
 
         public byte FirstProfession
         {
-            get => m_dbObject?.FirstProfession ?? 0;
-            set => m_dbObject.FirstProfession = value;
+            get => mDbObject?.FirstProfession ?? 0;
+            set => mDbObject.FirstProfession = value;
         }
 
         #endregion
@@ -328,32 +329,32 @@ namespace Comet.Game.States
 
         public ushort Strength
         {
-            get => m_dbObject?.Strength ?? 0;
-            set => m_dbObject.Strength = value;
+            get => mDbObject?.Strength ?? 0;
+            set => mDbObject.Strength = value;
         }
 
         public ushort Agility
         {
-            get => m_dbObject?.Agility ?? 0;
-            set => m_dbObject.Agility = value;
+            get => mDbObject?.Agility ?? 0;
+            set => mDbObject.Agility = value;
         }
 
         public ushort Vitality
         {
-            get => m_dbObject?.Vitality ?? 0;
-            set => m_dbObject.Vitality = value;
+            get => mDbObject?.Vitality ?? 0;
+            set => mDbObject.Vitality = value;
         }
 
         public ushort Spirit
         {
-            get => m_dbObject?.Spirit ?? 0;
-            set => m_dbObject.Spirit = value;
+            get => mDbObject?.Spirit ?? 0;
+            set => mDbObject.Spirit = value;
         }
 
         public ushort AttributePoints
         {
-            get => m_dbObject?.AttributePoints ?? 0;
-            set => m_dbObject.AttributePoints = value;
+            get => mDbObject?.AttributePoints ?? 0;
+            set => mDbObject.AttributePoints = value;
         }
 
         #endregion
@@ -696,32 +697,32 @@ namespace Comet.Game.States
 
         public bool AutoAllot
         {
-            get => m_dbObject.AutoAllot != 0;
-            set => m_dbObject.AutoAllot = (byte) (value ? 1 : 0);
+            get => mDbObject.AutoAllot != 0;
+            set => mDbObject.AutoAllot = (byte) (value ? 1 : 0);
         }
 
         public override byte Level
         {
-            get => m_dbObject?.Level ?? 0;
-            set => m_dbObject.Level = Math.Min(MAX_UPLEV, Math.Max((byte) 1, value));
+            get => mDbObject?.Level ?? 0;
+            set => mDbObject.Level = Math.Min(MAX_UPLEV, Math.Max((byte) 1, value));
         }
 
         public ulong Experience
         {
-            get => m_dbObject?.Experience ?? 0;
+            get => mDbObject?.Experience ?? 0;
             set
             {
                 if (Level >= MAX_UPLEV)
                     return;
 
-                m_dbObject.Experience = value;
+                mDbObject.Experience = value;
             }
         }
 
         public byte Metempsychosis
         {
-            get => m_dbObject?.Rebirths ?? 0;
-            set => m_dbObject.Rebirths = value;
+            get => mDbObject?.Rebirths ?? 0;
+            set => mDbObject.Rebirths = value;
         }
 
         public bool IsNewbie()
@@ -866,12 +867,12 @@ namespace Comet.Game.States
             }
 
             byte checkLevel = 130; //(byte)(m_dbObject.Reincarnation > 0 ? 110 : 130);
-            if (newLevel >= checkLevel && Metempsychosis > 0 && m_dbObject.MeteLevel > metLev)
+            if (newLevel >= checkLevel && Metempsychosis > 0 && mDbObject.MeteLevel > metLev)
             {
                 byte extra = 0;
-                if (m_dbObject.MeteLevel / 10000 > newLevel)
+                if (mDbObject.MeteLevel / 10000 > newLevel)
                 {
-                    uint mete = m_dbObject.MeteLevel / 10000;
+                    uint mete = mDbObject.MeteLevel / 10000;
                     extra += (byte) (mete - newLevel);
                     pointAmount += (uint) (extra * 3);
                     leveled = true;
@@ -885,10 +886,10 @@ namespace Comet.Game.States
                     newLevel = (byte) ExperienceManager.GetLevelLimit();
                     amount = 0;
                 }
-                else if (m_dbObject.MeteLevel >= newLevel * 10000)
+                else if (mDbObject.MeteLevel >= newLevel * 10000)
                 {
                     amount = (long) (ExperienceManager.GetLevelExperience(newLevel).Exp *
-                                     (m_dbObject.MeteLevel % 10000 / 1000d));
+                                     (mDbObject.MeteLevel % 10000 / 1000d));
                 }
             }
 
@@ -1013,10 +1014,10 @@ namespace Comet.Game.States
 
         public async Task IncrementExpBallAsync()
         {
-            m_dbObject.ExpBallUsage = uint.Parse(DateTime.Now.ToString("yyyyMMdd"));
-            m_dbObject.ExpBallNum += 1;
+            mDbObject.ExpBallUsage = uint.Parse(DateTime.Now.ToString("yyyyMMdd"));
+            mDbObject.ExpBallNum += 1;
 
-            m_dbObject.MentorOpportunity += 10;
+            mDbObject.MentorOpportunity += 10;
             await SynchroAttributesAsync(ClientUpdateType.EnlightenPoints, EnlightenPoints);
         }
 
@@ -1025,13 +1026,13 @@ namespace Comet.Game.States
             if (Level >= ExperienceManager.GetLevelLimit())
                 return false;
 
-            if (m_dbObject.ExpBallUsage < uint.Parse(DateTime.Now.ToString("yyyyMMdd")))
+            if (mDbObject.ExpBallUsage < uint.Parse(DateTime.Now.ToString("yyyyMMdd")))
             {
-                m_dbObject.ExpBallNum = 0;
+                mDbObject.ExpBallNum = 0;
                 return true;
             }
 
-            return m_dbObject.ExpBallNum < 10;
+            return mDbObject.ExpBallNum < 10;
         }
 
         #endregion
@@ -1040,8 +1041,8 @@ namespace Comet.Game.States
 
         public override uint Life
         {
-            get => m_dbObject.HealthPoints;
-            set => m_dbObject.HealthPoints = (ushort) Math.Min(MaxLife, value);
+            get => mDbObject.HealthPoints;
+            set => mDbObject.HealthPoints = (ushort) Math.Min(MaxLife, value);
         }
 
         public override uint MaxLife
@@ -1084,9 +1085,9 @@ namespace Comet.Game.States
 
         public override uint Mana
         {
-            get => m_dbObject.ManaPoints;
+            get => mDbObject.ManaPoints;
             set =>
-                m_dbObject.ManaPoints = (ushort) Math.Min(MaxMana, value);
+                mDbObject.ManaPoints = (ushort) Math.Min(MaxMana, value);
         }
 
         public override uint MaxMana
@@ -1173,20 +1174,20 @@ namespace Comet.Game.States
 
         public uint RecordMapIdentity
         {
-            get => m_dbObject.MapID;
-            set => m_dbObject.MapID = value;
+            get => mDbObject.MapID;
+            set => mDbObject.MapID = value;
         }
 
         public ushort RecordMapX
         {
-            get => m_dbObject.X;
-            set => m_dbObject.X = value;
+            get => mDbObject.X;
+            set => mDbObject.X = value;
         }
 
         public ushort RecordMapY
         {
-            get => m_dbObject.Y;
-            set => m_dbObject.Y = value;
+            get => mDbObject.Y;
+            set => mDbObject.Y = value;
         }
 
         /// <summary>
@@ -1200,7 +1201,7 @@ namespace Comet.Game.States
                 await Map.SendMapInfoAsync(this);
                 await Screen.SynchroScreenAsync();
 
-                m_respawn.Startup(10);
+                mRespawn.Startup(10);
 
                 if (Map.IsTeamDisable() && Team != null)
                 {
@@ -1263,10 +1264,10 @@ namespace Comet.Game.States
                                                              Identity).Cast<Character>())
                     await user.DetachStatusAsync(StatusSet.LUCKY_DIFFUSE);
 
-            m_luckyAbsorbStart.Clear();
-            m_idLuckyTarget = 0;
+            mLuckyAbsorbStart.Clear();
+            mIdLuckyTarget = 0;
 
-            m_respawn.Clear();
+            mRespawn.Clear();
 
             await base.ProcessOnMoveAsync();
         }
@@ -1285,7 +1286,7 @@ namespace Comet.Game.States
             if (CurrentEvent != null)
                 await CurrentEvent.OnAttackAsync(this);
 
-            m_respawn.Clear();
+            mRespawn.Clear();
 
             UpdateVigorTimer();
 
@@ -1296,9 +1297,9 @@ namespace Comet.Game.States
         {
             if (!Map.IsRecordDisable())
             {
-                m_dbObject.X = mPosX;
-                m_dbObject.Y = mPosY;
-                m_dbObject.MapID = mIdMap;
+                mDbObject.X = mPosX;
+                mDbObject.Y = mPosY;
+                mDbObject.MapID = mIdMap;
                 await SaveAsync();
             }
         }
@@ -1308,9 +1309,9 @@ namespace Comet.Game.States
             GameMap map = MapManager.GetMap(idMap);
             if (map?.IsRecordDisable() == false)
             {
-                m_dbObject.X = x;
-                m_dbObject.Y = y;
-                m_dbObject.MapID = idMap;
+                mDbObject.X = x;
+                mDbObject.Y = y;
+                mDbObject.MapID = idMap;
                 await SaveAsync();
             }
         }
@@ -1501,38 +1502,38 @@ namespace Comet.Game.States
 
         public uint Silvers
         {
-            get => m_dbObject?.Silver ?? 0;
-            set => m_dbObject.Silver = value;
+            get => mDbObject?.Silver ?? 0;
+            set => mDbObject.Silver = value;
         }
 
         public uint ConquerPoints
         {
-            get => m_dbObject?.ConquerPoints ?? 0;
-            set => m_dbObject.ConquerPoints = value;
+            get => mDbObject?.ConquerPoints ?? 0;
+            set => mDbObject.ConquerPoints = value;
         }
 
         public uint ConquerPointsBound
         {
-            get => m_dbObject?.ConquerPointsBound ?? 0;
-            set => m_dbObject.ConquerPointsBound = value;
+            get => mDbObject?.ConquerPointsBound ?? 0;
+            set => mDbObject.ConquerPointsBound = value;
         }
 
         public uint StorageMoney
         {
-            get => m_dbObject?.StorageMoney ?? 0;
-            set => m_dbObject.StorageMoney = value;
+            get => mDbObject?.StorageMoney ?? 0;
+            set => mDbObject.StorageMoney = value;
         }
 
         public uint StudyPoints
         {
-            get => m_dbObject?.Cultivation ?? 0;
-            set => m_dbObject.Cultivation = value;
+            get => mDbObject?.Cultivation ?? 0;
+            set => mDbObject.Cultivation = value;
         }
 
         public uint ChiPoints
         {
-            get => m_dbObject?.StrengthValue ?? 0;
-            set => m_dbObject.StrengthValue = value;
+            get => mDbObject?.StrengthValue ?? 0;
+            set => mDbObject.StrengthValue = value;
         }
 
         public async Task<bool> ChangeMoneyAsync(int amount, bool notify = false)
@@ -1728,8 +1729,8 @@ namespace Comet.Game.States
 
         public ushort PkPoints
         {
-            get => m_dbObject?.KillPoints ?? 0;
-            set => m_dbObject.KillPoints = value;
+            get => mDbObject?.KillPoints ?? 0;
+            set => mDbObject.KillPoints = value;
         }
 
         public Task SetPkModeAsync(PkModeType mode = PkModeType.Capture)
@@ -1939,7 +1940,7 @@ namespace Comet.Game.States
             if (idx < 0 || idx >= 32)
                 return;
 
-            m_dbObject.TaskMask |= 1u << idx;
+            mDbObject.TaskMask |= 1u << idx;
             await SaveAsync();
         }
 
@@ -1948,7 +1949,7 @@ namespace Comet.Game.States
             if (idx < 0 || idx >= 32)
                 return;
 
-            m_dbObject.TaskMask &= ~(1u << idx);
+            mDbObject.TaskMask &= ~(1u << idx);
             await SaveAsync();
         }
 
@@ -1956,28 +1957,28 @@ namespace Comet.Game.States
         {
             if (idx < 0 || idx >= 32)
                 return false;
-            return (m_dbObject.TaskMask & (1u << idx)) != 0;
+            return (mDbObject.TaskMask & (1u << idx)) != 0;
         }
 
         #endregion
 
         #region Merchant
 
-        public int Merchant => m_dbObject.Business == null ? 0 : IsMerchant() ? 255 : 1;
+        public int Merchant => mDbObject.Business == null ? 0 : IsMerchant() ? 255 : 1;
 
-        public int BusinessManDays => (int) (m_dbObject.Business == null
+        public int BusinessManDays => (int) (mDbObject.Business == null
                                                  ? 0
-                                                 : Math.Ceiling((m_dbObject.Business.Value - DateTime.Now).TotalDays));
+                                                 : Math.Ceiling((mDbObject.Business.Value - DateTime.Now).TotalDays));
 
 
         public bool IsMerchant()
         {
-            return m_dbObject.Business.HasValue && m_dbObject.Business.Value < DateTime.Now;
+            return mDbObject.Business.HasValue && mDbObject.Business.Value < DateTime.Now;
         }
 
         public bool IsAwaitingMerchantStatus()
         {
-            return m_dbObject.Business.HasValue && m_dbObject.Business.Value > DateTime.Now;
+            return mDbObject.Business.HasValue && mDbObject.Business.Value > DateTime.Now;
         }
 
         public async Task<bool> SetMerchantAsync()
@@ -1987,12 +1988,12 @@ namespace Comet.Game.States
 
             if (Level <= 30 && Metempsychosis == 0)
             {
-                m_dbObject.Business = DateTime.Now;
+                mDbObject.Business = DateTime.Now;
                 await SynchroAttributesAsync(ClientUpdateType.Merchant, 255);
             }
             else
             {
-                m_dbObject.Business = DateTime.Now.AddDays(5);
+                mDbObject.Business = DateTime.Now.AddDays(5);
             }
 
             return await SaveAsync();
@@ -2000,7 +2001,7 @@ namespace Comet.Game.States
 
         public async Task RemoveMerchantAsync()
         {
-            m_dbObject.Business = null;
+            mDbObject.Business = null;
             await SynchroAttributesAsync(ClientUpdateType.Merchant, 0);
             await SaveAsync();
         }
@@ -2040,38 +2041,38 @@ namespace Comet.Game.States
 
         #region Flower
 
-        public bool CanRefreshFlowerRank => m_flowerRankRefresh.ToNextTime();
+        public bool CanRefreshFlowerRank => mFlowerRankRefresh.ToNextTime();
         public uint FlowerCharm { get; set; }
         public uint FairyType { get; set; }
 
         public DateTime? SendFlowerTime
         {
-            get => m_dbObject.SendFlowerDate;
-            set => m_dbObject.SendFlowerDate = value;
+            get => mDbObject.SendFlowerDate;
+            set => mDbObject.SendFlowerDate = value;
         }
 
         public uint FlowerRed
         {
-            get => m_dbObject.FlowerRed;
-            set => m_dbObject.FlowerRed = value;
+            get => mDbObject.FlowerRed;
+            set => mDbObject.FlowerRed = value;
         }
 
         public uint FlowerWhite
         {
-            get => m_dbObject.FlowerWhite;
-            set => m_dbObject.FlowerWhite = value;
+            get => mDbObject.FlowerWhite;
+            set => mDbObject.FlowerWhite = value;
         }
 
         public uint FlowerOrchid
         {
-            get => m_dbObject.FlowerOrchid;
-            set => m_dbObject.FlowerOrchid = value;
+            get => mDbObject.FlowerOrchid;
+            set => mDbObject.FlowerOrchid = value;
         }
 
         public uint FlowerTulip
         {
-            get => m_dbObject.FlowerTulip;
-            set => m_dbObject.FlowerTulip = value;
+            get => mDbObject.FlowerTulip;
+            set => mDbObject.FlowerTulip = value;
         }
 
         #endregion
@@ -2096,29 +2097,29 @@ namespace Comet.Game.States
 
         public void SetRequest(RequestType type, uint target, int data = 0)
         {
-            m_dicRequests.TryRemove(type, out _);
+            mDicRequests.TryRemove(type, out _);
             if (target == 0)
                 return;
 
             mRequestData = data;
-            m_dicRequests.TryAdd(type, target);
+            mDicRequests.TryAdd(type, target);
         }
 
         public uint QueryRequest(RequestType type)
         {
-            return m_dicRequests.TryGetValue(type, out uint value) ? value : 0;
+            return mDicRequests.TryGetValue(type, out uint value) ? value : 0;
         }
 
         public int QueryRequestData(RequestType type)
         {
-            if (m_dicRequests.TryGetValue(type, out _))
+            if (mDicRequests.TryGetValue(type, out _))
                 return mRequestData;
             return 0;
         }
 
         public uint PopRequest(RequestType type)
         {
-            if (m_dicRequests.TryRemove(type, out uint value))
+            if (mDicRequests.TryRemove(type, out uint value))
             {
                 mRequestData = 0;
                 return value;
@@ -2131,11 +2132,11 @@ namespace Comet.Game.States
         #region Multiple Exp
 
         public bool HasMultipleExp =>
-            m_dbObject.ExperienceMultiplier > 1 && m_dbObject.ExperienceExpires >= DateTime.Now;
+            mDbObject.ExperienceMultiplier > 1 && mDbObject.ExperienceExpires >= DateTime.Now;
 
-        public float ExperienceMultiplier => !HasMultipleExp || m_dbObject.ExperienceMultiplier <= 0
+        public float ExperienceMultiplier => !HasMultipleExp || mDbObject.ExperienceMultiplier <= 0
                                                  ? 1f
-                                                 : m_dbObject.ExperienceMultiplier;
+                                                 : mDbObject.ExperienceMultiplier;
 
         public async Task SendMultipleExpAsync()
         {
@@ -2148,21 +2149,21 @@ namespace Comet.Game.States
             get
             {
                 DateTime now = DateTime.Now;
-                if (m_dbObject.ExperienceExpires < now)
+                if (mDbObject.ExperienceExpires < now)
                 {
-                    m_dbObject.ExperienceMultiplier = 1;
-                    m_dbObject.ExperienceExpires = null;
+                    mDbObject.ExperienceMultiplier = 1;
+                    mDbObject.ExperienceExpires = null;
                     return 0;
                 }
 
-                return (uint) ((m_dbObject.ExperienceExpires - now)?.TotalSeconds ?? 0);
+                return (uint) ((mDbObject.ExperienceExpires - now)?.TotalSeconds ?? 0);
             }
         }
 
         public async Task<bool> SetExperienceMultiplierAsync(uint nSeconds, float nMultiplier = 2f)
         {
-            m_dbObject.ExperienceExpires = DateTime.Now.AddSeconds(nSeconds);
-            m_dbObject.ExperienceMultiplier = nMultiplier;
+            mDbObject.ExperienceExpires = DateTime.Now.AddSeconds(nSeconds);
+            mDbObject.ExperienceMultiplier = nMultiplier;
             await SendMultipleExpAsync();
             return true;
         }
@@ -2197,18 +2198,18 @@ namespace Comet.Game.States
         public async Task<bool> AddBlessingAsync(uint amount)
         {
             DateTime now = DateTime.Now;
-            if (m_dbObject.HeavenBlessing != null && m_dbObject.HeavenBlessing > now)
-                m_dbObject.HeavenBlessing = m_dbObject.HeavenBlessing.Value.AddHours(amount);
+            if (mDbObject.HeavenBlessing != null && mDbObject.HeavenBlessing > now)
+                mDbObject.HeavenBlessing = mDbObject.HeavenBlessing.Value.AddHours(amount);
             else
-                m_dbObject.HeavenBlessing = now.AddHours(amount);
+                mDbObject.HeavenBlessing = now.AddHours(amount);
 
             await SendBlessAsync();
             return true;
         }
 
-        public DateTime HeavenBlessingExpires => m_dbObject.HeavenBlessing ?? DateTime.MinValue;
+        public DateTime HeavenBlessingExpires => mDbObject.HeavenBlessing ?? DateTime.MinValue;
 
-        public bool IsBlessed => m_dbObject.HeavenBlessing > DateTime.Now;
+        public bool IsBlessed => mDbObject.HeavenBlessing > DateTime.Now;
 
         #endregion
 
@@ -2218,23 +2219,23 @@ namespace Comet.Game.States
         {
             ulong ms = 0;
 
-            m_luckyTimeCount += value;
-            if (m_luckyTimeCount > 0)
-                m_dbObject.LuckyTime = DateTime.Now.AddSeconds(m_luckyTimeCount);
+            mLuckyTimeCount += value;
+            if (mLuckyTimeCount > 0)
+                mDbObject.LuckyTime = DateTime.Now.AddSeconds(mLuckyTimeCount);
 
             if (IsLucky)
-                ms = (ulong) (m_dbObject.LuckyTime.Value - DateTime.Now).TotalSeconds * 1000UL;
+                ms = (ulong) (mDbObject.LuckyTime.Value - DateTime.Now).TotalSeconds * 1000UL;
 
             return SynchroAttributesAsync(ClientUpdateType.LuckyTimeTimer, ms);
         }
 
-        public bool IsLucky => m_dbObject.LuckyTime.HasValue && m_dbObject.LuckyTime.Value > DateTime.Now;
+        public bool IsLucky => mDbObject.LuckyTime.HasValue && mDbObject.LuckyTime.Value > DateTime.Now;
 
         public async Task SendLuckAsync()
         {
             if (IsLucky)
                 await SynchroAttributesAsync(ClientUpdateType.LuckyTimeTimer,
-                                             (ulong) (m_dbObject.LuckyTime.Value - DateTime.Now).TotalSeconds * 1000UL);
+                                             (ulong) (mDbObject.LuckyTime.Value - DateTime.Now).TotalSeconds * 1000UL);
         }
 
         #endregion
@@ -2263,7 +2264,7 @@ namespace Comet.Game.States
             {
                 await BurstXpAsync();
                 await SetXpAsync(0);
-                m_xpPoints.Update();
+                mXpPoints.Update();
             }
             else
             {
@@ -2336,18 +2337,18 @@ namespace Comet.Game.States
         public uint VipLevel
         {
             get =>
-                m_dbObject.VipExpiration.HasValue && m_dbObject.VipExpiration > DateTime.Now
-                    ? m_dbObject.VipLevel
+                mDbObject.VipExpiration.HasValue && mDbObject.VipExpiration > DateTime.Now
+                    ? mDbObject.VipLevel
                     : 0;
-            set => m_dbObject.VipLevel = value;
+            set => mDbObject.VipLevel = value;
         }
 
-        public bool HasVip => m_dbObject.VipExpiration.HasValue && m_dbObject.VipExpiration > DateTime.Now;
+        public bool HasVip => mDbObject.VipExpiration.HasValue && mDbObject.VipExpiration > DateTime.Now;
 
         public DateTime VipExpiration
         {
-            get => m_dbObject.VipExpiration ?? DateTime.MinValue;
-            set => m_dbObject.VipExpiration = value;
+            get => mDbObject.VipExpiration ?? DateTime.MinValue;
+            set => mDbObject.VipExpiration = value;
         }
 
         public VipFlags UserVipFlag
@@ -2635,8 +2636,8 @@ namespace Comet.Game.States
 
         public ulong NobilityDonation
         {
-            get => m_dbObject.Donation;
-            set => m_dbObject.Donation = value;
+            get => mDbObject.Donation;
+            set => mDbObject.Donation = value;
         }
 
         public async Task SendNobilityInfoAsync(bool broadcast = false)
@@ -3404,8 +3405,8 @@ namespace Comet.Game.States
 
         public uint VirtuePoints
         {
-            get => m_dbObject.Virtue;
-            set => m_dbObject.Virtue = value;
+            get => mDbObject.Virtue;
+            set => mDbObject.Virtue = value;
         }
 
         public Team Team { get; set; }
@@ -4231,14 +4232,14 @@ namespace Comet.Game.States
 
         public uint GodTimeExp
         {
-            get => m_dbObject.OnlineGodExpTime;
-            set => m_dbObject.OnlineGodExpTime = value;
+            get => mDbObject.OnlineGodExpTime;
+            set => mDbObject.OnlineGodExpTime = value;
         }
 
         public uint OnlineTrainingExp
         {
-            get => m_dbObject.BattleGodExpTime;
-            set => m_dbObject.BattleGodExpTime = value;
+            get => mDbObject.BattleGodExpTime;
+            set => mDbObject.BattleGodExpTime = value;
         }
 
         #endregion
@@ -4273,8 +4274,8 @@ namespace Comet.Game.States
 
         public byte UserTitle
         {
-            get => m_dbObject.TitleSelect;
-            set => m_dbObject.TitleSelect = value;
+            get => mDbObject.TitleSelect;
+            set => mDbObject.TitleSelect = value;
         }
 
         public async Task<bool> AddTitleAsync(UserTitles idTitle, DateTime expiration)
@@ -4438,8 +4439,8 @@ namespace Comet.Game.States
 
         public uint QuizPoints
         {
-            get => m_dbObject.QuizPoints;
-            set => m_dbObject.QuizPoints = value;
+            get => mDbObject.QuizPoints;
+            set => mDbObject.QuizPoints = value;
         }
 
         #endregion
@@ -4447,39 +4448,39 @@ namespace Comet.Game.States
         #region Offline TG
 
         public ushort MaxTrainingMinutes =>
-            (ushort) Math.Min(1440 + 60 * VipLevel, (m_dbObject.HeavenBlessing.Value - DateTime.Now).TotalMinutes);
+            (ushort) Math.Min(1440 + 60 * VipLevel, (mDbObject.HeavenBlessing.Value - DateTime.Now).TotalMinutes);
 
         public ushort CurrentTrainingMinutes => //600;
-            (ushort) Math.Min((DateTime.Now - m_dbObject.LoginTime).TotalMinutes * 10, MaxTrainingMinutes);
+            (ushort) Math.Min((DateTime.Now - mDbObject.LoginTime).TotalMinutes * 10, MaxTrainingMinutes);
 
         public ushort CurrentOfflineTrainingTime
         {
             get
             {
-                if (m_dbObject.AutoExercise == 0 || m_dbObject.LogoutTime2 == null)
+                if (mDbObject.AutoExercise == 0 || mDbObject.LogoutTime2 == null)
                     return 0;
 
-                DateTime endTime = m_dbObject.LogoutTime2.Value.AddMinutes(m_dbObject.AutoExercise);
+                DateTime endTime = mDbObject.LogoutTime2.Value.AddMinutes(mDbObject.AutoExercise);
                 if (endTime < DateTime.Now)
                     return CurrentTrainingTime;
 
-                var remainingTime = (int) Math.Min((DateTime.Now - m_dbObject.LogoutTime2.Value).TotalMinutes,
+                var remainingTime = (int) Math.Min((DateTime.Now - mDbObject.LogoutTime2.Value).TotalMinutes,
                                                    CurrentTrainingTime);
                 return (ushort) remainingTime;
             }
         }
 
-        public ushort CurrentTrainingTime => m_dbObject.AutoExercise;
+        public ushort CurrentTrainingTime => mDbObject.AutoExercise;
 
-        public bool IsOfflineTraining => m_dbObject.AutoExercise != 0;
+        public bool IsOfflineTraining => mDbObject.AutoExercise != 0;
 
         public async Task EnterAutoExerciseAsync()
         {
             if (!IsBlessed)
                 return;
 
-            m_dbObject.AutoExercise = CurrentTrainingMinutes;
-            m_dbObject.LogoutTime2 = DateTime.Now;
+            mDbObject.AutoExercise = CurrentTrainingMinutes;
+            mDbObject.LogoutTime2 = DateTime.Now;
         }
 
         public async Task LeaveAutoExerciseAsync()
@@ -4503,8 +4504,8 @@ namespace Comet.Game.States
 
             await FlyMapAsync(RecordMapIdentity, RecordMapX, RecordMapY);
 
-            m_dbObject.AutoExercise = 0;
-            m_dbObject.LogoutTime2 = null;
+            mDbObject.AutoExercise = 0;
+            mDbObject.LogoutTime2 = null;
             await SaveAsync();
         }
 
@@ -4533,7 +4534,7 @@ namespace Comet.Game.States
                 return false;
             }
 
-            DbBonus bonus = await BonusRepository.GetAsync(m_dbObject.AccountIdentity);
+            DbBonus bonus = await BonusRepository.GetAsync(mDbObject.AccountIdentity);
             if (bonus == null || bonus.Flag != 0 || bonus.Time != null)
             {
                 await SendAsync(Language.StrNoBonus);
@@ -4556,12 +4557,12 @@ namespace Comet.Game.States
 
         public async Task<int> BonusCountAsync()
         {
-            return await BonusRepository.CountAsync(m_dbObject.AccountIdentity);
+            return await BonusRepository.CountAsync(mDbObject.AccountIdentity);
         }
 
         public async Task<bool> DoCardsAsync()
         {
-            List<DbCard> cards = await CardRepository.GetAsync(m_dbObject.AccountIdentity);
+            List<DbCard> cards = await CardRepository.GetAsync(mDbObject.AccountIdentity);
             if (cards.Count == 0)
                 return false;
 
@@ -4605,7 +4606,7 @@ namespace Comet.Game.States
 
         public Task<int> CardsCountAsync()
         {
-            return CardRepository.CountAsync(m_dbObject.AccountIdentity);
+            return CardRepository.CountAsync(mDbObject.AccountIdentity);
         }
 
         #endregion
@@ -4614,8 +4615,8 @@ namespace Comet.Game.States
 
         public ulong SecondaryPassword
         {
-            get => m_dbObject.LockKey;
-            set => m_dbObject.LockKey = value;
+            get => mDbObject.LockKey;
+            set => mDbObject.LockKey = value;
         }
 
         public bool IsUnlocked()
@@ -4649,8 +4650,8 @@ namespace Comet.Game.States
 
         public uint HomeIdentity
         {
-            get => m_dbObject?.HomeIdentity ?? 0u;
-            set => m_dbObject.HomeIdentity = value;
+            get => mDbObject?.HomeIdentity ?? 0u;
+            set => mDbObject.HomeIdentity = value;
         }
 
         #endregion
@@ -4659,7 +4660,7 @@ namespace Comet.Game.States
 
         public bool CanRevive()
         {
-            return !IsAlive && m_tRevive.IsTimeOut();
+            return !IsAlive && mRevive.IsTimeOut();
         }
 
         public async Task RebornAsync(bool chgMap, bool isSpell = false)
@@ -4703,7 +4704,7 @@ namespace Comet.Game.States
             }
             else if (chgMap || !IsBlessed && !isSpell)
             {
-                await FlyMapAsync(m_dbObject.MapID, m_dbObject.X, m_dbObject.Y);
+                await FlyMapAsync(mDbObject.MapID, mDbObject.X, mDbObject.Y);
             }
             else
             {
@@ -4711,12 +4712,12 @@ namespace Comet.Game.States
                                  || Map.IsPkField()
                                  || Map.IsPkGameMap()
                                  || Map.IsSynMap()))
-                    await FlyMapAsync(m_dbObject.MapID, m_dbObject.X, m_dbObject.Y);
+                    await FlyMapAsync(mDbObject.MapID, mDbObject.X, mDbObject.Y);
                 else
                     await FlyMapAsync(mIdMap, mPosX, mPosY);
             }
 
-            m_respawn.Startup(CHGMAP_LOCK_SECS);
+            mRespawn.Startup(CHGMAP_LOCK_SECS);
         }
 
         #endregion
@@ -5036,12 +5037,12 @@ namespace Comet.Game.States
                 {
                     float fExp = Experience / (float) levExp.Exp;
                     var metLev = (uint) (Level * 10000 + fExp * 1000);
-                    if (metLev > m_dbObject.MeteLevel)
-                        m_dbObject.MeteLevel = metLev;
+                    if (metLev > mDbObject.MeteLevel)
+                        mDbObject.MeteLevel = metLev;
                 }
                 else if (Level >= MAX_UPLEV)
                 {
-                    m_dbObject.MeteLevel = MAX_UPLEV * 10000;
+                    mDbObject.MeteLevel = MAX_UPLEV * 10000;
                 }
             }
 
@@ -5237,7 +5238,7 @@ namespace Comet.Game.States
 
         public void UpdateVigorTimer()
         {
-            m_tVigor.Update();
+            mVigorTimer.Update();
         }
 
         #endregion
@@ -5248,13 +5249,13 @@ namespace Comet.Game.States
 
         public void StartMining()
         {
-            m_mine.Startup(3);
+            mMine.Startup(3);
             mMineCount = 0;
         }
 
         public void StopMining()
         {
-            m_mine.Clear();
+            mMine.Clear();
         }
 
         public async Task DoMineAsync()
@@ -5499,7 +5500,7 @@ namespace Comet.Game.States
             if (attacker is Character && Map.IsPkDisable())
                 return false;
 
-            return (!m_respawn.IsActive() || m_respawn.IsTimeOut()) && IsAlive &&
+            return (!mRespawn.IsActive() || mRespawn.IsTimeOut()) && IsAlive &&
                    !(attacker is Character && Map.QueryRegion(RegionTypes.PkProtected, MapX, MapY));
         }
 
@@ -5561,15 +5562,15 @@ namespace Comet.Game.States
                 }
 
                 if (!(MessageBox is CaptchaBox))
-                    m_KillsToCaptcha++;
+                    mKillsToCaptcha++;
 
                 if (!(MessageBox is CaptchaBox)
-                    && m_KillsToCaptcha > 5000 + await Kernel.NextAsync(1500)
+                    && mKillsToCaptcha > 5000 + await Kernel.NextAsync(1500)
                     && await Kernel.ChanceCalcAsync(50, 10000))
                 {
                     var captcha = (CaptchaBox) (MessageBox = new CaptchaBox(this));
                     await captcha.GenerateAsync();
-                    m_KillsToCaptcha = 0;
+                    mKillsToCaptcha = 0;
                 }
 
                 await KillMonsterAsync(monster.Type);
@@ -5649,7 +5650,7 @@ namespace Comet.Game.States
 
             TransformationMesh = 0;
             Transformation = null;
-            m_transformation.Clear();
+            mTransformation.Clear();
 
             if (QueryStatus(StatusSet.CYCLONE) != null || QueryStatus(StatusSet.SUPERMAN) != null)
                 await FinishXpAsync();
@@ -5665,7 +5666,7 @@ namespace Comet.Game.States
             await AttachStatusAsync(this, StatusSet.DEAD, 0, int.MaxValue, 0, 0);
             await AttachStatusAsync(this, StatusSet.GHOST, 0, int.MaxValue, 0, 0);
 
-            m_ghost.Startup(4);
+            mGhost.Startup(4);
 
             await KillCallPetAsync();
 
@@ -5847,46 +5848,46 @@ namespace Comet.Game.States
 
         public uint QualifierPoints
         {
-            get => m_dbObject.AthletePoint;
-            set => m_dbObject.AthletePoint = value;
+            get => mDbObject.AthletePoint;
+            set => mDbObject.AthletePoint = value;
         }
 
         public uint QualifierDayWins
         {
-            get => m_dbObject.AthleteDayWins;
-            set => m_dbObject.AthleteDayWins = value;
+            get => mDbObject.AthleteDayWins;
+            set => mDbObject.AthleteDayWins = value;
         }
 
         public uint QualifierDayLoses
         {
-            get => m_dbObject.AthleteDayLoses;
-            set => m_dbObject.AthleteDayLoses = value;
+            get => mDbObject.AthleteDayLoses;
+            set => mDbObject.AthleteDayLoses = value;
         }
 
         public uint QualifierDayGames => QualifierDayWins + QualifierDayLoses;
 
         public uint QualifierHistoryWins
         {
-            get => m_dbObject.AthleteHistoryWins;
-            set => m_dbObject.AthleteHistoryWins = value;
+            get => mDbObject.AthleteHistoryWins;
+            set => mDbObject.AthleteHistoryWins = value;
         }
 
         public uint QualifierHistoryLoses
         {
-            get => m_dbObject.AthleteHistoryLoses;
-            set => m_dbObject.AthleteHistoryLoses = value;
+            get => mDbObject.AthleteHistoryLoses;
+            set => mDbObject.AthleteHistoryLoses = value;
         }
 
         public uint HonorPoints
         {
-            get => m_dbObject.AthleteCurrentHonorPoints;
-            set => m_dbObject.AthleteCurrentHonorPoints = value;
+            get => mDbObject.AthleteCurrentHonorPoints;
+            set => mDbObject.AthleteCurrentHonorPoints = value;
         }
 
         public uint HistoryHonorPoints
         {
-            get => m_dbObject.AthleteHistoryHonorPoints;
-            set => m_dbObject.AthleteHistoryHonorPoints = value;
+            get => mDbObject.AthleteHistoryHonorPoints;
+            set => mDbObject.AthleteHistoryHonorPoints = value;
         }
 
         public DbArenic DailyArenic { get; set; }
@@ -5903,26 +5904,26 @@ namespace Comet.Game.States
 
         public uint EnlightenPoints
         {
-            get => m_dbObject.MentorOpportunity;
-            set => m_dbObject.MentorOpportunity = value;
+            get => mDbObject.MentorOpportunity;
+            set => mDbObject.MentorOpportunity = value;
         }
 
         public uint EnlightenedTimes
         {
-            get => m_dbObject.MentorAchieve;
-            set => m_dbObject.MentorAchieve = value;
+            get => mDbObject.MentorAchieve;
+            set => mDbObject.MentorAchieve = value;
         }
 
         public uint EnlightenExperience
         {
-            get => m_dbObject.MentorUplevTime;
-            set => m_dbObject.MentorUplevTime = value;
+            get => mDbObject.MentorUplevTime;
+            set => mDbObject.MentorUplevTime = value;
         }
 
         public uint EnlightmentLastUpdate
         {
-            get => m_dbObject.MentorDay;
-            set => m_dbObject.MentorDay = value;
+            get => mDbObject.MentorDay;
+            set => mDbObject.MentorDay = value;
         }
 
         public void SetEnlightenLastUpdate()
@@ -5966,8 +5967,8 @@ namespace Comet.Game.States
 
             EnlightenPoints = Math.Max(EnlightenPoints - 100, 0);
 
-            if (target.EnlightenedTimes == 0 || !m_enlightTimeExp.IsActive())
-                m_enlightTimeExp.Startup(ENLIGHTENMENT_EXP_PART_TIME); // 20 minutes
+            if (target.EnlightenedTimes == 0 || !mEnlightenTimeExp.IsActive())
+                mEnlightenTimeExp.Startup(ENLIGHTENMENT_EXP_PART_TIME); // 20 minutes
 
             target.EnlightenedTimes += 1;
             target.EnlightenExperience += ENLIGHTENMENT_UPLEV_MAX_EXP / 2;
@@ -6144,7 +6145,7 @@ namespace Comet.Game.States
 
             try
             {
-                if (m_pkDecrease.ToNextTime(PK_DEC_TIME) && PkPoints > 0)
+                if (mPkDecrease.ToNextTime(PK_DEC_TIME) && PkPoints > 0)
                 {
                     if (MapIdentity == 6001)
                         QueueAction(() => AddAttributesAsync(ClientUpdateType.PkPoints, PKVALUE_DEC_ONCE_IN_PRISON));
@@ -6162,7 +6163,7 @@ namespace Comet.Game.States
             {
                 QueueAction(async () =>
                 {
-                    if (m_enlightTimeExp.IsActive() && m_enlightTimeExp.ToNextTime())
+                    if (mEnlightenTimeExp.IsActive() && mEnlightenTimeExp.ToNextTime())
                     {
                         var amount = (int) Math.Min(ENLIGHTENMENT_UPLEV_MAX_EXP / 2, EnlightenExperience);
                         if (amount != 0)
@@ -6172,7 +6173,7 @@ namespace Comet.Game.States
                         }
 
                         if (EnlightenExperience == 0)
-                            m_enlightTimeExp.Clear();
+                            mEnlightenTimeExp.Clear();
                     }
                 });
             }
@@ -6184,7 +6185,7 @@ namespace Comet.Game.States
             }
 
             // status has no exception block because if it breaks the queue will handle it
-            if (m_statusTm.ToNextTime())
+            if (mStatusTm.ToNextTime())
                 QueueAction(async () =>
                 {
                     foreach (IStatus status in StatusSet.Status.Values)
@@ -6204,16 +6205,16 @@ namespace Comet.Game.States
 
             try
             {
-                if (IsBlessed && m_heavenBlessing.ToNextTime() && !Map.IsTrainingMap())
+                if (IsBlessed && mHeavenBlessing.ToNextTime() && !Map.IsTrainingMap())
                 {
-                    m_blessPoints++;
-                    if (m_blessPoints >= 10)
+                    mBlessPoints++;
+                    if (mBlessPoints >= 10)
                     {
                         GodTimeExp += 60;
 
                         await SynchroAttributesAsync(ClientUpdateType.OnlineTraining, 5);
                         await SynchroAttributesAsync(ClientUpdateType.OnlineTraining, 0);
-                        m_blessPoints = 0;
+                        mBlessPoints = 0;
                     }
                     else
                     {
@@ -6231,29 +6232,29 @@ namespace Comet.Game.States
 
             try
             {
-                if (m_idLuckyTarget == 0 && Metempsychosis < 2 && QueryStatus(StatusSet.LUCKY_DIFFUSE) == null)
+                if (mIdLuckyTarget == 0 && Metempsychosis < 2 && QueryStatus(StatusSet.LUCKY_DIFFUSE) == null)
                 {
                     if (QueryStatus(StatusSet.LUCKY_ABSORB) == null)
                         foreach (Character user in Screen.Roles.Values.Where(x => x.IsPlayer()).Cast<Character>())
                             if (user.QueryStatus(StatusSet.LUCKY_DIFFUSE) != null && GetDistance(user) <= 3)
                             {
-                                m_idLuckyTarget = user.Identity;
-                                m_luckyAbsorbStart.Startup(3);
+                                mIdLuckyTarget = user.Identity;
+                                mLuckyAbsorbStart.Startup(3);
                                 break;
                             }
                 }
                 else if (QueryStatus(StatusSet.LUCKY_DIFFUSE) == null)
                 {
-                    var role = QueryRole(m_idLuckyTarget) as Character;
-                    if (m_luckyAbsorbStart.IsTimeOut() && role != null)
+                    var role = QueryRole(mIdLuckyTarget) as Character;
+                    if (mLuckyAbsorbStart.IsTimeOut() && role != null)
                     {
                         await AttachStatusAsync(role, StatusSet.LUCKY_ABSORB, 0, 1000000, 0, 0);
-                        m_idLuckyTarget = 0;
-                        m_luckyAbsorbStart.Clear();
+                        mIdLuckyTarget = 0;
+                        mLuckyAbsorbStart.Clear();
                     }
                 }
 
-                if (m_luckyStep.ToNextTime() && IsLucky)
+                if (mLuckyStep.ToNextTime() && IsLucky)
                     if (QueryStatus(StatusSet.LUCKY_DIFFUSE) == null && QueryStatus(StatusSet.LUCKY_ABSORB) == null)
                         await ChangeLuckyTimerAsync(-1);
             }
@@ -6265,10 +6266,10 @@ namespace Comet.Game.States
 
             try
             {
-                if (!IsAlive && !IsGhost() && m_ghost.IsActive() && m_ghost.IsTimeOut(4))
+                if (!IsAlive && !IsGhost() && mGhost.IsActive() && mGhost.IsTimeOut(4))
                 {
                     await SetGhostAsync();
-                    m_ghost.Clear();
+                    mGhost.Clear();
                 }
             }
             catch (Exception ex)
@@ -6280,7 +6281,7 @@ namespace Comet.Game.States
             try
             {
                 if (Team != null && !Team.IsLeader(Identity) && Team.Leader.MapIdentity == MapIdentity &&
-                    m_teamLeaderPos.ToNextTime())
+                    mTeamLeaderPos.ToNextTime())
                     await SendAsync(new MsgAction
                     {
                         Action = MsgAction<Client>.ActionType.MapTeamLeaderStar,
@@ -6312,7 +6313,7 @@ namespace Comet.Game.States
 
             try
             {
-                if (m_tVigor.ToNextTime(1000) && QueryStatus(StatusSet.RIDING) != null && Vigor < MaxVigor)
+                if (mVigorTimer.ToNextTime(1000) && QueryStatus(StatusSet.RIDING) != null && Vigor < MaxVigor)
                     await AddAttributesAsync(ClientUpdateType.Vigor,
                                              (long) Math.Max(10, Math.Min(200, MaxVigor * 0.01)));
             }
@@ -6364,7 +6365,7 @@ namespace Comet.Game.States
 
             try
             {
-                if (m_tVigor.ToNextTime() && QueryStatus(StatusSet.RIDING) != null && Vigor < MaxVigor)
+                if (mVigorTimer.ToNextTime() && QueryStatus(StatusSet.RIDING) != null && Vigor < MaxVigor)
                     await AddAttributesAsync(ClientUpdateType.Vigor,
                                              (long) Math.Max(10, Math.Min(200, MaxVigor * 0.005)));
             }
@@ -6376,7 +6377,7 @@ namespace Comet.Game.States
 
             try
             {
-                if (Transformation != null && m_transformation.IsTimeOut())
+                if (Transformation != null && mTransformation.IsTimeOut())
                     await ClearTransformationAsync();
             }
             catch (Exception ex)
@@ -6388,7 +6389,7 @@ namespace Comet.Game.States
 
             try
             {
-                if (m_energyTm.ToNextTime(ADD_ENERGY_STAND_MS))
+                if (mEnergyTm.ToNextTime(ADD_ENERGY_STAND_MS))
                 {
                     byte energyAmount = ADD_ENERGY_STAND;
                     if (IsWing)
@@ -6414,7 +6415,7 @@ namespace Comet.Game.States
 
             try
             {
-                if (m_xpPoints.ToNextTime()) await ProcXpValAsync();
+                if (mXpPoints.ToNextTime()) await ProcXpValAsync();
             }
             catch (Exception ex)
             {
@@ -6424,7 +6425,7 @@ namespace Comet.Game.States
 
             try
             {
-                if (m_autoHeal.ToNextTime() && IsAlive)
+                if (mAutoHeal.ToNextTime() && IsAlive)
                     QueueAction(() => AddAttributesAsync(ClientUpdateType.Hitpoints, AUTOHEALLIFE_EACHPERIOD));
             }
             catch (Exception ex)
@@ -6435,7 +6436,7 @@ namespace Comet.Game.States
 
             try
             {
-                if (m_mine.IsActive() && m_mine.ToNextTime())
+                if (mMine.IsActive() && mMine.ToNextTime())
                     await DoMineAsync();
             }
             catch (Exception ex)
@@ -6449,19 +6450,19 @@ namespace Comet.Game.States
 
         #region Socket
 
-        public DateTime LastLogin => m_dbObject.LoginTime;
-        public DateTime LastLogout => m_dbObject.LogoutTime;
-        public int TotalOnlineTime => m_dbObject.OnlineSeconds;
+        public DateTime LastLogin => mDbObject.LoginTime;
+        public DateTime LastLogout => mDbObject.LogoutTime;
+        public int TotalOnlineTime => mDbObject.OnlineSeconds;
 
         public uint LastDailyUpdate
         {
-            get => m_dbObject.DayResetDate;
-            set => m_dbObject.DayResetDate = value;
+            get => mDbObject.DayResetDate;
+            set => mDbObject.DayResetDate = value;
         }
 
         public async Task SetLoginAsync()
         {
-            m_dbObject.LoginTime = m_dbObject.LogoutTime = DateTime.Now;
+            mDbObject.LoginTime = mDbObject.LogoutTime = DateTime.Now;
             await SaveAsync();
         }
 
@@ -6469,16 +6470,16 @@ namespace Comet.Game.States
         {
             if (Map?.IsRecordDisable() == false && IsAlive)
             {
-                m_dbObject.MapID = mIdMap;
-                m_dbObject.X = mPosX;
-                m_dbObject.Y = mPosY;
+                mDbObject.MapID = mIdMap;
+                mDbObject.X = mPosX;
+                mDbObject.Y = mPosY;
             }
 
-            m_dbObject.LogoutTime = DateTime.Now;
-            m_dbObject.OnlineSeconds += (int) (m_dbObject.LogoutTime - m_dbObject.LoginTime).TotalSeconds;
+            mDbObject.LogoutTime = DateTime.Now;
+            mDbObject.OnlineSeconds += (int) (mDbObject.LogoutTime - mDbObject.LoginTime).TotalSeconds;
 
             if (!IsAlive)
-                m_dbObject.HealthPoints = 1;
+                mDbObject.HealthPoints = 1;
 
             try
             {
@@ -6667,12 +6668,12 @@ namespace Comet.Game.States
                 {
                     AccountIdentity = Client.AccountIdentity,
                     UserIdentity = Identity,
-                    LoginTime = m_dbObject.LoginTime,
-                    LogoutTime = m_dbObject.LogoutTime,
+                    LoginTime = mDbObject.LoginTime,
+                    LogoutTime = mDbObject.LogoutTime,
                     ServerVersion = $"{Kernel.Version}",
                     IpAddress = Client.IPAddress,
                     MacAddress = Client.MacAddress,
-                    OnlineTime = (uint) (m_dbObject.LogoutTime - m_dbObject.LoginTime).TotalSeconds
+                    OnlineTime = (uint) (mDbObject.LogoutTime - mDbObject.LoginTime).TotalSeconds
                 });
             }
             catch (Exception ex)
@@ -6752,7 +6753,7 @@ namespace Comet.Game.States
 
         public DbCharacter GetDatabaseObject()
         {
-            return m_dbObject;
+            return mDbObject;
         }
 
         public async Task<bool> SaveAsync()
@@ -6760,7 +6761,7 @@ namespace Comet.Game.States
             try
             {
                 await using var db = new ServerDbContext();
-                db.Update(m_dbObject);
+                db.Update(mDbObject);
                 return await Task.FromResult(await db.SaveChangesAsync() != 0);
             }
             catch
@@ -6793,7 +6794,7 @@ namespace Comet.Game.States
 
             await ServerDbContext.ScalarAsync(
                 $"INSERT INTO `cq_deluser` SELECT * FROM `cq_user` WHERE `id`={Identity};");
-            await ServerDbContext.DeleteAsync(m_dbObject);
+            await ServerDbContext.DeleteAsync(mDbObject);
             await Log.GmLogAsync("delete_user",
                                  $"{Identity},{Name},{MapIdentity},{MapX},{MapY},{Silvers},{ConquerPoints},{Level},{Profession},{FirstProfession},{PreviousProfession}");
 

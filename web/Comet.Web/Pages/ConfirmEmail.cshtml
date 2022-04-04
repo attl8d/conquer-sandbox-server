@@ -1,11 +1,11 @@
 ﻿@page
-@inject LanguageService Language
+@inject LanguageService mLanguage
 @model ConfirmEmailModel
 @{
-    ViewData["Title"] = Language.GetString("ConfirmEmail");
+    ViewData["Title"] = mLanguage.GetString("ConfirmEmail");
 }
 
-@await Html.PartialAsync("../../../Pages/Shared/_ViewTitleContainer")
+@await Html.PartialAsync("../../Pages/Shared/_ViewTitleContainer")
 
 <div class="container youplay-news">
     <partial name="_StatusMessage" model="Model.StatusMessage"/>

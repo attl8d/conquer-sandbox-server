@@ -159,15 +159,6 @@ namespace Comet.Web.Areas.Profile.Pages.Settings
             ApplicationUser user = await mUserManager.GetUserAsync(User);
             if (user == null) return NotFound($"Unable to load user with ID '{mUserManager.GetUserId(User)}'.");
 
-            ModelState.Clear();
-            await TryUpdateModelAsync(EmailInput);
-
-            if (!ModelState.IsValid)
-            {
-                await LoadAsync();
-                return Page();
-            }
-
             string userId = await mUserManager.GetUserIdAsync(user);
             string email = await mUserManager.GetEmailAsync(user);
             string code = await mUserManager.GenerateEmailConfirmationTokenAsync(user);

@@ -42,8 +42,8 @@ namespace Comet.Web.Services
         {
             return mContext
                    .Articles
-                   .Where(x => x.Category.CategoryTypeId == type && x.PublishDate <= DateTime.Now &&
-                               x.Flags == Article.ArticleFlags.Visible)
+                   .Where(x => x.Category.CategoryTypeId == type && x.PublishDate <= DateTime.Now 
+                                                                 && x.Flags == Article.ArticleFlags.Visible)
                    .Include(x => x.Category)
                    .Include(x => x.User)
                    .Include(x => x.Content).ThenInclude(x => x.Writer)
@@ -66,7 +66,7 @@ namespace Comet.Web.Services
                    .Include(x => x.Content).ThenInclude(x => x.Writer)
                    .Include(x => x.Content).ThenInclude(x => x.LastEditor)
                    .Include(x => x.Category).ThenInclude(x => x.CategoryType)
-                   .OrderByDescending(x => x.Order)
+                   .OrderBy(x => x.Order)
                    .ThenByDescending(x => x.Id)
                    .Skip(page * ipp)
                    .Take(ipp)
@@ -128,7 +128,7 @@ namespace Comet.Web.Services
                                                   .Include(x => x.Content).ThenInclude(x => x.Writer)
                                                   .Include(x => x.Content).ThenInclude(x => x.LastEditor)
                                                   .Include(x => x.Category).ThenInclude(x => x.CategoryType)
-                                                  .OrderByDescending(x => x.Order)
+                                                  .OrderBy(x => x.Order)
                                                   .ThenByDescending(x => x.Id)
                                                   .Skip(Math.Max(0, page - 1))
                                                   .Take(ipp <= 0 ? int.MaxValue : ipp)
@@ -146,7 +146,8 @@ namespace Comet.Web.Services
                     Title = content.Title,
                     PublishDate = article.PublishDate.ToString("O"),
                     Locales = new List<string>(article.Content.Select(x => x.Locale)),
-                    Order = article.Order
+                    Order = article.Order,
+                    Sortable = article.Category.CategoryTypeId == 2
                 });
 
             }
@@ -161,7 +162,7 @@ namespace Comet.Web.Services
                                                      .Where(x => x.CategoryTypeId == categoryType)
                                                      .Include(x => x.Articles).ThenInclude(x => x.Content)
                                                      .Include(x => x.Articles).ThenInclude(x => x.User)
-                                                     .OrderByDescending(x => x.Order)
+                                                     .OrderBy(x => x.Order)
                                                      .ThenByDescending(x => x.Id)
                                                      .Skip(Math.Max(0, page - 1))
                                                      .Take(ipp <= 0 ? int.MaxValue : ipp)
@@ -186,7 +187,8 @@ namespace Comet.Web.Services
                         Title = content.Title,
                         PublishDate = article.PublishDate.ToString("O"),
                         Locales = new List<string>(article.Content.Select(x => x.Locale)),
-                        Order = article.Order
+                        Order = article.Order,
+                        Sortable = article.Category.CategoryTypeId == 2
                     });
                 }
             }
@@ -275,8 +277,25 @@ namespace Comet.Web.Services
                 ArticleContent content = null;
                 if (article != null)
                 {
-                    content = article.Content.FirstOrDefault(
-                        x => x.Locale.Equals(model.Locale, StringComparison.InvariantCultureIgnoreCase));
+                    content = article.Content.FirstOrDefault(x => x.Locale.Equals(model.Locale, StringComparison.InvariantCultureIgnoreCase));
+
+                    if (model.NotPublished)
+                    {
+                        article.Flags |= Article.ArticleFlags.NotPublished;
+                    }
+                    else if ((article.Flags & Article.ArticleFlags.NotPublished) != 0)
+                    {
+                        article.Flags &= ~Article.ArticleFlags.NotPublished;
+                    }
+
+                    if (model.NotListed)
+                    {
+                        article.Flags |= Article.ArticleFlags.NotListed;
+                    }
+                    else if ((article.Flags & Article.ArticleFlags.NotListed) != 0)
+                    {
+                        article.Flags &= ~Article.ArticleFlags.NotListed;
+                    }
                 }
                 else
                 {
@@ -387,6 +406,55 @@ namespace Comet.Web.Services
             }
 
             return result;
+        }
+
+        /// <remarks>0 UP 1 DOWN</remarks>
+        public async Task<int> ChangeArticleOrderAsync(int articleId, int direction)
+        {
+            Article article = await QueryArticleByIdAsync(articleId);
+            if (article == null)
+                return StatusCodes.Status204NoContent;
+
+            Article swap;
+            if (direction == 0) // up
+            {
+                swap = mContext.Articles
+                                     .Where(x => x.Id != article.Id && x.CategoryId == article.CategoryId && x.Order <= article.Order)
+                                     .ToList()
+                                     .Aggregate((x, y) => Math.Abs(x.Order - article.Order) < Math.Abs(y.Order - article.Order) ? x : y);
+            }
+            else // down
+            {
+                swap = mContext.Articles
+                               .Where(x => x.Id != article.Id && x.CategoryId == article.CategoryId && x.Order >= article.Order)
+                               .ToList()
+                               .Aggregate((x, y) => Math.Abs(x.Order + article.Order) < Math.Abs(y.Order + article.Order) ? x : y);
+            }
+
+            if (swap.Id == 0 || swap.Id == article.Id)
+                return StatusCodes.Status304NotModified;
+
+            (article.Order, swap.Order) = (swap.Order, article.Order);
+            await mContext.SaveAsync(article);
+            await mContext.SaveAsync(swap);
+
+            await RebuildArticleOrderAsync();
+            return StatusCodes.Status200OK;
+        }
+
+        public async Task RebuildArticleOrderAsync()
+        {
+            foreach (var category in mContext.ArticleCategories
+                                             .Include(x => x.Articles)
+                                             .Where(x => x.CategoryTypeId == 2))
+            {
+                int order = 0;
+                foreach (var article in category.Articles.OrderBy(x => x.Order).ThenBy(x => x.Id))
+                {
+                    article.Order = order++;
+                }
+                await mContext.SaveAsync(category);
+            }
         }
     }
 }

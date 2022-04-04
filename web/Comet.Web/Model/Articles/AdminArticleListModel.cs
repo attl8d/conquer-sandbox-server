@@ -10,6 +10,7 @@ namespace Comet.Web.Model.Articles
         public string Title { get; set; }
         public string PublishDate { get; set; }
         public int Order { get; set; }
+        public bool Sortable { get; set; }
         public List<string> Locales { get; set; } = new();
     }
 }

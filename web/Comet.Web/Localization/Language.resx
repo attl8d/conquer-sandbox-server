@@ -1629,4 +1629,22 @@
   <data name="Money" xml:space="preserve">
     <value>Dinheiro</value>
   </data>
+  <data name="DownloadsIndexTitle" xml:space="preserve">
+    <value>Downloads</value>
+  </data>
+  <data name="2sharedDownload" xml:space="preserve">
+    <value>2shared</value>
+  </data>
+  <data name="4sharedDownload" xml:space="preserve">
+    <value>4shared</value>
+  </data>
+  <data name="MediaFireDownload" xml:space="preserve">
+    <value>Mediafire</value>
+  </data>
+  <data name="MegaDownload" xml:space="preserve">
+    <value>Mega.nz</value>
+  </data>
+  <data name="RecommendedDownload" xml:space="preserve">
+    <value>Link Recomendado</value>
+  </data>
 </root>

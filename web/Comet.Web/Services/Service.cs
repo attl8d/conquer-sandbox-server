@@ -32,6 +32,7 @@ namespace Comet.Web.Services
             service.AddTransient<BanService>();
             service.AddTransient<RankingService>();
             service.AddTransient<ConquerGameService>();
+            service.AddTransient<DownloadsService>();
             return service;
         }
     }

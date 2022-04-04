@@ -1,4 +1,6 @@
-﻿using System;
+﻿#define BETA
+
+using System;
 using System.Collections.Generic;
 using System.Threading;
 using System.Threading.Tasks;
@@ -115,7 +117,7 @@ namespace Comet.Account
 
                 switch (full[0].ToLower())
                 {
-#if DEBUG
+#if DEBUG || BETA
                     case "account":
                     {
                         if (full.Length < 3)

@@ -170,6 +170,7 @@ namespace Comet.Web.Areas.Panel.Pages.Administration.Articles
             [Required] public int ArticleCategoryId { get; set; }
             [DataType(DataType.DateTime)] public DateTime? PublishDate { get; set; }
             [Required] public bool NotPublished { get; set; }
+            [Required] public bool NotListed { get; set; }
         }
     }
 }

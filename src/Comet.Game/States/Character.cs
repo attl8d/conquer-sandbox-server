@@ -5669,7 +5669,7 @@ namespace Comet.Game.States
 
             await KillCallPetAsync();
 
-            if (attacker.IsCallPet() && attacker.OwnerIdentity != 0)
+            if (attacker?.IsCallPet() == true && attacker.OwnerIdentity != 0)
             {
                 Character owner = RoleManager.GetUser(attacker.OwnerIdentity);
                 if (owner != null)

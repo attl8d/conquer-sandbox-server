@@ -37,7 +37,8 @@ namespace Comet.Web.Data.Entities
         {
             Visible = 0x0,
             NotPublished = 0x1,
-            NotListed = 0x2
+            NotListed = 0x2,
+            CommentLocked = 0x4
         }
     }
 }

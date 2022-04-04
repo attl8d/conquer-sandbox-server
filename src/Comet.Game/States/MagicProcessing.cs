@@ -819,7 +819,7 @@ namespace Comet.Game.States
                     case StatusSet.DODGE:
                         await target.SendAsync(string.Format(Language.StrDodgeActiveP, secs, powerTimes));
                         break;
-                    case StatusSet.STIG:
+                    case StatusSet.STIGMA:
                         await target.SendAsync(string.Format(Language.StrStigmaActiveP, secs, powerTimes));
                         break;
                     case StatusSet.SHIELD:
@@ -837,7 +837,7 @@ namespace Comet.Game.States
                     case StatusSet.DODGE:
                         await target.SendAsync(string.Format(Language.StrDodgeActiveT, secs, power));
                         break;
-                    case StatusSet.STIG:
+                    case StatusSet.STIGMA:
                         await target.SendAsync(string.Format(Language.StrStigmaActiveT, secs, power));
                         break;
                     case StatusSet.SHIELD:

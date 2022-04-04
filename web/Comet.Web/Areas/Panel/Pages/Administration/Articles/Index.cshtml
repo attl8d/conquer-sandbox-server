@@ -40,14 +40,76 @@
     <script>
         const CategoryTypes = JSON.parse('@Html.Raw(JsonConvert.SerializeObject(Model.ArticleCategoriesTypes))');
         const ipp = 25;
+        const SortUrl = '@Url.Action("ChangeArticleOrder", "Articles", new {version = "1"})';
+
+        function onSortUp(el) {
+            event.preventDefault();
+
+            const row = $(el).parent().parent();
+            const table = $(row).parent().parent();
+            const rowIndex = $(table).find('tr').index(row);
+            const id = $(el).parent().parent().find('td')[0].innerText;
+
+            if (rowIndex <= 1) {
+                return;
+            }
+
+            $.ajax({
+                url: SortUrl,
+                type: 'PATCH',
+                headers: {
+                    'Content-Type': 'application/json'
+                },
+                data: JSON.stringify({
+                    PostId: id,
+                    Order: 0
+                }),
+                success: function(result) {
+                    $(row).prev().before(row);
+                },
+                error: function(error) {
+                    console.log(error);
+                }
+            });
+        }
+
+        function onSortDown(el) {
+            event.preventDefault();
+
+            const row = $(el).parent().parent();
+            const table = $(row).parent().parent();
+            const rowIndex = $(table).find('tr').index(row);
+            const rowCount = $(table).find('tr').length - 1;
+            const id = $(el).parent().parent().find('td')[0].innerText;
+
+            if (rowIndex >= rowCount) {
+                return;
+            }
+
+            $.ajax({
+                url: SortUrl,
+                type: 'PATCH',
+                headers: {
+                    'Content-Type': 'application/json'
+                },
+                data: JSON.stringify({
+                    PostId: id,
+                    Order: 1
+                }),
+                success: function(result) {
+                    $(row).next().after(row);
+                },
+                error: function(error) {
+                    console.log(error);
+                }
+            });
+        }
 
         function loadCategoryData(category, type, page) {
             $.ajax({
                 url: `@Url.Action("GetArticleByCategory", "Articles", new {version = "1"})?category=${type}&page=${page}&ipp=${ipp}`,
                 type: 'GET',
                 success: function(result) {
-                    console.log(`${category}_${type}`);
-                    console.log(result);
                     let table = document.getElementById(`tblArticleCategoryType${category}_${type}`);
                     let body = table.tBodies[0];
 
@@ -71,7 +133,12 @@
 
                             let date = new Date(result[idx].publishDate);
                             $(row.insertCell()).html(date.toLocaleDateString('pt-BR') + ' ' + date.toLocaleTimeString('pt-BR'));
-                            $(row.insertCell()).html(`<input class="form-input" style="width: 40px" type="number" data-article-order="${result[idx].id}" value="${result[idx].order}" />`);
+                            if (result[idx].sortable) {
+                                $(row.insertCell()).html(`<a href="#" onclick="onSortUp(this);"><i class="fa fa-sort-up"></i></a>&nbsp;<a href="#" onclick="onSortDown(this);"><i class="fa fa-sort-down"></i></a>`);
+                            } else {
+                                $(row.insertCell()).html('');
+                            }
+                            //$(row.insertCell()).html(`<input class="form-input" style="width: 40px" type="number" data-article-order="${result[idx].id}" value="${result[idx].order}" />`);
                         }
                     } else {
                         let cell = body.insertRow().insertCell();
@@ -86,20 +153,13 @@
         }
 
         $(document).ready(function() {
-            console.log(CategoryTypes);
+            //console.log(CategoryTypes);
             for (let i = 0; i < CategoryTypes.length; i++) {
-
                 for (let j = 0; j < CategoryTypes[i].Categories.length; j++) {
-                    //console.log(`${i}:${j} => `);
                     loadCategoryData(CategoryTypes[i].Id, CategoryTypes[i].Categories[j].Id, 0, ipp);
                 }
 
             }
-            //for (type in CategoryTypes) {
-            //    for (cat in type.Categories) {
-            //        loadCategoryData(type.Id, cat.Id, 0, ipp);
-            //    }
-            //}
         });
 
     </script>

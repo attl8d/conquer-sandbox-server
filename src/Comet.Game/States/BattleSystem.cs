@@ -342,8 +342,8 @@ namespace Comet.Game.States
             if (adjustAtk > Calculations.ADJUST_PERCENT)
                 damage = Calculations.CutTrail(0, Calculations.AdjustDataEx(damage, adjustAtk));
 
-            if (attacker.QueryStatus(StatusSet.STIG) != null)
-                damage = Calculations.AdjustData(damage, attacker.QueryStatus(StatusSet.STIG).Power);
+            if (attacker.QueryStatus(StatusSet.STIGMA) != null)
+                damage = Calculations.AdjustData(damage, attacker.QueryStatus(StatusSet.STIGMA).Power);
 
             if (attacker.QueryStatus(StatusSet.INTENSIFY) != null)
                 damage = Calculations.AdjustData(damage, attacker.QueryStatus(StatusSet.INTENSIFY).Power);

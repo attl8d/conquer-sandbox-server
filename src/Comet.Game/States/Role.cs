@@ -614,9 +614,9 @@ namespace Comet.Game.States
             switch (stts)
             {
                 case StatusSet.RIDING:
-                case StatusSet.FULL_INVIS:
+                case StatusSet.FULL_INVISIBLE:
                 case StatusSet.LUCKY_DIFFUSE:
-                case StatusSet.STIG:
+                case StatusSet.STIGMA:
                 case StatusSet.SHIELD:
                 case StatusSet.STAR_OF_ACCURACY:
                 case StatusSet.START_XP:
@@ -847,7 +847,6 @@ namespace Comet.Game.States
 
         public virtual async Task<bool> SetAttributesAsync(ClientUpdateType type, ulong value)
         {
-            var screen = false;
             switch (type)
             {
                 case ClientUpdateType.Hitpoints:
@@ -860,7 +859,6 @@ namespace Comet.Game.States
 
                 case ClientUpdateType.StatusFlag:
                     StatusFlag = value;
-                    screen = true;
                     break;
 
                 default:
@@ -879,28 +877,18 @@ namespace Comet.Game.States
                 await SendAsync(msg);
 
             if (screen)
-            {
-                if (this is Character user)
-                    await user.BroadcastRoomMsgAsync(msg, true);
-                else if (Map != null)
-                    await Map.BroadcastRoomMsgAsync(MapX, MapY, msg, Identity);
-            }
+                await Map.BroadcastRoomMsgAsync(MapX, MapY, msg, Identity);
         }
 
         public async Task SynchroAttributesAsync(ClientUpdateType type, uint value1, uint value2, bool screen = false)
         {
             var msg = new MsgUserAttrib(Identity, type, value1);
             msg.Append(type, value2);
-            if (this is Character && !screen)
+            if (IsPlayer() && !screen)
                 await SendAsync(msg);
 
             if (screen)
-            {
-                if (this is Character user)
-                    await user.BroadcastRoomMsgAsync(msg, true);
-                else if (Map != null)
-                    await Map.BroadcastRoomMsgAsync(MapX, MapY, msg, Identity);
-            }
+                await Map.BroadcastRoomMsgAsync(MapX, MapY, msg, Identity);
         }
 
         #endregion

@@ -1,10 +1,10 @@
 ﻿@page "{RankType}/{ServerName}/{PageNum=1}"
 @using System.Data
 @using Comet.Web.Services
-@inject LanguageService Language
+@inject LanguageService mLanguage
 @model Comet.Web.Areas.Ranking.Pages.IndexModel
 @{
-    ViewData["Title"] = Language.GetString("RankingS", Model.RankName);
+    ViewData["Title"] = mLanguage.GetString("RankingS", Model.RankName);
 }
 
 @await Html.PartialAsync("../../../Pages/Shared/_ViewTitleContainer")
@@ -14,11 +14,11 @@
     <div class="col-md-9">
         <div class="mb-30">
             <div class="form-group">
-                <label class="control-label col-sm-2">@Language.GetString("Server"):</label>
+                <label class="control-label col-sm-2">@mLanguage.GetString("Server"):</label>
                 <div class="col-sm-10">
                     <div class="youplay-select">
                         <select id="GameServer">
-                            <option value="All">@Language.GetString("AllServers")</option>
+                            <option value="All">@mLanguage.GetString("AllServers")</option>
                             @foreach (var server in Model.Servers)
                             {
                                 if (server.RealmName.Equals(Model.ServerName, StringComparison.InvariantCultureIgnoreCase))
@@ -43,7 +43,7 @@
                     <td>#</td>
                     @for (int i = 0; i < Model.DataTable.Columns.Count; i++)
                     {
-                        <td>@Language.GetString($"{Model.DataTable.Columns[i].ColumnName}")</td>
+                        <td>@mLanguage.GetString($"{Model.DataTable.Columns[i].ColumnName}")</td>
                     }
                 </tr>
                 </thead>
@@ -81,18 +81,18 @@
         <div class="side-block">
             <ul class="block-content">
                 <li>
-                    <a asp-area="Ranking" asp-page="Index" asp-route-ServerName="@Model.ServerName" asp-route-RankType="Players">@Language.GetString("TopPlayers")</a>
-                    <a asp-area="Ranking" asp-page="Index" asp-route-ServerName="@Model.ServerName" asp-route-RankType="Trojan">@Language.GetString("TopTrojan")</a>
-                    <a asp-area="Ranking" asp-page="Index" asp-route-ServerName="@Model.ServerName" asp-route-RankType="Warrior">@Language.GetString("TopWarrior")</a>
-                    <a asp-area="Ranking" asp-page="Index" asp-route-ServerName="@Model.ServerName" asp-route-RankType="Archer">@Language.GetString("TopArcher")</a>
-                    <a asp-area="Ranking" asp-page="Index" asp-route-ServerName="@Model.ServerName" asp-route-RankType="WaterTaoist">@Language.GetString("TopWaterTaoist")</a>
-                    <a asp-area="Ranking" asp-page="Index" asp-route-ServerName="@Model.ServerName" asp-route-RankType="FireTaoist">@Language.GetString("TopFireTaoist")</a>
-                    <a asp-area="Ranking" asp-page="Index" asp-route-ServerName="@Model.ServerName" asp-route-RankType="Moneybag">@Language.GetString("TopMoneybag")</a>
-                    <a asp-area="Ranking" asp-page="Index" asp-route-ServerName="@Model.ServerName" asp-route-RankType="Syndicate">@Language.GetString("TopSyndicate")</a>
-                    <a asp-area="Ranking" asp-page="Index" asp-route-ServerName="@Model.ServerName" asp-route-RankType="Family">@Language.GetString("TopFamily")</a>
-                    <a asp-area="Ranking" asp-page="Index" asp-route-ServerName="@Model.ServerName" asp-route-RankType="GuildWarWinners">@Language.GetString("TopGuildWarWinners")</a>
-                    <a asp-area="Ranking" asp-page="Index" asp-route-ServerName="@Model.ServerName" asp-route-RankType="Superman">@Language.GetString("TopSuperman")</a>
-                    <a asp-area="Ranking" asp-page="Index" asp-route-ServerName="@Model.ServerName" asp-route-RankType="Noble">@Language.GetString("TopNoble")</a>
+                    <a asp-area="Ranking" asp-page="Index" asp-route-ServerName="@Model.ServerName" asp-route-RankType="Players">@mLanguage.GetString("TopPlayers")</a>
+                    <a asp-area="Ranking" asp-page="Index" asp-route-ServerName="@Model.ServerName" asp-route-RankType="Trojan">@mLanguage.GetString("TopTrojan")</a>
+                    <a asp-area="Ranking" asp-page="Index" asp-route-ServerName="@Model.ServerName" asp-route-RankType="Warrior">@mLanguage.GetString("TopWarrior")</a>
+                    <a asp-area="Ranking" asp-page="Index" asp-route-ServerName="@Model.ServerName" asp-route-RankType="Archer">@mLanguage.GetString("TopArcher")</a>
+                    <a asp-area="Ranking" asp-page="Index" asp-route-ServerName="@Model.ServerName" asp-route-RankType="WaterTaoist">@mLanguage.GetString("TopWaterTaoist")</a>
+                    <a asp-area="Ranking" asp-page="Index" asp-route-ServerName="@Model.ServerName" asp-route-RankType="FireTaoist">@mLanguage.GetString("TopFireTaoist")</a>
+                    <a asp-area="Ranking" asp-page="Index" asp-route-ServerName="@Model.ServerName" asp-route-RankType="Moneybag">@mLanguage.GetString("TopMoneybag")</a>
+                    <a asp-area="Ranking" asp-page="Index" asp-route-ServerName="@Model.ServerName" asp-route-RankType="Syndicate">@mLanguage.GetString("TopSyndicate")</a>
+                    <a asp-area="Ranking" asp-page="Index" asp-route-ServerName="@Model.ServerName" asp-route-RankType="Family">@mLanguage.GetString("TopFamily")</a>
+                    <a asp-area="Ranking" asp-page="Index" asp-route-ServerName="@Model.ServerName" asp-route-RankType="GuildWarWinners">@mLanguage.GetString("TopGuildWarWinners")</a>
+                    <a asp-area="Ranking" asp-page="Index" asp-route-ServerName="@Model.ServerName" asp-route-RankType="Superman">@mLanguage.GetString("TopSuperman")</a>
+                    <a asp-area="Ranking" asp-page="Index" asp-route-ServerName="@Model.ServerName" asp-route-RankType="Noble">@mLanguage.GetString("TopNoble")</a>
                 </li>
             </ul>
         </div>

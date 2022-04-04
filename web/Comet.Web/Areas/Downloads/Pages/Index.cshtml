@@ -1,0 +1,133 @@
+﻿@page
+@inject LanguageService mLanguage
+@model Comet.Web.Areas.Downloads.Pages.IndexModel
+@{
+    ViewData["Title"] = mLanguage.GetString("DownloadsIndexTitle");
+}
+
+@await Html.PartialAsync("../../../Pages/Shared/_ViewTitleContainer")
+
+<div class="container youplay-news">
+    <div class="col">
+        
+        <p>
+            Para baixar nosso cliente escolha entre um dos nossos provadores abaixo. Caso perceba lentidão no download por um servidor
+            tente utilizar outro ou aguarde um pouco e tente novamente.
+        </p>
+        
+        <p>
+            <b>Atenção!</b> Nosso cliente utiliza injeção para realizar algumas ações, por isso, há a necessidade de se adicionar uma exceção
+            no seu Windows Defender. O Windows Defender as vezes trabalha passivamente, portanto, mesmo que o seu Windows Defender 
+            esteja inativo <a href="#">dê uma olhada em nosso artigo com instruções</a>.
+        </p>
+
+        <p class="mt-50 text-center">
+            <a class="btn btn-lg btn-danger">
+                <i class="fa fa-download"></i> <br />
+                @mLanguage.GetString("RecommendedDownload")
+            </a>
+        </p>
+        <p class="mt-25 text-center">
+            <a class="btn btn-primary">
+                <i class="fa fa-download"></i> <br />
+                @mLanguage.GetString("2sharedDownload")
+            </a>
+            &nbsp;
+            <a class="btn btn-primary">
+                <i class="fa fa-download"></i> <br />
+                @mLanguage.GetString("MediaFireDownload")
+            </a>
+            &nbsp;
+            <a class="btn btn-primary">
+                <i class="fa fa-download"></i> <br />
+                @mLanguage.GetString("4sharedDownload")
+            </a>
+        </p>
+        
+        <h2>Auto atualizador</h2>
+        
+        <p>
+            Utilizamos de um auto atualizador em nosso cliente, este realiza toda a validação dos dados do cliente e também
+            faz a atualização automática. No entanto, pode ser que por algum motivo o universo pode ter tentado contra sua
+            gameplay e por isso temos um link alternativo para baixar o auto atualizador em caso de exclusão de algum arquivo.
+        </p>
+        
+        <p>
+            Observação: o auto atualizador pode demorar para carregar e se mantém aberto durante a gameplay, não o feche pois
+            fechá-lo irá fechar todas as instâncias de nossos clientes e além disso o atrapalhará, pois na próxima abertura ele
+            realizará a validação dos seus arquivos novamente.
+        </p>
+        
+        <p class="mt-50 text-center">
+            <a class="btn btn-lg btn-danger">
+                <i class="fa fa-download"></i> <br />
+                @mLanguage.GetString("RecommendedDownload")
+            </a>
+        </p>
+        <p class="mt-25 text-center">
+            <a class="btn btn-primary">
+                <i class="fa fa-download"></i> <br />
+                @mLanguage.GetString("2sharedDownload")
+            </a>
+            &nbsp;
+            <a class="btn btn-primary">
+                <i class="fa fa-download"></i> <br />
+                @mLanguage.GetString("MediaFireDownload")
+            </a>
+            &nbsp;
+            <a class="btn btn-primary">
+                <i class="fa fa-download"></i> <br />
+                @mLanguage.GetString("4sharedDownload")
+            </a>
+        </p>
+        
+        <h2>Atualizações individuais</h2>
+        
+        <p>
+            Caso você esteja tendo problemas com nosso atualizador, por favor baixe a atualização manualmente, coloque-a na pasta
+            de instalação do cliente em "C:/Program Files(x86)/WorldConquerOnline" e execute-a.
+        </p>
+
+    </div>
+    
+    <div class="col table-responsive">
+        <table class="table">
+            <thead>
+            <tr>
+                <th>Versão</th>
+                <th>Arquivo</th>
+                <th>MD5</th>
+                <th class="text-center">Download</th>
+            </tr>
+            </thead>
+            <tbody>
+            <tr>
+                <td>test</td>
+                <td>test.exe</td>
+                <td>0aa1ea9a5a04b78d4581dd6d17742627</td>
+                <td class="text-center">
+                    <a class="btn btn-sm btn-primary">
+                        <i class="fa fa-download"></i> <br />
+                        @mLanguage.GetString("MegaDownload")
+                    </a>
+                    &nbsp;
+                    <a class="btn btn-sm btn-primary">
+                        <i class="fa fa-download"></i> <br/>
+                        @mLanguage.GetString("2sharedDownload")
+                    </a>
+                    &nbsp;
+                    <a class="btn btn-sm btn-primary">
+                        <i class="fa fa-download"></i> <br/>
+                        @mLanguage.GetString("MediaFireDownload")
+                    </a>
+                    &nbsp;
+                    <a class="btn btn-sm btn-primary">
+                        <i class="fa fa-download"></i> <br/>
+                        @mLanguage.GetString("4sharedDownload")
+                    </a>
+                </td>
+            </tr>
+            </tbody>
+        </table>
+    </div>
+</div>

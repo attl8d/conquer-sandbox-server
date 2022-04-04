@@ -64,12 +64,12 @@ namespace Comet.Game.States
 
         public int RemainingTime => mKeep.GetRemain() / 1000;
 
-        public bool GetInfo(ref StatusInfoStruct pInfo)
+        public bool GetInfo(ref StatusInfoStruct info)
         {
-            pInfo.Power = Power;
-            pInfo.Seconds = mKeep.GetRemain() / 1000;
-            pInfo.Status = Identity;
-            pInfo.Times = 0;
+            info.Power = Power;
+            info.Seconds = mKeep.GetRemain() / 1000;
+            info.Status = Identity;
+            info.Times = 0;
 
             return IsValid;
         }
@@ -100,9 +100,9 @@ namespace Comet.Game.States
             }
         }
 
-        public bool IncTime(int ms, int limitMs)
+        public bool IncTime(int ms, int limit)
         {
-            int nInterval = Math.Min(ms + mKeep.GetRemain(), limitMs);
+            int nInterval = Math.Min(ms + mKeep.GetRemain(), limit);
             mKeep.SetInterval(nInterval);
             return mKeep.Update();
         }
@@ -278,9 +278,9 @@ namespace Comet.Game.States
             }
         }
 
-        public bool IncTime(int ms, int limitMs)
+        public bool IncTime(int ms, int limit)
         {
-            int nInterval = Math.Min(ms + mKeep.GetRemain(), limitMs);
+            int nInterval = Math.Min(ms + mKeep.GetRemain(), limit);
             mKeep.SetInterval(nInterval);
             return mKeep.Update();
         }
@@ -423,19 +423,17 @@ namespace Comet.Game.States
 
     public sealed class StatusSet
     {
-        public static ulong KEEP_EFFECT_NOT_VIRTUOUS => GetFlag(CRIME) | GetFlag(RED_NAME) | GetFlag(BLACK_NAME);
-
         public const int NONE = 0,
                          CRIME = 1,
                          POISONED = 2,
-                         FULL_INVIS = 3,
+                         FULL_INVISIBLE = 3,
                          FADE = 4,
                          START_XP = 5,
                          GHOST = 6,
                          TEAM_LEADER = 7,
                          STAR_OF_ACCURACY = 8,
                          SHIELD = 9,
-                         STIG = 10,
+                         STIGMA = 10,
                          DEAD = 11,
                          INVISIBLE = 12,
                          UNKNOWN13 = 13,
@@ -548,7 +546,7 @@ namespace Comet.Game.States
                          CTF_FLAG = 119,
                          SCURVY_BOMB = 120,
                          CANNON_BARRAGE = 121,
-                         BLACKBEARDS_REVENGE = 122,
+                         BLACK_BEARDS_REVENGE = 122,
                          TOP_PIRATE = 123,
                          TOP_PIRATE8 = 124,
                          TOP_PIRATE2 = 125,
@@ -570,7 +568,7 @@ namespace Comet.Game.States
 
             mOwner = pRole;
 
-            Status = new ConcurrentDictionary<int, IStatus>(5, 128);
+            Status = new ConcurrentDictionary<int, IStatus>(5, 64);
         }
 
         private ulong StatusFlag
@@ -601,14 +599,12 @@ namespace Comet.Game.States
 
         public IStatus GetObjByIndex(int nKey)
         {
-            IStatus ret;
-            return Status.TryGetValue(nKey, out ret) ? ret : null;
+            return Status.TryGetValue(nKey, out IStatus ret) ? ret : null;
         }
 
         public IStatus GetObj(ulong nKey, bool b64 = false)
         {
-            IStatus ret;
-            return Status.TryGetValue(InvertFlag(nKey, b64), out ret) ? ret : null;
+            return Status.TryGetValue(InvertFlag(nKey, b64), out IStatus ret) ? ret : null;
         }
 
         public async Task<bool> AddObjAsync(IStatus pStatus)
@@ -664,6 +660,7 @@ namespace Comet.Game.States
         /// </summary>
         /// <param name="flag">The flag that will be checked.</param>
         /// <param name="b64">If it's a effect 2 flag, you should set this true.</param>
+        /// <param name="b128">If it's a effect 3 flag, you should set this true.</param>
         /// <returns></returns>
         public static int InvertFlag(ulong flag, bool b64 = false, bool b128 = false)
         {
@@ -720,19 +717,19 @@ namespace Comet.Game.States
         /// <summary>
         ///     This method will get the status information into another param.
         /// </summary>
-        /// <param name="pInfo">The structure that will be filled with the information.</param>
-        bool GetInfo(ref StatusInfoStruct pInfo);
+        /// <param name="info">The structure that will be filled with the information.</param>
+        bool GetInfo(ref StatusInfoStruct info);
 
         /// <summary>
         ///     This method will override the old values from the status.
         /// </summary>
-        /// <param name="nPower">The new power of the status.</param>
-        /// <param name="nSecs">The remaining time to the status.</param>
-        /// <param name="nTimes">How many times the status will appear. If StatusMore.</param>
-        /// <param name="wCaster">The identity of the caster.</param>
-        Task<bool> ChangeDataAsync(int nPower, int nSecs, int nTimes = 0, uint wCaster = 0);
+        /// <param name="power">The new power of the status.</param>
+        /// <param name="secs">The remaining time to the status.</param>
+        /// <param name="times">How many times the status will appear. If StatusMore.</param>
+        /// <param name="caster">The identity of the caster.</param>
+        Task<bool> ChangeDataAsync(int power, int secs, int times = 0, uint caster = 0);
 
-        bool IncTime(int nMilliSecs, int nLimit);
+        bool IncTime(int ms, int limit);
         bool ToFlash();
         Task OnTimerAsync();
 

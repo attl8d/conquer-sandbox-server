@@ -116,6 +116,9 @@ namespace Comet.Web.Areas.Read.Pages
                 });
             }
 
+            IsAllowedToComment = User.Identity?.IsAuthenticated == true 
+                                 && (Article.Flags & Article.ArticleFlags.CommentLocked) == 0;
+
             return Page();
         }
 

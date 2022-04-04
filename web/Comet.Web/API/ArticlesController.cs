@@ -171,6 +171,7 @@ namespace Comet.Web.API
         [MapToApiVersion("1")]
         [ProducesResponseType(StatusCodes.Status200OK)]
         [ProducesResponseType(StatusCodes.Status204NoContent)]
+        [ProducesResponseType(StatusCodes.Status304NotModified)]
         [ProducesResponseType(StatusCodes.Status401Unauthorized)]
         [ProducesResponseType(StatusCodes.Status500InternalServerError)]
         public async Task<IActionResult> ChangeArticleOrderV1Async([FromBody] PatchArticleOrder patch)
@@ -178,6 +179,21 @@ namespace Comet.Web.API
             if (!User.HasPermission(Claims.CanWriteArticles))
                 return Unauthorized();
 
+            int result = await mService.ChangeArticleOrderAsync(patch.PostId, patch.Order);
+            return StatusCode(result);
+        }
+
+        [Authorize(Policy = Administrator)]
+        [ActionName("RebuildOrdering")]
+        [HttpPost]
+        [MapToApiVersion("1")]
+        [ProducesResponseType(StatusCodes.Status200OK)]
+        [ProducesResponseType(StatusCodes.Status204NoContent)]
+        [ProducesResponseType(StatusCodes.Status401Unauthorized)]
+        [ProducesResponseType(StatusCodes.Status500InternalServerError)]
+        public async Task<IActionResult> RebuildOrderingAsync()
+        {
+            await mService.RebuildArticleOrderAsync();
             return Ok();
         }
 

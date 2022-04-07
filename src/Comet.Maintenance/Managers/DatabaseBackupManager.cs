@@ -78,17 +78,19 @@ namespace Comet.Maintenance.Managers
             try
             {
                 var startInfo =
-                    new ProcessStartInfo(Path.Combine(DatabaseExecutableLocation, "mysqldump.exe"), $"{command}");
-                startInfo.UseShellExecute = false;
-                startInfo.CreateNoWindow = true;
-                startInfo.WorkingDirectory = DatabaseExecutableLocation;
-                startInfo.RedirectStandardOutput = true;
+                    new ProcessStartInfo(Path.Combine(DatabaseExecutableLocation, "mysqldump.exe"), $"{command}")
+                        {
+                            UseShellExecute = false,
+                            CreateNoWindow = true,
+                            WorkingDirectory = DatabaseExecutableLocation,
+                            RedirectStandardOutput = true
+                        };
 
                 var process = new Process();
                 process.StartInfo = startInfo;
                 await Log.WriteLogAsync("Running 'mysqldump.exe' to make database backup.");
                 process.Start();
-                process.WaitForExit();
+                await process.WaitForExitAsync();
                 process.Close();
                 await Log.WriteLogAsync("MySQL Dump executed successfully.");
             }

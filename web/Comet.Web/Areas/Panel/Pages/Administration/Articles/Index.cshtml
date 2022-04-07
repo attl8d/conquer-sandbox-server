@@ -20,7 +20,6 @@
                     <thead>
                     <tr>
                         <td>#</td>
-                        <td>Categoria</td>
                         <td>Titulo</td>
                         <td>Editor</td>
                         <td>Idiomas</td>
@@ -120,7 +119,6 @@
                             let row = body.insertRow();
 
                             $(row.insertCell()).html(`${result[idx].id}`);
-                            $(row.insertCell()).html(`${result[idx].category}`);
                             $(row.insertCell()).html(`${result[idx].title}`);
                             $(row.insertCell()).html(`${result[idx].writer}`);
 
@@ -138,11 +136,10 @@
                             } else {
                                 $(row.insertCell()).html('');
                             }
-                            //$(row.insertCell()).html(`<input class="form-input" style="width: 40px" type="number" data-article-order="${result[idx].id}" value="${result[idx].order}" />`);
                         }
                     } else {
                         let cell = body.insertRow().insertCell();
-                        cell.colSpan = 7;
+                        cell.colSpan = 6;
                         cell.innerHTML = '@Language.GetString("NoData")';
                     }
                 },

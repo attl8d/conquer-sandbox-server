@@ -139,6 +139,18 @@ namespace Comet.Network.Packets
         MsgAiRoleLogin,
         MsgAiRoleLogout,
 
-        MsgAiServerEnd = 31999
+        MsgAiServerEnd = 31999,
+
+        MsgUpdStart = 32000,
+
+        MsgUpdLogin,
+        MsgUpdLoginEx,
+        MsgUpdQueryVersion,
+        MsgUpdPatchList,
+        MsgUpdClientMd5,
+        MsgUpdServerMd5Ex,
+
+        MsgUpdEnd = 32999
+
     }
 }

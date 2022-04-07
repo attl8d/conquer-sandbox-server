@@ -22,7 +22,7 @@ namespace Comet.Account
 
         /// <summary>
         ///     Instantiates a new instance of <see cref="Server" /> by initializing the
-        ///     <see cref="PacketProcessor" /> for processing packets from the players using
+        ///     <see cref="PacketProcessor{TClient}" /> for processing packets from the players using
         ///     channels and worker threads. Initializes the TCP server listener.
         /// </summary>
         /// <param name="config">The server's read configuration file</param>

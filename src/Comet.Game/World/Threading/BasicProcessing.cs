@@ -32,7 +32,7 @@ namespace Comet.Game.World.Threading
         {
             Console.Title = string.Format(TITLE_FORMAT_S, Kernel.GameConfiguration.ServerName,
                                           DateTime.Now.ToString("G"),
-                                          Kernel.NetworkMonitor.UpdateStatsAsync(mInterval), RoleManager.OnlinePlayers,
+                                          Kernel.NetworkMonitor.UpdateStatsAsync(Interval), RoleManager.OnlinePlayers,
                                           RoleManager.MaxOnlinePlayers, Kernel.Version,
                                           Kernel.Services.Processor);
 

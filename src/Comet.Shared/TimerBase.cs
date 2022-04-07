@@ -9,15 +9,14 @@ namespace Comet.Shared
 {
     public abstract class TimerBase
     {
-        public bool CloseRequest = false;
         private CancellationToken mCancellationToken = CancellationToken.None;
-        protected int mInterval;
+        protected int Interval;
         private readonly Timer mTimer;
 
         protected TimerBase(int intervalMs, string name)
         {
             Name = name;
-            mInterval = intervalMs;
+            Interval = intervalMs;
 
             mTimer = new Timer
             {
@@ -37,7 +36,6 @@ namespace Comet.Shared
         public async Task StartAsync()
         {
             await OnStartAsync();
-
             mTimer.Start();
         }
 

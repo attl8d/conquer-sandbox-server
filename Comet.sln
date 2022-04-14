@@ -57,7 +57,7 @@ Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "doc", "doc", "{80DF798F-A0F
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Comet.Launcher.Server", "client\Comet.Launcher.Server\Comet.Launcher.Server.csproj", "{0943A00D-368F-4E63-9A89-11541E48E0B8}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Comet.Network.Tests", "tests\Comet.Network.Tests\Comet.Network.Tests.csproj", "{32770F8D-D45F-4594-9389-A192F965D38D}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Comet.Network.Tests", "tests\Comet.Network.Tests\Comet.Network.Tests.csproj", "{32770F8D-D45F-4594-9389-A192F965D38D}"
 EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "tests", "tests", "{3D98025E-482A-47AF-964C-63CBF2B7B77E}"
 EndProject
@@ -190,7 +190,6 @@ Global
 		{F6A1A972-1E92-4568-A791-5597093FE195}.Release|x86.ActiveCfg = Release|Any CPU
 		{F6A1A972-1E92-4568-A791-5597093FE195}.Release|x86.Build.0 = Release|Any CPU
 		{750F66B6-BAC9-4ECF-BAF6-F158D0DFC98F}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
-		{750F66B6-BAC9-4ECF-BAF6-F158D0DFC98F}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{750F66B6-BAC9-4ECF-BAF6-F158D0DFC98F}.Debug|x64.ActiveCfg = Debug|Any CPU
 		{750F66B6-BAC9-4ECF-BAF6-F158D0DFC98F}.Debug|x64.Build.0 = Debug|Any CPU
 		{750F66B6-BAC9-4ECF-BAF6-F158D0DFC98F}.Debug|x86.ActiveCfg = Debug|Any CPU

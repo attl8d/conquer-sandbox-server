@@ -20,7 +20,7 @@ namespace Comet.Network.Packets.Updater
             PacketWriter writer = new PacketWriter();
             writer.Write((ushort) PacketType.MsgUpdLogin);
             writer.Write(Timestamp = Environment.TickCount);
-            writer.Write(CurrentFileMd5, 16);
+            writer.Write(CurrentFileMd5, 32);
             writer.Write(MacAddress);
             writer.Write(UserName);
             writer.Write(MachineName);
@@ -37,7 +37,7 @@ namespace Comet.Network.Packets.Updater
             Length = reader.ReadUInt16();
             Type = (PacketType) reader.ReadUInt16();
             Timestamp = reader.ReadInt32();
-            CurrentFileMd5 = reader.ReadString();
+            CurrentFileMd5 = reader.ReadString(32);
             MacAddress = reader.ReadString();
             UserName = reader.ReadString();
             MachineName = reader.ReadString();

@@ -3,6 +3,7 @@ using Comet.Database.Entities;
 using Comet.Game.Database.Repositories;
 using Comet.Game.States;
 using Comet.Game.World.Managers;
+using Comet.Network.Packets;
 using Comet.Network.Packets.Game;
 using Comet.Shared;
 using Comet.Shared.Models;
@@ -25,21 +26,21 @@ namespace Comet.Game.Packets
         ///     Process can be invoked by a packet after decode has been called to structure
         ///     packet fields and properties. For the server implementations, this is called
         ///     in the packet handler after the message has been dequeued from the server's
-        ///     <see cref="PacketProcessor" />.
+        ///     <see cref="PacketProcessor{TClient}" />.
         /// </summary>
         /// <param name="client">Client requesting packet processing</param>
         public override async Task ProcessAsync(Client client)
         {
             // Validate access token
             var auth = Kernel.Logins.Get(Token.ToString()) as TransferAuthArgs;
-            if (auth == null || StrictAuthentication && auth.IPAddress == client.IPAddress)
+            if (auth == null || StrictAuthentication && auth.IPAddress == client.IpAddress)
             {
                 if (auth != null)
                     Kernel.Logins.Remove(Token.ToString());
 
                 await client.SendAsync(LoginInvalid);
-                await Log.WriteLogAsync(LogLevel.Warning, $"Invalid Login Token: {Token} from {client.IPAddress}");
-                client.Socket.Disconnect(false);
+                await Log.WriteLogAsync(LogLevel.Warning, $"Invalid Login Token: {Token} from {client.IpAddress}");
+                await client.Socket.DisconnectAsync(false);
                 return;
             }
 
@@ -57,7 +58,7 @@ namespace Comet.Game.Packets
             {
                 await client.SendAsync(new MsgConnectEx(MsgConnectEx<Client>.RejectionCode.NonCooperatorAccount));
                 await Log.WriteLogAsync(LogLevel.Warning, $"{client.Identity} non cooperator account.");
-                client.Socket.Disconnect(false);
+                await client.Socket.DisconnectAsync(false);
                 return;
             }
 #endif

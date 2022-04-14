@@ -3,6 +3,7 @@ using System.Net.Sockets;
 using System.Threading;
 using System.Threading.Tasks;
 using Comet.Game.Packets.Ai;
+using Comet.Network;
 using Comet.Network.Packets;
 using Comet.Network.Sockets;
 using Comet.Shared;
@@ -21,7 +22,7 @@ namespace Comet.Game.Internal.AI
         ///     channels and worker threads. Initializes the TCP server listener.
         /// </summary>
         public AiServer()
-            : base(1, exchange: false, footerLength: "8a653a5d1e92b4e1db79".Length)
+            : base(1, exchange: false, footerLength: NetworkDefinition.NPC_FOOTER.Length)
         {
             mProcessor = new PacketProcessor<AiClient>(ProcessAsync, 1);
             _ = mProcessor.StartAsync(CancellationToken.None).ConfigureAwait(false);
@@ -33,7 +34,7 @@ namespace Comet.Game.Internal.AI
         ///     any processing mechanisms or authentication routines for the client connection.
         /// </summary>
         /// <param name="socket">Accepted client socket from the server socket</param>
-        /// <param name="buffer">Preallocated buffer from the server listener</param>
+        /// <param name="buffer">pre-allocated buffer from the server listener</param>
         /// <returns>A new instance of a ServerActor around the client socket</returns>
         protected override async Task<AiClient> AcceptedAsync(Socket socket, Memory<byte> buffer)
         {
@@ -156,7 +157,7 @@ namespace Comet.Game.Internal.AI
         protected override void Disconnected(AiClient actor)
         {
             Kernel.AiServer = null;
-            _ = Log.WriteLogAsync($"{actor.GUID} [{actor.IPAddress}] AI has disconnected.");
+            _ = Log.WriteLogAsync($"{actor.GUID} [{actor.IpAddress}] AI has disconnected.");
         }
     }
 }

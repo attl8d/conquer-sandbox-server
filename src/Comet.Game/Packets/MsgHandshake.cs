@@ -27,7 +27,7 @@ namespace Comet.Game.Packets
         /// <param name="dh">Diffie-Hellman key exchange instance for the actor</param>
         /// <param name="encryptionIV">Initial seed for Blowfish's encryption IV</param>
         /// <param name="decryptionIV">Initial seed for Blowfish's decryption IV</param>
-        public MsgHandshake(DiffieHellman dh, byte[] encryptionIV, byte[] decryptionIV)
+        public MsgHandshake(NDDiffieHellman dh, byte[] encryptionIV, byte[] decryptionIV)
             : base(dh, encryptionIV, decryptionIV)
         {
         }

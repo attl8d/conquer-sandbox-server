@@ -10,6 +10,10 @@ namespace Comet.Game.World
 {
     public class ServerProcessor : BackgroundService
     {
+        public const int NO_MAP_GROUP = 0;
+        public const int PVP_MAP_GROUP = 1;
+        public const int NORMAL_MAP_GROUP = 2;
+
         protected readonly Task[] mBackgroundTasks;
         protected readonly Channel<Func<Task>>[] mChannels;
         protected readonly Partition[] mPartitions;
@@ -20,7 +24,7 @@ namespace Comet.Game.World
 
         public ServerProcessor()
         {
-            Count = Math.Max(1, Math.Min(Environment.ProcessorCount, 2)) + 1;
+            Count = Math.Max(1, Math.Min(Environment.ProcessorCount, 2)) + NORMAL_MAP_GROUP;
 
             mBackgroundTasks = new Task[Count];
             mChannels = new Channel<Func<Task>>[Count];
@@ -85,7 +89,7 @@ namespace Comet.Game.World
         /// </summary>
         public uint SelectPartition()
         {
-            uint partition = mPartitions.Where(x => x.ID > 0).Aggregate((aggr, next) =>
+            uint partition = mPartitions.Where(x => x.ID >= NORMAL_MAP_GROUP).Aggregate((aggr, next) =>
                                                                             next.Weight.CompareTo(aggr.Weight) < 0
                                                                                 ? next
                                                                                 : aggr).ID;

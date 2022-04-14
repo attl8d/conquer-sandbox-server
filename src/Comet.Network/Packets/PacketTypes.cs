@@ -142,13 +142,14 @@ namespace Comet.Network.Packets
         MsgAiServerEnd = 31999,
 
         MsgUpdStart = 32000,
-
+        MsgUpdHandshake,
+        MsgUpdHandshakeEx,
         MsgUpdLogin,
         MsgUpdLoginEx,
         MsgUpdQueryVersion,
         MsgUpdPatchList,
-        MsgUpdClientMd5,
-        MsgUpdServerMd5Ex,
+        MsgUpdCheckHash,
+        MsgUpdConfirmHash,
 
         MsgUpdEnd = 32999
 

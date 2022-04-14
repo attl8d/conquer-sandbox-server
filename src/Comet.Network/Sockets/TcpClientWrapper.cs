@@ -1,6 +1,5 @@
 ﻿using System;
 using System.Net.Sockets;
-using System.Runtime.CompilerServices;
 using System.Threading;
 using System.Threading.Tasks;
 using Comet.Shared;
@@ -10,48 +9,60 @@ namespace Comet.Network.Sockets
     public abstract class TcpClientWrapper<TActor> : TcpClientEvents<TActor>
         where TActor : TcpServerActor
     {
-        private readonly Memory<byte> Buffer;
-        private readonly int FooterLength;
-        private readonly CancellationTokenSource ShutdownToken;
+        private readonly Memory<byte> mBuffer;
+        private readonly int mFooterLength;
+        private readonly CancellationTokenSource mShutdownToken;
+        private readonly Socket mSocket;
+        private readonly bool mTimeOut;
+        private readonly bool mExchange;
+        private readonly int mReceiveTimeoutSecond;
 
-        private readonly Socket Socket;
-        private readonly bool TimeOut;
+        protected int ExchangeStartPosition = 0;
 
-        protected TcpClientWrapper(int expectedFooterLength = 0, bool timeout = false)
+        protected TcpClientWrapper(int expectedFooterLength = 0, bool timeout = false, bool exchange = false)
         {
-            Socket = new Socket(AddressFamily.InterNetwork, SocketType.Stream, ProtocolType.Tcp)
+            mSocket = new Socket(AddressFamily.InterNetwork, SocketType.Stream, ProtocolType.Tcp)
             {
                 LingerState = new LingerOption(false, 0)
             };
-            Socket.SetSocketOption(SocketOptionLevel.Socket, SocketOptionName.KeepAlive, true);
+            mSocket.SetSocketOption(SocketOptionLevel.Socket, SocketOptionName.KeepAlive, true);
 
-            ShutdownToken = new CancellationTokenSource();
+            mShutdownToken = new CancellationTokenSource();
 
-            TimeOut = timeout;
-            FooterLength = expectedFooterLength;
+            mTimeOut = timeout;
+            mFooterLength = expectedFooterLength;
+            mExchange = exchange;
+            mReceiveTimeoutSecond = RECEIVE_TIMEOUT_SECONDS;
 
-            Buffer = new Memory<byte>(new byte[MaxBufferSize]);
+            mBuffer = new Memory<byte>(new byte[MAX_BUFFER_SIZE]);
         }
-
-        private ConfiguredTaskAwaitable<Task> ReceiveTask { get; set; }
 
         public async Task<bool> ConnectToAsync(string address, int port)
         {
             try
             {
-                await Socket.ConnectAsync(address, port, ShutdownToken.Token);
-                TActor actor = await ConnectedAsync(Socket, Buffer);
+                await mSocket.ConnectAsync(address, port, mShutdownToken.Token);
+                TActor actor = await ConnectedAsync(mSocket, mBuffer);
 
                 if (actor == null)
                 {
-                    if (Socket.Connected) Socket.Disconnect(false);
+                    if (mSocket.Connected) await mSocket.DisconnectAsync(false);
                     await Log.WriteLogAsync(LogLevel.Error, "Could not complete connection with Server!");
                     return false;
                 }
 
-                ReceiveTask = new TaskFactory().StartNew(ReceivingAsync, actor, ShutdownToken.Token)
-                                               .ConfigureAwait(false);
-                return Socket.Connected;
+                if (mExchange)
+                {
+                    var receiveTask = new TaskFactory().StartNew(ExchangingAsync, actor, mShutdownToken.Token)
+                                                   .ConfigureAwait(false);
+                }
+                else
+                {
+                    var receiveTask = new TaskFactory().StartNew(ReceivingAsync, actor, mShutdownToken.Token)
+                                                   .ConfigureAwait(false);
+                }
+
+                return mSocket.Connected;
             }
             catch (SocketException ex)
             {
@@ -63,6 +74,99 @@ namespace Comet.Network.Sockets
                 await Log.WriteLogAsync(ex);
                 return false;
             }
+        }
+
+        /// <summary>
+        ///     Exchanging receives bytes from the accepted client socket when bytes become
+        ///     available as a raw buffer of bytes. This method is called once and then invokes
+        ///     <see cref="ReceivingAsync(object)" />.
+        /// </summary>
+        /// <param name="state">Created actor around the accepted client socket</param>
+        /// <returns>Returns task details for fault tolerance processing.</returns>
+        private async Task ExchangingAsync(object state)
+        {
+            // Initialize multiple receive variables
+            var actor = state as TActor;
+            var timeout = new CancellationTokenSource();
+            int consumed = 0, examined = 0, remaining = 0;
+
+            if (actor.Socket.Connected && !mShutdownToken.IsCancellationRequested)
+            {
+                try
+                {
+                    using var cancellation = CancellationTokenSource.CreateLinkedTokenSource(
+                        timeout.Token, mShutdownToken.Token);
+                    // Receive data from the client socket
+                    ValueTask<int> receiveOperation = actor.Socket.ReceiveAsync(
+                        actor.Buffer[..],
+                        SocketFlags.None,
+                        cancellation.Token);
+
+                    timeout.CancelAfter(TimeSpan.FromSeconds(30));
+                    examined = await receiveOperation;
+                    if (examined < 9) throw new Exception("Invalid length");
+                }
+                catch (Exception e)
+                {
+                    await Log.WriteLogAsync(e);
+                    if (e is SocketException socketEx)
+                    {
+                        if (socketEx.SocketErrorCode is < SocketError.ConnectionAborted or > SocketError.Shutdown)
+                            await Log.WriteLogAsync(socketEx);
+                    }
+                    else
+                    {
+                        await Log.WriteLogAsync(e);
+                    }
+
+                    actor.Disconnect();
+                    Disconnecting(actor);
+                    return;
+                }
+                
+                actor.Cipher.Decrypt(
+                    actor.Buffer.Span,
+                    actor.Buffer.Span);
+                consumed = BitConverter.ToUInt16(actor.Buffer.Span[ExchangeStartPosition..2]) + mFooterLength;
+                if (consumed > examined)
+                {
+                    actor.Disconnect();
+                    Disconnecting(actor);
+                    return;
+                }
+
+                // Process the exchange now that bytes are decrypted
+                if (!await ExchangedAsync(actor, new Memory<byte>(actor.Buffer[..consumed].Span.ToArray())))
+                {
+                    await Log.WriteLogAsync($"Exchange error for [IP: {actor.IpAddress}]");
+                    actor.Disconnect();
+                    Disconnecting(actor);
+                    return;
+                }
+
+                // Now that the key has changed, decrypt the rest of the bytes in the buffer
+                // and prepare to start receiving packets on a standard receive loop.
+                if (consumed < examined)
+                {
+                    actor.Cipher?.Decrypt(
+                        actor.Buffer[consumed..examined].Span,
+                        actor.Buffer[consumed..examined].Span);
+
+                    if (!Splitting(actor, examined, ref consumed))
+                    {
+                        await Log.WriteLogAsync("[Exchange] Client disconnected due to invalid packet.");
+                        actor.Disconnect();
+                        Disconnecting(actor);
+                        return;
+                    }
+
+                    remaining = examined - consumed;
+                    actor.Buffer[consumed..examined].CopyTo(actor.Buffer);
+                }
+            }
+
+            // Start receiving packets
+            await ReceivingAsync(state, remaining);
         }
 
         /// <summary>
@@ -92,20 +196,20 @@ namespace Comet.Network.Sockets
             var timeout = new CancellationTokenSource();
             int examined = 0, consumed = 0;
 
-            while (actor.Socket.Connected && !ShutdownToken.IsCancellationRequested)
+            while (actor.Socket.Connected && !mShutdownToken.IsCancellationRequested)
             {
                 try
                 {
 #if !DEBUG
                     using var cancellation = CancellationTokenSource.CreateLinkedTokenSource(
-                        timeout.Token, ShutdownToken.Token);
+                        timeout.Token, mShutdownToken.Token);
                     // Receive data from the client socket
                     var receiveOperation = actor.Socket.ReceiveAsync(
                         actor.Buffer.Slice(remaining),
                         SocketFlags.None,
                         cancellation.Token);
 
-                    timeout.CancelAfter(TimeSpan.FromSeconds(ReceiveTimeoutSeconds));
+                    timeout.CancelAfter(TimeSpan.FromSeconds(mReceiveTimeoutSecond));
 #else
                     ValueTask<int> receiveOperation = actor.Socket.ReceiveAsync(
                         actor.Buffer[remaining..],
@@ -168,12 +272,12 @@ namespace Comet.Network.Sockets
             while (consumed + 2 < examined)
             {
                 var length = BitConverter.ToUInt16(buffer.Slice(consumed, 2));
-                int expected = consumed + length + FooterLength;
+                int expected = consumed + length + mFooterLength;
                 if (expected > buffer.Length) return false;
                 if (expected > examined) break;
 
-                Received(actor, buffer.Slice(consumed, length + FooterLength));
-                consumed += length + FooterLength;
+                Received(actor, buffer.Slice(consumed, length + mFooterLength));
+                consumed += length + mFooterLength;
             }
 
             return true;
@@ -193,7 +297,7 @@ namespace Comet.Network.Sockets
             Disconnected(actor);
         }
 
-        public const int MaxBufferSize = 4096;
-        public const int ReceiveTimeoutSeconds = 600;
+        public const int MAX_BUFFER_SIZE = 4096;
+        public const int RECEIVE_TIMEOUT_SECONDS = 600;
     }
 }

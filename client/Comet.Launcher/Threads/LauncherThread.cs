@@ -1,11 +1,9 @@
-﻿using System.Runtime.InteropServices;
+﻿using System.Security.Cryptography;
 using Comet.Launcher.Configuration;
-using Comet.Launcher.Files.Helpers;
 using Comet.Launcher.Helpers;
 using Comet.Launcher.Managers;
 using Comet.Launcher.Packets;
 using Comet.Launcher.States;
-using Comet.Network.Helpers;
 using Comet.Shared;
 
 namespace Comet.Launcher.Threads
@@ -68,7 +66,7 @@ namespace Comet.Launcher.Threads
                     if (!await client.ConnectToAsync(address, port))
                         continue;
 
-                    mForm.SetProgressLabel("StrConnectedToServer");
+                    mForm.SetProgressLabel(LocaleManager.GetString("StrConnectedToServer"));
                     mClient = client;
                     break;
                 }
@@ -89,19 +87,10 @@ namespace Comet.Launcher.Threads
 
         public async Task OnConnectAsync(Server server)
         {
+            mForm.SetProgressLabel("StrHandsakeUpdater");
             mServer = server;
-
-            string conquerExeMd5 = "Conquer.exe".GetMd5();
-            await mServer.SendAsync(new MsgUpdLogin
-            {
-                CurrentFileMd5 = conquerExeMd5,
-                MacAddress = NetworkHelper.GetLocalMacAddress,
-                IpAddresses = NetworkHelper.GetLocalIpAddresses,
-                MachineName = Environment.MachineName,
-                UserName = Environment.UserName,
-                WindowsVersion = RuntimeInformation.OSDescription,
-                MachineDomain = Environment.UserDomainName
-            });
+            MsgUpdHandshake msg = new MsgUpdHandshake(server.DiffieHellman.PublicKey, server.DiffieHellman.Modulus);
+            await server.SendAsync(msg);
         }
 
         public async Task OnDisconnectAsync()
@@ -111,5 +100,18 @@ namespace Comet.Launcher.Threads
             mClient = null;
             mServer = null;
         }
+
+        #region UI
+
+        public async Task RequestUpdatesAsync()
+        {
+            await mServer.SendAsync(new MsgUpdQueryVersion
+            {
+                ClientVersion = FrmMain.CURRENT_VERSION,
+                GameVersion = FrmMain.CurrentGameVersion
+            });
+        }
+
+        #endregion
     }
 }

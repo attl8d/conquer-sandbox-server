@@ -14,8 +14,8 @@ namespace Comet.Network.Services
     public class PrimeGeneratorService : BackgroundService
     {
         // Fields and Properties
-        private readonly int BitLength;
-        private readonly Channel<BigInteger> BufferChannel;
+        private readonly int mBitLength;
+        private readonly Channel<BigInteger> mBufferChannel;
         protected Random Generator;
 
         /// <summary>
@@ -26,8 +26,8 @@ namespace Comet.Network.Services
         /// <param name="bitLength">Bit length of probable primes generated.</param>
         public PrimeGeneratorService(int capacity = 100, int bitLength = 256)
         {
-            BitLength = bitLength;
-            BufferChannel = Channel.CreateBounded<BigInteger>(capacity);
+            mBitLength = bitLength;
+            mBufferChannel = Channel.CreateBounded<BigInteger>(capacity);
             Generator = new Random(); //NOSONAR
         }
 
@@ -39,15 +39,15 @@ namespace Comet.Network.Services
         protected override async Task ExecuteAsync(CancellationToken stoppingToken)
         {
             while (!stoppingToken.IsCancellationRequested)
-                await BufferChannel.Writer.WriteAsync(
-                    BigInteger.ProbablePrime(BitLength, Generator),
+                await mBufferChannel.Writer.WriteAsync(
+                    BigInteger.ProbablePrime(mBitLength, Generator),
                     stoppingToken);
         }
 
         /// <summary>Returns the next probable prime from the generator.</summary>
         public Task<BigInteger> NextAsync()
         {
-            return BufferChannel.Reader.ReadAsync().AsTask();
+            return mBufferChannel.Reader.ReadAsync().AsTask();
         }
     }
 }

@@ -84,7 +84,7 @@ namespace Comet.Game
 #if DEBUG
             public static readonly ServerProcessor Processor = new();
 #else
-            public readonly static ServerProcessor Processor = new ();
+            public readonly static ServerProcessor Processor = new();
 #endif
         }
 
@@ -190,11 +190,11 @@ namespace Comet.Game
         /// <returns>True if the rate is successful.</returns>
         public static async Task<bool> ChanceCalcAsync(double chance)
         {
-            const int DIVISOR_I = 10_000_000;
-            const int MAX_VALUE = 100 * DIVISOR_I;
+            const int divisor = 10_000_000;
+            const int maxValue = 100 * divisor;
             try
             {
-                return await NextAsync(0, MAX_VALUE) <= chance * DIVISOR_I;
+                return await NextAsync(0, maxValue) <= chance * divisor;
             }
             catch (Exception ex)
             {
@@ -232,10 +232,10 @@ namespace Comet.Game
             }
 
             string lower = szName.ToLower();
-            return _invalidNameChar.All(part => !lower.Contains(part));
+            return InvalidNameChar.All(part => !lower.Contains(part));
         }
 
-        private static readonly string[] _invalidNameChar =
+        private static readonly string[] InvalidNameChar =
         {
             "{", "}", "[", "]", "(", ")", "\"", "[gm]", "[pm]", "'", "´", "`", "admin", "helpdesk", " ",
             "bitch", "puta", "whore", "ass", "fuck", "cunt", "fdp", "porra", "poha", "caralho", "caraio"

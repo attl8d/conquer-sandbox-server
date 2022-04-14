@@ -30,13 +30,13 @@ namespace Comet.Account.Packets
                         Data = (int) MsgAccServerAction<GameServer>.ConnectionStatus.AuthorizationError
                     });
                     await Log.WriteLogAsync(LogLevel.Exception,
-                                            $"Invalid server {ServerName} [Connection: {client.IPAddress}].");
+                                            $"Invalid server {ServerName} [Connection: {client.IpAddress}].");
                     client.Disconnect();
                     return;
                 }
 
-                string username = AesCipher.Decrypt(RealmDataKey, realm.Username);
-                string password = AesCipher.Decrypt(RealmDataKey, realm.Password);
+                string username = AesCipherHelper.Decrypt(RealmDataKey, realm.Username);
+                string password = AesCipherHelper.Decrypt(RealmDataKey, realm.Password);
 
                 if (!Username.Equals(username, StringComparison.InvariantCulture) ||
                     !Password.Equals(password, StringComparison.InvariantCulture))
@@ -48,12 +48,12 @@ namespace Comet.Account.Packets
                     });
                     await Log.WriteLogAsync(LogLevel.Exception,
                                             $"Invalid server {ServerName} Username or Password ({username}={Username}:{password}={Password})" +
-                                            $" [Connection: {client.IPAddress}].");
+                                            $" [Connection: {client.IpAddress}].");
                     client.Disconnect();
                     return;
                 }
 
-                if (!client.IPAddress.Equals(realm.RpcIPAddress))
+                if (!client.IpAddress.Equals(realm.RpcIPAddress))
                 {
                     await client.SendAsync(new MsgAccServerAction
                     {
@@ -61,7 +61,7 @@ namespace Comet.Account.Packets
                         Data = (int) MsgAccServerAction<GameServer>.ConnectionStatus.AddressNotAuthorized
                     });
                     await Log.WriteLogAsync(LogLevel.Exception,
-                                            $"Invalid server {ServerName} not authorized connection [Connection: {client.IPAddress}].");
+                                            $"Invalid server {ServerName} not authorized connection [Connection: {client.IpAddress}].");
                     client.Disconnect();
                     return;
                 }

@@ -38,7 +38,7 @@ namespace Comet.Account
         ///     any processing mechanisms or authentication routines for the client connection.
         /// </summary>
         /// <param name="socket">Accepted client socket from the server socket</param>
-        /// <param name="buffer">Preallocated buffer from the server listener</param>
+        /// <param name="buffer">pre-allocated buffer from the server listener</param>
         /// <returns>A new instance of a ServerActor around the client socket</returns>
         protected override async Task<Client> AcceptedAsync(Socket socket, Memory<byte> buffer)
         {

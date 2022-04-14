@@ -3134,9 +3134,9 @@ namespace Comet.Game.States
             DbTrade trade = new()
             {
                 Type = DbTrade.TradeType.Booth,
-                UserIpAddress = Client.IPAddress,
+                UserIpAddress = Client.IpAddress,
                 UserMacAddress = Client.MacAddress,
-                TargetIpAddress = target.Client.IPAddress,
+                TargetIpAddress = target.Client.IpAddress,
                 TargetMacAddress = target.Client.MacAddress,
                 MapIdentity = MapIdentity,
                 TargetEmoney = item.IsSilver ? 0 : item.Value,
@@ -5580,6 +5580,8 @@ namespace Comet.Game.States
 
             if (CurrentEvent != null)
                 await CurrentEvent.OnKillAsync(this, target, MagicData.QueryMagic);
+
+            await GameAction.ExecuteActionAsync(USER_KILL_ACTION, this, target, null, string.Empty);
         }
 
         public override async Task<bool> BeAttackAsync(BattleSystem.MagicType magic, Role attacker, int power,
@@ -5676,6 +5678,8 @@ namespace Comet.Game.States
                 if (owner != null)
                     await owner.ProcessPkAsync(this);
             }
+
+            await GameAction.ExecuteActionAsync(USER_DIE_ACTION, this, attacker, null, string.Empty);
 
             if (CurrentEvent is ArenaQualifier qualifier)
             {
@@ -6671,7 +6675,7 @@ namespace Comet.Game.States
                     LoginTime = mDbObject.LoginTime,
                     LogoutTime = mDbObject.LogoutTime,
                     ServerVersion = $"{Kernel.Version}",
-                    IpAddress = Client.IPAddress,
+                    IpAddress = Client.IpAddress,
                     MacAddress = Client.MacAddress,
                     OnlineTime = (uint) (mDbObject.LogoutTime - mDbObject.LoginTime).TotalSeconds
                 });

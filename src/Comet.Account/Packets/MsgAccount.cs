@@ -97,7 +97,7 @@ namespace Comet.Account.Packets
             {
                 AccountID = client.Account.AccountID,
                 AuthorityID = client.Account.AuthorityID,
-                IPAddress = client.IPAddress,
+                IPAddress = client.IpAddress,
                 AuthorityName = "",
                 LastLogin = 0,
                 VipLevel = 0

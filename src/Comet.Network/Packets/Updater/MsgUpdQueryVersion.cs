@@ -2,7 +2,7 @@
 {
     public abstract class MsgUpdQueryVersion<T> : MsgBase<T>
     {
-        public int Timestamp { get; set; }
+        public int Timestamp { get; private set; }
         public int ClientVersion { get; set; }
         public int GameVersion { get; set; }
 

@@ -19,10 +19,11 @@ namespace Comet.Shared
         Socket
     }
 
-    internal enum LogFolder
+    public enum LogFolder
     {
         SystemLog,
-        GameLog
+        GameLog,
+        Root
     }
 
     internal struct LogFile
@@ -105,7 +106,7 @@ namespace Comet.Shared
             await WriteToFile(file, LogFolder.GameLog, message);
         }
 
-        private static async Task WriteToFile(string file, LogFolder folder, string value)
+        public static async Task WriteToFile(string file, LogFolder folder, string value)
         {
             DateTime now = DateTime.Now;
             if (!Files.TryGetValue(file, out LogFile fileHandle))
@@ -150,8 +151,13 @@ namespace Comet.Shared
         private static string GetDirectory(LogFolder folder)
         {
             DateTime now = DateTime.Now;
-            return string.Join(Path.DirectorySeparatorChar.ToString(), ".", $"{folder}", $"{now.Year:0000}",
-                               $"{now.Month:00}", $"{now.Day:00}");
+            //return string.Join(Path.DirectorySeparatorChar.ToString(), ".", $"{folder}", $"{now.Year:0000}",
+            //                   $"{now.Month:00}", $"{now.Day:00}");
+            if (folder == LogFolder.Root)
+            {
+                return Environment.CurrentDirectory;
+            }
+            return Path.Combine(Environment.CurrentDirectory, $"{folder}", $"{now.Year:0000}", $"{now.Month:00}", $"{now.Day:00}");
         }
 
         private static void RefreshFolders()

@@ -1,5 +1,7 @@
-﻿using System.Collections.Concurrent;
+﻿using System;
+using System.Collections.Concurrent;
 using System.Collections.Generic;
+using System.IO;
 using System.Linq;
 using System.Threading.Tasks;
 using Comet.Core.World;
@@ -26,8 +28,7 @@ namespace Comet.Game.World.Managers
                 if (await map.InitializeAsync())
                 {
 #if DEBUG
-                    await Log.WriteLogAsync(LogLevel.Debug,
-                                            $"Map[{map.Identity:000000}] MapDoc[{map.MapDoc:0000}] {map.Name,-32} Partition: {map.Partition:00} loaded...");
+                    await Log.WriteLogAsync(LogLevel.Debug,$"Map[{map.Identity:000000}] MapDoc[{map.MapDoc:0000}] {map.Name,-32} Partition: {map.Partition:00} loaded...");
 #endif
                     GameMaps.TryAdd(map.Identity, map);
                 }
@@ -44,14 +45,25 @@ namespace Comet.Game.World.Managers
                 if (await map.InitializeAsync())
                 {
 #if DEBUG
-                    await Log.WriteLogAsync(LogLevel.Debug,
-                                            $"Map[{map.Identity:000000}] MapDoc[{map.MapDoc:0000}] {map.Name,-32} Partition: {map.Partition:00} loaded...");
+                    await Log.WriteLogAsync(LogLevel.Debug,$"Map[{map.Identity:0000000}] MapDoc[{map.MapDoc:0000000}] {map.Name,-32} Partition: {map.Partition:00} loaded...");
 #endif
                     GameMaps.TryAdd(map.Identity, map);
                 }
             }
 
-            foreach (GameMap map in GameMaps.Values) await map.LoadTrapsAsync();
+#if DEBUG
+            const string partitionLogFile = "MapPartition";
+            string path = Path.Combine(Environment.CurrentDirectory, $"{partitionLogFile}.log");
+            if (File.Exists(path))
+                File.Delete(path);
+#endif
+            foreach (GameMap map in GameMaps.Values.OrderBy(x => x.Partition).ThenBy(x => x.Identity))
+            {
+#if DEBUG
+                await Log.WriteToFile(partitionLogFile, LogFolder.Root, $"Map[{map.Identity:0000000}] {map.Name,-32} Partition: {map.Partition:00}");
+#endif
+                await map.LoadTrapsAsync();
+            }
         }
 
         public static GameMap GetMap(uint idMap)

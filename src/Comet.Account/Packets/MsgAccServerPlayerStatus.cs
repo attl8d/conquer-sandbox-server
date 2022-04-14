@@ -19,14 +19,14 @@ namespace Comet.Account.Packets
             if (realm == null)
             {
                 await Log.WriteLogAsync(LogLevel.Warning,
-                                        $"Invalid server name [{ServerName}] tried to update data from [{client.IPAddress}].");
+                                        $"Invalid server name [{ServerName}] tried to update data from [{client.IpAddress}].");
                 return;
             }
 
             if (realm.Server == null)
             {
                 await Log.WriteLogAsync(LogLevel.Warning,
-                                        $"{ServerName} is not connected and tried to update player status from [{client.IPAddress}].");
+                                        $"{ServerName} is not connected and tried to update player status from [{client.IpAddress}].");
                 return;
             }
 

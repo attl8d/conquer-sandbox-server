@@ -1,8 +1,10 @@
-﻿namespace Comet.Network.Packets.Updater
+﻿using System;
+
+namespace Comet.Network.Packets.Updater
 {
     public abstract class MsgUpdLoginEx<T> : MsgBase<T>
     {
-        public int Timestamp { get; set; }
+        public int Timestamp { get; private set; }
         public UpdLoginEx Response { get; set; }
 
         /// <inheritdoc />
@@ -10,7 +12,7 @@
         {
             PacketWriter writer = new PacketWriter();
             writer.Write((ushort) PacketType.MsgUpdLoginEx);
-            writer.Write(Timestamp);
+            writer.Write(Timestamp = Environment.TickCount);
             writer.Write((int) Response);
             return writer.ToArray();
         }
@@ -32,6 +34,10 @@
         InvalidClientData,
         MacAddressAlreadySignedIn,
         ComputerAlreadySignedIn,
-        IncompatibleWindowsVersion
+        IncompatibleWindowsVersion,
+        InvalidMacAddress,
+        InvalidIpAddress,
+        GuidHacking,
+        InvalidConquerMd5
     }
 }

@@ -17,25 +17,25 @@ namespace Comet.Network.Sockets
     public abstract class TcpServerActor
     {
         // Fields and Properties
-        public readonly Memory<byte> Buffer;
-        public readonly ICipher Cipher;
-        public readonly byte[] PacketFooter;
-        public readonly uint Partition;
-        private readonly object SendLock;
-        public readonly Socket Socket;
+        public Memory<byte> Buffer { get; }
+        public ICipher Cipher { get; }
+        public byte[] PacketFooter { get; }
+        public uint Partition { get; }
+        private object SendLock { get; }
+        public Socket Socket { get; }
 
         public int ReceiveTimeOutSeconds = 30;
 
         /// <summary>
         ///     Instantiates a new instance of <see cref="TcpServerActor" /> using an accepted
-        ///     client socket and preallocated buffer from the server listener.
+        ///     client socket and pre-allocated buffer from the server listener.
         /// </summary>
         /// <param name="socket">Accepted client socket</param>
-        /// <param name="buffer">Preallocated buffer for socket receive operations</param>
+        /// <param name="buffer">Pre-allocated buffer for socket receive operations</param>
         /// <param name="cipher">Cipher for handling client encipher operations</param>
         /// <param name="partition">Packet processing partition, default is disabled</param>
         /// <param name="packetFooter">Length of the packet footer</param>
-        public TcpServerActor(
+        protected TcpServerActor(
             Socket socket,
             Memory<byte> buffer,
             ICipher cipher,
@@ -49,13 +49,13 @@ namespace Comet.Network.Sockets
             Partition = partition;
             SendLock = new object();
 
-            IPAddress = (Socket.RemoteEndPoint as IPEndPoint)?.Address.MapToIPv4().ToString();
+            IpAddress = (Socket.RemoteEndPoint as IPEndPoint)?.Address.MapToIPv4().ToString();
         }
 
         /// <summary>
         ///     Returns the remote IP address of the connected client.
         /// </summary>
-        public string IPAddress { get; }
+        public string IpAddress { get; }
 
         /// <summary>
         ///     Sends a packet to the game client after encrypting bytes. This may be called
@@ -64,37 +64,36 @@ namespace Comet.Network.Sockets
         ///     and sending data.
         /// </summary>
         /// <param name="packet">Bytes to be encrypted and sent to the client</param>
-        public virtual async Task<int> SendAsync(byte[] packet)
+        public virtual Task<int> SendAsync(byte[] packet)
         {
-            var encrypted = new byte[packet.Length + PacketFooter.Length];
-            packet.CopyTo(encrypted, 0);
+            var data = new byte[packet.Length + PacketFooter.Length];
+            packet.CopyTo(data, 0);
 
-            BitConverter.TryWriteBytes(encrypted, (ushort) packet.Length);
-            Array.Copy(PacketFooter, 0, encrypted, packet.Length, PacketFooter.Length);
+            BitConverter.TryWriteBytes(data, (ushort) packet.Length);
+            Array.Copy(PacketFooter, 0, data, packet.Length, PacketFooter.Length);
 
             lock (SendLock)
             {
                 try
                 {
                     if (Socket?.Connected != true)
-                        return -1;
-
-                    Cipher?.Encrypt(encrypted, encrypted);
-                    int result = Socket.Send(encrypted, SocketFlags.None);
-                    return result;
+                        return Task.FromResult(-1);
+                    
+                    Cipher?.Encrypt(data, data);
+                    int result = Socket.Send(data, SocketFlags.None);
+                    return Task.FromResult(result);
                 }
                 catch (SocketException e)
                 {
-                    if (e.SocketErrorCode < SocketError.ConnectionAborted ||
-                        e.SocketErrorCode > SocketError.Shutdown)
+                    if (e.SocketErrorCode is < SocketError.ConnectionAborted or > SocketError.Shutdown)
                         Console.WriteLine(e);
-                    return -1;
+                    return Task.FromResult(-1);
                 }
                 catch (Exception ex)
                 {
                     _ = Log.WriteLogAsync("TcpServerActor-SendAsync", LogLevel.Exception, ex.ToString())
                            .ConfigureAwait(false);
-                    return -1;
+                    return Task.FromResult(-1);
                 }
             }
         }

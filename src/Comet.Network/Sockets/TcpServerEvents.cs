@@ -21,7 +21,7 @@ namespace Comet.Network.Sockets
         ///     any processing mechanisms or authentication routines for the client connection.
         /// </summary>
         /// <param name="socket">Accepted client socket from the server socket</param>
-        /// <param name="buffer">Preallocated buffer from the server listener</param>
+        /// <param name="buffer">pre-allocated buffer from the server listener</param>
         /// <returns>A new instance of a TActor around the client socket</returns>
         protected abstract Task<TActor> AcceptedAsync(Socket socket, Memory<byte> buffer);
 
@@ -33,7 +33,7 @@ namespace Comet.Network.Sockets
         /// <param name="actor">Server actor that represents the remote client</param>
         /// <param name="buffer">Packet buffer to be processed</param>
         /// <returns>True if the exchange was successful.</returns>
-        protected virtual bool Exchanged(TActor actor, ReadOnlySpan<byte> buffer)
+        protected virtual Task<bool> ExchangedAsync(TActor actor, Memory<byte> buffer)
         {
             throw new NotImplementedException();
         }

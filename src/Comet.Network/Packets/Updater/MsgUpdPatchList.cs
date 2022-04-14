@@ -57,7 +57,9 @@ namespace Comet.Network.Packets.Updater
 
     public enum MsgUpdPatchType
     {
+        Request,
         Client,
-        Game
+        Game,
+        NoUpdate
     }
 }

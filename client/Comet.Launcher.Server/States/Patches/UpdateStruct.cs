@@ -2,12 +2,14 @@
 {
     public struct UpdateStruct
     {
-        public int From;
-        public int To;
+        public int From { get; set; }
+        public int To { get; set; }
 
         public string FileName => IsBundle ? $"{From}-{To}" : $"{From}";
-        public string Extension;
+        public string Extension { get; set; }
         public string FullFileName => $"{FileName}.{Extension}";
+
+        public string Md5 { get; set; }
 
         public bool IsBundle => To == 0 || From != To;
         /// <summary>

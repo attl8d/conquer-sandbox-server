@@ -35,7 +35,7 @@ namespace Comet.Game.World.Managers
 
         private static bool m_isShutdown;
 
-        public static int OnlineUniquePlayers => m_userSet.Values.Select(x => x.Client.IPAddress).Distinct().Count();
+        public static int OnlineUniquePlayers => m_userSet.Values.Select(x => x.Client.IpAddress).Distinct().Count();
         public static int OnlinePlayers => m_userSet.Count;
         public static int RolesCount => m_roleSet.Count;
 
@@ -70,7 +70,7 @@ namespace Comet.Game.World.Managers
                 await Log.WriteLogAsync(LogLevel.Info,
                                         $"User {user.Character.Identity} {user.Character.Name} tried to login an already connected client.");
 
-                if (user.IPAddress != concurrent.Client.IPAddress)
+                if (user.IpAddress != concurrent.Client.IpAddress)
                     await concurrent.SendAsync(Language.StrAnotherLoginSameIp, TalkChannel.Talk);
                 else
                     await concurrent.SendAsync(Language.StrAnotherLoginOtherIp, TalkChannel.Talk);

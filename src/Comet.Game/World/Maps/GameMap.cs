@@ -165,8 +165,7 @@ namespace Comet.Game.World.Maps
                 DbPortal portal = await PortalRepository.GetAsync(dbPassway.TargetMapId, dbPassway.TargetPortal);
                 if (portal == null)
                 {
-                    await Log.WriteLogAsync(LogLevel.Error,
-                                            $"Could not find portal for passway [{dbPassway.Identity}]");
+                    await Log.WriteLogAsync(LogLevel.Error, $"Could not find portal for passway [{dbPassway.Identity}]");
                     continue;
                 }
 
@@ -181,7 +180,15 @@ namespace Comet.Game.World.Maps
 
             m_regions = await RegionRepository.GetAsync(Identity);
 
-            Partition = (int) Kernel.Services.Processor.SelectPartition();
+            if (IsSynMap() || IsFamilyMap() || IsPkField())
+            {
+                Partition = ServerProcessor.PVP_MAP_GROUP;
+            }
+            else
+            {
+                Partition = (int)Kernel.Services.Processor.SelectPartition();
+            }
+
             return true;
         }
 

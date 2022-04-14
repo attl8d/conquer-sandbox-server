@@ -8,6 +8,8 @@ namespace Comet.Launcher
 {
     public partial class FrmMain : Form
     {
+        public static FrmMain Instance { get; private set; }
+
         private enum FormStage
         {
             Initializing,
@@ -34,6 +36,8 @@ namespace Comet.Launcher
             InitializeComponent();
 
             mBasePath = Path.Combine(Environment.CurrentDirectory, "AutoPatch");
+
+            Instance = this;
         }
 
         private async void FrmMain_Load(object sender, EventArgs e)
@@ -112,6 +116,18 @@ namespace Comet.Launcher
         #endregion
 
         #region Close Event
+
+        public void ForceClose()
+        {
+            if (InvokeRequired)
+            {
+                Invoke(ForceClose);
+                return;
+            }
+
+            mStage = FormStage.Closing;
+            Close();
+        }
 
         private void CloseButton_Click(object sender, EventArgs e)
         {
@@ -230,6 +246,17 @@ namespace Comet.Launcher
                     BtnPlay.Enabled = true;
                 }
             }
+        }
+
+        public void FinishProcess(bool success)
+        {
+            if (InvokeRequired)
+            {
+                Invoke(() => FinishProcess(success));
+                return;
+            }
+
+            SetWindowMode(success ? PanelMode.Play : PanelMode.PlayDisabled);
         }
 
         #endregion

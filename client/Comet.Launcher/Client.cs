@@ -2,6 +2,7 @@
 using Comet.Launcher.Packets;
 using Comet.Launcher.States;
 using Comet.Launcher.Threads;
+using Comet.Network;
 using Comet.Network.Packets;
 using Comet.Network.Sockets;
 using Comet.Shared;
@@ -14,7 +15,7 @@ namespace Comet.Launcher
         private readonly PacketProcessor<Server> mProcessor;
 
         public Client(LauncherThread thread)
-            : base("YybU6ItTFX".Length)
+            : base(NetworkDefinition.PATCHER_FOOTER.Length, false, true)
         {
             mThread = thread;
             mProcessor = new PacketProcessor<Server>(ProcessAsync, 1);
@@ -30,6 +31,23 @@ namespace Comet.Launcher
                 return client;
             }
             return null;
+        }
+
+        /// <inheritdoc />
+        protected override async Task<bool> ExchangedAsync(Server actor, Memory<byte> buffer)
+        {
+            try
+            {
+                MsgUpdHandshake handshake = new MsgUpdHandshake();
+                handshake.Decode(buffer.ToArray());
+                await handshake.ProcessAsync(actor);
+                return true;
+            }
+            catch
+            {
+                await Log.WriteLogAsync(LogLevel.Socket, "Exchange failed!!!");
+                return false;
+            }
         }
 
         protected override void Received(Server actor, ReadOnlySpan<byte> packet)
@@ -56,6 +74,19 @@ namespace Comet.Launcher
                         msg = new MsgUpdLoginEx();
                         break;
                     }
+
+                    case PacketType.MsgUpdPatchList:
+                    {
+                        msg = new MsgUpdPatchList();
+                        break;
+                    }
+
+                    case PacketType.MsgUpdConfirmHash:
+                    {
+                        msg = new MsgUpdConfirmHash();
+                        break;
+                    }
+
                     default:
                         await Log.WriteLogAsync(LogLevel.Warning,
                                                 "Missing packet {0}, Length {1}\n{2}",

@@ -121,6 +121,28 @@ namespace Comet.Launcher.Configuration
             }
         }
 
+        private bool mSuppressIncorrectWindowsVersion;
+
+        public bool SuppressIncorrectWindowsVersion
+        {
+            get => mSuppressIncorrectWindowsVersion;
+            set
+            {
+                mSuppressIncorrectWindowsVersion = value;
+                if (mLoaded)
+                {
+                    if (mParser.CheckNodeExists("Config", "SupressMinimizeAlert"))
+                    {
+                        mParser.ChangeValue((mSuppressIncorrectWindowsVersion ? 1 : 0).ToString(CultureInfo.InvariantCulture), "Config", "SuppressIncorrectWindowsVersion");
+                    }
+                    else
+                    {
+                        mParser.AddNewNode((mSuppressIncorrectWindowsVersion ? 1 : 0).ToString(CultureInfo.InvariantCulture), null, "SuppressIncorrectWindowsVersion", "Config");
+                    }
+                }
+            }
+        }
+
         public void Save()
         {
             mParser?.Save();

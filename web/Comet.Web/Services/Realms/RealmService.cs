@@ -51,7 +51,7 @@ namespace Comet.Web.Services.Realms
                 return string.Empty;
             RealmPublicData realm = GetRealmData(realmData.RealmID);
             return
-                $"server={realm.DatabaseHostname};database={realm.DatabaseSchema};user={realm.DatabaseUsername};password={AesCipher.Decrypt(CipherKey, realmData.DatabasePass)};port={realm.DatabasePort}";
+                $"server={realm.DatabaseHostname};database={realm.DatabaseSchema};user={realm.DatabaseUsername};password={AesCipherHelper.Decrypt(CipherKey, realmData.DatabasePass)};port={realm.DatabasePort}";
         }
 
         public List<RealmPublicListData> GetRealmList()
@@ -82,11 +82,11 @@ namespace Comet.Web.Services.Realms
                     RpcIPAddress = realm.RpcIPAddress,
                     RpcPort = realm.RpcPort,
 
-                    RealmUsername = AesCipher.Decrypt(CipherKey, realm.Username),
-                    DatabaseHostname = AesCipher.Decrypt(CipherKey, realm.DatabaseHost),
-                    DatabaseUsername = AesCipher.Decrypt(CipherKey, realm.DatabaseUser),
-                    DatabaseSchema = AesCipher.Decrypt(CipherKey, realm.DatabaseSchema),
-                    DatabasePort = int.Parse(AesCipher.Decrypt(CipherKey, realm.DatabasePort))
+                    RealmUsername = AesCipherHelper.Decrypt(CipherKey, realm.Username),
+                    DatabaseHostname = AesCipherHelper.Decrypt(CipherKey, realm.DatabaseHost),
+                    DatabaseUsername = AesCipherHelper.Decrypt(CipherKey, realm.DatabaseUser),
+                    DatabaseSchema = AesCipherHelper.Decrypt(CipherKey, realm.DatabaseSchema),
+                    DatabasePort = int.Parse(AesCipherHelper.Decrypt(CipherKey, realm.DatabasePort))
                 };
             return default;
         }
@@ -101,13 +101,13 @@ namespace Comet.Web.Services.Realms
                 RpcIPAddress = realm.RpcIPAddress,
                 GamePort = realm.GamePort,
                 RpcPort = realm.RpcPort,
-                Username = AesCipher.Encrypt(CipherKey, realm.Username),
-                Password = AesCipher.Encrypt(CipherKey, realm.Password),
-                DatabaseHost = AesCipher.Encrypt(CipherKey, realm.DatabaseHost),
-                DatabaseUser = AesCipher.Encrypt(CipherKey, realm.DatabaseUser),
-                DatabasePass = AesCipher.Encrypt(CipherKey, realm.DatabasePass),
-                DatabaseSchema = AesCipher.Encrypt(CipherKey, realm.DatabaseSchema),
-                DatabasePort = AesCipher.Encrypt(CipherKey, realm.DatabasePort)
+                Username = AesCipherHelper.Encrypt(CipherKey, realm.Username),
+                Password = AesCipherHelper.Encrypt(CipherKey, realm.Password),
+                DatabaseHost = AesCipherHelper.Encrypt(CipherKey, realm.DatabaseHost),
+                DatabaseUser = AesCipherHelper.Encrypt(CipherKey, realm.DatabaseUser),
+                DatabasePass = AesCipherHelper.Encrypt(CipherKey, realm.DatabasePass),
+                DatabaseSchema = AesCipherHelper.Encrypt(CipherKey, realm.DatabaseSchema),
+                DatabasePort = AesCipherHelper.Encrypt(CipherKey, realm.DatabasePort)
             });
         }
 
@@ -121,19 +121,19 @@ namespace Comet.Web.Services.Realms
             realmData.RpcIPAddress = realm.RpcIPAddress;
             realmData.GamePort = realm.GamePort;
             realmData.RpcPort = realm.RpcPort;
-            realmData.Username = AesCipher.Encrypt(CipherKey, realm.Username);
+            realmData.Username = AesCipherHelper.Encrypt(CipherKey, realm.Username);
 
             if (!string.IsNullOrEmpty(realm.Password))
-                realmData.Password = AesCipher.Encrypt(CipherKey, realm.Password);
+                realmData.Password = AesCipherHelper.Encrypt(CipherKey, realm.Password);
 
-            realmData.DatabaseHost = AesCipher.Encrypt(CipherKey, realm.DatabaseHost);
-            realmData.DatabaseUser = AesCipher.Encrypt(CipherKey, realm.DatabaseUser);
+            realmData.DatabaseHost = AesCipherHelper.Encrypt(CipherKey, realm.DatabaseHost);
+            realmData.DatabaseUser = AesCipherHelper.Encrypt(CipherKey, realm.DatabaseUser);
 
             if (!string.IsNullOrEmpty(realm.DatabasePass))
-                realmData.DatabasePass = AesCipher.Encrypt(CipherKey, realm.DatabasePass);
+                realmData.DatabasePass = AesCipherHelper.Encrypt(CipherKey, realm.DatabasePass);
 
-            realmData.DatabaseSchema = AesCipher.Encrypt(CipherKey, realm.DatabaseSchema);
-            realmData.DatabasePort = AesCipher.Encrypt(CipherKey, realm.DatabasePort);
+            realmData.DatabaseSchema = AesCipherHelper.Encrypt(CipherKey, realm.DatabaseSchema);
+            realmData.DatabasePort = AesCipherHelper.Encrypt(CipherKey, realm.DatabasePort);
 
             return await mDbContext.SaveAsync(realmData);
         }

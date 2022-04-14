@@ -806,7 +806,7 @@ namespace Comet.Game.States
 
         public bool IsVirtuous()
         {
-            return (StatusFlag & KEEP_EFFECT_NOT_VIRTUOUS) == 0;
+            return (StatusFlag & KeepEffectNotVirtuous) == 0;
         }
 
         public bool IsCrime()
@@ -1025,7 +1025,7 @@ namespace Comet.Game.States
         public const uint USER_UPLEV_ACTION = 80_000_004;
         public const uint MONSTER_DIE_ACTION = 80_000_010;
 
-        public static ulong KEEP_EFFECT_NOT_VIRTUOUS => StatusSet.GetFlag(StatusSet.CRIME) |
+        public static readonly ulong KeepEffectNotVirtuous = StatusSet.GetFlag(StatusSet.CRIME) |
                                                         StatusSet.GetFlag(StatusSet.RED_NAME) |
                                                         StatusSet.GetFlag(StatusSet.BLACK_NAME);
 

@@ -10,14 +10,14 @@ using Comet.Shared;
 
 namespace Comet.Launcher.Server.States.Patches
 {
-    public static class UpdatesConfig
+    public static class UpdateManager
     {
         public static readonly string ConfigFilePath;
         private static readonly ConcurrentDictionary<int, UpdateStruct> mUpdatesDictionary;
 
         private static XmlParser mXmlParser { get; set; }
 
-        static UpdatesConfig()
+        static UpdateManager()
         {
             ConfigFilePath = Path.Combine(Environment.CurrentDirectory, "Config.xml");
             mUpdatesDictionary = new ConcurrentDictionary<int, UpdateStruct>();
@@ -70,7 +70,7 @@ namespace Comet.Launcher.Server.States.Patches
                                                           "From"),
                                       out int @from))
                     {
-                        _ = Log.WriteLogAsync(LogLevel.Error, $"Invalid patch [From] data for ID '{id}'.");
+                        await Log.WriteLogAsync(LogLevel.Error, $"Invalid patch [From] data for ID '{id}'.");
                         continue;
                     }
 
@@ -123,8 +123,8 @@ namespace Comet.Launcher.Server.States.Patches
                 mXmlParser.AddNewNode("", patch.From.ToString(), "Patch", "Config", "Updates");
                 mXmlParser.AddNewNode($"{patch.From}", null, "From", "Config", "Updates", $"Patch[@id='{patch.From}']");
                 mXmlParser.AddNewNode($"{patch.To}", null, "To", "Config", "Updates", $"Patch[@id='{patch.From}']");
-                mXmlParser.AddNewNode($"{patch.Extension}", null, "Extension", "Config", "Updates",
-                                      $"Patch[@id='{patch.From}']");
+                mXmlParser.AddNewNode($"{patch.Extension}", null, "Extension", "Config", "Updates", $"Patch[@id='{patch.From}']");
+                mXmlParser.AddNewNode($"{patch.Md5}", null, "Hash", "Config", "Updates", $"Patch[@id='{patch.From}']");
                 mXmlParser.Save();
                 return true;
             }
@@ -160,8 +160,9 @@ namespace Comet.Launcher.Server.States.Patches
             return mUpdatesDictionary.Values.Where(x => !x.IsUpdate).DefaultIfEmpty(new UpdateStruct()).Max(x => x.To);
         }
 
-        public static List<UpdateStruct> GetUpdateSequence(int from, bool game)
+        public static List<UpdateStruct> GetUpdateSequence(int from)
         {
+            bool game = from < 10000;
             var result = new List<UpdateStruct>();
             int current = game ? LatestGameClientUpdate() : LatestClientUpdate();
 

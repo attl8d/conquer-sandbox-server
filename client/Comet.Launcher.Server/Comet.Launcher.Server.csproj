@@ -8,6 +8,13 @@
   <ItemGroup>
     <ProjectReference Include="..\..\src\Comet.Network\Comet.Network.csproj" />
     <ProjectReference Include="..\..\src\Comet.Shared\Comet.Shared.csproj" />
+    <ProjectReference Include="..\Comet.Launcher.Files\Comet.Launcher.Files.csproj" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <None Update="Comet.Launcher.Server.Config.json">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </None>
   </ItemGroup>
 
 </Project>

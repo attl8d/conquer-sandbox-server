@@ -1,0 +1,49 @@
+﻿using System.Runtime.InteropServices;
+using Comet.Launcher.Files.Helpers;
+using Comet.Launcher.States;
+using Comet.Network.Helpers;
+using Comet.Network.Packets.Updater;
+using Org.BouncyCastle.Math;
+
+namespace Comet.Launcher.Packets
+{
+    internal sealed class MsgUpdHandshake : MsgUpdHandshake<Server>
+    {
+        public MsgUpdHandshake()
+        {
+            
+        }
+
+        /// <inheritdoc />
+        public MsgUpdHandshake(BigInteger publicKey, BigInteger modulus) 
+            : base(publicKey, modulus)
+        {
+        }
+
+        /// <inheritdoc />
+        public override async Task ProcessAsync(Server client)
+        {
+            if (!client.DiffieHellman.Initialize(PublicKey, Modulus))
+            {
+                throw new Exception("Could not initialize Diffie-Helmman!!!");
+            }
+
+            client.Cipher.GenerateKeys(new object[]
+            {
+                client.DiffieHellman.SharedKey.ToByteArrayUnsigned()
+            });
+
+            string conquerExeMd5 = "Conquer.exe".GetMd5();
+            await client.SendAsync(new MsgUpdLogin
+            {
+                CurrentFileMd5 = conquerExeMd5,
+                MacAddress = NetworkHelper.GetLocalMacAddress,
+                IpAddresses = NetworkHelper.GetLocalIpAddresses,
+                MachineName = Environment.MachineName,
+                UserName = Environment.UserName,
+                WindowsVersion = RuntimeInformation.OSDescription,
+                MachineDomain = Environment.UserDomainName
+            });
+        }
+    }
+}

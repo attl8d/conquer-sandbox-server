@@ -177,8 +177,20 @@
   <data name="StrFeedbackLink" xml:space="preserve">
     <value>Enviar Feedback</value>
   </data>
+  <data name="StrFetchingUpdates" xml:space="preserve">
+    <value>Buscando atualizações...</value>
+  </data>
   <data name="StrFps" xml:space="preserve">
     <value>FPS</value>
+  </data>
+  <data name="StrHandsakeUpdater" xml:space="preserve">
+    <value>Autorizando cliente...</value>
+  </data>
+  <data name="StrHashConfirmationFailed" xml:space="preserve">
+    <value>Erro na confirmação de hash do cliente. Por favor, abra o cliente novamente.</value>
+  </data>
+  <data name="StrIncompatibleWindowsVersion" xml:space="preserve">
+    <value>O jogo pode não funcionar corretamente com a versão do Windows que você está usando! Busque suporte nos fóruns da comunidade.</value>
   </data>
   <data name="StrInstallCouldNotStartProcess" xml:space="preserve">
     <value>O processo não pôde ser iniciado. Isso pode indicar algum problema com o seu antivirus. Por favor, adicione a pasta do cliente como exceção e tente novamente.</value>
@@ -212,6 +224,9 @@
   </data>
   <data name="StrLoading" xml:space="preserve">
     <value>Carregando...</value>
+  </data>
+  <data name="StrLoginSuccessfull" xml:space="preserve">
+    <value>Autorização concluída com sucesso!</value>
   </data>
   <data name="StrNewUpdateMessage" xml:space="preserve">
     <value>Há uma nova atualização disponível. Ela será aplicada assim que você fechar todos os clientes em aberto.</value>
@@ -260,6 +275,9 @@
   </data>
   <data name="StrToDefault" xml:space="preserve">
     <value>Usar Padrão</value>
+  </data>
+  <data name="StrUpdateComplete" xml:space="preserve">
+    <value>Seu cliente está atualizado!</value>
   </data>
   <data name="StrVersion" xml:space="preserve">
     <value>Versão do jogo: {0:0000} Cliente: {1:00000}</value>

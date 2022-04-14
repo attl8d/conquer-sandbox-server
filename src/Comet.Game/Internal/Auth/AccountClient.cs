@@ -3,6 +3,7 @@ using System.Net.Sockets;
 using System.Threading;
 using System.Threading.Tasks;
 using Comet.Game.Packets;
+using Comet.Network;
 using Comet.Network.Packets;
 using Comet.Network.Sockets;
 using Comet.Shared;
@@ -14,13 +15,13 @@ namespace Comet.Game.Internal.Auth
     {
         public static RpcNetworkConfiguration Configuration;
 
-        private readonly PacketProcessor<AccountServer> Processor;
+        private readonly PacketProcessor<AccountServer> mProcessor;
 
         public AccountClient()
-            : base("8a653a5d1e92b4e1db79".Length)
+            : base(NetworkDefinition.ACCOUNT_FOOTER.Length)
         {
-            Processor = new PacketProcessor<AccountServer>(ProcessAsync);
-            Processor.StartAsync(CancellationToken.None).ConfigureAwait(false);
+            mProcessor = new PacketProcessor<AccountServer>(ProcessAsync);
+            _ = mProcessor.StartAsync(CancellationToken.None).ConfigureAwait(false);
         }
 
         protected override async Task<AccountServer> ConnectedAsync(Socket socket, Memory<byte> buffer)
@@ -46,7 +47,7 @@ namespace Comet.Game.Internal.Auth
         protected override void Received(AccountServer actor, ReadOnlySpan<byte> packet)
         {
             Kernel.NetworkMonitor.Receive(packet.Length);
-            Processor.Queue(actor, packet.ToArray());
+            mProcessor.Queue(actor, packet.ToArray());
         }
 
         private async Task ProcessAsync(AccountServer actor, byte[] packet)

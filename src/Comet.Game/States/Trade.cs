@@ -239,9 +239,9 @@ namespace Comet.Game.States
             var dbTrade = new DbTrade
             {
                 Type = DbTrade.TradeType.Trade,
-                UserIpAddress = User1.Client.IPAddress,
+                UserIpAddress = User1.Client.IpAddress,
                 UserMacAddress = User1.Client.MacAddress,
-                TargetIpAddress = User2.Client.IPAddress,
+                TargetIpAddress = User2.Client.IpAddress,
                 TargetMacAddress = User2.Client.MacAddress,
                 MapIdentity = User1.MapIdentity,
                 TargetEmoney = mEmoney2,

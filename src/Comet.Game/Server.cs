@@ -5,6 +5,7 @@ using System.Threading.Tasks;
 using Comet.Game.Database;
 using Comet.Game.Packets;
 using Comet.Game.States;
+using Comet.Game.World;
 using Comet.Game.World.Managers;
 using Comet.Network.Packets;
 using Comet.Network.Packets.Game;
@@ -47,21 +48,21 @@ namespace Comet.Game
         ///     any processing mechanisms or authentication routines for the client connection.
         /// </summary>
         /// <param name="socket">Accepted client socket from the server socket</param>
-        /// <param name="buffer">Preallocated buffer from the server listener</param>
+        /// <param name="buffer">pre-allocated buffer from the server listener</param>
         /// <returns>A new instance of a ServerActor around the client socket</returns>
         protected override async Task<Client> AcceptedAsync(Socket socket, Memory<byte> buffer)
         {
             uint partition = Processor.SelectPartition();
             var client = new Client(socket, buffer, partition);
-            await client.DiffieHellman.ComputePublicKeyAsync();
+            await client.NdDiffieHellman.ComputePublicKeyAsync();
 
-            await Kernel.NextBytesAsync(client.DiffieHellman.DecryptionIV);
-            await Kernel.NextBytesAsync(client.DiffieHellman.EncryptionIV);
+            await Kernel.NextBytesAsync(client.NdDiffieHellman.DecryptionIV);
+            await Kernel.NextBytesAsync(client.NdDiffieHellman.EncryptionIV);
 
             var handshakeRequest = new MsgHandshake(
-                client.DiffieHellman,
-                client.DiffieHellman.EncryptionIV,
-                client.DiffieHellman.DecryptionIV);
+                client.NdDiffieHellman,
+                client.NdDiffieHellman.EncryptionIV,
+                client.NdDiffieHellman.DecryptionIV);
 
             await handshakeRequest.RandomizeAsync();
             await client.SendAsync(handshakeRequest);
@@ -76,24 +77,24 @@ namespace Comet.Game
         /// <param name="actor">Server actor that represents the remote client</param>
         /// <param name="buffer">Packet buffer to be processed</param>
         /// <returns>True if the exchange was successful.</returns>
-        protected override bool Exchanged(Client actor, ReadOnlySpan<byte> buffer)
+        protected override Task<bool> ExchangedAsync(Client actor, Memory<byte> buffer)
         {
             try
             {
                 var msg = new MsgHandshake();
                 msg.Decode(buffer.ToArray());
 
-                actor.DiffieHellman.ComputePrivateKey(msg.ClientKey);
+                actor.NdDiffieHellman.ComputePrivateKey(msg.ClientKey);
 
                 actor.Cipher.GenerateKeys(new object[]
                 {
-                    actor.DiffieHellman.PrivateKey.ToByteArrayUnsigned()
+                    actor.NdDiffieHellman.PrivateKey.ToByteArrayUnsigned()
                 });
                 (actor.Cipher as BlowfishCipher).SetIVs(
-                    actor.DiffieHellman.DecryptionIV,
-                    actor.DiffieHellman.EncryptionIV);
+                    actor.NdDiffieHellman.DecryptionIV,
+                    actor.NdDiffieHellman.EncryptionIV);
 
-                actor.DiffieHellman = null;
+                actor.NdDiffieHellman = null;
 
                 // We are setting a higher timeout just because the user may stay for a while in the login screen.
                 // We are doing this here because we don't want the user to hold a connection without exchanging.
@@ -101,14 +102,14 @@ namespace Comet.Game
                 // make the wait longer here.
                 // We are setting it back if the login is successfull!
                 actor.ReceiveTimeOutSeconds = 900;
-                return true;
+                return Task.FromResult(true);
             }
             catch (Exception e)
             {
                 Console.WriteLine(e);
             }
 
-            return false;
+            return Task.FromResult(false);
         }
 
         /// <summary>
@@ -383,7 +384,7 @@ namespace Comet.Game
                 }
                 else
                 {
-                    Kernel.Services.Processor.Queue(0, () => msg.ProcessAsync(actor));
+                    Kernel.Services.Processor.Queue(ServerProcessor.NO_MAP_GROUP, () => msg.ProcessAsync(actor));
                 }
             }
             catch (Exception e)
@@ -419,7 +420,7 @@ namespace Comet.Game
             {
                 _ = Log.WriteLogAsync(LogLevel.Info, $"{actor.Character.Name} has logged out.").ConfigureAwait(false);
 
-                Kernel.Services.Processor.Queue(0, async () => { await actor.Character.OnDisconnectAsync(); });
+                Kernel.Services.Processor.Queue(ServerProcessor.NO_MAP_GROUP, async () => { await actor.Character.OnDisconnectAsync(); });
             }
             else
             {
@@ -428,7 +429,7 @@ namespace Comet.Game
                                           $"{actor.AccountIdentity} has created a new character and has logged out.")
                            .ConfigureAwait(false);
                 else
-                    _ = Log.WriteLogAsync(LogLevel.Info, $"[{actor.IPAddress}] {actor.AccountIdentity} has logged out.")
+                    _ = Log.WriteLogAsync(LogLevel.Info, $"[{actor.IpAddress}] {actor.AccountIdentity} has logged out.")
                            .ConfigureAwait(false);
             }
         }

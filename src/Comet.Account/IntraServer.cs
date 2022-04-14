@@ -7,6 +7,7 @@ using Comet.Account.Database;
 using Comet.Account.Packets;
 using Comet.Account.States;
 using Comet.Database.Entities;
+using Comet.Network;
 using Comet.Network.Packets;
 using Comet.Network.Sockets;
 using Comet.Shared;
@@ -16,13 +17,13 @@ namespace Comet.Account
     internal sealed class IntraServer : TcpServerListener<GameServer>
     {
         // Fields and Properties
-        private readonly PacketProcessor<GameServer> Processor;
+        private readonly PacketProcessor<GameServer> mProcessor;
 
         public IntraServer(ServerConfiguration config)
-            : base(100, 8192, false, false, "8a653a5d1e92b4e1db79".Length)
+            : base(100, 8192, false, false, NetworkDefinition.ACCOUNT_FOOTER.Length)
         {
-            Processor = new PacketProcessor<GameServer>(ProcessAsync);
-            _ = Processor.StartAsync(CancellationToken.None).ConfigureAwait(false);
+            mProcessor = new PacketProcessor<GameServer>(ProcessAsync);
+            _ = mProcessor.StartAsync(CancellationToken.None).ConfigureAwait(false);
         }
 
         /// <summary>
@@ -31,13 +32,13 @@ namespace Comet.Account
         ///     any processing mechanisms or authentication routines for the client connection.
         /// </summary>
         /// <param name="socket">Accepted client socket from the server socket</param>
-        /// <param name="buffer">Preallocated buffer from the server listener</param>
+        /// <param name="buffer">pre-allocated buffer from the server listener</param>
         /// <returns>A new instance of a ServerActor around the client socket</returns>
         protected override async Task<GameServer> AcceptedAsync(Socket socket, Memory<byte> buffer)
         {
-            uint partition = Processor.SelectPartition();
+            uint partition = mProcessor.SelectPartition();
             var client = new GameServer(socket, buffer, partition);
-            await Log.WriteLogAsync(LogLevel.Info, $"Accepting connection from server on [{client.IPAddress}].");
+            await Log.WriteLogAsync(LogLevel.Info, $"Accepting connection from server on [{client.IpAddress}].");
             return client;
         }
 
@@ -50,7 +51,7 @@ namespace Comet.Account
         /// <param name="packet">Packet bytes to be processed</param>
         protected override void Received(GameServer actor, ReadOnlySpan<byte> packet)
         {
-            Processor.Queue(actor, packet.ToArray());
+            mProcessor.Queue(actor, packet.ToArray());
         }
 
         /// <summary>

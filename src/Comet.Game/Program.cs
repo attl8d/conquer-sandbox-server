@@ -59,7 +59,7 @@ namespace Comet.Game
             var tasks = new List<Task>
             {
                 Kernel.Services.Randomness.StartAsync(CancellationToken.None),
-                DiffieHellman.ProbablePrimes.StartAsync(CancellationToken.None),
+                NDDiffieHellman.ProbablePrimes.StartAsync(CancellationToken.None),
                 Kernel.Services.Processor.StartAsync(CancellationToken.None)
             };
             Task.WaitAll(tasks.ToArray());

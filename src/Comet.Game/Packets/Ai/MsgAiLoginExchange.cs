@@ -25,7 +25,7 @@ namespace Comet.Game.Packets.Ai
                 !Password.Equals(Kernel.Configuration.AiNetwork.Password))
             {
                 await Log.WriteLogAsync(
-                    $"MsgAiLoginExchange.ProcessAsync >> Invalid username or password for {client.GUID} [{client.IPAddress}]");
+                    $"MsgAiLoginExchange.ProcessAsync >> Invalid username or password for {client.GUID} [{client.IpAddress}]");
                 await client.SendAsync(new MsgAiLoginExchangeEx
                 {
                     Result = MsgAiLoginExchangeEx<AiClient>.AiLoginResult.InvalidPassword
@@ -37,7 +37,7 @@ namespace Comet.Game.Packets.Ai
             if (Kernel.AiServer != null)
             {
                 await Log.WriteLogAsync(
-                    $"MsgAiLoginExchange.ProcessAsync >> Server has bound an NPC Server already {client.GUID} [{client.IPAddress}]");
+                    $"MsgAiLoginExchange.ProcessAsync >> Server has bound an NPC Server already {client.GUID} [{client.IpAddress}]");
                 await client.SendAsync(new MsgAiLoginExchangeEx
                 {
                     Result = MsgAiLoginExchangeEx<AiClient>.AiLoginResult.AlreadyBound

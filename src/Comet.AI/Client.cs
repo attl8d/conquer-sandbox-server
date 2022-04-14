@@ -4,6 +4,7 @@ using System.Threading;
 using System.Threading.Tasks;
 using Comet.AI.Packets;
 using Comet.AI.States;
+using Comet.Network;
 using Comet.Network.Packets;
 using Comet.Network.Sockets;
 using Comet.Shared;
@@ -16,7 +17,7 @@ namespace Comet.AI
         private readonly PacketProcessor<Server> mProcessor;
 
         public Client()
-            : base("8a653a5d1e92b4e1db79".Length)
+            : base(NetworkDefinition.NPC_FOOTER.Length)
         {
             mProcessor = new PacketProcessor<Server>(ProcessAsync);
             mProcessor.StartAsync(CancellationToken.None).ConfigureAwait(false);

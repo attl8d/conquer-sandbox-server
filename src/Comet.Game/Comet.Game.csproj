@@ -36,7 +36,7 @@
 		<OutputType>Exe</OutputType>
 		<TargetFramework>net6.0</TargetFramework>
 		<LangVersion>latest</LangVersion>
-		<Version>0.2.1.40</Version>
+		<Version>0.3.0.56</Version>
 		<Authors>Felipe Vieira Vendramini</Authors>
 		<Product>Comet - Game Server</Product>
 		<PackageProjectUrl>https://gitlab.com/world-conquer-online/comet</PackageProjectUrl>

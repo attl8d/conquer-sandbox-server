@@ -4,6 +4,7 @@ using System.Threading;
 using System.Threading.Tasks;
 using Comet.Launcher.Server.Packets;
 using Comet.Launcher.Server.States;
+using Comet.Network;
 using Comet.Network.Packets;
 using Comet.Network.Sockets;
 using Comet.Shared;
@@ -12,23 +13,49 @@ namespace Comet.Launcher.Server
 {
     internal sealed class Server : TcpServerListener<Client>
     {
-        private readonly PacketProcessor<Client> Processor;
+        private readonly PacketProcessor<Client> mProcessor;
 
-        public Server() : base(100)
+        public Server(ServerConfiguration config) 
+            : base(config.Network.MaxConn, 4096, false, true, NetworkDefinition.PATCHER_FOOTER.Length)
         {
-            Processor = new PacketProcessor<Client>(ProcessAsync);
-            Processor.StartAsync(CancellationToken.None).ConfigureAwait(false);
+            mProcessor = new PacketProcessor<Client>(ProcessAsync);
+            _ = mProcessor.StartAsync(CancellationToken.None).ConfigureAwait(false);
+            ExchangeStartPosition = 0;
         }
 
         /// <inheritdoc />
-        protected override Task<Client> AcceptedAsync(Socket socket, Memory<byte> buffer)
+        protected override async Task<Client> AcceptedAsync(Socket socket, Memory<byte> buffer)
         {
-            return null;
+            uint partition = mProcessor.SelectPartition();
+            var client = new Client(socket, buffer, partition);
+            await Log.WriteLogAsync(LogLevel.Info, $"Accepting connection from client [{client.GUID}] on [{client.IpAddress}].");
+            return client;
+        }
+
+        /// <inheritdoc />
+        protected override async Task<bool> ExchangedAsync(Client actor, Memory<byte> buffer)
+        {
+            try
+            {
+                if (actor.DiffieHellman == null)
+                    throw new NullReferenceException("DiffieHellman cannot be null");
+
+                MsgUpdHandshake handshake = new MsgUpdHandshake();
+                handshake.Decode(buffer.ToArray());
+                await handshake.ProcessAsync(actor);
+
+                return true;
+            }
+            catch
+            {
+                await Log.WriteLogAsync("Handshake failed!!!");
+                return false;
+            }
         }
 
         protected override void Received(Client actor, ReadOnlySpan<byte> packet)
         {
-            Processor.Queue(actor, packet.ToArray());
+            mProcessor.Queue(actor, packet.ToArray());
         }
 
         private async Task ProcessAsync(Client actor, byte[] packet)
@@ -52,6 +79,17 @@ namespace Comet.Launcher.Server
                         break;
                     }
 
+                    case PacketType.MsgUpdQueryVersion:
+                    {
+                        msg = new MsgUpdQueryVersion();
+                        break;
+                    }
+
+                    case PacketType.MsgUpdCheckHash:
+                    {
+                        msg = new MsgUpdCheckHash();
+                        break;
+                    }
 
                     default:
                         await Log.WriteLogAsync(LogLevel.Socket, "Missing packet {0}, Length {1}\n{2}",
@@ -71,6 +109,12 @@ namespace Comet.Launcher.Server
 
         protected override void Disconnected(Client actor)
         {
+
+            if (Kernel.Clients.TryRemove(actor.GUID, out _))
+            {
+                // TODO signal account server to disconnect accounts
+            }
+
         }
     }
 }

@@ -12,6 +12,8 @@ namespace Comet.Launcher.Server
             public static RandomnessService Randomness = new();
         }
 
+        public static ServerConfiguration Configuration { get; set; }
+
         public static ConcurrentDictionary<string, Client> Clients => new();
 
         /// <summary>

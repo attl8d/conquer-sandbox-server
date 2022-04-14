@@ -6,7 +6,7 @@ namespace Comet.Network.Packets.Updater
     public abstract class MsgUpdLogin<T> : MsgBase<T>
     {
         public int Timestamp { get; set; }
-        public string CurrentFileMd5 { get; set; }
+        public string CurrentFileHash { get; set; }
         public string MacAddress { get; set; }
         public string UserName { get; set; }
         public string MachineName { get; set; }
@@ -20,7 +20,7 @@ namespace Comet.Network.Packets.Updater
             PacketWriter writer = new PacketWriter();
             writer.Write((ushort) PacketType.MsgUpdLogin);
             writer.Write(Timestamp = Environment.TickCount);
-            writer.Write(CurrentFileMd5, 32);
+            writer.Write(CurrentFileHash);
             writer.Write(MacAddress);
             writer.Write(UserName);
             writer.Write(MachineName);
@@ -37,7 +37,7 @@ namespace Comet.Network.Packets.Updater
             Length = reader.ReadUInt16();
             Type = (PacketType) reader.ReadUInt16();
             Timestamp = reader.ReadInt32();
-            CurrentFileMd5 = reader.ReadString(32);
+            CurrentFileHash = reader.ReadString();
             MacAddress = reader.ReadString();
             UserName = reader.ReadString();
             MachineName = reader.ReadString();

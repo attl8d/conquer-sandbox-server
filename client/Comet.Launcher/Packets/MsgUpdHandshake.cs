@@ -33,10 +33,10 @@ namespace Comet.Launcher.Packets
                 client.DiffieHellman.SharedKey.ToByteArrayUnsigned()
             });
 
-            string conquerExeMd5 = "Conquer.exe".GetMd5();
+            string conquerExeMd5 = "Conquer.exe".GetSha256();
             await client.SendAsync(new MsgUpdLogin
             {
-                CurrentFileMd5 = conquerExeMd5,
+                CurrentFileHash = conquerExeMd5,
                 MacAddress = NetworkHelper.GetLocalMacAddress,
                 IpAddresses = NetworkHelper.GetLocalIpAddresses,
                 MachineName = Environment.MachineName,

@@ -25,6 +25,7 @@ namespace Comet.Launcher.Server.States.Patches
 
         public static int ListenPort { get; private set; }
         public static string DownloadFrom { get; private set; }
+        public static string ConquerHash { get; private set; }
 
 
         private static XmlParser CreateConfigFile(string location)
@@ -42,6 +43,7 @@ namespace Comet.Launcher.Server.States.Patches
             var parser = new XmlParser(location);
             parser.AddNewNode("http://localhost/patches", null, "Url", "Config");
             parser.AddNewNode("9528", null, "ListenPort", "Config");
+            parser.AddNewNode("", null, "ConquerSha256", "Config");
             parser.AddNewNode("", null, "Updates", "Config");
             parser.Save();
             return parser;
@@ -57,6 +59,7 @@ namespace Comet.Launcher.Server.States.Patches
 
                 ListenPort = int.Parse(mXmlParser.GetValue("Config", "ListenPort"));
                 DownloadFrom = mXmlParser.GetValue("Config", "Url");
+                ConquerHash = mXmlParser.GetValue("Config", "ConquerSha256");
 
                 foreach (XmlNode node in mXmlParser.GetAllNodes("Config", "Updates"))
                 {
@@ -85,11 +88,16 @@ namespace Comet.Launcher.Server.States.Patches
                         continue;
                     }
 
+                    string hash = mXmlParser.GetValue("Config", "Updates",
+                                                      $"Patch[@id='{node.Attributes["id"].Value}']",
+                                                      "Hash");
+
                     var str = new UpdateStruct
                     {
                         From = from,
                         To = to,
-                        Extension = ext
+                        Extension = ext,
+                        Hash = hash
                     };
                     if (mUpdatesDictionary.TryAdd(from, str))
                     {
@@ -124,7 +132,7 @@ namespace Comet.Launcher.Server.States.Patches
                 mXmlParser.AddNewNode($"{patch.From}", null, "From", "Config", "Updates", $"Patch[@id='{patch.From}']");
                 mXmlParser.AddNewNode($"{patch.To}", null, "To", "Config", "Updates", $"Patch[@id='{patch.From}']");
                 mXmlParser.AddNewNode($"{patch.Extension}", null, "Extension", "Config", "Updates", $"Patch[@id='{patch.From}']");
-                mXmlParser.AddNewNode($"{patch.Md5}", null, "Hash", "Config", "Updates", $"Patch[@id='{patch.From}']");
+                mXmlParser.AddNewNode($"{patch.Hash}", null, "Hash", "Config", "Updates", $"Patch[@id='{patch.From}']");
                 mXmlParser.Save();
                 return true;
             }

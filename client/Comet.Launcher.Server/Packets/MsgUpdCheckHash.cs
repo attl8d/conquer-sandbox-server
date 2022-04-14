@@ -1,8 +1,7 @@
 ﻿using System;
-using System.IO;
 using System.Threading.Tasks;
-using Comet.Launcher.Files.Helpers;
 using Comet.Launcher.Server.States;
+using Comet.Launcher.Server.States.Patches;
 using Comet.Network.Packets.Updater;
 
 namespace Comet.Launcher.Server.Packets
@@ -12,20 +11,14 @@ namespace Comet.Launcher.Server.Packets
         /// <inheritdoc />
         public override async Task ProcessAsync(Client client)
         {
-            var success = true;
+            var success = false;
             foreach (FileHash file in Hashes)
             {
-                string path = Path.Combine(Environment.CurrentDirectory, file.FilePath);
-                if (!path.GetMd5().Equals(file.Hash))
+                if (file.FilePath.ToUpperInvariant().EndsWith("CONQUER.EXE") 
+                    && UpdateManager.ConquerHash.Equals(file.Hash, StringComparison.InvariantCultureIgnoreCase))
                 {
-                    success = false;
-                }
-                else
-                {
-                    if (file.FilePath.ToUpperInvariant().EndsWith("CONQUER.EXE"))
-                    {
-                        client.ConquerHashOk = true;
-                    }
+                    client.ConquerHashOk = true;
+                    success = true;
                 }
             }
 

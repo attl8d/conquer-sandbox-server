@@ -11,10 +11,10 @@ namespace Comet.Launcher.Controls
         //
         // set default values
         //
-        private int mValue;
-        private int mMinimum;
-        private int mMaximum = 100;
-        private int mStep = 10;
+        private long mValue;
+        private long mMinimum;
+        private long mMaximum = 100;
+        private long mStep = 10;
 
         private FillStyles mFillStyle = FillStyles.Solid;
 
@@ -67,7 +67,7 @@ namespace Comet.Launcher.Controls
         [Category("ColorProgressBar")]
         // the rest of the Properties windows must be updated when this peroperty is changed.
         [RefreshProperties(RefreshProperties.All)]
-        public int Value
+        public long Value
         {
             get => mValue;
             set
@@ -92,7 +92,7 @@ namespace Comet.Launcher.Controls
         [Description("The lower bound of the range this ColorProgressbar is working with.")]
         [Category("ColorProgressBar")]
         [RefreshProperties(RefreshProperties.All)]
-        public int Minimum
+        public long Minimum
         {
             get => mMinimum;
             set
@@ -111,7 +111,7 @@ namespace Comet.Launcher.Controls
         [Description("The uppper bound of the range this ColorProgressbar is working with.")]
         [Category("ColorProgressBar")]
         [RefreshProperties(RefreshProperties.All)]
-        public int Maximum
+        public long Maximum
         {
             get => mMaximum;
             set
@@ -129,7 +129,7 @@ namespace Comet.Launcher.Controls
 
         [Description("The amount to jump the current value of the control by when the Step() method is called.")]
         [Category("ColorProgressBar")]
-        public int Step
+        public long Step
         {
             get => mStep;
             set
@@ -231,7 +231,7 @@ namespace Comet.Launcher.Controls
             //
             // The following is the width of the bar. This will vary with each value.
             //
-            int fillWidth = Width * mValue / (mMaximum - mMinimum);
+            int fillWidth = (int) (Width * mValue / (mMaximum - mMinimum));
 
             //
             // GDI+ doesn't like rectangles 0px wide or high

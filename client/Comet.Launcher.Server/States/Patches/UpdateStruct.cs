@@ -9,7 +9,7 @@
         public string Extension { get; set; }
         public string FullFileName => $"{FileName}.{Extension}";
 
-        public string Md5 { get; set; }
+        public string Hash { get; set; }
 
         public bool IsBundle => To == 0 || From != To;
         /// <summary>

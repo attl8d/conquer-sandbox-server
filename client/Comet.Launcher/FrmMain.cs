@@ -1,8 +1,14 @@
+using System.Buffers;
 using System.Diagnostics;
 using System.Globalization;
+using System.Net;
 using Comet.Launcher.Configuration;
+using Comet.Launcher.Files.Helpers;
+using Comet.Launcher.Helpers;
 using Comet.Launcher.Managers;
 using Comet.Launcher.Threads;
+using Comet.Network.Packets.Updater;
+using Comet.Shared;
 
 namespace Comet.Launcher
 {
@@ -169,7 +175,28 @@ namespace Comet.Launcher
 
         private void FrmMain_FormClosed(object sender, FormClosedEventArgs e)
         {
+            foreach (Process game in mClients.Values)
+            {
+                try
+                {
+                    game.Kill();
+                    game.Close();
+                    game.Dispose();
+                }
+                catch
+                {
 
+                }
+            }
+
+            if (!string.IsNullOrEmpty(mOpenOnClose))
+            {
+                Process.Start(mOpenOnClose);
+            }
+            else
+            {
+                Kernel.OpenUrl("https://worldconquer.online");
+            }
         }
 
         #endregion
@@ -202,7 +229,6 @@ namespace Comet.Launcher
 
         private void BtnPlay_Click(object sender, EventArgs e)
         {
-
         }
 
         #endregion
@@ -211,6 +237,12 @@ namespace Comet.Launcher
 
         private void SetWindowMode(PanelMode mode)
         {
+            if (InvokeRequired)
+            {
+                Invoke(() => SetWindowMode(mode));
+                return;
+            }
+
             if (mode == PanelMode.Download)
             {
                 PanelReadyToPlay.Visible = false;
@@ -265,6 +297,12 @@ namespace Comet.Launcher
 
         private void CheckVersionFile()
         {
+            if (InvokeRequired)
+            {
+                Invoke(CheckVersionFile);
+                return;
+            }
+
             try
             {
                 if (!File.Exists("./Version.dat"))
@@ -300,14 +338,8 @@ namespace Comet.Launcher
                 return;
             }
 
-            if (LabelProgressStatus.Visible)
-            {
-                LabelProgressStatus.Text = msg;
-            }
-            else if (LabelReadyProgress.Visible)
-            {
-                LabelReadyProgress.Text = msg;
-            }
+            LabelProgressStatus.Text = msg;
+            LabelReadyProgress.Text = msg;
         }
 
         public void SetProgressMinValue(int value)
@@ -321,7 +353,7 @@ namespace Comet.Launcher
             GeneralProgressBar.Minimum = value;
         }
 
-        public void SetProgressMaxValue(int value)
+        public void SetProgressMaxValue(long value)
         {
             if (InvokeRequired)
             {
@@ -332,7 +364,7 @@ namespace Comet.Launcher
             GeneralProgressBar.Maximum = value;
         }
 
-        public void SetProgressValue(int value)
+        public void SetProgressValue(long value)
         {
             if (InvokeRequired)
             {
@@ -352,7 +384,8 @@ namespace Comet.Launcher
             Hide();
             NotifyBar.Visible = true;
             if (!Kernel.UserConfiguration.SuppressMinimizeAlert)
-                NotifyBar.ShowBalloonTip(5, null, LocaleManager.GetString("StrCometUpdaterBaloonMinimizeMsg"), ToolTipIcon.Info);
+                NotifyBar.ShowBalloonTip(5, null, LocaleManager.GetString("StrCometUpdaterBaloonMinimizeMsg"),
+                                         ToolTipIcon.Info);
         }
 
         private void NotifyBar_MouseDoubleClick(object sender, MouseEventArgs e)
@@ -368,6 +401,207 @@ namespace Comet.Launcher
 
         #endregion
 
+        #region Download Management
+        
+        private long mCurrentBytesRead; // total bytes downloaded
+        private long mTotalDownloadSize;   // total download size
+        private int mCurrentDownload;      // current file download
+        private int mTotalFiles;
+
+        private MsgUpdPatchType mCurrentDownloadType; // to check whether the client must be restarted or not
+        private string mDomain;
+        private readonly Queue<UpdatePatch> mPatches = new();
+
+        private string mOpenOnClose;
+
+        public async Task PrepareDownloadingAsync(MsgUpdPatchType type, List<UpdatePatch> patches, string domain)
+        {
+            mCurrentDownloadType = type;
+            mDomain = domain;
+            mPatches.Clear();
+            Process[] procList = Process.GetProcessesByName("Conquer");
+            if (procList.Length > 0)
+            {
+                if (MessageBox.Show(this, LocaleManager.GetString("StrConquerRunning"),
+                                    LocaleManager.GetString("StrConquerRunningTitle"), MessageBoxButtons.YesNo) ==
+                    DialogResult.Yes)
+                {
+                    foreach (Process proc in procList)
+                    {
+                        proc.Kill();
+                    }
+                }
+                else
+                {
+                    LocaleManager.GetString("StrUnauthorizedConquer");
+                    SetWindowMode(PanelMode.PlayDisabled);
+                    return;
+                }
+            }
+
+            SetProgressLabel(LocaleManager.GetString("StrLabelCalculatingDownloadAmount", 0, 0));
+
+            foreach (UpdatePatch file in patches)
+            {
+                var url = $"{domain}/{file.FileName}";
+                if (!await RemoteFileHelper.ExistsAsync(url))
+                    continue;
+
+                mTotalDownloadSize += await RemoteFileHelper.FileSizeAsync(url);
+                mTotalFiles += 1;
+                mPatches.Enqueue(file);
+                SetProgressLabel(LocaleManager.GetString("StrLabelCalculatingDownloadAmount", mTotalFiles,
+                                                         RemoteFileHelper.ParseFileSize(mTotalDownloadSize)));
+            }
+
+            SetWindowMode(PanelMode.Download);
+            await StartDownloadingAsync();
+        }
+
+        private async Task StartDownloadingAsync()
+        {
+            if (mPatches.Count < 1)
+            {
+                // won't happen, but...
+                await mLauncherThread.RequestUpdatesAsync();
+                return;
+            }
+
+            SetProgressMinValue(0);
+            SetProgressMaxValue(mTotalDownloadSize);
+
+            var file = mPatches.Dequeue();
+            mCurrentDownload++;
+            SetProgressLabel(LocaleManager.GetString("StrLabelDownloading",
+                                                     mCurrentDownload,
+                                                     mTotalFiles,
+                                                     RemoteFileHelper.ParseFileSize(mCurrentBytesRead),
+                                                     RemoteFileHelper.ParseFileSize(mTotalDownloadSize),
+                                                     RemoteFileHelper.ParseDownloadSpeed(0)));
+
+            var sw = Stopwatch.StartNew();
+            using HttpClient httpClient = new HttpClient();
+            using HttpRequestMessage message = new HttpRequestMessage(HttpMethod.Get, $"{mDomain}/{file.FileName}");
+            using HttpResponseMessage response = await httpClient.SendAsync(message, HttpCompletionOption.ResponseHeadersRead);
+
+            try
+            {
+                response.EnsureSuccessStatusCode();
+            }
+            catch (Exception ex)
+            {
+                MessageBox.Show(this, LocaleManager.GetString("StrFailedToFetchFile", file.FileName));
+                await Log.WriteLogAsync(ex);
+                ForceClose();
+                return;
+            }
+
+            long totalBytes = response.Content.Headers.ContentLength ?? 0;
+            if (totalBytes == 0)
+            {
+                MessageBox.Show(this, LocaleManager.GetString("StrFailedToFetchFile", file.FileName));
+                ForceClose();
+                return;
+            }
+
+            string tempPath = Path.Combine(TempDirectory(), file.FileName);
+
+            await using Stream contentStream = await response.Content.ReadAsStreamAsync();
+            await using FileStream fileStream = new FileStream(tempPath, FileMode.Create);
+            
+            byte[] buffer = ArrayPool<byte>.Shared.Rent(8192);
+            long bytesRead;
+            int tick = Environment.TickCount;
+            
+            while ((bytesRead = await contentStream.ReadAsync(buffer, 0, buffer.Length)) > 0)
+            {
+                mCurrentBytesRead += bytesRead;
+
+                await fileStream.WriteAsync(buffer, 0, (int) bytesRead);
+
+                if (Environment.TickCount - tick > 150)
+                {
+                    SetProgressLabel(LocaleManager.GetString("StrLabelDownloading",
+                                                             mCurrentDownload,
+                                                             mTotalFiles,
+                                                             RemoteFileHelper.ParseFileSize(mCurrentBytesRead),
+                                                             RemoteFileHelper.ParseFileSize(mTotalDownloadSize),
+                                                             RemoteFileHelper.ParseDownloadSpeed((long)(mCurrentBytesRead / sw.Elapsed.TotalSeconds))));
+
+                    SetProgressValue(mCurrentBytesRead);
+                    tick = Environment.TickCount;
+                }
+            }
+
+            ArrayPool<byte>.Shared.Return(buffer);
+            fileStream.Close();
+
+            // start extracting
+            if (!tempPath.GetSha256().ToUpperInvariant().Equals(file.Hash.ToUpperInvariant()))
+            {
+                MessageBox.Show(this, LocaleManager.GetString("StrHashConfirmationFailed"));
+                ForceClose();
+                return;
+            }
+
+            SetProgressLabel(LocaleManager.GetString("StrInstallUpdate", Path.GetFileNameWithoutExtension(tempPath)));
+
+            if (mCurrentDownloadType == MsgUpdPatchType.Client)
+            {
+                mOpenOnClose = tempPath;
+                ForceClose();
+                return;
+            }
+
+#if !DEBUG
+            string extractionPath = Path.Combine(Environment.CurrentDirectory, "AutoPatch", "Test");
+            if (!Directory.Exists(extractionPath))
+            {
+                DirectoryInfo info = Directory.CreateDirectory(extractionPath);
+                info.Attributes &= ~FileAttributes.ReadOnly;
+            }
+#else
+            string extractionPath = Environment.CurrentDirectory;
+#endif
+            bool extractionResult = await UnZipFileHelper.UnZipAsync(tempPath, extractionPath, async (currentFile, files, name) =>
+            {
+                if (currentFile == -1 && files == -1) // Error
+                {
+                    MessageBox.Show(LocaleManager.GetString("StrExtractionError"));
+                    await Log.WriteLogAsync("AutoPatch", LogLevel.Exception, name);
+                    return;
+                }
+
+                SetProgressMaxValue(files);
+                SetProgressValue(currentFile);
+                SetProgressLabel(LocaleManager.GetString("StrInstallUpdateEx", file.FileName, name, currentFile, files));
+            });
+
+            if (!extractionResult)
+            {
+                ForceClose();
+                return;
+            }
+
+            CheckVersionFile();
+            await StartDownloadingAsync();
+        }
+
+        private static string TempDirectory()
+        {
+            string path = Path.Combine(Environment.CurrentDirectory, "AutoPatch");
+            if (!Directory.Exists(path))
+                Directory.CreateDirectory(path);
+            new DirectoryInfo(path).Attributes &= ~FileAttributes.ReadOnly;
+            path = Path.Combine(path, "temp");
+            if (!Directory.Exists(path))
+                Directory.CreateDirectory(path);
+            new DirectoryInfo(path).Attributes &= ~FileAttributes.ReadOnly;
+            return path;
+        }
+
+        #endregion
+
         private enum PanelMode
         {
             Download,
@@ -375,6 +609,5 @@ namespace Comet.Launcher
             Play,
             PlayDisabled
         }
-
     }
 }

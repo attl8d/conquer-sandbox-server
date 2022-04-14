@@ -1,4 +1,5 @@
 ﻿using Comet.Launcher.Files.Helpers;
+using Comet.Launcher.Managers;
 using Comet.Launcher.States;
 using Comet.Network.Packets.Updater;
 
@@ -6,6 +7,8 @@ namespace Comet.Launcher.Packets
 {
     internal sealed class MsgUpdPatchList : MsgUpdPatchList<Server>
     {
+        private static int Retries = 0;
+
         private readonly string[] mSendFileList =
         {
             "Conquer.exe"
@@ -28,7 +31,7 @@ namespace Comet.Launcher.Packets
                         return;
                     }
 
-                    string hash = Path.Combine(Environment.CurrentDirectory, file).GetMd5();
+                    string hash = Path.Combine(Environment.CurrentDirectory, file).GetSha256();
                     msg.Hashes.Add(new MsgUpdCheckHash<Server>.FileHash
                     {
                         FilePath = file,
@@ -46,18 +49,28 @@ namespace Comet.Launcher.Packets
                 return;
             }
 
-            switch (Mode)
+            if (Patches.Count < 1)
             {
-                case MsgUpdPatchType.Client:
+                if (Retries++ < 5)
                 {
-                    break;
+                    FrmMain.Instance.SetProgressLabel(LocaleManager.GetString("StrFileFetchError"));
+                    await client.SendAsync(new MsgUpdQueryVersion
+                    {
+                        ClientVersion = FrmMain.CURRENT_VERSION,
+                        GameVersion = FrmMain.CurrentGameVersion
+                    });
                 }
-
-                case MsgUpdPatchType.Game:
+                else
                 {
-                    break;
+                    FrmMain.Instance.SetProgressLabel(LocaleManager.GetString("StrFileFetchFatalError"));
+                    await Task.Delay(5000);
+                    client.Disconnect();
                 }
+                return;
             }
+
+            Retries = 0;
+            await FrmMain.Instance.PrepareDownloadingAsync(Mode, Patches, Domain);
         }
     }
 }

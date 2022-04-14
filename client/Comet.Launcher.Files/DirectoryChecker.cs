@@ -59,7 +59,7 @@ namespace Comet.Launcher.Files
             string file;
             while ((file = mFilesToCheck.Dequeue()) != null)
             {
-                string md5Hash = file.GetMd5();
+                string md5Hash = file.GetSha256();
 
                 FileModel model = new FileModel
                 {

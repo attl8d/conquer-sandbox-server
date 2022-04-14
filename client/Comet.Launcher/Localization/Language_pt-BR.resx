@@ -171,6 +171,9 @@
   <data name="StrDuplicatedLoginAttempt" xml:space="preserve">
     <value>Alguém está tentando se conectar com a mesma identidade deste cliente.</value>
   </data>
+  <data name="StrExtractionError" xml:space="preserve">
+    <value>Houve um erro ao extrair a atualização. Por favor, verificar os logs.</value>
+  </data>
   <data name="StrFailedToFetchFile" xml:space="preserve">
     <value>Não foi possível encontrar o arquivo '{0}' para download. Não é possível prosseguir com a atualização. Por favor, notifique um administrador.</value>
   </data>
@@ -179,6 +182,12 @@
   </data>
   <data name="StrFetchingUpdates" xml:space="preserve">
     <value>Buscando atualizações...</value>
+  </data>
+  <data name="StrFileFetchError" xml:space="preserve">
+    <value>Algo deu errado ao buscar arquivos para download. Buscando novamente...</value>
+  </data>
+  <data name="StrFileFetchFatalError" xml:space="preserve">
+    <value>Houve uma falha ao tentar buscar informações de atualização do servidor! Vamos tentar reconectar. Se o problema persistir nos informe para que possamos corrigir ASAP.</value>
   </data>
   <data name="StrFps" xml:space="preserve">
     <value>FPS</value>
@@ -206,6 +215,9 @@
   </data>
   <data name="StrInstallUpdate" xml:space="preserve">
     <value>Instalando atualização "{0}". Por favor aguarde...</value>
+  </data>
+  <data name="StrInstallUpdateEx" xml:space="preserve">
+    <value>Instalando atualização "{0}". Extraindo arquivo: [{2}/{3}] {1}</value>
   </data>
   <data name="StrInstallUpdates" xml:space="preserve">
     <value>Preparando para instalar as atualizações...</value>
@@ -239,6 +251,9 @@
   </data>
   <data name="StrNo" xml:space="preserve">
     <value>Não</value>
+  </data>
+  <data name="StrPatchExecutionError" xml:space="preserve">
+    <value>Não foi possível instalar o patch {0}. Por favor baixe o arquivo manualmente no site!\r\nErro: {1}</value>
   </data>
   <data name="StrPlay" xml:space="preserve">
     <value>Jogar</value>
@@ -275,6 +290,9 @@
   </data>
   <data name="StrToDefault" xml:space="preserve">
     <value>Usar Padrão</value>
+  </data>
+  <data name="StrUnauthorizedConquer" xml:space="preserve">
+    <value>Você não está autorizado a se conectar por manter instâncias do jogo aberto enquanto atualiza. Se estiver jogando outro servidor, por gentileza feche-o e abra-o novamente após a atualização.</value>
   </data>
   <data name="StrUpdateComplete" xml:space="preserve">
     <value>Seu cliente está atualizado!</value>

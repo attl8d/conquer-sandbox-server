@@ -16,13 +16,18 @@ namespace Comet.Launcher.Server.Packets
             if (version > 0 && ClientVersion != version)
             {
                 List<UpdateStruct> patchList = UpdateManager.GetUpdateSequence(ClientVersion);
-                var msg = new MsgUpdPatchList {Mode = MsgUpdPatchType.Client};
+                var msg = new MsgUpdPatchList
+                {
+                    Mode = MsgUpdPatchType.Client,
+                    Domain = UpdateManager.DownloadFrom
+                };
                 msg.Patches.AddRange(patchList.Select(x => new UpdatePatch
                 {
-                    FileName = x.FileName,
+                    FileName = x.FullFileName,
                     Version = x.To,
-                    MD5 = x.Md5
+                    Hash = x.Hash
                 }));
+                await client.SendAsync(msg);
                 return;
             }
 
@@ -30,19 +35,25 @@ namespace Comet.Launcher.Server.Packets
             if (version > 0 && GameVersion < version)
             {
                 List<UpdateStruct> patchList = UpdateManager.GetUpdateSequence(GameVersion);
-                var msg = new MsgUpdPatchList { Mode = MsgUpdPatchType.Game };
+                var msg = new MsgUpdPatchList 
+                { 
+                    Mode = MsgUpdPatchType.Game,
+                    Domain = UpdateManager.DownloadFrom
+                };
                 msg.Patches.AddRange(patchList.Select(x => new UpdatePatch
                 {
-                    FileName = x.FileName,
+                    FileName = x.FullFileName,
                     Version = x.To,
-                    MD5 = x.Md5
+                    Hash = x.Hash
                 }));
+                await client.SendAsync(msg);
                 return;
             }
 
             await client.SendAsync(new MsgUpdPatchList
             {
-                Mode = MsgUpdPatchType.NoUpdate
+                Mode = MsgUpdPatchType.NoUpdate,
+                Domain = UpdateManager.DownloadFrom
             });
         }
     }

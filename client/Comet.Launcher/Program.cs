@@ -1,3 +1,5 @@
+using Comet.Shared;
+
 namespace Comet.Launcher
 {
     internal static class Program
@@ -8,6 +10,7 @@ namespace Comet.Launcher
         [STAThread]
         static void Main()
         {
+            Log.DefaultFileName = "AutoPatch";
             // To customize application configuration such as set high DPI settings or default font,
             // see https://aka.ms/applicationconfiguration.
             ApplicationConfiguration.Initialize();

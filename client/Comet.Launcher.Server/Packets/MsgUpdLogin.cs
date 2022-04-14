@@ -104,7 +104,7 @@ namespace Comet.Launcher.Server.Packets
             //    return;
             //}
 
-            client.CurrentFileMd5 = CurrentFileMd5;
+            client.CurrentFileMd5 = CurrentFileHash;
             client.UserName = UserName;
             client.MacAddress = MacAddress;
             client.MachineDomain = MachineDomain;

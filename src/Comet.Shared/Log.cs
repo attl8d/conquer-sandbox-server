@@ -23,7 +23,8 @@ namespace Comet.Shared
     {
         SystemLog,
         GameLog,
-        Root
+        Root,
+        AutoPatch
     }
 
     internal struct LogFile
@@ -156,6 +157,10 @@ namespace Comet.Shared
             if (folder == LogFolder.Root)
             {
                 return Environment.CurrentDirectory;
+            }
+            if (folder == LogFolder.AutoPatch)
+            {
+                return Path.Combine(Environment.CurrentDirectory, "AutoPatch", "logs");
             }
             return Path.Combine(Environment.CurrentDirectory, $"{folder}", $"{now.Year:0000}", $"{now.Month:00}", $"{now.Day:00}");
         }

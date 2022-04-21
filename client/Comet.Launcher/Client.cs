@@ -87,6 +87,12 @@ namespace Comet.Launcher
                         break;
                     }
 
+                    case PacketType.MsgUpdPing:
+                    {
+                        msg = new MsgUpdPing();
+                        break;
+                    }
+
                     default:
                         await Log.WriteLogAsync(LogLevel.Warning,
                                                 "Missing packet {0}, Length {1}\n{2}",

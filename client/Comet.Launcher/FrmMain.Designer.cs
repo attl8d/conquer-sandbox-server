@@ -44,6 +44,7 @@ namespace Comet.Launcher
             this.PanelProgressDoingSomething = new System.Windows.Forms.Panel();
             this.LabelProgressStatus = new System.Windows.Forms.Label();
             this.NotifyBar = new System.Windows.Forms.NotifyIcon(this.components);
+            this.LblPingDisplay = new System.Windows.Forms.Label();
             this.TitlePanel.SuspendLayout();
             this.PanelReadyToPlay.SuspendLayout();
             this.PanelProgressDoingSomething.SuspendLayout();
@@ -147,13 +148,13 @@ namespace Comet.Launcher
             this.GeneralProgressBar.BorderColor = System.Drawing.Color.FromArgb(((int)(((byte)(243)))), ((int)(((byte)(205)))), ((int)(((byte)(143)))));
             this.GeneralProgressBar.FillStyle = Comet.Launcher.Controls.ColorProgressBar.FillStyles.Solid;
             this.GeneralProgressBar.Location = new System.Drawing.Point(12, 41);
-            this.GeneralProgressBar.Maximum = 100;
-            this.GeneralProgressBar.Minimum = 0;
+            this.GeneralProgressBar.Maximum = ((long)(100));
+            this.GeneralProgressBar.Minimum = ((long)(0));
             this.GeneralProgressBar.Name = "GeneralProgressBar";
             this.GeneralProgressBar.Size = new System.Drawing.Size(976, 20);
-            this.GeneralProgressBar.Step = 10;
+            this.GeneralProgressBar.Step = ((long)(10));
             this.GeneralProgressBar.TabIndex = 4;
-            this.GeneralProgressBar.Value = 36;
+            this.GeneralProgressBar.Value = ((long)(36));
             // 
             // PanelReadyToPlay
             // 
@@ -210,6 +211,18 @@ namespace Comet.Launcher
             this.NotifyBar.BalloonTipClicked += new System.EventHandler(this.NotifyBar_BalloonTipClicked);
             this.NotifyBar.MouseDoubleClick += new System.Windows.Forms.MouseEventHandler(this.NotifyBar_MouseDoubleClick);
             // 
+            // LblPingDisplay
+            // 
+            this.LblPingDisplay.AutoSize = true;
+            this.LblPingDisplay.BackColor = System.Drawing.Color.Transparent;
+            this.LblPingDisplay.Font = new System.Drawing.Font("Segoe UI Semibold", 11.25F, System.Drawing.FontStyle.Bold, System.Drawing.GraphicsUnit.Point);
+            this.LblPingDisplay.ForeColor = System.Drawing.SystemColors.ButtonHighlight;
+            this.LblPingDisplay.Location = new System.Drawing.Point(12, 477);
+            this.LblPingDisplay.Name = "LblPingDisplay";
+            this.LblPingDisplay.Size = new System.Drawing.Size(69, 20);
+            this.LblPingDisplay.TabIndex = 7;
+            this.LblPingDisplay.Text = "Ping: ???";
+            // 
             // FrmMain
             // 
             this.AutoScaleDimensions = new System.Drawing.SizeF(7F, 15F);
@@ -218,6 +231,7 @@ namespace Comet.Launcher
             this.BackgroundImageLayout = System.Windows.Forms.ImageLayout.Stretch;
             this.ClientSize = new System.Drawing.Size(1000, 600);
             this.ControlBox = false;
+            this.Controls.Add(this.LblPingDisplay);
             this.Controls.Add(this.PanelProgressDoingSomething);
             this.Controls.Add(this.PanelReadyToPlay);
             this.Controls.Add(this.TitlePanel);
@@ -235,6 +249,7 @@ namespace Comet.Launcher
             this.PanelProgressDoingSomething.ResumeLayout(false);
             this.PanelProgressDoingSomething.PerformLayout();
             this.ResumeLayout(false);
+            this.PerformLayout();
 
         }
 
@@ -252,5 +267,6 @@ namespace Comet.Launcher
         private Label LabelVersion;
         private NotifyIcon NotifyBar;
         private Button MinimizeButton;
+        private Label LblPingDisplay;
     }
 }

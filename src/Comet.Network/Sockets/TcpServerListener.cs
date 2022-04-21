@@ -137,7 +137,7 @@ namespace Comet.Network.Sockets
         /// <summary>
         ///     Exchanging receives bytes from the accepted client socket when bytes become
         ///     available as a raw buffer of bytes. This method is called once and then invokes
-        ///     <see cref="ReceivingAsync(object)" />.
+        ///     <see cref="ExchangingAsync(object)" />.
         /// </summary>
         /// <param name="state">Created actor around the accepted client socket</param>
         /// <returns>Returns task details for fault tolerance processing.</returns>
@@ -162,7 +162,7 @@ namespace Comet.Network.Sockets
 
                     timeout.CancelAfter(TimeSpan.FromSeconds(ReceiveTimeoutSeconds));
                     examined = await receiveOperation;
-                    if (examined < 9) throw new Exception("Invalid length");
+                    if (examined < ExchangeStartPosition + 2) throw new Exception("Invalid length");
                 }
                 catch (Exception e)
                 {
@@ -307,8 +307,7 @@ namespace Comet.Network.Sockets
                 }
                 catch (SocketException e)
                 {
-                    if (e.SocketErrorCode < SocketError.ConnectionAborted ||
-                        e.SocketErrorCode > SocketError.Shutdown)
+                    if (e.SocketErrorCode is < SocketError.ConnectionAborted or > SocketError.Shutdown)
                         await Log.WriteLogAsync(e);
                     break;
                 }

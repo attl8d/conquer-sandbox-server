@@ -150,6 +150,7 @@ namespace Comet.Network.Packets
         MsgUpdPatchList,
         MsgUpdCheckHash,
         MsgUpdConfirmHash,
+        MsgUpdPing,
 
         MsgUpdEnd = 32999
 

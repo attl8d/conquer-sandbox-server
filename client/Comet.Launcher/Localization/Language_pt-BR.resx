@@ -165,8 +165,14 @@
   <data name="StrCouldNotLoadConfigFile" xml:space="preserve">
     <value>Não foi possível carregar o arquivo de configuração. Por favor, certifique-se de estar rodando o software com permissões de administrador ou que haja permissão de leitura e gravação na pasta de destino.</value>
   </data>
+  <data name="StrDisconnected" xml:space="preserve">
+    <value>Desconectado</value>
+  </data>
   <data name="StrDisconnectedFromServer" xml:space="preserve">
     <value>Você foi desconectado do servidor. Sua permissão de login foi revogada e suas contas serão desconectadas.</value>
+  </data>
+  <data name="StrDisplayPing" xml:space="preserve">
+    <value>Ping: {0:N0}ms</value>
   </data>
   <data name="StrDuplicatedLoginAttempt" xml:space="preserve">
     <value>Alguém está tentando se conectar com a mesma identidade deste cliente.</value>
@@ -197,6 +203,12 @@
   </data>
   <data name="StrHashConfirmationFailed" xml:space="preserve">
     <value>Erro na confirmação de hash do cliente. Por favor, abra o cliente novamente.</value>
+  </data>
+  <data name="StrIllegalActionMessage" xml:space="preserve">
+    <value>Uma atividade ilegal foi identificada em seu sistema. Todos os seus clientes serão encerrados!</value>
+  </data>
+  <data name="StrIllegalActionTitle" xml:space="preserve">
+    <value>Atividade Ilegal!</value>
   </data>
   <data name="StrIncompatibleWindowsVersion" xml:space="preserve">
     <value>O jogo pode não funcionar corretamente com a versão do Windows que você está usando! Busque suporte nos fóruns da comunidade.</value>
@@ -236,6 +248,9 @@
   </data>
   <data name="StrLoading" xml:space="preserve">
     <value>Carregando...</value>
+  </data>
+  <data name="StrLocalPing" xml:space="preserve">
+    <value>Ping: &lt;1ms</value>
   </data>
   <data name="StrLoginSuccessfull" xml:space="preserve">
     <value>Autorização concluída com sucesso!</value>

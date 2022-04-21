@@ -22,6 +22,16 @@ namespace Comet.Launcher.Helpers
                 {
                     if (!reader.Entry.IsDirectory)
                     {
+                        string delFile = Path.Combine(destination, reader.Entry.Key);
+                        if (File.Exists(delFile))
+                        {
+                            FileInfo info = new FileInfo(delFile);
+                            if ((info.Attributes & FileAttributes.ReadOnly) != 0)
+                            {
+                                info.Attributes &= ~FileAttributes.ReadOnly;
+                            }
+                        }
+
                         reader.WriteEntryToDirectory(destination, new ExtractionOptions
                         {
                             ExtractFullPath = true,

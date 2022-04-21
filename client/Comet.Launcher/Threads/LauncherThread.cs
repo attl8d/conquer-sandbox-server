@@ -1,5 +1,4 @@
-﻿using System.Security.Cryptography;
-using Comet.Launcher.Configuration;
+﻿using Comet.Launcher.Configuration;
 using Comet.Launcher.Helpers;
 using Comet.Launcher.Managers;
 using Comet.Launcher.Packets;
@@ -10,7 +9,10 @@ namespace Comet.Launcher.Threads
 {
     public sealed class LauncherThread : TimerBase
     {
-        private FrmMain mForm;
+        private const int PingTimeoutSecs = 10;
+
+        private readonly FrmMain mForm;
+        private readonly TimeOut mPingTimeOut;
 
         private Client mClient;
         private Server mServer;
@@ -20,6 +22,8 @@ namespace Comet.Launcher.Threads
             : base(1000, "LauncherThread")
         {
             mForm = form;
+
+            mPingTimeOut = new TimeOut(PingTimeoutSecs);
         }
 
         /// <inheritdoc />
@@ -27,13 +31,15 @@ namespace Comet.Launcher.Threads
         {
             if (OperatingSystemHelper.IsWindows7())
             {
-                MessageBox.Show(LocaleManager.GetString("StrWindows7Alert"),
-                    LocaleManager.GetString("StrWindows7AlertTitle"), MessageBoxButtons.OK, MessageBoxIcon.Warning);
+                MessageBox.Show(mForm, LocaleManager.GetString("StrWindows7Alert"),
+                                LocaleManager.GetString("StrWindows7AlertTitle"), MessageBoxButtons.OK,
+                                MessageBoxIcon.Warning);
             }
             else if (OperatingSystemHelper.IsWindows7OrHigher() && Kernel.UserConfiguration.WindowsDefendAlert == null)
             {
-                DialogResult result = MessageBox.Show(LocaleManager.GetString("StrWindows10Alert"),
-                                LocaleManager.GetString("StrWindows10AlertTitle"), MessageBoxButtons.YesNo, MessageBoxIcon.Warning);
+                DialogResult result = MessageBox.Show(mForm, LocaleManager.GetString("StrWindows10Alert"),
+                                                      LocaleManager.GetString("StrWindows10AlertTitle"),
+                                                      MessageBoxButtons.YesNo, MessageBoxIcon.Warning);
                 if (result == DialogResult.Yes)
                 {
                     Kernel.OpenUrl("https://worldconqueronline.tawk.help/article/resolvendo-problemas-de-instalação");
@@ -62,18 +68,26 @@ namespace Comet.Launcher.Threads
                     if (!int.TryParse(addresses[1], out int port))
                         continue;
 
-                    Client client = new (this);
+                    Client client = new(this);
                     if (!await client.ConnectToAsync(address, port))
                         continue;
 
                     mForm.SetProgressLabel(LocaleManager.GetString("StrConnectedToServer"));
                     mClient = client;
+
+                    mPingTimeOut.Startup(PingTimeoutSecs);
                     break;
                 }
             }
             else if (mServer != null && !mServer.Socket.Connected)
             {
                 mServer.Disconnect();
+                mPingTimeOut.Clear();
+            }
+
+            if (mPingTimeOut.IsActive() && mPingTimeOut.ToNextTime() && mServer?.Socket.Connected == true)
+            {
+                await mServer.SendAsync(new MsgUpdPing());
             }
 
             return true;
@@ -89,13 +103,14 @@ namespace Comet.Launcher.Threads
         {
             mForm.SetProgressLabel("StrHandsakeUpdater");
             mServer = server;
-            MsgUpdHandshake msg = new MsgUpdHandshake(server.DiffieHellman.PublicKey, server.DiffieHellman.Modulus);
+            var msg = new MsgUpdHandshake(server.DiffieHellman.PublicKey, server.DiffieHellman.Modulus, null, null);
             await server.SendAsync(msg);
         }
 
         public async Task OnDisconnectAsync()
         {
             mForm.SetProgressLabel("StrDisconnectedFromServer");
+            mPingTimeOut.Clear();
 
             mClient = null;
             mServer = null;

@@ -10,12 +10,14 @@ namespace Comet.Network.Packets.Updater
             
         }
 
-        protected MsgUpdHandshake(BigInteger publicKey, BigInteger modulus)
+        protected MsgUpdHandshake(BigInteger publicKey, BigInteger modulus, byte[] eIv, byte[] dIv)
         {
             StartPadding = RandomNumberGenerator.GetBytes(RandomNumberGenerator.GetInt32(8, 32));
             MiddlePadding = RandomNumberGenerator.GetBytes(RandomNumberGenerator.GetInt32(8, 32));
             PublicKey = publicKey.ToByteArrayUnsigned();
             Modulus = modulus.ToByteArrayUnsigned();
+            EncryptIV = eIv;
+            DecryptIV = dIv;
             FinalPadding = RandomNumberGenerator.GetBytes(RandomNumberGenerator.GetInt32(8, 32));
             FinalTrash = RandomNumberGenerator.GetBytes(RandomNumberGenerator.GetInt32(8, 32));
         }
@@ -24,6 +26,8 @@ namespace Comet.Network.Packets.Updater
         public byte[] MiddlePadding { get; set; }
         public byte[] PublicKey { get; set; }
         public byte[] Modulus { get; set; }
+        public byte[] EncryptIV { get; set; }
+        public byte[] DecryptIV { get; set; }
         public byte[] FinalPadding { get; set; }
         public byte[] FinalTrash { get; set; }
 
@@ -39,6 +43,10 @@ namespace Comet.Network.Packets.Updater
             writer.Write(PublicKey);
             writer.Write((ushort)Modulus.Length);
             writer.Write(Modulus);
+            writer.Write((byte)EncryptIV.Length);
+            writer.Write(EncryptIV);
+            writer.Write((byte)DecryptIV.Length);
+            writer.Write(DecryptIV);
             writer.Write((byte)FinalPadding.Length);
             writer.Write(FinalPadding);
             writer.Write((byte)FinalTrash.Length);
@@ -59,6 +67,10 @@ namespace Comet.Network.Packets.Updater
             PublicKey = reader.ReadBytes(publicKey);
             int modulus = reader.ReadUInt16();
             Modulus = reader.ReadBytes(modulus);
+            int encryptIv = reader.ReadByte();
+            EncryptIV = reader.ReadBytes(encryptIv);
+            int decryptIv = reader.ReadByte();
+            DecryptIV = reader.ReadBytes(decryptIv);
             int finalPadding = reader.ReadByte();
             FinalPadding = reader.ReadBytes(finalPadding);
             int finalTrash = reader.ReadByte();

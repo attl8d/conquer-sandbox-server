@@ -202,7 +202,7 @@ namespace Comet.Launcher.Controls
 
             Invalidate();
         }
-
+        
         protected override void OnPaint(PaintEventArgs e)
         {
             //

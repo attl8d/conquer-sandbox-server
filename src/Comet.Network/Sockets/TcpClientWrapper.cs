@@ -104,7 +104,7 @@ namespace Comet.Network.Sockets
 
                     timeout.CancelAfter(TimeSpan.FromSeconds(30));
                     examined = await receiveOperation;
-                    if (examined < 9) throw new Exception("Invalid length");
+                    if (examined < ExchangeStartPosition + 2) throw new Exception("Invalid length");
                 }
                 catch (Exception e)
                 {

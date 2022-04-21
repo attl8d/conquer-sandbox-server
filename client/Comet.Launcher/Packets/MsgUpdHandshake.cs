@@ -15,8 +15,8 @@ namespace Comet.Launcher.Packets
         }
 
         /// <inheritdoc />
-        public MsgUpdHandshake(BigInteger publicKey, BigInteger modulus) 
-            : base(publicKey, modulus)
+        public MsgUpdHandshake(BigInteger publicKey, BigInteger modulus, byte[] eIv, byte[] dIv)
+            : base(publicKey, modulus, eIv ?? new byte[16], dIv ?? new byte[16])
         {
         }
 
@@ -30,8 +30,12 @@ namespace Comet.Launcher.Packets
 
             client.Cipher.GenerateKeys(new object[]
             {
-                client.DiffieHellman.SharedKey.ToByteArrayUnsigned()
+                client.DiffieHellman.SharedKey.ToByteArrayUnsigned(),
+                EncryptIV,
+                DecryptIV
             });
+
+            await client.SendAsync(new MsgUpdPing());
 
             string conquerExeMd5 = "Conquer.exe".GetSha256();
             await client.SendAsync(new MsgUpdLogin

@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Security.Cryptography;
 using System.Threading.Tasks;
 using Comet.Launcher.Server.States;
 using Comet.Network.Packets.Updater;
@@ -14,8 +15,8 @@ namespace Comet.Launcher.Server.Packets
         }
 
         /// <inheritdoc />
-        public MsgUpdHandshake(BigInteger publicKey, BigInteger modulus)
-            : base(publicKey, modulus)
+        public MsgUpdHandshake(BigInteger publicKey, BigInteger modulus, byte[] eIv, byte[] dIv)
+            : base(publicKey, modulus, eIv ?? new byte[16], dIv ?? new byte[16])
         {
         }
 
@@ -26,12 +27,15 @@ namespace Comet.Launcher.Server.Packets
             {
                 throw new Exception("Couldn't initialize Diffie-Hellman!!!");
             }
-            
-            await client.SendAsync(new MsgUpdHandshake(client.DiffieHellman.PublicKey, client.DiffieHellman.Modulus));
+
+            byte[] iv = RandomNumberGenerator.GetBytes(16);
+            await client.SendAsync(new MsgUpdHandshake(client.DiffieHellman.PublicKey, client.DiffieHellman.Modulus, iv, iv));
 
             client.Cipher.GenerateKeys(new object[]
             {
-                client.DiffieHellman.SharedKey.ToByteArrayUnsigned()
+                client.DiffieHellman.SharedKey.ToByteArrayUnsigned(),
+                iv,
+                iv
             });
         }
     }

@@ -8,11 +8,15 @@ namespace Comet.Network.Security
     public sealed class AesCipher : ICipher
     {
         public static byte[] SharedKey => Encoding.ASCII.GetBytes("8y/B?E(H+MbQeThWmZq3t6w9z$C&F)J@");
-        public static byte[] SharedIv => Encoding.ASCII.GetBytes("t6w9z$C&F)J@NcRf");
+        public static byte[] SharedEncryptIv => Encoding.ASCII.GetBytes("t6w9z$C&F)J@NcRf");
+        public static byte[] SharedDecryptIv => Encoding.ASCII.GetBytes("t6w9z$C&F)J@NcRf");
 
         private Aes mAes;
         private ICryptoTransform mEncryptor;
         private ICryptoTransform mDecryptor;
+
+        private byte[] mEncryptIv;
+        private byte[] mDecryptIv;
 
         private AesCipher()
         {
@@ -32,15 +36,19 @@ namespace Comet.Network.Security
             cipher.mAes.Padding = PaddingMode.None;
 
             byte[] key = new byte[SharedKey.Length];
-            byte[] iv = new byte[SharedIv.Length];
+            byte[] eIv = new byte[SharedEncryptIv.Length];
+            byte[] dIv = new byte[SharedDecryptIv.Length];
+
             SharedKey.CopyTo(key, 0);
-            SharedIv.CopyTo(iv, 0);
+            SharedEncryptIv.CopyTo(eIv, 0);
+            SharedDecryptIv.CopyTo(dIv, 0);
 
             cipher.mAes.Key = key;
-            cipher.mAes.IV = iv;
+            cipher.mEncryptIv = eIv;
+            cipher.mDecryptIv = dIv;
 
-            cipher.mEncryptor = cipher.mAes.CreateEncryptor(cipher.mAes.Key, cipher.mAes.IV);
-            cipher.mDecryptor = cipher.mAes.CreateDecryptor(cipher.mAes.Key, cipher.mAes.IV);
+            cipher.mEncryptor = cipher.mAes.CreateEncryptor(cipher.mAes.Key, cipher.mEncryptIv);
+            cipher.mDecryptor = cipher.mAes.CreateDecryptor(cipher.mAes.Key, cipher.mDecryptIv);
             return cipher;
         }
 
@@ -50,20 +58,24 @@ namespace Comet.Network.Security
             byte[] key = (byte[])seeds[0];
             key.CopyTo(new Memory<byte>(mAes.Key));
 
-            if (seeds.Length > 1)
+            if (seeds.Length > 2)
             {
-                byte[] iv = (byte[])seeds[1];
-                iv.CopyTo(new Memory<byte>(mAes.IV));
+                byte[] eIv = (byte[])seeds[1];
+                byte[] dIv = (byte[])seeds[2];
+                eIv.CopyTo(new Memory<byte>(mEncryptIv));
+                dIv.CopyTo(new Memory<byte>(mDecryptIv));
             }
             else
             {
-                byte[] iv = new byte[SharedIv.Length];
-                SharedIv.CopyTo(iv, 0);
-                mAes.IV = iv;
+                mEncryptIv = new byte[SharedEncryptIv.Length];
+                mDecryptIv = new byte[SharedDecryptIv.Length];
+
+                SharedEncryptIv.CopyTo(mEncryptIv, 0);
+                SharedDecryptIv.CopyTo(mDecryptIv, 0);
             }
 
-            mEncryptor = mAes.CreateEncryptor(mAes.Key, mAes.IV);
-            mDecryptor = mAes.CreateDecryptor(mAes.Key, mAes.IV);
+            mEncryptor = mAes.CreateEncryptor(mAes.Key, mEncryptIv);
+            mDecryptor = mAes.CreateDecryptor(mAes.Key, mDecryptIv);
         }
 
         /// <inheritdoc />

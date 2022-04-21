@@ -1,7 +1,6 @@
 using System.Buffers;
 using System.Diagnostics;
 using System.Globalization;
-using System.Net;
 using Comet.Launcher.Configuration;
 using Comet.Launcher.Files.Helpers;
 using Comet.Launcher.Helpers;
@@ -33,6 +32,7 @@ namespace Comet.Launcher
         private Image mPlayClickImage;
 
         private LauncherThread mLauncherThread;
+        private AntiCheatThread mAntiCheatThread;
         private FormStage mStage = FormStage.Initializing;
 
         private readonly Dictionary<int, Process> mClients = new();
@@ -93,6 +93,22 @@ namespace Comet.Launcher
 
             mLauncherThread = new LauncherThread(this);
             await mLauncherThread.StartAsync();
+
+            mAntiCheatThread = new AntiCheatThread(OnIllegalAction);
+            await mAntiCheatThread.StartAsync();
+        }
+
+        private void OnIllegalAction()
+        {
+            mStage = FormStage.Closing;
+            MessageBox.Show(this,
+                            LocaleManager.GetString("StrIllegalActionMessage"),
+                            LocaleManager.GetString("StrIllegalActionTitle"),
+                            MessageBoxButtons.OK,
+                            MessageBoxIcon.Error
+            );
+
+            Environment.Exit(0xA);
         }
 
         #region Drag'n Drop
@@ -185,7 +201,6 @@ namespace Comet.Launcher
                 }
                 catch
                 {
-
                 }
             }
 
@@ -229,6 +244,8 @@ namespace Comet.Launcher
 
         private void BtnPlay_Click(object sender, EventArgs e)
         {
+            if (mStage != FormStage.Running)
+                return;
         }
 
         #endregion
@@ -402,20 +419,28 @@ namespace Comet.Launcher
         #endregion
 
         #region Download Management
-        
-        private long mCurrentBytesRead; // total bytes downloaded
-        private long mTotalDownloadSize;   // total download size
-        private int mCurrentDownload;      // current file download
+
+        private long mCurrentBytesRead;  // total bytes downloaded
+        private long mTotalDownloadSize; // total download size
+        private int mCurrentDownload;    // current file download
         private int mTotalFiles;
 
         private MsgUpdPatchType mCurrentDownloadType; // to check whether the client must be restarted or not
         private string mDomain;
         private readonly Queue<UpdatePatch> mPatches = new();
+        private Stopwatch mDownloadSw;
 
         private string mOpenOnClose;
 
         public async Task PrepareDownloadingAsync(MsgUpdPatchType type, List<UpdatePatch> patches, string domain)
         {
+            SetProgressValue(0);
+
+            mCurrentBytesRead = 0;
+            mTotalDownloadSize = 0;
+            mCurrentDownload = 0;
+            mTotalFiles = 0;
+
             mCurrentDownloadType = type;
             mDomain = domain;
             mPatches.Clear();
@@ -454,6 +479,8 @@ namespace Comet.Launcher
                                                          RemoteFileHelper.ParseFileSize(mTotalDownloadSize)));
             }
 
+            await Task.Delay(1000);
+            mDownloadSw = new Stopwatch();
             SetWindowMode(PanelMode.Download);
             await StartDownloadingAsync();
         }
@@ -469,8 +496,9 @@ namespace Comet.Launcher
 
             SetProgressMinValue(0);
             SetProgressMaxValue(mTotalDownloadSize);
+            SetProgressValue(mCurrentBytesRead);
 
-            var file = mPatches.Dequeue();
+            UpdatePatch file = mPatches.Dequeue();
             mCurrentDownload++;
             SetProgressLabel(LocaleManager.GetString("StrLabelDownloading",
                                                      mCurrentDownload,
@@ -479,10 +507,11 @@ namespace Comet.Launcher
                                                      RemoteFileHelper.ParseFileSize(mTotalDownloadSize),
                                                      RemoteFileHelper.ParseDownloadSpeed(0)));
 
-            var sw = Stopwatch.StartNew();
-            using HttpClient httpClient = new HttpClient();
-            using HttpRequestMessage message = new HttpRequestMessage(HttpMethod.Get, $"{mDomain}/{file.FileName}");
-            using HttpResponseMessage response = await httpClient.SendAsync(message, HttpCompletionOption.ResponseHeadersRead);
+
+            using var httpClient = new HttpClient();
+            using var message = new HttpRequestMessage(HttpMethod.Get, $"{mDomain}/{file.FileName}");
+            using HttpResponseMessage response =
+                await httpClient.SendAsync(message, HttpCompletionOption.ResponseHeadersRead);
 
             try
             {
@@ -507,26 +536,28 @@ namespace Comet.Launcher
             string tempPath = Path.Combine(TempDirectory(), file.FileName);
 
             await using Stream contentStream = await response.Content.ReadAsStreamAsync();
-            await using FileStream fileStream = new FileStream(tempPath, FileMode.Create);
-            
+            await using var fileStream = new FileStream(tempPath, FileMode.Create);
+
             byte[] buffer = ArrayPool<byte>.Shared.Rent(8192);
             long bytesRead;
             int tick = Environment.TickCount;
-            
+            mDownloadSw.Start();
             while ((bytesRead = await contentStream.ReadAsync(buffer, 0, buffer.Length)) > 0)
             {
                 mCurrentBytesRead += bytesRead;
 
                 await fileStream.WriteAsync(buffer, 0, (int) bytesRead);
 
-                if (Environment.TickCount - tick > 150)
+                if (Environment.TickCount - tick > 100)
                 {
                     SetProgressLabel(LocaleManager.GetString("StrLabelDownloading",
                                                              mCurrentDownload,
                                                              mTotalFiles,
                                                              RemoteFileHelper.ParseFileSize(mCurrentBytesRead),
                                                              RemoteFileHelper.ParseFileSize(mTotalDownloadSize),
-                                                             RemoteFileHelper.ParseDownloadSpeed((long)(mCurrentBytesRead / sw.Elapsed.TotalSeconds))));
+                                                             RemoteFileHelper.ParseDownloadSpeed(
+                                                                 (long) (mCurrentBytesRead /
+                                                                         mDownloadSw.Elapsed.TotalSeconds))));
 
                     SetProgressValue(mCurrentBytesRead);
                     tick = Environment.TickCount;
@@ -535,6 +566,7 @@ namespace Comet.Launcher
 
             ArrayPool<byte>.Shared.Return(buffer);
             fileStream.Close();
+            mDownloadSw.Stop();
 
             // start extracting
             if (!tempPath.GetSha256().ToUpperInvariant().Equals(file.Hash.ToUpperInvariant()))
@@ -553,7 +585,7 @@ namespace Comet.Launcher
                 return;
             }
 
-#if !DEBUG
+#if DEBUG
             string extractionPath = Path.Combine(Environment.CurrentDirectory, "AutoPatch", "Test");
             if (!Directory.Exists(extractionPath))
             {
@@ -563,19 +595,26 @@ namespace Comet.Launcher
 #else
             string extractionPath = Environment.CurrentDirectory;
 #endif
-            bool extractionResult = await UnZipFileHelper.UnZipAsync(tempPath, extractionPath, async (currentFile, files, name) =>
-            {
-                if (currentFile == -1 && files == -1) // Error
-                {
-                    MessageBox.Show(LocaleManager.GetString("StrExtractionError"));
-                    await Log.WriteLogAsync("AutoPatch", LogLevel.Exception, name);
-                    return;
-                }
+            bool extractionResult = await UnZipFileHelper.UnZipAsync(tempPath, extractionPath,
+                                                                     async (currentFile, files, name) =>
+                                                                     {
+                                                                         if (currentFile == -1 && files == -1) // Error
+                                                                         {
+                                                                             MessageBox.Show(
+                                                                                 LocaleManager.GetString(
+                                                                                     "StrExtractionError"));
+                                                                             await Log.WriteLogAsync(
+                                                                                 "AutoPatch", LogLevel.Exception, name);
+                                                                             return;
+                                                                         }
 
-                SetProgressMaxValue(files);
-                SetProgressValue(currentFile);
-                SetProgressLabel(LocaleManager.GetString("StrInstallUpdateEx", file.FileName, name, currentFile, files));
-            });
+                                                                         SetProgressMaxValue(files);
+                                                                         SetProgressValue(currentFile);
+                                                                         SetProgressLabel(
+                                                                             LocaleManager.GetString(
+                                                                                 "StrInstallUpdateEx", file.FileName,
+                                                                                 name, currentFile, files));
+                                                                     });
 
             if (!extractionResult)
             {
@@ -598,6 +637,71 @@ namespace Comet.Launcher
                 Directory.CreateDirectory(path);
             new DirectoryInfo(path).Attributes &= ~FileAttributes.ReadOnly;
             return path;
+        }
+
+        #endregion
+
+        #region Ping
+
+        public void UpdatePingMsg(int request, int reply)
+        {
+            if (InvokeRequired)
+            {
+                Invoke(() => UpdatePingMsg(request, reply));
+                return;
+            }
+
+            int delta = reply - request;
+            if (delta < 0)
+            {
+                LblPingDisplay.Text = LocaleManager.GetString("StrDisconnected");
+                LblPingDisplay.ForeColor = SystemColors.ButtonHighlight;
+            }
+            else if (delta == 0)
+            {
+                LblPingDisplay.Text = LocaleManager.GetString("StrLocalPing");
+                LblPingDisplay.ForeColor = Color.Green;
+            }
+            else if (delta < 50)
+            {
+                LblPingDisplay.Text = LocaleManager.GetString("StrDisplayPing", delta);
+                LblPingDisplay.ForeColor = Color.Green;
+            }
+            else if (delta < 150)
+            {
+                LblPingDisplay.Text = LocaleManager.GetString("StrDisplayPing", delta);
+                LblPingDisplay.ForeColor = Color.Yellow;
+            }
+            else if (delta < 300)
+            {
+                LblPingDisplay.Text = LocaleManager.GetString("StrDisplayPing", delta);
+                LblPingDisplay.ForeColor = Color.Orange;
+            }
+            else
+            {
+                LblPingDisplay.Text = LocaleManager.GetString("StrDisplayPing", delta);
+                LblPingDisplay.ForeColor = Color.Red;
+            }
+        }
+
+        #endregion
+
+        #region Play
+
+        public void Play()
+        {
+            string path = Path.Combine(Environment.CurrentDirectory, "Conquer.exe");
+            Process game = new Process
+            {
+                StartInfo =
+                {
+                    WorkingDirectory = Environment.CurrentDirectory,
+                    FileName = path,
+                    Arguments = "blacknull"
+                }
+            };
+
+            mClients.Add(game.Id, game);
         }
 
         #endregion

@@ -11,7 +11,8 @@ namespace Comet.Launcher.Packets
 
         private readonly string[] mSendFileList =
         {
-            "Conquer.exe"
+            "Conquer.exe",
+            "Comet.Launcher.exe"
         };
 
         /// <inheritdoc />

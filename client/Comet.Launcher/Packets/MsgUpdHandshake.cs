@@ -37,7 +37,7 @@ namespace Comet.Launcher.Packets
 
             await client.SendAsync(new MsgUpdPing());
 
-            string conquerExeMd5 = "Conquer.exe".GetSha256();
+            string conquerExeMd5 = Path.Combine(FrmMain.WorkingDirectory, "Conquer.exe").GetSha256();
             await client.SendAsync(new MsgUpdLogin
             {
                 CurrentFileHash = conquerExeMd5,

@@ -7,6 +7,9 @@
     <ClInclude Include="module\hook_adapter.h">
       <Filter>Module</Filter>
     </ClInclude>
+    <ClInclude Include="module\memory.h">
+      <Filter>Module</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <Filter Include="Module">
@@ -15,6 +18,9 @@
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="module\module_instance.cpp">
+      <Filter>Module</Filter>
+    </ClCompile>
+    <ClCompile Include="module\memory.cpp">
       <Filter>Module</Filter>
     </ClCompile>
   </ItemGroup>

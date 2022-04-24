@@ -1,5 +1,4 @@
-﻿using Comet.Launcher.Managers;
-using Comet.Shared;
+﻿using Comet.Shared;
 
 namespace Comet.Launcher.Threads
 {
@@ -19,7 +18,7 @@ namespace Comet.Launcher.Threads
         /// <inheritdoc />
         protected override Task OnStartAsync()
         {
-//#if !DEBUG
+#if !DEBUG
             //AntiCheatManager.LockDownLibraryLoadingAggressive();
             AntiDebuggerManager.AntiDebuggerAttach();
             if (AntiDebuggerManager.CloseHandleAntiDebug() || AntiDebuggerManager.RemoteDebuggerCheckAntiDebug())
@@ -28,17 +27,17 @@ namespace Comet.Launcher.Threads
                 return Task.CompletedTask;
             }
             AntiDebuggerManager.HideThreadsFromDebugger();
-//#endif
+#endif
             return base.OnStartAsync();
         }
 
         /// <inheritdoc />
         protected override Task<bool> OnElapseAsync()
         {
-//#if !DEBUG
+#if !DEBUG
             //AntiCheatManager.AntiUnHookerAggressive(OnIllegalAction);
             AntiDebuggerManager.OnTimer(OnIllegalAction);
-//#endif
+#endif
             return Task.FromResult(true);
         }
 

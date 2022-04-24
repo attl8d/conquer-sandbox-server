@@ -13,10 +13,10 @@ namespace Comet.Launcher.Configuration
         public const int MINIMUM_WIDTH_I = 1024;
         public const int MINIMUM_HEIGHT_I = 768;
 
-        private string FilePath => System.IO.Path.Combine(Environment.CurrentDirectory, "AutoPatch", "AutoPatchUserConfig.xml");
+        private string FilePath => Path.Combine(FrmMain.DataPath, "AutoPatchUserConfig.xml");
 
-        private XmlParser mParser;
-        private bool mLoaded = false;
+        private readonly XmlParser mParser;
+        private readonly bool mLoaded;
 
         public UserConfiguration()
         {
@@ -30,6 +30,7 @@ namespace Comet.Launcher.Configuration
         }
 
         private int mFramesPerSecond;
+
         public int FramesPerSecond
         {
             get => mFramesPerSecond;
@@ -40,17 +41,20 @@ namespace Comet.Launcher.Configuration
                 {
                     if (mParser.CheckNodeExists("Config", "FramesPerSecond"))
                     {
-                        mParser.ChangeValue(mFramesPerSecond.ToString(CultureInfo.InvariantCulture), "Config", "FramesPerSecond");
+                        mParser.ChangeValue(mFramesPerSecond.ToString(CultureInfo.InvariantCulture), "Config",
+                                            "FramesPerSecond");
                     }
                     else
                     {
-                        mParser.AddNewNode(mFramesPerSecond.ToString(CultureInfo.InvariantCulture), null, "FramesPerSecond", "Config");
+                        mParser.AddNewNode(mFramesPerSecond.ToString(CultureInfo.InvariantCulture), null,
+                                           "FramesPerSecond", "Config");
                     }
                 }
             }
         }
 
         private UserConfigurationResolution mResolution;
+
         public UserConfigurationResolution Resolution
         {
             get => mResolution;
@@ -63,19 +67,24 @@ namespace Comet.Launcher.Configuration
                 {
                     if (mParser.CheckNodeExists("Config", "Resolution"))
                     {
-                        mParser.ChangeValue(mResolution.Width.ToString(CultureInfo.InvariantCulture), "Config", "Resolution", "Width");
-                        mParser.ChangeValue(mResolution.Height.ToString(CultureInfo.InvariantCulture), "Config", "Resolution", "Height");
+                        mParser.ChangeValue(mResolution.Width.ToString(CultureInfo.InvariantCulture), "Config",
+                                            "Resolution", "Width");
+                        mParser.ChangeValue(mResolution.Height.ToString(CultureInfo.InvariantCulture), "Config",
+                                            "Resolution", "Height");
                     }
                     else
                     {
-                        mParser.AddNewNode(mResolution.Width.ToString(CultureInfo.InvariantCulture), null, "Width", "Config", "Resolution");
-                        mParser.AddNewNode(mResolution.Height.ToString(CultureInfo.InvariantCulture), null, "Height", "Config", "Resolution");
+                        mParser.AddNewNode(mResolution.Width.ToString(CultureInfo.InvariantCulture), null, "Width",
+                                           "Config", "Resolution");
+                        mParser.AddNewNode(mResolution.Height.ToString(CultureInfo.InvariantCulture), null, "Height",
+                                           "Config", "Resolution");
                     }
                 }
             }
         }
 
         private DateTime? mWindowsDefendAlert;
+
         public DateTime? WindowsDefendAlert
         {
             get => mWindowsDefendAlert;
@@ -86,11 +95,13 @@ namespace Comet.Launcher.Configuration
                 {
                     if (mParser.CheckNodeExists("Config", "WindowsDefendAlert"))
                     {
-                        mParser.ChangeValue(mWindowsDefendAlert.Value.ToString(CultureInfo.InvariantCulture), "Config", "WindowsDefendAlert");
+                        mParser.ChangeValue(mWindowsDefendAlert.Value.ToString(CultureInfo.InvariantCulture), "Config",
+                                            "WindowsDefendAlert");
                     }
                     else
                     {
-                        mParser.AddNewNode(mWindowsDefendAlert.Value.ToString(CultureInfo.InvariantCulture), null, "WindowsDefendAlert", "Config");
+                        mParser.AddNewNode(mWindowsDefendAlert.Value.ToString(CultureInfo.InvariantCulture), null,
+                                           "WindowsDefendAlert", "Config");
                     }
                 }
             }
@@ -111,11 +122,13 @@ namespace Comet.Launcher.Configuration
                 {
                     if (mParser.CheckNodeExists("Config", "SupressMinimizeAlert"))
                     {
-                        mParser.ChangeValue((mSuppressMinimizeAlert ? 1 : 0).ToString(CultureInfo.InvariantCulture), "Config", "SupressMinimizeAlert");
+                        mParser.ChangeValue((mSuppressMinimizeAlert ? 1 : 0).ToString(CultureInfo.InvariantCulture),
+                                            "Config", "SupressMinimizeAlert");
                     }
                     else
                     {
-                        mParser.AddNewNode((mSuppressMinimizeAlert ? 1 : 0).ToString(CultureInfo.InvariantCulture), null, "SupressMinimizeAlert", "Config");
+                        mParser.AddNewNode((mSuppressMinimizeAlert ? 1 : 0).ToString(CultureInfo.InvariantCulture),
+                                           null, "SupressMinimizeAlert", "Config");
                     }
                 }
             }
@@ -133,11 +146,15 @@ namespace Comet.Launcher.Configuration
                 {
                     if (mParser.CheckNodeExists("Config", "SupressMinimizeAlert"))
                     {
-                        mParser.ChangeValue((mSuppressIncorrectWindowsVersion ? 1 : 0).ToString(CultureInfo.InvariantCulture), "Config", "SuppressIncorrectWindowsVersion");
+                        mParser.ChangeValue(
+                            (mSuppressIncorrectWindowsVersion ? 1 : 0).ToString(CultureInfo.InvariantCulture), "Config",
+                            "SuppressIncorrectWindowsVersion");
                     }
                     else
                     {
-                        mParser.AddNewNode((mSuppressIncorrectWindowsVersion ? 1 : 0).ToString(CultureInfo.InvariantCulture), null, "SuppressIncorrectWindowsVersion", "Config");
+                        mParser.AddNewNode(
+                            (mSuppressIncorrectWindowsVersion ? 1 : 0).ToString(CultureInfo.InvariantCulture), null,
+                            "SuppressIncorrectWindowsVersion", "Config");
                     }
                 }
             }

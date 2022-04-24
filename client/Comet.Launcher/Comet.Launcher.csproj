@@ -38,31 +38,31 @@
 	</ItemGroup>
 
 	<ItemGroup>
-		<None Update="AutoPatch\AutoPatch.xml">
+		<None Update="Data\AutoPatch.xml">
 		  <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
 		</None>
-		<None Update="AutoPatch\AutoPatchUserConfig.xml">
+		<None Update="Data\AutoPatchUserConfig.xml">
 		  <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
 		</None>
-		<None Update="AutoPatch\background.jpg">
+		<None Update="Data\background.jpg">
 			<CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
 		</None>
-		<None Update="AutoPatch\BtnPlay.png">
+		<None Update="Data\BtnPlay.png">
 		  <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
 		</None>
-		<None Update="AutoPatch\BtnPlayClicked.png">
+		<None Update="Data\BtnPlayClicked.png">
 		  <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
 		</None>
-		<None Update="AutoPatch\BtnPlayHover.png">
+		<None Update="Data\BtnPlayHover.png">
 		  <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
 		</None>
-		<None Update="AutoPatch\hint.bmp">
+		<None Update="Data\hint.bmp">
 			<CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
 		</None>
-		<None Update="AutoPatch\More.png">
+		<None Update="Data\More.png">
 			<CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
 		</None>
-		<None Update="AutoPatch\MoreClicked.png">
+		<None Update="Data\MoreClicked.png">
 			<CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
 		</None>
 		<None Update="Version.dat">

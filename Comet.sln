@@ -71,6 +71,8 @@ Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "Dragon.Module.Flash", "drag
 EndProject
 Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "Dragon.Module.Websites", "dragon\Dragon.Module.Websites\Dragon.Module.Websites.vcxproj", "{65BDF965-F294-4F27-8278-CDEDAFBC3EA7}"
 EndProject
+Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "Dragon.Module.Client", "dragon\Dragon.Module.Client\Dragon.Module.Client.vcxproj", "{ABFE040E-0D5A-4835-B880-B80AEDA1693E}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -198,6 +200,7 @@ Global
 		{F6A1A972-1E92-4568-A791-5597093FE195}.Release|x86.ActiveCfg = Release|Any CPU
 		{F6A1A972-1E92-4568-A791-5597093FE195}.Release|x86.Build.0 = Release|Any CPU
 		{750F66B6-BAC9-4ECF-BAF6-F158D0DFC98F}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{750F66B6-BAC9-4ECF-BAF6-F158D0DFC98F}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{750F66B6-BAC9-4ECF-BAF6-F158D0DFC98F}.Debug|x64.ActiveCfg = Debug|Any CPU
 		{750F66B6-BAC9-4ECF-BAF6-F158D0DFC98F}.Debug|x64.Build.0 = Debug|Any CPU
 		{750F66B6-BAC9-4ECF-BAF6-F158D0DFC98F}.Debug|x86.ActiveCfg = Debug|Any CPU
@@ -283,6 +286,18 @@ Global
 		{65BDF965-F294-4F27-8278-CDEDAFBC3EA7}.Release|x64.Build.0 = Release|x64
 		{65BDF965-F294-4F27-8278-CDEDAFBC3EA7}.Release|x86.ActiveCfg = Release|Win32
 		{65BDF965-F294-4F27-8278-CDEDAFBC3EA7}.Release|x86.Build.0 = Release|Win32
+		{ABFE040E-0D5A-4835-B880-B80AEDA1693E}.Debug|Any CPU.ActiveCfg = Debug|Win32
+		{ABFE040E-0D5A-4835-B880-B80AEDA1693E}.Debug|Any CPU.Build.0 = Debug|Win32
+		{ABFE040E-0D5A-4835-B880-B80AEDA1693E}.Debug|x64.ActiveCfg = Debug|x64
+		{ABFE040E-0D5A-4835-B880-B80AEDA1693E}.Debug|x64.Build.0 = Debug|x64
+		{ABFE040E-0D5A-4835-B880-B80AEDA1693E}.Debug|x86.ActiveCfg = Debug|Win32
+		{ABFE040E-0D5A-4835-B880-B80AEDA1693E}.Debug|x86.Build.0 = Debug|Win32
+		{ABFE040E-0D5A-4835-B880-B80AEDA1693E}.Release|Any CPU.ActiveCfg = Release|x64
+		{ABFE040E-0D5A-4835-B880-B80AEDA1693E}.Release|Any CPU.Build.0 = Release|x64
+		{ABFE040E-0D5A-4835-B880-B80AEDA1693E}.Release|x64.ActiveCfg = Release|x64
+		{ABFE040E-0D5A-4835-B880-B80AEDA1693E}.Release|x64.Build.0 = Release|x64
+		{ABFE040E-0D5A-4835-B880-B80AEDA1693E}.Release|x86.ActiveCfg = Release|Win32
+		{ABFE040E-0D5A-4835-B880-B80AEDA1693E}.Release|x86.Build.0 = Release|Win32
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
@@ -306,6 +321,7 @@ Global
 		{31BD181C-8E4A-4849-B401-FBB4CC331B31} = {C3A8B365-A8EB-4EA1-AA41-03B6BAC98361}
 		{B033CDEC-FCF8-452A-89EA-96294FB558DA} = {C3A8B365-A8EB-4EA1-AA41-03B6BAC98361}
 		{65BDF965-F294-4F27-8278-CDEDAFBC3EA7} = {C3A8B365-A8EB-4EA1-AA41-03B6BAC98361}
+		{ABFE040E-0D5A-4835-B880-B80AEDA1693E} = {C3A8B365-A8EB-4EA1-AA41-03B6BAC98361}
 	EndGlobalSection
 	GlobalSection(ExtensibilityGlobals) = postSolution
 		SolutionGuid = {C7FB4131-E3D9-47FA-8F60-C50A4011F50D}

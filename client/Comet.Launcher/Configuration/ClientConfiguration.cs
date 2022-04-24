@@ -8,7 +8,7 @@ namespace Comet.Launcher.Configuration
         public ClientConfiguration()
         {
             new ConfigurationBuilder()
-                .AddXmlFile(Path.Combine(Environment.CurrentDirectory, "AutoPatch", "AutoPatch.xml"))
+                .AddXmlFile(Path.Combine(FrmMain.DataPath, "AutoPatch.xml"))
                 .Build()
                 .Bind(this);
         }

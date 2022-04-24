@@ -14,6 +14,12 @@
 #include <sstream>
 #include <vector>
 
+// Error result is -1 because >0 means Conquer Process ID
+#define COULD_NOT_START_RESULT -1
+#define ERROR_FIND_MODULES_RESULT -2
+#define ERROR_LOAD_MODULES_RESULT -3
+#define ERROR_RESUME_PROGRESS_RESULT -4
+
 using namespace std;
 
 // Dragon's launcher is a code injector. The code injector is isolated from the patcher to allow
@@ -39,7 +45,7 @@ int main(int argc, char *argv[])
     DWORD result = dragon::StartProcess(
         clientDirectory, clientExecutable, processArguments.str(), processInfo);
     if (result != ERROR_SUCCESS) {
-        return result;
+        return COULD_NOT_START_RESULT;
     }
 
     // Find all dragon modules to be injected into the client process
@@ -49,7 +55,7 @@ int main(int argc, char *argv[])
         TerminateProcess(processInfo.hProcess, ERROR_PROCESS_ABORTED);
         CloseHandle(processInfo.hProcess);
         CloseHandle(processInfo.hThread);
-        return result;
+        return ERROR_FIND_MODULES_RESULT;
     }
 
     // Inject modules into the running client process
@@ -59,7 +65,7 @@ int main(int argc, char *argv[])
         TerminateProcess(processInfo.hProcess, ERROR_PROCESS_ABORTED);
         CloseHandle(processInfo.hProcess);
         CloseHandle(processInfo.hThread);
-        return result;
+        return ERROR_LOAD_MODULES_RESULT;
     }
 
     // Resume the client process
@@ -68,10 +74,11 @@ int main(int argc, char *argv[])
         TerminateProcess(processInfo.hProcess, ERROR_PROCESS_ABORTED);
         CloseHandle(processInfo.hProcess);
         CloseHandle(processInfo.hThread);
-        return result;
+        return ERROR_RESUME_PROGRESS_RESULT;
     }
 
+    DWORD idProcess = processInfo.dwProcessId;
     CloseHandle(processInfo.hProcess);
     CloseHandle(processInfo.hThread);
-    return result;
+    return idProcess;
 }

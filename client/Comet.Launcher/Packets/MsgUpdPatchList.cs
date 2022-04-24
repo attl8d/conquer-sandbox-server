@@ -12,7 +12,7 @@ namespace Comet.Launcher.Packets
         private readonly string[] mSendFileList =
         {
             "Conquer.exe",
-            "Comet.Launcher.exe"
+            Path.Combine("AutoPatch", "Comet.Launcher.exe")
         };
 
         /// <inheritdoc />
@@ -26,13 +26,13 @@ namespace Comet.Launcher.Packets
                 };
                 foreach (string file in mSendFileList)
                 {
-                    if (!File.Exists(Path.Combine(Environment.CurrentDirectory, file)))
+                    if (!File.Exists(Path.Combine(FrmMain.WorkingDirectory, file)))
                     {
                         client.Disconnect();
                         return;
                     }
 
-                    string hash = Path.Combine(Environment.CurrentDirectory, file).GetSha256();
+                    string hash = Path.Combine(FrmMain.WorkingDirectory, file).GetSha256();
                     msg.Hashes.Add(new MsgUpdCheckHash<Server>.FileHash
                     {
                         FilePath = file,

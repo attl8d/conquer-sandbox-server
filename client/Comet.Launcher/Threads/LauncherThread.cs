@@ -109,7 +109,8 @@ namespace Comet.Launcher.Threads
 
         public async Task OnDisconnectAsync()
         {
-            mForm.SetProgressLabel("StrDisconnectedFromServer");
+            mForm.SetProgressLabel(LocaleManager.GetString("StrDisconnectedFromServer"));
+            mForm.UpdatePingMsg(0, -1);
             mPingTimeOut.Clear();
 
             mClient = null;

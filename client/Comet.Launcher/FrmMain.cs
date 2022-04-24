@@ -25,7 +25,7 @@ namespace Comet.Launcher
         public const int CURRENT_VERSION = 10000;
         public static int CurrentGameVersion = 1000;
 
-        private readonly string mBasePath;
+        public static string DataPath => Path.Combine(Environment.CurrentDirectory, "Data");
 
         private Image mPlayImage;
         private Image mPlayHoverImage;
@@ -37,11 +37,11 @@ namespace Comet.Launcher
 
         private readonly Dictionary<int, Process> mClients = new();
 
+        public static string WorkingDirectory => Environment.CurrentDirectory.GetParentDirectory();
+
         public FrmMain()
         {
             InitializeComponent();
-
-            mBasePath = Path.Combine(Environment.CurrentDirectory, "AutoPatch");
 
             Instance = this;
         }
@@ -52,20 +52,20 @@ namespace Comet.Launcher
 
             LocaleManager.SetLanguage(CultureInfo.CurrentUICulture.Name);
 
-            if (File.Exists(Path.Combine(mBasePath, "background.jpg")))
-                BackgroundImage = Image.FromFile(Path.Combine(mBasePath, "background.jpg"));
+            if (File.Exists(Path.Combine(DataPath, "background.jpg")))
+                BackgroundImage = Image.FromFile(Path.Combine(DataPath, "background.jpg"));
 
-            if (File.Exists(Path.Combine(mBasePath, "BtnPlay.png")))
+            if (File.Exists(Path.Combine(DataPath, "BtnPlay.png")))
             {
-                mPlayImage = Image.FromFile(Path.Combine(mBasePath, "BtnPlay.png"));
+                mPlayImage = Image.FromFile(Path.Combine(DataPath, "BtnPlay.png"));
                 BtnPlay.BackgroundImage = mPlayImage;
             }
 
-            if (File.Exists(Path.Combine(mBasePath, "BtnPlayHover.png")))
-                mPlayHoverImage = Image.FromFile(Path.Combine(mBasePath, "BtnPlayHover.png"));
+            if (File.Exists(Path.Combine(DataPath, "BtnPlayHover.png")))
+                mPlayHoverImage = Image.FromFile(Path.Combine(DataPath, "BtnPlayHover.png"));
 
-            if (File.Exists(Path.Combine(mBasePath, "BtnPlayClicked.png")))
-                mPlayClickImage = Image.FromFile(Path.Combine(mBasePath, "BtnPlayClicked.png"));
+            if (File.Exists(Path.Combine(DataPath, "BtnPlayClicked.png")))
+                mPlayClickImage = Image.FromFile(Path.Combine(DataPath, "BtnPlayClicked.png"));
 
             DoubleBuffered = true;
 
@@ -246,6 +246,8 @@ namespace Comet.Launcher
         {
             if (mStage != FormStage.Running)
                 return;
+
+            Play();
         }
 
         #endregion
@@ -322,13 +324,14 @@ namespace Comet.Launcher
 
             try
             {
-                if (!File.Exists("./Version.dat"))
+                string versionFilePath = Path.Combine(WorkingDirectory, "Version.dat");
+                if (!File.Exists(versionFilePath))
                 {
                     MessageBox.Show(this, LocaleManager.GetString("StrVersionNotFound"));
                     return;
                 }
 
-                string version = File.ReadAllText("./Version.dat");
+                string version = File.ReadAllText(versionFilePath);
                 if (string.IsNullOrEmpty(version))
                 {
                     MessageBox.Show(this, LocaleManager.GetString("StrVersionNotFound"));
@@ -585,16 +588,18 @@ namespace Comet.Launcher
                 return;
             }
 
-#if DEBUG
-            string extractionPath = Path.Combine(Environment.CurrentDirectory, "AutoPatch", "Test");
-            if (!Directory.Exists(extractionPath))
-            {
-                DirectoryInfo info = Directory.CreateDirectory(extractionPath);
-                info.Attributes &= ~FileAttributes.ReadOnly;
-            }
-#else
-            string extractionPath = Environment.CurrentDirectory;
-#endif
+            //#if DEBUG
+            //            string extractionPath = Path.Combine(Environment.CurrentDirectory, "AutoPatch", "Test");
+            //            if (!Directory.Exists(extractionPath))
+            //            {
+            //                DirectoryInfo info = Directory.CreateDirectory(extractionPath);
+            //                info.Attributes &= ~FileAttributes.ReadOnly;
+            //            }
+            //#else
+            //            string extractionPath = WorkingDirectory;
+            //#endif
+
+            string extractionPath = WorkingDirectory;
             bool extractionResult = await UnZipFileHelper.UnZipAsync(tempPath, extractionPath,
                                                                      async (currentFile, files, name) =>
                                                                      {
@@ -628,7 +633,7 @@ namespace Comet.Launcher
 
         private static string TempDirectory()
         {
-            string path = Path.Combine(Environment.CurrentDirectory, "AutoPatch");
+            string path = Path.Combine(WorkingDirectory, "AutoPatch");
             if (!Directory.Exists(path))
                 Directory.CreateDirectory(path);
             new DirectoryInfo(path).Attributes &= ~FileAttributes.ReadOnly;
@@ -690,18 +695,46 @@ namespace Comet.Launcher
 
         public void Play()
         {
-            string path = Path.Combine(Environment.CurrentDirectory, "Conquer.exe");
+            string path = Path.Combine(WorkingDirectory, "Dragon.Launch.exe");
             Process game = new Process
             {
                 StartInfo =
                 {
-                    WorkingDirectory = Environment.CurrentDirectory,
+                    WorkingDirectory = WorkingDirectory,
                     FileName = path,
-                    Arguments = "blacknull"
+                    Arguments = $"\"{WorkingDirectory}\" Conquer.exe blacknull"
                 }
             };
 
-            mClients.Add(game.Id, game);
+            if (game.Start())
+            {
+                game.WaitForExit();
+                int processId = game.ExitCode;
+                if (processId is <= 0 or 160)
+                {
+                    MessageBox.Show(this, $@"Something went wrong when injecting. Injector returned {processId} [No process ID]");
+                    return;
+                }
+
+                //MessageBox.Show(this, $@"Conquer.exe Process ID: {processId}");
+                if (mClients.ContainsKey(processId))
+                {
+                    try
+                    {
+                        Process p = Process.GetProcessById(processId);
+                        p.Close();
+                    }
+                    catch
+                    {
+                        // Process is not running
+                    }
+                }
+                mClients.Add(processId, game);
+            }
+            else
+            {
+                MessageBox.Show(this, @"Could not start injected Conquer.exe!");
+            }
         }
 
         #endregion

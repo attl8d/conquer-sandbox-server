@@ -132,6 +132,9 @@
   <data name="StrBetaTitle" xml:space="preserve">
     <value>Seja bem-vindo ao Beta</value>
   </data>
+  <data name="StrCancel" xml:space="preserve">
+    <value>Cancelar</value>
+  </data>
   <data name="StrClientAlreadyConnected" xml:space="preserve">
     <value>Há um cliente registrado com esse mesmo nome em sua rede ou você tentou abrir duas instâncias do atualizador.</value>
   </data>
@@ -196,6 +199,9 @@
     <value>Houve uma falha ao tentar buscar informações de atualização do servidor! Vamos tentar reconectar. Se o problema persistir nos informe para que possamos corrigir ASAP.</value>
   </data>
   <data name="StrFps" xml:space="preserve">
+    <value>FPS</value>
+  </data>
+  <data name="StrFramesPerSecond" xml:space="preserve">
     <value>FPS</value>
   </data>
   <data name="StrHandsakeUpdater" xml:space="preserve">
@@ -281,6 +287,9 @@
   </data>
   <data name="StrReadyToLogin" xml:space="preserve">
     <value>Seu cliente está atualizado e pronto para jogar!</value>
+  </data>
+  <data name="StrSave" xml:space="preserve">
+    <value>Gravar</value>
   </data>
   <data name="StrScreenSize" xml:space="preserve">
     <value>Resolução</value>

@@ -3,6 +3,7 @@ using System.Diagnostics;
 using System.Globalization;
 using Comet.Launcher.Configuration;
 using Comet.Launcher.Files.Helpers;
+using Comet.Launcher.Forms;
 using Comet.Launcher.Helpers;
 using Comet.Launcher.Managers;
 using Comet.Launcher.Threads;
@@ -66,11 +67,17 @@ namespace Comet.Launcher
 
             if (File.Exists(Path.Combine(DataPath, "BtnPlayClicked.png")))
                 mPlayClickImage = Image.FromFile(Path.Combine(DataPath, "BtnPlayClicked.png"));
-
+            
             DoubleBuffered = true;
 
             CloseButton.FlatAppearance.MouseOverBackColor = Color.Transparent;
             CloseButton.FlatAppearance.MouseDownBackColor = Color.Transparent;
+
+            MinimizeButton.FlatAppearance.MouseOverBackColor = Color.Transparent;
+            MinimizeButton.FlatAppearance.MouseDownBackColor = Color.Transparent;
+
+            SettingsButton.FlatAppearance.MouseOverBackColor = Color.Transparent;
+            SettingsButton.FlatAppearance.MouseDownBackColor = Color.Transparent;
 
             TitleLabel.Text = LocaleManager.GetString("StrTitlePanel");
             LabelProgressStatus.Text = string.Empty;
@@ -745,6 +752,11 @@ namespace Comet.Launcher
             NoProgress,
             Play,
             PlayDisabled
+        }
+
+        private void BtnSettings_Click(object sender, EventArgs e)
+        {
+            new FrmClientConfig().ShowDialog(this);
         }
     }
 }

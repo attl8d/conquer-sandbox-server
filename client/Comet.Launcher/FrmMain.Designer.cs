@@ -45,6 +45,7 @@ namespace Comet.Launcher
             this.LabelProgressStatus = new System.Windows.Forms.Label();
             this.NotifyBar = new System.Windows.Forms.NotifyIcon(this.components);
             this.LblPingDisplay = new System.Windows.Forms.Label();
+            this.SettingsButton = new System.Windows.Forms.Button();
             this.TitlePanel.SuspendLayout();
             this.PanelReadyToPlay.SuspendLayout();
             this.PanelProgressDoingSomething.SuspendLayout();
@@ -223,6 +224,20 @@ namespace Comet.Launcher
             this.LblPingDisplay.TabIndex = 7;
             this.LblPingDisplay.Text = "Ping: ???";
             // 
+            // SettingsButton
+            // 
+            this.SettingsButton.BackColor = System.Drawing.Color.Transparent;
+            this.SettingsButton.BackgroundImage = global::Comet.Launcher.Properties.Resources.Settings;
+            this.SettingsButton.BackgroundImageLayout = System.Windows.Forms.ImageLayout.Stretch;
+            this.SettingsButton.FlatAppearance.BorderSize = 0;
+            this.SettingsButton.FlatStyle = System.Windows.Forms.FlatStyle.Flat;
+            this.SettingsButton.Location = new System.Drawing.Point(924, 430);
+            this.SettingsButton.Name = "SettingsButton";
+            this.SettingsButton.Size = new System.Drawing.Size(64, 64);
+            this.SettingsButton.TabIndex = 8;
+            this.SettingsButton.UseVisualStyleBackColor = false;
+            this.SettingsButton.Click += new System.EventHandler(this.BtnSettings_Click);
+            // 
             // FrmMain
             // 
             this.AutoScaleDimensions = new System.Drawing.SizeF(7F, 15F);
@@ -231,6 +246,7 @@ namespace Comet.Launcher
             this.BackgroundImageLayout = System.Windows.Forms.ImageLayout.Stretch;
             this.ClientSize = new System.Drawing.Size(1000, 600);
             this.ControlBox = false;
+            this.Controls.Add(this.SettingsButton);
             this.Controls.Add(this.LblPingDisplay);
             this.Controls.Add(this.PanelProgressDoingSomething);
             this.Controls.Add(this.PanelReadyToPlay);
@@ -268,5 +284,6 @@ namespace Comet.Launcher
         private NotifyIcon NotifyBar;
         private Button MinimizeButton;
         private Label LblPingDisplay;
+        private Button SettingsButton;
     }
 }

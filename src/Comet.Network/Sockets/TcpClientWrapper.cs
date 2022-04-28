@@ -225,8 +225,7 @@ namespace Comet.Network.Sockets
                 }
                 catch (SocketException e)
                 {
-                    if (e.SocketErrorCode < SocketError.ConnectionAborted ||
-                        e.SocketErrorCode > SocketError.Shutdown)
+                    if (e.SocketErrorCode is < SocketError.ConnectionAborted or > SocketError.Shutdown)
                         await Log.WriteLogAsync(e);
                     break;
                 }

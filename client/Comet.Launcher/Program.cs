@@ -10,7 +10,7 @@ namespace Comet.Launcher
         [STAThread]
         static void Main()
         {
-            Environment.CurrentDirectory = @"D:\World Conquer\5187\AutoPatch";
+            //Environment.CurrentDirectory = @"D:\World Conquer\5187\AutoPatch";
 
             Log.DefaultFileName = "AutoPatch";
             // To customize application configuration such as set high DPI settings or default font,

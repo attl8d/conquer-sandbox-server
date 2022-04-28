@@ -1,4 +1,5 @@
-﻿using System;
+﻿#define LOCAL_RELEASE
+using System;
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
@@ -35,7 +36,7 @@ namespace Comet.Launcher.Server.Packets
                 return;
             }
 
-#if !DEBUG
+#if !DEBUG && !LOCAL_RELEASE
             if (IpAddresses.TrueForAll(x => !client.IpAddress.Equals(x)))
             {
                 await client.SendAsync(new MsgUpdLoginEx
@@ -112,12 +113,20 @@ namespace Comet.Launcher.Server.Packets
             client.WindowsVersion = WindowsVersion;
             client.MachineName = MachineName;
 
-            Kernel.Clients.TryAdd(client.GUID, client);
-
-            await client.SendAsync(new MsgUpdLoginEx
+            if (Kernel.Clients.TryAdd(client.GUID, client))
             {
-                Response = UpdLoginEx.Success
-            });
+                await client.SendAsync(new MsgUpdLoginEx
+                {
+                    Response = UpdLoginEx.Success
+                });
+            }
+            else
+            {
+                await client.SendAsync(new MsgUpdLoginEx
+                {
+                    Response = UpdLoginEx.GuidHacking
+                });
+            }
         }
     }
 }

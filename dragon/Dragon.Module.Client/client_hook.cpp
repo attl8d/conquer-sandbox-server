@@ -42,7 +42,7 @@ namespace dragon {
 
     void dragon::ClientHook::serverfile()
     {
-        const char server_dat[] = ".\\Server.dat"; // any name
+        const char server_dat[] = ".\\AutoPatch\\Server.dat"; // any name
 
         BYTE server_dat_buf1[] = { 0xE9, 0x99, 0xC3, 0x0C, 0x00, 0x90, 0x90, 0x90 };
         BYTE server_dat_buf2[] = { 0xB3, 0x01 };
@@ -59,25 +59,30 @@ namespace dragon {
 
     void dragon::ClientHook::resolution()
     {
-        const char GAME_SETUP_INI[] = ".\\ini\\GameSetUp.ini";
+        const char GAME_SETUP_INI[] = ".\\AutoPatch\\GameSetUp.ini";
 
-        int width = GetPrivateProfileIntA("ScreenMode", "ScrWidth", 1024, GAME_SETUP_INI);
-        int hight = GetPrivateProfileIntA("ScreenMode", "ScrHeight", 768, GAME_SETUP_INI);
+        int width = GetPrivateProfileIntA("GameScreenSettings", "ScrWidth", 1024, GAME_SETUP_INI);
+        int height = GetPrivateProfileIntA("GameScreenSettings", "ScrHeight", 768, GAME_SETUP_INI);
+
+       /* char msg[64];
+        ZeroMemory(msg, sizeof msg);
+        sprintf_s(msg, "Screen size set to: %04dx%04d", width, height);
+        MessageBox(NULL, msg, "", 0);*/
 
         memory::write(addr_width1, &width, 4, NULL);
-        memory::write(addr_hight1, &hight, 4, NULL);
+        memory::write(addr_hight1, &height, 4, NULL);
         memory::write(addr_width2, &width, 4, NULL);
-        memory::write(addr_hight2, &hight, 4, NULL);
+        memory::write(addr_hight2, &height, 4, NULL);
 
         memory::write(addr_puzzle_width, &width, 4, NULL);
-        memory::write(addr_puzzle_hight, &hight, 4, NULL);
-        memory::write(addr_puzzle_hight2, &hight, 4, NULL);
+        memory::write(addr_puzzle_hight, &height, 4, NULL);
+        memory::write(addr_puzzle_hight2, &height, 4, NULL);
 
         BYTE main_ui_buf[] = { 0x68, 0xFF, 0x00, 0x00, 0x00, 0x68, 0xFF, 0x00, 0x00,
                                0x00, 0x8D, 0x8E, 0xE0, 0x04, 0x00, 0x00, 0x90, 0x90, 0x90 };
         memory::write(addr_main_ui_buf, &main_ui_buf, sizeof main_ui_buf, NULL);
 
-        int main_ui_y = (hight - 141);
+        int main_ui_y = (height - 141);
         int main_ui_x = (width - 1024) / 2;
         memory::write(addr_main_ui_y, &main_ui_y, 4, NULL);
         memory::write(addr_main_ui_x, &main_ui_x, 4, NULL);
@@ -88,12 +93,12 @@ namespace dragon {
         position = main_ui_x + 131;
         memory::write(addr_arrow_icon, &position, 4, NULL);
 
-        dragon::ClientHook::change_gui(width, hight);
+        dragon::ClientHook::change_gui(width, height);
     }
 
-    void dragon::ClientHook::change_gui(int width, int hight)
+    void dragon::ClientHook::change_gui(int width, int height)
     {
-        int main_ui_y = (hight - 141);
+        int main_ui_y = (height - 141);
         int main_ui_x = (width - 1024) / 2;
 
         const char GUI_SETUP_INI[] = ".\\ini\\GUI.ini";
@@ -108,19 +113,19 @@ namespace dragon {
         // Chat panel
         sprintf_s(buf, "%d", main_ui_x + 82);
         WritePrivateProfileStringA("0-145", "x", buf, GUI_SETUP_INI);
-        sprintf_s(buf, "%d", hight - 71);
+        sprintf_s(buf, "%d", height - 71);
         WritePrivateProfileStringA("0-145", "y", buf, GUI_SETUP_INI);
 
         // Chat Player Names
         sprintf_s(buf, "%d", main_ui_x + 82 + 35);
         WritePrivateProfileStringA("0-148", "x", buf, GUI_SETUP_INI);
-        sprintf_s(buf, "%d", hight - 365);
+        sprintf_s(buf, "%d", height - 365);
         WritePrivateProfileStringA("0-148", "y", buf, GUI_SETUP_INI);
 
         // Chat Channel
         sprintf_s(buf, "%d", main_ui_x + 82 + 172);
         WritePrivateProfileStringA("0-174", "x", buf, GUI_SETUP_INI);
-        sprintf_s(buf, "%d", hight - 325);
+        sprintf_s(buf, "%d", height - 325);
         WritePrivateProfileStringA("0-174", "y", buf, GUI_SETUP_INI);
 
         // Path Finding Button
@@ -134,13 +139,13 @@ namespace dragon {
         // Exit Game
         sprintf_s(buf, "%d", (width - 288) / 2);
         WritePrivateProfileStringA("0-158", "x", buf, GUI_SETUP_INI);
-        sprintf_s(buf, "%d", (hight - 120) / 2);
+        sprintf_s(buf, "%d", (height - 120) / 2);
         WritePrivateProfileStringA("0-158", "y", buf, GUI_SETUP_INI);
 
         // Options
         sprintf_s(buf, "%d", (width - 370) / 2);
         WritePrivateProfileStringA("0-138", "x", buf, GUI_SETUP_INI);
-        sprintf_s(buf, "%d", (hight - 350) / 2);
+        sprintf_s(buf, "%d", (height - 350) / 2);
         WritePrivateProfileStringA("0-138", "y", buf, GUI_SETUP_INI);
 
         // Team
@@ -152,7 +157,7 @@ namespace dragon {
         // VIP Button
         sprintf_s(buf, "%d", main_ui_x + 82 + 202);
         WritePrivateProfileStringA("0-339", "x", buf, GUI_SETUP_INI);
-        sprintf_s(buf, "%d", hight - 115);
+        sprintf_s(buf, "%d", height - 115);
         WritePrivateProfileStringA("0-339", "y", buf, GUI_SETUP_INI);
 
         // My Talisman UI
@@ -166,31 +171,31 @@ namespace dragon {
         // Shopping Mall
         sprintf_s(buf, "%d", main_ui_x + 82 + 50);
         WritePrivateProfileStringA("0-289", "x", buf, GUI_SETUP_INI);
-        sprintf_s(buf, "%d", hight - 115);
+        sprintf_s(buf, "%d", height - 115);
         WritePrivateProfileStringA("0-289", "y", buf, GUI_SETUP_INI);
 
         // Mentor
         sprintf_s(buf, "%d", main_ui_x + 82 + 85);
         WritePrivateProfileStringA("0-325", "x", buf, GUI_SETUP_INI);
-        sprintf_s(buf, "%d", hight - 130);
+        sprintf_s(buf, "%d", height - 130);
         WritePrivateProfileStringA("0-325", "y", buf, GUI_SETUP_INI);
 
         // Item Lock
         sprintf_s(buf, "%d", main_ui_x + 82 + 145);
         WritePrivateProfileStringA("0-328", "x", buf, GUI_SETUP_INI);
-        sprintf_s(buf, "%d", hight - 110);
+        sprintf_s(buf, "%d", height - 110);
         WritePrivateProfileStringA("0-328", "y", buf, GUI_SETUP_INI);
 
         // Whisper Player Avatars
         sprintf_s(buf, "%d", main_ui_x + 82 + 530);
         WritePrivateProfileStringA("0-3", "x", buf, GUI_SETUP_INI);
-        sprintf_s(buf, "%d", hight - 115);
+        sprintf_s(buf, "%d", height - 115);
         WritePrivateProfileStringA("0-3", "y", buf, GUI_SETUP_INI);
 
         // PKModes
         sprintf_s(buf, "%d", main_ui_x + 82 + 500);
         WritePrivateProfileStringA("0-191", "x", buf, GUI_SETUP_INI);
-        sprintf_s(buf, "%d", hight - 100);
+        sprintf_s(buf, "%d", height - 100);
         WritePrivateProfileStringA("0-191", "y", buf, GUI_SETUP_INI);
 
         // Actions
@@ -210,59 +215,59 @@ namespace dragon {
         // Arena
         sprintf_s(buf, "%d", main_ui_x + 82 + 250);
         WritePrivateProfileStringA("0-403", "x", buf, GUI_SETUP_INI);
-        sprintf_s(buf, "%d", hight - 115);
+        sprintf_s(buf, "%d", height - 115);
         WritePrivateProfileStringA("0-403", "y", buf, GUI_SETUP_INI);
 
         // Action Express Interact Combobox
         sprintf_s(buf, "%d", main_ui_x + 82 + 350);
         WritePrivateProfileStringA("0-367", "x", buf, GUI_SETUP_INI);
-        sprintf_s(buf, "%d", hight - 245);
+        sprintf_s(buf, "%d", height - 245);
         WritePrivateProfileStringA("0-367", "y", buf, GUI_SETUP_INI);
         // Action
         sprintf_s(buf, "%d", main_ui_x + 82 + 350);
         WritePrivateProfileStringA("0-140", "x", buf, GUI_SETUP_INI);
-        sprintf_s(buf, "%d", hight - 225);
+        sprintf_s(buf, "%d", height - 225);
         WritePrivateProfileStringA("0-140", "y", buf, GUI_SETUP_INI);
         // Express
         sprintf_s(buf, "%d", main_ui_x + 82 + 350);
         WritePrivateProfileStringA("0-274", "x", buf, GUI_SETUP_INI);
-        sprintf_s(buf, "%d", hight - 215);
+        sprintf_s(buf, "%d", height - 215);
         WritePrivateProfileStringA("0-274", "y", buf, GUI_SETUP_INI);
         // Interact
         sprintf_s(buf, "%d", main_ui_x + 82 + 350);
         WritePrivateProfileStringA("0-360", "x", buf, GUI_SETUP_INI);
-        sprintf_s(buf, "%d", hight - 215);
+        sprintf_s(buf, "%d", height - 215);
         WritePrivateProfileStringA("0-360", "y", buf, GUI_SETUP_INI);
 
         // Group UI
         sprintf_s(buf, "%d", main_ui_x + 82 + 600);
         WritePrivateProfileStringA("0-371", "x", buf, GUI_SETUP_INI);
-        sprintf_s(buf, "%d", hight - 140);
+        sprintf_s(buf, "%d", height - 140);
         WritePrivateProfileStringA("0-371", "y", buf, GUI_SETUP_INI);
 
         // Message Channel
-        sprintf_s(buf, "%d", hight - 453);
+        sprintf_s(buf, "%d", height - 453);
         WritePrivateProfileStringA("0-357", "y", buf, GUI_SETUP_INI);
 
         // Message Scrollbar
-        sprintf_s(buf, "%d", hight - 477);
+        sprintf_s(buf, "%d", height - 477);
         WritePrivateProfileStringA("0-1198", "y", buf, GUI_SETUP_INI);
 
         // Mount Vigor
         sprintf_s(buf, "%d", width - 200);
         WritePrivateProfileStringA("0-383", "x", buf, GUI_SETUP_INI);
-        sprintf_s(buf, "%d", hight - 200);
+        sprintf_s(buf, "%d", height - 200);
         WritePrivateProfileStringA("0-383", "y", buf, GUI_SETUP_INI);
 
         // Arena qualifier main ui
         sprintf_s(buf, "%d", (width - 665) / 2);
         WritePrivateProfileStringA("0-402", "x", buf, GUI_SETUP_INI);
-        sprintf_s(buf, "%d", (hight - 560) / 2);
+        sprintf_s(buf, "%d", (height - 560) / 2);
         WritePrivateProfileStringA("0-402", "y", buf, GUI_SETUP_INI);
         // Arena qualifier opponent info
         sprintf_s(buf, "%d", (width - 290) / 2);
         WritePrivateProfileStringA("0-409", "x", buf, GUI_SETUP_INI);
-        sprintf_s(buf, "%d", (hight - 120) / 2);
+        sprintf_s(buf, "%d", (height - 120) / 2);
         WritePrivateProfileStringA("0-409", "y", buf, GUI_SETUP_INI);
         // Arena qualifier fighting points info
         sprintf_s(buf, "%d", (width - 310) / 2);
@@ -270,17 +275,17 @@ namespace dragon {
         // Arena qualifier quit button
         sprintf_s(buf, "%d", main_ui_x + 82 + 320);
         WritePrivateProfileStringA("0-412", "x", buf, GUI_SETUP_INI);
-        sprintf_s(buf, "%d", hight - 130);
+        sprintf_s(buf, "%d", height - 130);
         WritePrivateProfileStringA("0-412", "y", buf, GUI_SETUP_INI);
         // Arena qualifier count down box
         sprintf_s(buf, "%d", (width - 290) / 2);
         WritePrivateProfileStringA("0-407", "x", buf, GUI_SETUP_INI);
-        sprintf_s(buf, "%d", (hight - 110) / 2);
+        sprintf_s(buf, "%d", (height - 110) / 2);
         WritePrivateProfileStringA("0-407", "y", buf, GUI_SETUP_INI);
         // Arena qualifier result box 
         sprintf_s(buf, "%d", (width - 300) / 2);
         WritePrivateProfileStringA("0-408", "x", buf, GUI_SETUP_INI);
-        sprintf_s(buf, "%d", (hight - 150) / 2);
+        sprintf_s(buf, "%d", (height - 150) / 2);
         WritePrivateProfileStringA("0-408", "y", buf, GUI_SETUP_INI);
 
         const char INFO_SETUP_INI[] = ".\\ini\\info.ini";
@@ -288,13 +293,13 @@ namespace dragon {
         // Exp
         sprintf_s(buf, "%d", (width / 2) - 100);
         WritePrivateProfileStringA("ExpShowPos", "Exp_XPos", buf, INFO_SETUP_INI);
-        sprintf_s(buf, "%d", hight - 92);
+        sprintf_s(buf, "%d", height - 92);
         WritePrivateProfileStringA("ExpShowPos", "Exp_YPos", buf, INFO_SETUP_INI);
 
         // AddExp
         sprintf_s(buf, "%d", (width / 2) - 100 + 90);
         WritePrivateProfileStringA("ExpShowPos", "AddExp_XPos", buf, INFO_SETUP_INI);
-        sprintf_s(buf, "%d", hight - 92);
+        sprintf_s(buf, "%d", height - 92);
         WritePrivateProfileStringA("ExpShowPos", "AddExp_YPos", buf, INFO_SETUP_INI);
     }
 
@@ -302,7 +307,7 @@ namespace dragon {
     {
         char GAME_SETUP_INI[] = ".\\ini\\GameSetUp.ini";
 
-        int fps = GetPrivateProfileIntA("ScreenMode", "Fps", 60, GAME_SETUP_INI);
+        int fps = GetPrivateProfileIntA("GameScreenSettings", "Fps", 60, GAME_SETUP_INI);
 
         int frameDelayMs = __max(5, 1000 / fps);
 

@@ -1,4 +1,7 @@
-﻿using Comet.Shared;
+﻿#if !DEBUG
+using Comet.Launcher.Managers;
+#endif
+using Comet.Shared;
 
 namespace Comet.Launcher.Threads
 {

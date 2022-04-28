@@ -14,7 +14,7 @@ namespace Comet.Launcher.Server
 
         public static ServerConfiguration Configuration { get; set; }
 
-        public static ConcurrentDictionary<string, Client> Clients => new();
+        public static ConcurrentDictionary<string, Client> Clients { get; } = new(5, 1000);
 
         /// <summary>
         ///     Returns the next random number from the generator.

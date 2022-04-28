@@ -115,12 +115,10 @@ namespace Comet.Launcher.Server
 
         protected override void Disconnected(Client actor)
         {
-
             if (Kernel.Clients.TryRemove(actor.GUID, out _))
             {
                 // TODO signal account server to disconnect accounts
             }
-
         }
     }
 }

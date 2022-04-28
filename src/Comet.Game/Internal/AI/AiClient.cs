@@ -18,7 +18,7 @@ namespace Comet.Game.Internal.AI
         /// <param name="buffer">pre-allocated buffer from the server listener</param>
         /// <param name="partition">Packet processing partition</param>
         public AiClient(Socket socket, Memory<byte> buffer, uint partition)
-            : base(socket, buffer, AesCipher.Create(), partition, NetworkDefinition.NPC_FOOTER)
+            : base(socket, buffer, null, partition, NetworkDefinition.NPC_FOOTER)
         {
             GUID = Guid.NewGuid().ToString();
         }

@@ -152,7 +152,16 @@ namespace Comet.Network.Packets
         MsgUpdConfirmHash,
         MsgUpdPing,
 
-        MsgUpdEnd = 32999
+        MsgUpdEnd = 32999,
+
+        MsgGmStart = 33000,
+
+        MsgGmHandshake,
+        MsgGmHandshakeEx,
+        MsgGmLogin,
+        MsgGmLoginEx,
+
+        MsgGmEnd = 33999,
 
     }
 }

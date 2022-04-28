@@ -106,7 +106,7 @@ namespace Comet.Network.Sockets
                     var ip = (socket.RemoteEndPoint as IPEndPoint).Address.MapToIPv4().ToString();
                     if (!mRegistry.AddActiveClient(ip))
                     {
-                        socket.Disconnect(false);
+                        await socket.DisconnectAsync(false);
                         await Log.WriteLogAsync($"Login denied due to excessive login attempts [IP: {ip}]");
                         mAcceptanceSemaphore.Release();
                         continue;
@@ -189,10 +189,9 @@ namespace Comet.Network.Sockets
                     // exchange protocol, then decrypting only what is necessary for the exchange.
                     // This is to prevent the next packet from being decrypted with the wrong key.
                     actor.Cipher.Decrypt(
-                        actor.Buffer[ExchangeStartPosition..2].Span,
-                        actor.Buffer[ExchangeStartPosition..2].Span);
-
-                    consumed = BitConverter.ToUInt16(actor.Buffer.Span.Slice(ExchangeStartPosition, 2)) + ExchangeStartPosition;
+                        actor.Buffer[..9].Span,
+                        actor.Buffer[..9].Span);
+                    consumed = BitConverter.ToUInt16(actor.Buffer.Span.Slice(7, 2)) + 7;
                 }
                 else
                 {
@@ -209,8 +208,9 @@ namespace Comet.Network.Sockets
                 if (ExchangeStartPosition == 7)
                 {
                     actor.Cipher?.Decrypt(
-                        actor.Buffer[(ExchangeStartPosition + 2)..consumed].Span,
-                        actor.Buffer[(ExchangeStartPosition + 2)..consumed].Span);
+                        actor.Buffer.Slice(9, consumed - 9).Span,
+                        actor.Buffer.Slice(9, consumed - 9).Span);
+
                 }
                 else
                 {
@@ -343,7 +343,7 @@ namespace Comet.Network.Sockets
         ///     unless otherwise overridden is to split packets from the buffer using an unsigned
         ///     short packet header for the length of each packet.
         /// </summary>
-        /// <param name="buffer">Actor for consuming bytes from the buffer</param>
+        /// <param name="actor">Actor for consuming bytes from the buffer</param>
         /// <param name="examined">Number of examined bytes from the receive</param>
         /// <param name="consumed">Number of consumed bytes by the split reader</param>
         /// <returns>Returns true if the client should remain connected.</returns>

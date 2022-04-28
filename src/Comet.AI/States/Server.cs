@@ -2,7 +2,7 @@
 using System.Net.Sockets;
 using System.Threading.Tasks;
 using Comet.Network;
-using Comet.Network.Security;
+//using Comet.Network.Security;
 using Comet.Network.Sockets;
 
 namespace Comet.AI.States
@@ -18,7 +18,7 @@ namespace Comet.AI.States
         /// <param name="buffer">Pre-allocated buffer from the server listener</param>
         /// <param name="partition">Packet processing partition</param>
         public Server(Socket socket, Memory<byte> buffer, uint partition)
-            : base(socket, buffer, AesCipher.Create(), partition, NetworkDefinition.NPC_FOOTER)
+            : base(socket, buffer, null, partition, NetworkDefinition.NPC_FOOTER)
         {
         }
 

@@ -873,7 +873,9 @@ namespace Comet.Game.States
         public async Task SynchroAttributesAsync(ClientUpdateType type, ulong value, bool screen = false)
         {
             var msg = new MsgUserAttrib(Identity, type, value);
-            if (IsPlayer() && !screen)
+            // Always tell the player about their own change. The screen broadcast below
+            // skips the player, so level, look and hair changes never reached them.
+            if (IsPlayer())
                 await SendAsync(msg);
 
             if (screen)
@@ -884,7 +886,7 @@ namespace Comet.Game.States
         {
             var msg = new MsgUserAttrib(Identity, type, value1);
             msg.Append(type, value2);
-            if (IsPlayer() && !screen)
+            if (IsPlayer())
                 await SendAsync(msg);
 
             if (screen)

@@ -74,6 +74,7 @@ namespace Comet.Game
         public static readonly UserProcessing UserThread = new();
         public static readonly EventProcessing EventThread = new();
         public static readonly RoleProcessing RoleThread = new();
+        public static LabelHook LabelThread { get; private set; }
 
         private static SchedulerFactory SchedulerFactory { get; set; }
 
@@ -149,6 +150,12 @@ namespace Comet.Game
                 await EventThread.StartAsync();
                 await RoleThread.StartAsync();
 
+                if (LabelHook.Enabled)
+                {
+                    LabelThread = LabelHook.Create();
+                    await LabelThread.StartAsync();
+                }
+
                 SchedulerFactory = new SchedulerFactory();
                 await SchedulerFactory.StartAsync();
                 await SchedulerFactory.ScheduleAsync<AutomaticActionJob>("0 * * * * ?");
@@ -169,6 +176,8 @@ namespace Comet.Game
             await UserThread.CloseAsync();
             await EventThread.CloseAsync();
             await RoleThread.CloseAsync();
+            if (LabelThread != null)
+                await LabelThread.CloseAsync();
 
             await Services.Processor.StopAsync(new CancellationToken(true)).ConfigureAwait(true);
             await RoleManager.KickOutAllAsync("Server is now closing", true).ConfigureAwait(true);

@@ -17,6 +17,7 @@ namespace Comet.Game.Database
         public RpcNetworkConfiguration RpcNetwork { get; set; }
         public AiNetworkConfiguration AiNetwork { get; set; }
         public AuthenticationConfiguration Authentication { get; set; }
+        public LabelHookConfiguration LabelHook { get; set; }
 
         /// <summary>
         ///     Encapsulates network configuration for the game server listener.
@@ -59,6 +60,18 @@ namespace Comet.Game.Database
         public class AuthenticationConfiguration
         {
             public bool StrictAuthPass { get; set; }
+        }
+
+        /// <summary>
+        ///     Training aid for the screen bot: logs true positions and HP of roles near players
+        ///     as JSON lines. Optional section; on by default, writing to
+        ///     C:\CO\bot-data\truth\server-truth.jsonl every 100 ms.
+        /// </summary>
+        public class LabelHookConfiguration
+        {
+            public bool Enabled { get; set; } = true;
+            public string File { get; set; }
+            public int IntervalMs { get; set; } = 100;
         }
 
         /// <summary>

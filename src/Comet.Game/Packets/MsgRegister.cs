@@ -68,6 +68,13 @@ namespace Comet.Game.Packets
                 return;
             }
 
+            // The sandbox mirrors Classic Conquer, which has no Ninja class
+            if (Class == (ushort) BaseClassType.Ninja)
+            {
+                await client.SendAsync(RegisterInvalid);
+                return;
+            }
+
             DbPointAllot allot = ExperienceManager.GetPointAllot((ushort) (Class / 10), 1) ?? new DbPointAllot
             {
                 Strength = 4,
